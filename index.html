@@ -285,7 +285,7 @@
         <i class="fab fa-twitter"></i> Twitter
       </a>
       <a href="https://www.tiktok.com/@thefenixpro216" class="btn btn-outline-light m-1" target="_blank"
-        rel="noopener noreferrer" aria-label="tiktok">
+        rel="noopener noreferrer" aria-label="Tiktok">
         <i class="fab fa-tiktok"></i> Tiktok
       </a>
     </div>
@@ -306,29 +306,18 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Mostrar botón "volver arriba" al hacer scroll
-    const btnTop = document.getElementById('btn-top');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) btnTop.style.display = 'block';
-      else btnTop.style.display = 'none';
-    });
-    btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    const user = 'thisisfenix';
 
-    // Carga dinámica de repositorios
-    const user = 'thisisfenix'; // Cambia por tu usuario GitHub
-
-    async function fetchRepos() {
-      try {
-        const response = await fetch(`https://api.github.com/users/${user}/repos?per_page=100&sort=updated`);
-        if (!response.ok) throw new Error('Error al obtener repositorios');
-        const repos = await response.json();
-        displayRepos(repos);
-      } catch (error) {
-        console.error(error);
-        document.getElementById('repos-container').textContent = 'No se pudieron cargar los proyectos.';
-      }
+    // Función para cargar imagen con fallback local, remoto y placeholder
+    function loadImage(imgElement, localSrc, remoteSrc, placeholderSrc) {
+      imgElement.src = localSrc;
+      imgElement.onerror = () => {
+        imgElement.onerror = () => {
+          imgElement.src = placeholderSrc;
+        };
+        imgElement.src = remoteSrc;
+      };
     }
 
     function displayRepos(repos) {
@@ -344,10 +333,12 @@
         const img = document.createElement('img');
         img.className = 'card-img-top';
         img.alt = `Imagen de vista previa del proyecto ${repo.name}`;
-        img.src = `https://raw.githubusercontent.com/${user}/${repo.name}/main/preview.png`;
-        img.onerror = () => {
-          img.src = 'https://via.placeholder.com/400x180?text=Sin+imagen';
-        };
+
+        const localImagePath = `img/localPreviews/${repo.name}.png`;
+        const remoteImagePath = `https://raw.githubusercontent.com/${user}/${repo.name}/main/preview.png`;
+        const placeholderImage = 'placeholder/GHbDEIgXMAACVEi.jpg';
+
+        loadImage(img, localImagePath, remoteImagePath, placeholderImage);
 
         const body = document.createElement('div');
         body.className = 'card-body d-flex flex-column';
@@ -392,23 +383,40 @@
       });
     }
 
+    async function fetchRepos() {
+      try {
+        const response = await fetch(`https://api.github.com/users/${user}/repos`);
+        if (!response.ok) throw new Error(`Error en la respuesta: ${response.status}`);
+        const repos = await response.json();
+        displayRepos(repos);
+      } catch (error) {
+        console.error('Error al cargar los repositorios:', error);
+        const container = document.getElementById('repos-container');
+        container.innerHTML = '<p>Error al cargar los proyectos. Intenta más tarde.</p>';
+      }
+    }
+
     fetchRepos();
 
-    var disqus_config = function () {
-      this.page.url = 'https://thisisfenix.github.io/FenixLabPreview/';  // URL fija del sitio
-      this.page.identifier = 'fenixlabpreview-homepage'; // Identificador único para esta página
-    };
+    // Botón subir arriba
+    const btnTop = document.getElementById('btn-top');
+    window.addEventListener('scroll', () => {
+      btnTop.style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+    btnTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 
+    // Disqus config
     (function () {
-      var d = document, s = d.createElement('script');
-      s.src = 'https://fenixlabpreview.disqus.com/embed.js';
+      const d = document, s = d.createElement('script');
+      s.src = 'https://fenixlaboratory.disqus.com/embed.js';
       s.setAttribute('data-timestamp', +new Date());
       (d.head || d.body).appendChild(s);
     })();
-
   </script>
-  <script id="dsq-count-scr" src="https://fenixlabpreview.disqus.com/count.js" async></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
