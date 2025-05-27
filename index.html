@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FenixLaboratory</title>
+  <meta name="description"
+    content="Explora mis desarrollos personales, prototipos y experimentos digitales desde GitHub." />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    integrity="sha512-uFyT8pkMeaWrmt7FJS8XpQtJxRLp8P9CEwyZrhl4X0yo7/ut7kV4GxoEyMZNuX0K4+tx2XQWnKxtw5V3I7Itjw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body {
+      background: #121622;
+      color: #e0e6f0;
+      font-family: 'Poppins', sans-serif;
+      scroll-behavior: smooth;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      background-color: #1f2a44;
+      border-bottom: 1px solid #33415c;
+      box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4);
+    }
+
+    .navbar-brand {
+      font-weight: 700;
+      color: #4a90e2 !important;
+    }
+
+    .hero {
+      padding: 6rem 2rem;
+      text-align: center;
+      background: linear-gradient(135deg, #4a90e2 20%, #9b59b6 90%);
+      color: #f0f3f7;
+      box-shadow: inset 0 0 50px rgba(255, 255, 255, 0.1);
+      border-radius: 0 0 3rem 3rem;
+      margin-bottom: 3rem;
+      flex-shrink: 0;
+    }
+
+    .hero h1 {
+      font-weight: 900;
+      font-size: 3rem;
+      letter-spacing: 1.5px;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      max-width: 600px;
+      margin: 0 auto 2rem auto;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #4a90e2, #9b59b6);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      padding: 0.75rem 1.75rem;
+      border-radius: 30px;
+      transition: filter 0.3s ease;
+      box-shadow: 0 0 12px #4a90e2;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+      filter: brightness(1.2);
+      box-shadow: 0 0 20px #9b59b6;
+      outline: none;
+    }
+
+    section {
+      padding-bottom: 4rem;
+      flex-grow: 1;
+    }
+
+    section h2 {
+      color: #4a90e2;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .card {
+      background: #1e2738;
+      border-radius: 1rem;
+      box-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      min-height: 350px;
+    }
+
+    .card:hover,
+    .card:focus-within {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #9b59b6cc, 0 0 40px #4a90e2cc;
+      z-index: 10;
+      outline: none;
+    }
+
+    .card-img-top {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #111827;
+    }
+
+    .card-body {
+      padding: 1rem 1.25rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      color: #4a90e2;
+    }
+
+    .card-text {
+      flex-grow: 1;
+      font-size: 0.95rem;
+      color: #cbd6e8;
+      margin-bottom: 1rem;
+      white-space: pre-line;
+    }
+
+    .btn-outline-light {
+      color: #4a90e2;
+      border-color: #4a90e2;
+      transition: all 0.3s ease;
+      border-radius: 30px;
+      padding: 0.5rem 1.25rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .btn-outline-light:hover,
+    .btn-outline-light:focus {
+      background-color: #4a90e2;
+      color: #f0f3f7;
+      box-shadow: 0 0 10px #4a90e2;
+      outline: none;
+    }
+
+    .btn-group {
+      margin-top: auto;
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    #repos-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .footer {
+      background: #111827;
+      color: #66799f;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      border-top: 1px solid #33415c;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .footer a {
+      color: #4a90e2;
+      text-decoration: none;
+    }
+
+    .footer a:hover,
+    .footer a:focus {
+      text-decoration: underline;
+      outline: none;
+    }
+
+    #btn-top {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #4a90e2;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 0 10px #4a90e2;
+      color: #f0f3f7;
+      transition: background 0.3s ease;
+      z-index: 999;
+      display: none;
+    }
+
+    #btn-top:hover,
+    #btn-top:focus {
+      background: #3b78d1;
+      outline: none;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top" aria-label="Navegación principal">
+    <div class="container">
+      <a class="navbar-brand" href="#">🔥 FenixLaboratory</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#proyectos">Proyectos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#sobremi">Sobre mí</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#contacto">Contacto</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#comentarios">Comentarios</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" role="banner">
+    <h1>Desde las cenizas... nacen mis proyectos.</h1>
+    <p>Explora mis desarrollos personales, prototipos y experimentos digitales directamente desde GitHub.</p>
+    <a href="#proyectos" class="btn btn-primary" role="button">Ver proyectos</a>
+  </section>
+
+  <!-- Proyectos -->
+  <section id="proyectos" class="container" aria-label="Catálogo de proyectos">
+    <h2>Catálogo de Proyectos</h2>
+    <div id="repos-container" aria-live="polite" aria-label="Lista de proyectos"></div>
+  </section>
+
+  <!-- Sobre mí -->
+  <section id="sobremi" class="container" aria-label="Sección sobre mí">
+    <h2>Sobre mí</h2>
+    <div class="text-center">
+      <img src="https://github.com/thisisfenix.png" alt="Foto de perfil de thisisfenix" width="140" height="140"
+        style="border-radius: 50%; border: 3px solid #4a90e2;" loading="lazy" decoding="async" />
+      <p style="max-width: 650px; margin: 1rem auto; font-size: 1.1rem; line-height: 1.5;">
+        Hola, soy un desarrollador apasionado por la web y la programación. En este sitio muestro proyectos que he
+        construido con dedicación y creatividad. Puedes encontrar más en mi perfil de GitHub.
+      </p>
+      <a href="https://github.com/thisisfenix" class="btn btn-outline-light" target="_blank" rel="noopener noreferrer"
+        aria-label="Enlace a mi perfil de GitHub">
+        <i class="fab fa-github"></i> Mi GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="container" aria-label="Contacto y redes sociales">
+    <h2>Contacto</h2>
+    <div class="text-center">
+      <p>Sígueme en redes sociales:</p>
+      <a href="https://github.com/thisisfenix" class="btn btn-outline-light m-1" target="_blank"
+        rel="noopener noreferrer" aria-label="GitHub">
+        <i class="fab fa-github"></i> GitHub
+      </a>
+      <a href="https://twitter.com/thisisfenix" class="btn btn-outline-light m-1" target="_blank"
+        rel="noopener noreferrer" aria-label="Twitter">
+        <i class="fab fa-twitter"></i> Twitter
+      </a>
+      <a href="https://linkedin.com/in/thisisfenix" class="btn btn-outline-light m-1" target="_blank"
+        rel="noopener noreferrer" aria-label="LinkedIn">
+        <i class="fab fa-linkedin"></i> LinkedIn
+      </a>
+    </div>
+  </section>
+
+  <!-- Comentarios Disqus -->
+  <section id="comentarios" class="container" aria-label="Comentarios">
+    <h2>Comentarios</h2>
+    <div id="disqus_thread"></div>
+  </section>
+
+  <!-- Botón para volver arriba -->
+  <button id="btn-top" aria-label="Volver arriba" title="Volver arriba" type="button"><i
+      class="fas fa-arrow-up"></i></button>
+
+  <footer class="footer" role="contentinfo">
+    © 2025 thisisfenix. Todos los derechos reservados.
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Mostrar botón "volver arriba" al hacer scroll
+    const btnTop = document.getElementById('btn-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) btnTop.style.display = 'block';
+      else btnTop.style.display = 'none';
+    });
+    btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // Carga dinámica de repositorios
+    const user = 'thisisfenix'; // Cambia por tu usuario GitHub
+
+    async function fetchRepos() {
+      try {
+        const response = await fetch(`https://api.github.com/users/${user}/repos?per_page=100&sort=updated`);
+        if (!response.ok) throw new Error('Error al obtener repositorios');
+        const repos = await response.json();
+        displayRepos(repos);
+      } catch (error) {
+        console.error(error);
+        document.getElementById('repos-container').textContent = 'No se pudieron cargar los proyectos.';
+      }
+    }
+
+    function displayRepos(repos) {
+      const container = document.getElementById('repos-container');
+      container.innerHTML = '';
+
+      repos.forEach(repo => {
+        const card = document.createElement('article');
+        card.className = 'card shadow-sm';
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `Proyecto: ${repo.name}`);
+
+        const img = document.createElement('img');
+        img.className = 'card-img-top';
+        img.alt = `Imagen de vista previa del proyecto ${repo.name}`;
+        img.src = `https://raw.githubusercontent.com/${user}/${repo.name}/main/preview.png`;
+        img.onerror = () => {
+          img.src = 'https://via.placeholder.com/400x180?text=Sin+imagen';
+        };
+
+        const body = document.createElement('div');
+        body.className = 'card-body d-flex flex-column';
+
+        const title = document.createElement('h3');
+        title.className = 'card-title';
+        title.textContent = repo.name;
+
+        const desc = document.createElement('p');
+        desc.className = 'card-text';
+        desc.textContent = repo.description || 'Sin descripción disponible.';
+
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'btn-group';
+
+        const btnCode = document.createElement('a');
+        btnCode.className = 'btn btn-outline-light';
+        btnCode.href = repo.html_url;
+        btnCode.target = '_blank';
+        btnCode.rel = 'noopener noreferrer';
+        btnCode.textContent = 'Código';
+        btnCode.setAttribute('aria-label', `Ver código fuente de ${repo.name} en GitHub`);
+
+        const btnEnter = document.createElement('a');
+        btnEnter.className = 'btn btn-outline-light';
+        btnEnter.href = `https://${user}.github.io/${repo.name}`;
+        btnEnter.target = '_blank';
+        btnEnter.rel = 'noopener noreferrer';
+        btnEnter.textContent = 'Entrar';
+        btnEnter.setAttribute('aria-label', `Entrar al proyecto ${repo.name}`);
+
+        btnGroup.appendChild(btnCode);
+        btnGroup.appendChild(btnEnter);
+
+        body.appendChild(title);
+        body.appendChild(desc);
+        body.appendChild(btnGroup);
+
+        card.appendChild(img);
+        card.appendChild(body);
+        container.appendChild(card);
+      });
+    }
+
+    fetchRepos();
+
+    var disqus_config = function () {
+      this.page.url = 'https://thisisfenix.github.io/FenixLabPreview/';  // URL fija del sitio
+      this.page.identifier = 'fenixlabpreview-homepage'; // Identificador único para esta página
+    };
+
+    (function () {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://fenixlabpreview.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+
+  </script>
+  <script id="dsq-count-scr" src="https://fenixlabpreview.disqus.com/count.js" async></script>
+
+</body>
+
+</html>
