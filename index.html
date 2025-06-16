@@ -7,6 +7,7 @@
   <title>FenixLaboratory</title>
   <meta name="description"
     content="Explora mis desarrollos personales, prototipos y experimentos digitales desde GitHub." />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     integrity="sha512-uFyT8pkMeaWrmt7FJS8XpQtJxRLp8P9CEwyZrhl4X0yo7/ut7kV4GxoEyMZNuX0K4+tx2XQWnKxtw5V3I7Itjw=="
@@ -210,6 +211,14 @@
       background: #3b78d1;
       outline: none;
     }
+
+    /* Estilos para Disqus */
+    #disqus_thread {
+      background: #1e2738;
+      padding: 2rem;
+      border-radius: 1rem;
+      margin-top: 2rem;
+    }
   </style>
 </head>
 
@@ -295,6 +304,8 @@
   <section id="comentarios" class="container" aria-label="Comentarios">
     <h2>Comentarios</h2>
     <div id="disqus_thread"></div>
+    <noscript>Por favor, habilita JavaScript para ver los <a href="https://disqus.com/?ref_noscript">comentarios powered
+        by Disqus.</a></noscript>
   </section>
 
   <!-- Botón para volver arriba -->
@@ -407,19 +418,22 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Disqus config
+    // Configuración de Disqus
     var disqus_config = function () {
-      this.page.url = window.location.href; // URL de la página
-      this.page.identifier = 'inicio'; // Identificador único del hilo
+      this.page.url = window.location.href; // URL completa de la página actual
+      this.page.identifier = window.location.pathname; // Identificador único de la página (ruta)
     };
 
-    (function () {
-      const d = document, s = d.createElement('script');
-      s.src = 'https://fenixlaboratory.disqus.com/embed.js';
+    (function () { // DON'T EDIT BELOW THIS LINE
+      var d = document, s = d.createElement('script');
+      s.src = 'https://fenixlabpreview.disqus.com/embed.js';
       s.setAttribute('data-timestamp', +new Date());
       (d.head || d.body).appendChild(s);
     })();
+
   </script>
+  <noscript>Por favor, habilita JavaScript para ver los <a href="https://disqus.com/?ref_noscript">comentarios powered
+      by Disqus.</a></noscript>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
