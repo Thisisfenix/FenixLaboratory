@@ -212,8 +212,8 @@
       outline: none;
     }
 
-    /* Estilos para Disqus */
-    #disqus_thread {
+    /* Estilos para Giscus */
+    .giscus {
       background: #1e2738;
       padding: 2rem;
       border-radius: 1rem;
@@ -300,12 +300,10 @@
     </div>
   </section>
 
-  <!-- Comentarios Disqus -->
+  <!-- Comentarios Giscus -->
   <section id="comentarios" class="container" aria-label="Comentarios">
     <h2>Comentarios</h2>
-    <div id="disqus_thread"></div>
-    <noscript>Por favor, habilita JavaScript para ver los <a href="https://disqus.com/?ref_noscript">comentarios powered
-        by Disqus.</a></noscript>
+    <div class="giscus"></div>
   </section>
 
   <!-- Botón para volver arriba -->
@@ -417,23 +415,24 @@
     btnTop.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-
-    // Configuración de Disqus
-    var disqus_config = function () {
-      this.page.url = window.location.href; // URL completa de la página actual
-      this.page.identifier = window.location.pathname; // Identificador único de la página (ruta)
-    };
-
-    (function () { // DON'T EDIT BELOW THIS LINE
-      var d = document, s = d.createElement('script');
-      s.src = 'https://fenixlabpreview.disqus.com/embed.js';
-      s.setAttribute('data-timestamp', +new Date());
-      (d.head || d.body).appendChild(s);
-    })();
-
   </script>
-  <noscript>Por favor, habilita JavaScript para ver los <a href="https://disqus.com/?ref_noscript">comentarios powered
-      by Disqus.</a></noscript>
+
+  <!-- Script de Giscus -->
+<script src="https://giscus.app/client.js"
+        data-repo="Thisisfenix/FenixLaboratory"
+        data-repo-id="R_kgDOOxHAIg"
+        data-category="General"
+        data-category-id="DIC_kwDOOxHAIs4Crvbl"
+        data-mapping="url"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="1"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="es"
+        crossorigin="anonymous"
+        async>
+</script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
