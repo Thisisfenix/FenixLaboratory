@@ -49,21 +49,7 @@
       position: relative;
     }
 
-    .navbar-brand::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
 
-    .navbar-brand:hover::after {
-      transform: scaleX(1);
-    }
 
     .nav-link.active {
       color: var(--primary) !important;
@@ -96,12 +82,9 @@
 
     .hero h1 {
       font-weight: 700;
-      font-size: 3.5rem;
+      font-size: 3.2rem;
       margin-bottom: 1.5rem;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+      color: var(--primary);
       line-height: 1.2;
     }
 
@@ -118,34 +101,15 @@
       color: var(--primary);
       font-weight: 500;
       padding: 0.75rem 2rem;
-      border-radius: 0;
-      position: relative;
-      overflow: hidden;
+      border-radius: 4px;
       transition: all 0.3s ease;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      font-size: 0.9rem;
-    }
-
-    .btn-neon::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.2), transparent);
-      transition: all 0.5s ease;
+      letter-spacing: 0.5px;
+      font-size: 0.95rem;
     }
 
     .btn-neon:hover {
       color: var(--bg-dark);
-      box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
       background-color: var(--primary);
-    }
-
-    .btn-neon:hover::before {
-      left: 100%;
     }
 
     section {
@@ -153,15 +117,7 @@
       position: relative;
     }
 
-    section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    }
+
 
     section h2 {
       font-weight: 700;
@@ -171,20 +127,12 @@
       position: relative;
     }
 
-    section h2::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-    }
+
 
     .card {
       background: var(--bg-light);
       border: 1px solid rgba(0, 240, 255, 0.1);
-      border-radius: 0;
+      border-radius: 8px;
       transition: all 0.3s ease;
       min-height: 350px;
       display: flex;
@@ -193,25 +141,9 @@
       overflow: hidden;
     }
 
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
-
     .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-    }
-
-    .card:hover::before {
-      transform: scaleX(1);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 
     .card-img-top {
@@ -274,7 +206,7 @@
       border: 1px solid var(--primary);
       color: var(--primary);
       transition: all 0.3s ease;
-      border-radius: 0;
+      border-radius: 4px;
       padding: 0.5rem 1.25rem;
       font-size: 0.85rem;
     }
@@ -282,7 +214,6 @@
     .btn-outline-neon:hover {
       background: var(--primary);
       color: var(--bg-dark);
-      box-shadow: 0 0 10px var(--primary);
     }
 
     #repos-container {
@@ -334,8 +265,7 @@
     .social-btn:hover {
       background: var(--primary);
       color: var(--bg-dark);
-      transform: translateY(-3px);
-      box-shadow: 0 0 15px var(--primary);
+      transform: translateY(-2px);
     }
 
     .footer {
@@ -385,8 +315,7 @@
     }
 
     #btn-top:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 20px var(--primary);
+      transform: translateY(-3px);
     }
 
     /* Efectos de partículas */
@@ -449,7 +378,7 @@
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-      <a class="navbar-brand" href="#"><i class="bi bi-robot me-2"></i>FenixLaboratory</a>
+      <a class="navbar-brand" href="#"><i class="bi bi-code-square me-2"></i>FenixLaboratory</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -482,7 +411,7 @@
   <section class="hero">
     <div class="container">
       <h1 id="typewriter"></h1>
-      <p>Explora mis desarrollos personales, prototipos y experimentos digitales</p>
+      <p>Repositorio de mis creaciones y experimentos en GitHub</p>
       <a href="#proyectos" class="btn btn-neon"><i class="bi bi-arrow-down me-2"></i>Ver Proyectos</a>
     </div>
     <div class="particles" id="particles"></div>
@@ -490,7 +419,7 @@
 
   <!-- Proyectos -->
   <section id="proyectos" class="container">
-    <h2>MIS CREACIONES</h2>
+    <h2>PROYECTOS</h2>
     <div id="repos-container">
       <!-- Skeleton loader mientras carga -->
       <div class="card">
@@ -549,9 +478,8 @@
         style="max-width: 150px; border-radius: 50%;">
     </div>
     <p class="mx-auto mt-3" style="max-width: 700px;">
-      Apasionado desarrollador frontend que transforma ideas en experiencias digitales. 
-      Cuando no estoy codificando, probablemente esté probando nuevas tecnologías 
-      o creando proyectos experimentales. ¡El código es mi lienzo!
+      Me gusta experimentar con tecnologías web y crear cosas que funcionen bien. 
+      Siempre estoy aprendiendo algo nuevo y tratando de mejorar mis habilidades.
     </p>
     <a href="https://github.com/thisisfenix" class="btn btn-neon mt-3" target="_blank">
       <i class="bi bi-github me-2"></i>Mi GitHub
@@ -560,8 +488,8 @@
 
   <!-- Contacto -->
   <section id="contacto" class="container text-center mt-5">
-    <h2>MIS REDES</h2>
-    <p>¿Tienes curiosidad por conocer más sobre mí?</p>
+    <h2>CONTACTO</h2>
+    <p>Puedes encontrarme en estas redes:</p>
     <div class="mt-4 d-flex justify-content-center gap-3">
       <a href="https://github.com/thisisfenix" class="social-btn" target="_blank" 
          aria-label="Visitar mi perfil de GitHub">
@@ -574,10 +502,6 @@
       <a href="https://www.tiktok.com/@thefenixpro216" class="social-btn" target="_blank" 
          aria-label="Visitar mi perfil de TikTok">
         <i class="bi bi-tiktok fs-4"></i>
-      </a>
-      <a href="mailto:tuemail@example.com" class="social-btn" 
-         aria-label="Enviarme un correo electrónico">
-        <i class="bi bi-envelope fs-4"></i>
       </a>
     </div>
   </section>
@@ -594,21 +518,17 @@
   </button>
 
   <footer class="footer">
-    © 2025 <a href="https://github.com/thisisfenix" target="_blank">FenixLaboratory</a> - 
-    Hecho con <i class="bi bi-heart-fill text-danger"></i> y código
+    © 2025 <a href="https://github.com/thisisfenix" target="_blank">FenixLaboratory</a>
   </footer>
 
   <!-- Scripts -->
   <script>
     const user = 'thisisfenix';
 
-    // Función para cargar imagen con fallback
     function loadImage(imgElement, localSrc, remoteSrc, placeholderSrc) {
       imgElement.src = localSrc;
       imgElement.onerror = () => {
-        imgElement.onerror = () => {
-          imgElement.src = placeholderSrc;
-        };
+        imgElement.onerror = () => imgElement.src = placeholderSrc;
         imgElement.src = remoteSrc;
       };
     }
@@ -641,7 +561,7 @@
 
         const desc = document.createElement('p');
         desc.className = 'card-text';
-        desc.textContent = repo.description || 'Descripción no disponible';
+        desc.textContent = repo.description || 'Sin descripción';
 
         const btnGroup = document.createElement('div');
         btnGroup.className = 'btn-group';
@@ -684,36 +604,29 @@
       }
     }
 
-    // Partículas
     function createParticles() {
       const container = document.getElementById('particles');
-      const particleCount = 30;
+      const particleCount = 15;
       
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.classList.add('particle');
         
-        // Tamaño aleatorio entre 1px y 3px
         const size = Math.random() * 2 + 1;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
-        
-        // Posición aleatoria
         particle.style.left = `${Math.random() * 100}%`;
         particle.style.top = `${Math.random() * 100 + 100}%`;
         
-        // Duración de animación aleatoria entre 10s y 20s
         const duration = Math.random() * 10 + 10;
         particle.style.animationDuration = `${duration}s`;
-        
-        // Retraso aleatorio
         particle.style.animationDelay = `${Math.random() * 5}s`;
         
         container.appendChild(particle);
       }
     }
 
-    // Botón subir
+
     const btnTop = document.getElementById('btn-top');
     window.addEventListener('scroll', () => {
       if (window.scrollY > 300) {
@@ -727,10 +640,10 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Efecto máquina de escribir
+
     function typeWriterEffect() {
       const title = document.getElementById('typewriter');
-      const text = "MIS PROYECTOS";
+      const text = "THISISFENIX LABORATORY";
       let i = 0;
       
       title.textContent = '';
@@ -746,7 +659,7 @@
       type();
     }
 
-    // Cambio de tema
+
     function toggleTheme() {
       const body = document.body;
       const themeToggle = document.getElementById('theme-toggle');
@@ -762,7 +675,7 @@
       }
     }
 
-    // Cargar tema guardado
+
     function loadTheme() {
       const savedTheme = localStorage.getItem('theme');
       const themeToggle = document.getElementById('theme-toggle');
@@ -773,7 +686,7 @@
       }
     }
 
-    // Navegación activa
+
     function updateActiveNav() {
       const sections = document.querySelectorAll('section');
       const navLinks = document.querySelectorAll('.nav-link:not(#theme-toggle)');
@@ -792,30 +705,21 @@
       });
     }
 
-    // Inicialización
+
     document.addEventListener('DOMContentLoaded', () => {
       fetchRepos();
       createParticles();
       typeWriterEffect();
       loadTheme();
       
-      // Event listeners
+
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
       
-      // Efecto hover para enlaces de navegación
-      const navLinks = document.querySelectorAll('.nav-link');
-      navLinks.forEach(link => {
-        link.addEventListener('mouseenter', () => {
-          link.style.textShadow = '0 0 10px var(--primary)';
-        });
-        link.addEventListener('mouseleave', () => {
-          link.style.textShadow = 'none';
-        });
-      });
+
+
       
-      // Actualizar navegación activa al hacer scroll
       window.addEventListener('scroll', updateActiveNav);
-      updateActiveNav(); // Llamar una vez al cargar
+      updateActiveNav();
     });
   </script>
 
