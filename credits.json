@@ -1,5 +1,5 @@
 {
-  "que_pedo": "FenixLaboratory",
+  "que es esto wey": "FenixLaboratory",
   "version": "2.0.0 (o la que sea, ya ni sé)",
   "descripcion": "Donde subo mis experimentos raros",
   "estado": "Funciona (creo)",
@@ -25,30 +25,27 @@
   ],
 
   "creditos": {
-    "inspiracion": "Funky Atlas (https://funkyatlas.abelitogamer.com/)",
-    "testing": "Mi computadora",
-    "ayuda": [
-      "escuela",
-      "YouTube tutorials"
-    ]
+    "inspiracion": "Me inspire demasiado en Funky Atlas (https://funkyatlas.abelitogamer.com/) cualquier parecido es mera coincidencia (posdata: no me mate abelitogamer)",
+    "testing": "Mi computadora (seh hay hago todas mis mierdas XD)"
   },
 
   "legal_stuff": {
     "licencia": "MIT",
-    "disclaimer": "Hecho por un wey random"
+    "disclaimer": "Hecho por un wey random (puedes usar el sitio web cambiandole cosas y eso y no un copy paste.)"
   },
 
   "planes_a_futuro": [
     "Más animaciones chidas",
     "Easter eggs", 
-    "Tal vez un blog"
+    "Tal vez un blog",
+    "Tal vez solo talvez, añadir un sitio web para mi bot de discord"
   ],
 
-  "bugs_y_pedos": {
+  "bugs": {
     "bugs_graves": "Ninguno (que yo sepa)",
-    "bugs_menores": "Seguro hay algunos",
+    "bugs_menores": "Seguro hay algunos que no me haya percatado",
     "features_no_planeadas": "Los bugs son features"
   },
 
-  "mensaje_final": "Si llegaste hasta acá eres un nerd como yo. Respeto bro 🤝"
+  "mensaje_final": "Si llegaste hasta acá eres un nerd como yo. Respeto bro 🤝, la verdad dudo que vea alguien esto"
 }

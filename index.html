@@ -1410,6 +1410,16 @@
                   html += `<li>${item}</li>`;
                 });
                 html += `</ul>`;
+              } else if (typeof subValue === 'object' && subValue !== null) {
+                html += `<ul class="credit-list">`;
+                Object.entries(subValue).forEach(([nestedKey, nestedValue]) => {
+                  if (typeof nestedValue === 'string' && nestedValue.startsWith('http')) {
+                    html += `<li><strong>${nestedKey}:</strong> <a href="${nestedValue}" target="_blank" class="credit-link">${nestedValue}</a></li>`;
+                  } else {
+                    html += `<li><strong>${nestedKey}:</strong> ${nestedValue}</li>`;
+                  }
+                });
+                html += `</ul>`;
               } else {
                 html += `${subValue}`;
               }
