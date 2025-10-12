@@ -4,9 +4,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FenixLaboratory</title>
+  <title>FenixLaboratory - Desarrollos y Experimentos Digitales</title>
   <meta name="description"
-    content="Explora mis desarrollos personales, prototipos y experimentos digitales desde GitHub." />
+    content="Explora mis desarrollos personales, prototipos y experimentos digitales desde GitHub. Portfolio de proyectos web, aplicaciones y código abierto." />
+  <meta name="keywords"
+    content="desarrollo web, programación, GitHub, portfolio, proyectos, código abierto, JavaScript, HTML, CSS">
+  <meta name="author" content="ThisIsFenix">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="canonical" href="https://thisisfenix.github.io/FenixLaboratory/">
+  <!-- Open Graph -->
+  <meta property="og:title" content="FenixLaboratory - Desarrollos y Experimentos Digitales">
+  <meta property="og:description"
+    content="Portfolio de proyectos web, aplicaciones y experimentos digitales desde GitHub.">
+  <meta property="og:image" content="https://thisisfenix.github.io/FenixLaboratory/preview.png">
+  <meta property="og:url" content="https://thisisfenix.github.io/FenixLaboratory/">
+  <meta property="og:type" content="website">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="FenixLaboratory">
+  <meta name="twitter:description" content="Portfolio de proyectos web y experimentos digitales">
+  <meta name="twitter:image" content="https://thisisfenix.github.io/FenixLaboratory/preview.png">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap"
     rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -17,12 +34,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <style>
     :root {
-      --primary: #00f0ff;
-      --secondary: #ff00e4;
-      --bg-dark: #0a0a12;
-      --bg-light: #12121a;
-      --text-primary: #e0e0ff;
-      --text-secondary: #a0a0c0;
+      --primary: #ff6b35;
+      --secondary: #f7931e;
+      --bg-dark: #1a1a1a;
+      --bg-light: #2d2d2d;
+      --text-primary: #f0f0f0;
+      --text-secondary: #b0b0b0;
     }
 
     body {
@@ -54,6 +71,15 @@
     .nav-link.active {
       color: var(--primary) !important;
       text-shadow: 0 0 10px var(--primary);
+    }
+
+    .nav-link {
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:active {
+      transform: scale(0.95);
+      color: var(--primary) !important;
     }
 
     .hero {
@@ -110,6 +136,11 @@
     .btn-neon:hover {
       color: var(--bg-dark);
       background-color: var(--primary);
+    }
+
+    .btn-neon:active {
+      transform: scale(0.95);
+      box-shadow: 0 0 20px var(--primary);
     }
 
     section {
@@ -216,6 +247,11 @@
       color: var(--bg-dark);
     }
 
+    .btn-outline-neon:active {
+      transform: scale(0.9);
+      box-shadow: 0 0 15px var(--primary);
+    }
+
     #repos-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -228,8 +264,13 @@
     }
 
     @keyframes skeleton-loading {
-      0% { background-color: var(--bg-light); }
-      100% { background-color: rgba(255,255,255,0.05); }
+      0% {
+        background-color: var(--bg-light);
+      }
+
+      100% {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
     }
 
     .skeleton-text {
@@ -342,6 +383,7 @@
       0% {
         transform: translateY(0) translateX(0);
       }
+
       100% {
         transform: translateY(-100vh) translateX(20px);
       }
@@ -356,12 +398,12 @@
 
     /* Tema claro */
     body.light-theme {
-      --bg-dark: #f0f2f5;
+      --bg-dark: #f8f9fa;
       --bg-light: #ffffff;
       --text-primary: #2d3748;
-      --text-secondary: #4a5568;
-      --primary: #3182ce;
-      --secondary: #805ad5;
+      --text-secondary: #6c757d;
+      --primary: #ff6b35;
+      --secondary: #f7931e;
     }
 
     #theme-toggle {
@@ -370,6 +412,286 @@
       color: var(--text-primary);
       cursor: pointer;
       font-size: 1.25rem;
+      transition: all 0.3s ease;
+    }
+
+    #theme-toggle:active {
+      transform: scale(0.9) rotate(180deg);
+    }
+
+    /* Filtros y búsqueda */
+    .filters {
+      background: var(--bg-light);
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 3rem;
+      border: 1px solid rgba(0, 240, 255, 0.1);
+    }
+
+    .search-box {
+      background: var(--bg-dark);
+      border: 1px solid var(--primary);
+      color: var(--text-primary);
+      border-radius: 4px;
+      padding: 0.75rem;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--text-secondary);
+      color: var(--text-secondary);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      margin: 0.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn.active {
+      background: var(--primary);
+      color: var(--bg-dark);
+      border-color: var(--primary);
+    }
+
+    .filter-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    /* Estadísticas */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .stat-card {
+      background: var(--bg-light);
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid rgba(0, 240, 255, 0.1);
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Paginación */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .page-btn {
+      background: transparent;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .page-btn:hover,
+    .page-btn.active {
+      background: var(--primary);
+      color: var(--bg-dark);
+    }
+
+    /* Proyectos destacados */
+    .featured-card {
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+    }
+
+    #featured-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+
+
+    /* Botón para nerds */
+    .nerd-btn {
+      position: fixed;
+      bottom: 6rem;
+      right: 2rem;
+      background: var(--secondary);
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 998;
+      box-shadow: 0 0 10px var(--secondary);
+    }
+
+    .nerd-btn:hover {
+      transform: scale(1.1) rotate(360deg);
+    }
+
+    /* Panel para nerds */
+    .nerd-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-light);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      z-index: 10000;
+      box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
+      display: none;
+    }
+
+    .nerd-panel.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    .nerd-panel h3 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .nerd-info {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+    }
+
+    .close-panel {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .panel-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      display: none;
+    }
+
+    .panel-overlay.show {
+      display: block;
+    }
+
+
+
+    /* Lazy loading */
+    img[loading="lazy"] {
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    img[loading="lazy"].loaded {
+      opacity: 1;
+    }
+
+    /* Sistema de carga por secciones */
+    .section-loading {
+      text-align: center;
+      padding: 2rem;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .section-loading.loaded {
+      opacity: 0;
+      height: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .mini-loader {
+      width: 30px;
+      height: 30px;
+      border: 2px solid rgba(0, 240, 255, 0.3);
+      border-top: 2px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 0.5rem;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Sección de créditos */
+    .credits-section {
+      display: none;
+      padding: 8rem 2rem 4rem;
+      min-height: 100vh;
+    }
+
+    .credits-section.active {
+      display: block;
+    }
+
+    .json-viewer {
+      background: var(--bg-light);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      padding: 2rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      color: var(--text-primary);
+    }
+
+    .main-content {
+      transition: opacity 0.3s ease;
+    }
+
+    .main-content.hidden {
+      display: none;
     }
   </style>
 </head>
@@ -378,16 +700,21 @@
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-      <a class="navbar-brand" href="#"><i class="bi bi-code-square me-2"></i>FenixLaboratory</a>
+      <a class="navbar-brand" href="#" id="brand-link"><i class="bi bi-code-square me-2"></i>FenixLaboratory</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
+
+          <li class="nav-item">
+            <a class="nav-link" href="#destacados"><i class="bi bi-star me-1"></i> Destacados</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="#proyectos"><i class="bi bi-code-slash me-1"></i> Proyectos</a>
           </li>
+
           <li class="nav-item">
             <a class="nav-link" href="#sobremi"><i class="bi bi-person me-1"></i> Sobre mí</a>
           </li>
@@ -396,6 +723,11 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#comentarios"><i class="bi bi-chat-left-text me-1"></i> Comentarios</a>
+          </li>
+          <li class="nav-item">
+            <button id="credits-btn" class="nav-link" aria-label="Ver créditos">
+              <i class="bi bi-info-circle me-1"></i> Créditos
+            </button>
           </li>
           <li class="nav-item">
             <button id="theme-toggle" class="nav-link" aria-label="Cambiar tema">
@@ -407,19 +739,59 @@
     </div>
   </nav>
 
-  <!-- Hero -->
-  <section class="hero">
+  <!-- Contenido principal -->
+  <div class="main-content" id="main-content">
+    <!-- Hero -->
+    <section class="hero">
     <div class="container">
       <h1 id="typewriter"></h1>
-      <p>Repositorio de mis creaciones y experimentos en GitHub</p>
-      <a href="#proyectos" class="btn btn-neon"><i class="bi bi-arrow-down me-2"></i>Ver Proyectos</a>
+      <p>Donde subo mis experimentos raros y proyectos random</p>
+      <a href="#proyectos" class="btn btn-neon" id="ver-proyectos-btn"><i class="bi bi-arrow-down me-2"></i>Ver Proyectos</a>
     </div>
     <div class="particles" id="particles"></div>
+  </section>
+
+  <!-- Proyectos Destacados -->
+  <section id="destacados" class="container">
+    <h2>PROYECTOS DESTACADOS</h2>
+    <div class="section-loading" id="featured-loading">
+      <div class="mini-loader"></div>
+      <div class="loading-text">Buscando proyectos destacados...</div>
+    </div>
+    <div id="featured-container" style="display: none;">
+      <!-- Se llenará dinámicamente -->
+    </div>
   </section>
 
   <!-- Proyectos -->
   <section id="proyectos" class="container">
     <h2>PROYECTOS</h2>
+
+    <!-- Filtros y Búsqueda -->
+    <div class="filters">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <input type="text" class="form-control search-box" id="search-input" placeholder="Buscar proyectos..."
+            aria-label="Buscar proyectos">
+        </div>
+        <div class="col-md-6">
+          <select class="form-control search-box" id="sort-select" aria-label="Ordenar por">
+            <option value="updated">Más recientes</option>
+            <option value="stars">Más estrellas</option>
+            <option value="name">Nombre A-Z</option>
+            <option value="created">Más antiguos</option>
+          </select>
+        </div>
+      </div>
+      <div class="text-center">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="javascript">JavaScript</button>
+        <button class="filter-btn" data-filter="html">HTML</button>
+        <button class="filter-btn" data-filter="css">CSS</button>
+        <button class="filter-btn" data-filter="python">Python</button>
+      </div>
+    </div>
+
     <div id="repos-container">
       <!-- Skeleton loader mientras carga -->
       <div class="card">
@@ -468,6 +840,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Paginación -->
+    <div class="pagination" id="pagination">
+      <!-- Se llenará dinámicamente -->
+    </div>
   </section>
 
   <!-- Sobre mí -->
@@ -478,8 +855,8 @@
         style="max-width: 150px; border-radius: 50%;">
     </div>
     <p class="mx-auto mt-3" style="max-width: 700px;">
-      Me gusta experimentar con tecnologías web y crear cosas que funcionen bien. 
-      Siempre estoy aprendiendo algo nuevo y tratando de mejorar mis habilidades.
+      Solo soy alguien que le gusta hacer cosas raras en internet.
+      A veces funcionan, a veces no, pero siempre es divertido intentarlo.
     </p>
     <a href="https://github.com/thisisfenix" class="btn btn-neon mt-3" target="_blank">
       <i class="bi bi-github me-2"></i>Mi GitHub
@@ -490,17 +867,18 @@
   <section id="contacto" class="container text-center mt-5">
     <h2>CONTACTO</h2>
     <p>Puedes encontrarme en estas redes:</p>
+
     <div class="mt-4 d-flex justify-content-center gap-3">
-      <a href="https://github.com/thisisfenix" class="social-btn" target="_blank" 
-         aria-label="Visitar mi perfil de GitHub">
+      <a href="https://github.com/thisisfenix" class="social-btn" target="_blank"
+        aria-label="Visitar mi perfil de GitHub">
         <i class="bi bi-github fs-4"></i>
       </a>
-      <a href="https://twitter.com/AntiAnkush" class="social-btn" target="_blank" 
-         aria-label="Visitar mi perfil de Twitter">
+      <a href="https://twitter.com/AntiAnkush" class="social-btn" target="_blank"
+        aria-label="Visitar mi perfil de Twitter">
         <i class="bi bi-twitter-x fs-4"></i>
       </a>
-      <a href="https://www.tiktok.com/@thefenixpro216" class="social-btn" target="_blank" 
-         aria-label="Visitar mi perfil de TikTok">
+      <a href="https://www.tiktok.com/@thefenixpro216" class="social-btn" target="_blank"
+        aria-label="Visitar mi perfil de TikTok">
         <i class="bi bi-tiktok fs-4"></i>
       </a>
     </div>
@@ -511,11 +889,57 @@
     <h2>COMENTARIOS</h2>
     <div class="giscus"></div>
   </section>
+  </div>
+
+  <!-- Sección de créditos -->
+  <div class="credits-section" id="credits-section">
+    <div class="container">
+      <h2 class="text-center mb-4">CRÉDITOS</h2>
+      <div class="json-viewer" id="json-viewer">
+        Cargando información...
+      </div>
+    </div>
+  </div>
 
   <!-- Botón para volver arriba -->
   <button id="btn-top" aria-label="Volver arriba">
     <i class="bi bi-arrow-up"></i>
   </button>
+
+  <!-- Botón para nerds -->
+  <button class="nerd-btn" id="nerd-btn" aria-label="Información técnica">
+    <i class="bi bi-terminal"></i>
+  </button>
+
+  <!-- Panel para nerds -->
+  <div class="panel-overlay" id="panel-overlay"></div>
+  <div class="nerd-panel" id="nerd-panel">
+    <button class="close-panel" id="close-panel">&times;</button>
+    <h3>🤓 INFO TÉCNICA</h3>
+    <div class="nerd-info">🌐 <strong>Navegador:</strong> <span id="browser-info"></span></div>
+    <div class="nerd-info">📱 <strong>Dispositivo:</strong> <span id="device-info"></span></div>
+    <div class="nerd-info">🖥️ <strong>Resolución:</strong> <span id="resolution-info"></span></div>
+    <div class="nerd-info">📁 <strong>Repositorios:</strong> <span id="nerd-repos">-</span></div>
+    <div class="nerd-info">⭐ <strong>Estrellas:</strong> <span id="nerd-stars">-</span></div>
+    <div class="nerd-info">🔀 <strong>Forks:</strong> <span id="nerd-forks">-</span></div>
+    <div class="nerd-info">💻 <strong>Lenguajes:</strong> <span id="nerd-languages">-</span></div>
+    <div class="nerd-info">🔧 <strong>Framework:</strong> Vanilla JavaScript</div>
+    <div class="nerd-info">🎨 <strong>CSS:</strong> Custom Properties + Bootstrap 5</div>
+    <div class="nerd-info">🔌 <strong>API:</strong> GitHub REST API v3</div>
+    <div class="nerd-info">🏠 <strong>Hosting:</strong> GitHub Pages</div>
+    <div class="nerd-info">⚡ <strong>Performance:</strong> Lazy Loading, Grid CSS</div>
+    <div class="nerd-info">🔍 <strong>SEO:</strong> Open Graph, Structured Data</div>
+    <div class="nerd-info">♿ <strong>Accesibilidad:</strong> ARIA labels, semántica HTML5</div>
+  </div>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'GA_MEASUREMENT_ID');
+  </script>
 
   <footer class="footer">
     © 2025 <a href="https://github.com/thisisfenix" target="_blank">FenixLaboratory</a>
@@ -524,6 +948,23 @@
   <!-- Scripts -->
   <script>
     const user = 'thisisfenix';
+    let allRepos = [];
+    let filteredRepos = [];
+    let currentPage = 1;
+    const reposPerPage = 4;
+
+    // Sistema de carga por secciones
+    function showSection(sectionId, loadingId) {
+      const loading = document.getElementById(loadingId);
+      const section = document.getElementById(sectionId);
+
+      if (loading) {
+        loading.classList.add('loaded');
+      }
+      if (section) {
+        section.style.display = 'block';
+      }
+    }
 
     function loadImage(imgElement, localSrc, remoteSrc, placeholderSrc) {
       imgElement.src = localSrc;
@@ -533,14 +974,19 @@
       };
     }
 
-    function displayRepos(repos) {
+    function displayRepos(repos, page = 1) {
       const container = document.getElementById('repos-container');
       container.innerHTML = '';
 
-      repos.forEach(repo => {
+      const startIndex = (page - 1) * reposPerPage;
+      const endIndex = startIndex + reposPerPage;
+      const paginatedRepos = repos.slice(startIndex, endIndex);
+
+      paginatedRepos.forEach(repo => {
         const card = document.createElement('div');
         card.className = 'card';
         card.setAttribute('tabindex', '0');
+        card.setAttribute('data-language', repo.language ? repo.language.toLowerCase() : 'other');
 
         const img = document.createElement('img');
         img.className = 'card-img-top';
@@ -589,14 +1035,147 @@
         card.appendChild(body);
         container.appendChild(card);
       });
+
+      updatePagination(repos.length, page);
     }
+
+    function updatePagination(totalRepos, currentPage) {
+      const pagination = document.getElementById('pagination');
+      const totalPages = Math.ceil(totalRepos / reposPerPage);
+
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+
+      let paginationHTML = '';
+
+      if (currentPage > 1) {
+        paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage - 1})">Anterior</button>`;
+      }
+
+      for (let i = 1; i <= totalPages; i++) {
+        const activeClass = i === currentPage ? 'active' : '';
+        paginationHTML += `<button class="page-btn ${activeClass}" onclick="changePage(${i})">${i}</button>`;
+      }
+
+      if (currentPage < totalPages) {
+        paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage + 1})">Siguiente</button>`;
+      }
+
+      pagination.innerHTML = paginationHTML;
+    }
+
+    function changePage(page) {
+      currentPage = page;
+      displayRepos(filteredRepos, page);
+    }
+
+    function filterRepos(language) {
+      if (language === 'all') {
+        filteredRepos = allRepos;
+      } else {
+        filteredRepos = allRepos.filter(repo =>
+          repo.language && repo.language.toLowerCase() === language
+        );
+      }
+      currentPage = 1;
+      displayRepos(filteredRepos, 1);
+    }
+
+    function searchRepos(query) {
+      if (!query) {
+        filteredRepos = allRepos;
+      } else {
+        filteredRepos = allRepos.filter(repo =>
+          repo.name.toLowerCase().includes(query.toLowerCase()) ||
+          (repo.description && repo.description.toLowerCase().includes(query.toLowerCase()))
+        );
+      }
+      currentPage = 1;
+      displayRepos(filteredRepos, 1);
+    }
+
+    function sortRepos(sortBy) {
+      filteredRepos.sort((a, b) => {
+        switch (sortBy) {
+          case 'stars':
+            return b.stargazers_count - a.stargazers_count;
+          case 'name':
+            return a.name.localeCompare(b.name);
+          case 'created':
+            return new Date(a.created_at) - new Date(b.created_at);
+          case 'updated':
+          default:
+            return new Date(b.updated_at) - new Date(a.updated_at);
+        }
+      });
+      currentPage = 1;
+      displayRepos(filteredRepos, 1);
+    }
+
+    function displayFeaturedRepos(repos) {
+      setTimeout(() => {
+        const container = document.getElementById('featured-container');
+        const featured = repos.filter(repo => repo.stargazers_count > 0 || repo.forks_count > 0)
+          .slice(0, 3);
+
+        container.innerHTML = '';
+        featured.forEach(repo => {
+          const card = document.createElement('div');
+          card.className = 'card featured-card';
+
+          const img = document.createElement('img');
+          img.className = 'card-img-top';
+          img.alt = `Vista previa de ${repo.name}`;
+          loadImage(img, `img/localPreviews/${repo.name}.png`,
+            `https://raw.githubusercontent.com/${user}/${repo.name}/main/preview.png`,
+            'placeholder/GHbDEIgXMAACVEi.jpg');
+
+          const body = document.createElement('div');
+          body.className = 'card-body';
+          body.innerHTML = `
+          <h3 class="card-title">${repo.name.replace(/-/g, ' ')}</h3>
+          <p class="card-text">${repo.description || 'Sin descripción'}</p>
+          <div class="d-flex justify-content-between mb-2">
+            <span><i class="bi bi-star"></i> ${repo.stargazers_count}</span>
+            <span><i class="bi bi-diagram-3"></i> ${repo.forks_count}</span>
+          </div>
+          <div class="btn-group">
+            <a href="${repo.html_url}" target="_blank" class="btn btn-outline-neon">
+              <i class="bi bi-code me-1"></i> Código
+            </a>
+            <a href="https://${user}.github.io/${repo.name}" target="_blank" class="btn btn-outline-neon">
+              <i class="bi bi-box-arrow-up-right me-1"></i> Demo
+            </a>
+          </div>
+        `;
+
+          card.appendChild(img);
+          card.appendChild(body);
+          container.appendChild(card);
+        });
+
+        showSection('featured-container', 'featured-loading');
+        document.getElementById('featured-container').style.display = 'grid';
+      }, 1200);
+    }
+
+
 
     async function fetchRepos() {
       try {
-        const response = await fetch(`https://api.github.com/users/${user}/repos`);
+        const response = await fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=100`);
         if (!response.ok) throw new Error(`Error: ${response.status}`);
+
         const repos = await response.json();
+        allRepos = repos;
+        filteredRepos = repos;
+
+
+        displayFeaturedRepos(repos);
         displayRepos(repos);
+
       } catch (error) {
         console.error('Error al cargar repositorios:', error);
         const container = document.getElementById('repos-container');
@@ -607,21 +1186,21 @@
     function createParticles() {
       const container = document.getElementById('particles');
       const particleCount = 15;
-      
+
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.classList.add('particle');
-        
+
         const size = Math.random() * 2 + 1;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
         particle.style.left = `${Math.random() * 100}%`;
         particle.style.top = `${Math.random() * 100 + 100}%`;
-        
+
         const duration = Math.random() * 10 + 10;
         particle.style.animationDuration = `${duration}s`;
         particle.style.animationDelay = `${Math.random() * 5}s`;
-        
+
         container.appendChild(particle);
       }
     }
@@ -635,7 +1214,7 @@
         btnTop.classList.remove('visible');
       }
     });
-    
+
     btnTop.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
@@ -645,17 +1224,17 @@
       const title = document.getElementById('typewriter');
       const text = "THISISFENIX LABORATORY";
       let i = 0;
-      
+
       title.textContent = '';
-      
+
       function type() {
         if (i < text.length) {
           title.textContent += text.charAt(i);
           i++;
-          setTimeout(type, 100);
+          setTimeout(type, 50);
         }
       }
-      
+
       type();
     }
 
@@ -663,9 +1242,9 @@
     function toggleTheme() {
       const body = document.body;
       const themeToggle = document.getElementById('theme-toggle');
-      
+
       body.classList.toggle('light-theme');
-      
+
       if (body.classList.contains('light-theme')) {
         themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
         localStorage.setItem('theme', 'light');
@@ -679,7 +1258,7 @@
     function loadTheme() {
       const savedTheme = localStorage.getItem('theme');
       const themeToggle = document.getElementById('theme-toggle');
-      
+
       if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
         themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
@@ -690,7 +1269,7 @@
     function updateActiveNav() {
       const sections = document.querySelectorAll('section');
       const navLinks = document.querySelectorAll('.nav-link:not(#theme-toggle)');
-      
+
       sections.forEach(section => {
         const rect = section.getBoundingClientRect();
         if (rect.top <= 100 && rect.bottom >= 100) {
@@ -706,18 +1285,167 @@
     }
 
 
+    // Lazy loading para imágenes
+    function setupLazyLoading() {
+      const images = document.querySelectorAll('img[loading="lazy"]');
+      const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.classList.add('loaded');
+            observer.unobserve(img);
+          }
+        });
+      });
+
+      images.forEach(img => imageObserver.observe(img));
+    }
+
+    // Funcionalidad del botón nerd
+    function showNerdPanel() {
+      // Detectar info del navegador
+      const browserInfo = navigator.userAgent.includes('Chrome') ? 'Chrome' :
+        navigator.userAgent.includes('Firefox') ? 'Firefox' :
+          navigator.userAgent.includes('Safari') ? 'Safari' : 'Otro';
+
+      const deviceInfo = /Mobi|Android/i.test(navigator.userAgent) ? 'Móvil' : 'Escritorio';
+      const resolution = `${screen.width}x${screen.height}`;
+
+      document.getElementById('browser-info').textContent = browserInfo;
+      document.getElementById('device-info').textContent = deviceInfo;
+      document.getElementById('resolution-info').textContent = resolution;
+      
+      // Mostrar estadísticas de GitHub
+      if (allRepos.length > 0) {
+        const totalRepos = allRepos.length;
+        const totalStars = allRepos.reduce((sum, repo) => sum + repo.stargazers_count, 0);
+        const totalForks = allRepos.reduce((sum, repo) => sum + repo.forks_count, 0);
+        const languages = new Set(allRepos.filter(repo => repo.language).map(repo => repo.language));
+        
+        document.getElementById('nerd-repos').textContent = totalRepos;
+        document.getElementById('nerd-stars').textContent = totalStars;
+        document.getElementById('nerd-forks').textContent = totalForks;
+        document.getElementById('nerd-languages').textContent = languages.size;
+      }
+
+      document.getElementById('panel-overlay').classList.add('show');
+      document.getElementById('nerd-panel').classList.add('show');
+    }
+
+    function hideNerdPanel() {
+      document.getElementById('panel-overlay').classList.remove('show');
+      document.getElementById('nerd-panel').classList.remove('show');
+    }
+
+    // Funcionalidad de créditos
+    async function showCredits() {
+      try {
+        const response = await fetch('credits.json');
+        const credits = await response.json();
+        document.getElementById('json-viewer').textContent = JSON.stringify(credits, null, 2);
+        document.getElementById('main-content').classList.add('hidden');
+        document.getElementById('credits-section').classList.add('active');
+      } catch (error) {
+        document.getElementById('json-viewer').textContent = 'Error al cargar créditos: ' + error.message;
+      }
+    }
+    
+    function hideCredits() {
+      document.getElementById('main-content').classList.remove('hidden');
+      document.getElementById('credits-section').classList.remove('active');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       fetchRepos();
       createParticles();
       typeWriterEffect();
       loadTheme();
-      
+      setupLazyLoading();
 
+      // Animación para el logo FenixLaboratory
+      document.getElementById('brand-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        const brand = e.target.closest('.navbar-brand');
+        brand.style.transform = 'scale(0.95)';
+        brand.style.textShadow = '0 0 15px var(--primary)';
+        
+        // Ocultar créditos si están activos
+        hideCredits();
+        
+        setTimeout(() => {
+          brand.style.transform = '';
+          brand.style.textShadow = '';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 150);
+      });
+      
+      // Event listeners
       document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      document.getElementById('credits-btn').addEventListener('click', showCredits);
+      document.getElementById('nerd-btn').addEventListener('click', showNerdPanel);
+      document.getElementById('close-panel').addEventListener('click', hideNerdPanel);
+      document.getElementById('panel-overlay').addEventListener('click', hideNerdPanel);
       
+      // Animación para botón Ver Proyectos
+      document.getElementById('ver-proyectos-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        const btn = e.target.closest('.btn-neon');
+        btn.style.transform = 'scale(0.95)';
+        btn.style.boxShadow = '0 0 30px var(--primary)';
+        
+        setTimeout(() => {
+          btn.style.transform = '';
+          btn.style.boxShadow = '';
+          document.querySelector('#proyectos').scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      });
+      
+      // Animación para enlaces de navegación
+      document.querySelectorAll('.nav-link').forEach(link => {
+        if (link.id !== 'theme-toggle' && link.id !== 'credits-btn') {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = e.target.closest('.nav-link');
+            const href = target.getAttribute('href');
+            
+            // Ocultar créditos si están activos
+            hideCredits();
+            
+            if (href && href !== '#') {
+              target.style.transform = 'scale(0.95)';
+              target.style.textShadow = '0 0 15px var(--primary)';
+              
+              setTimeout(() => {
+                target.style.transform = '';
+                target.style.textShadow = '';
+                document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
+              }, 150);
+            }
+          });
+        }
+      });
+
+      // Filtros
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          filterRepos(e.target.dataset.filter);
+        });
+      });
+
+      // Búsqueda
+      document.getElementById('search-input').addEventListener('input', (e) => {
+        searchRepos(e.target.value);
+      });
+
+      // Ordenamiento
+      document.getElementById('sort-select').addEventListener('change', (e) => {
+        sortRepos(e.target.value);
+      });
 
 
-      
+
       window.addEventListener('scroll', updateActiveNav);
       updateActiveNav();
     });
@@ -731,6 +1459,7 @@
     </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

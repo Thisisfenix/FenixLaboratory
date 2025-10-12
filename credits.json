@@ -1,0 +1,54 @@
+{
+  "que_pedo": "FenixLaboratory",
+  "version": "2.0.0 (o la que sea, ya ni sé)",
+  "descripcion": "Donde subo mis experimentos raros",
+  "estado": "Funciona (creo)",
+  "hosting": "GitHub Pages",
+  
+  "el_wey_que_hizo_esto": {
+    "quien_soy": "ThisIsFenix",
+    "redes": {
+      "github": "https://github.com/thisisfenix",
+      "twitter": "https://twitter.com/AntiAnkush", 
+      "tiktok": "https://www.tiktok.com/@thefenixpro216"
+    }
+  },
+
+  "que_hace": [
+    "Jala mis repos automáticamente",
+    "Tiene filtros",
+    "Búsqueda",
+    "Modo oscuro",
+    "Animaciones",
+    "Responsive",
+    "Panel para nerds 🤓"
+  ],
+
+  "creditos": {
+    "inspiracion": "Funky Atlas (https://funkyatlas.abelitogamer.com/)",
+    "testing": "Mi computadora",
+    "ayuda": [
+      "escuela",
+      "YouTube tutorials"
+    ]
+  },
+
+  "legal_stuff": {
+    "licencia": "MIT",
+    "disclaimer": "Hecho por un wey random"
+  },
+
+  "planes_a_futuro": [
+    "Más animaciones chidas",
+    "Easter eggs", 
+    "Tal vez un blog"
+  ],
+
+  "bugs_y_pedos": {
+    "bugs_graves": "Ninguno (que yo sepa)",
+    "bugs_menores": "Seguro hay algunos",
+    "features_no_planeadas": "Los bugs son features"
+  },
+
+  "mensaje_final": "Si llegaste hasta acá eres un nerd como yo. Respeto bro 🤝"
+}
