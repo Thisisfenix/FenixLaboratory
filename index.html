@@ -678,12 +678,56 @@
       border: 1px solid var(--primary);
       border-radius: 8px;
       padding: 2rem;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9rem;
-      line-height: 1.6;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      line-height: 1.8;
       overflow-x: auto;
-      white-space: pre-wrap;
       color: var(--text-primary);
+    }
+
+    .credit-item {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: var(--bg-dark);
+      border-radius: 6px;
+      border-left: 3px solid var(--primary);
+    }
+
+    .credit-key {
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .credit-value {
+      color: var(--text-secondary);
+      margin-left: 1rem;
+    }
+
+    .credit-list {
+      list-style: none;
+      padding-left: 1rem;
+    }
+
+    .credit-list li {
+      margin-bottom: 0.3rem;
+      color: var(--text-secondary);
+    }
+
+    .credit-list li:before {
+      content: "→ ";
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .credit-link {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .credit-link:hover {
+      text-decoration: underline;
     }
 
     .main-content {
@@ -1342,7 +1386,47 @@
       try {
         const response = await fetch('credits.json');
         const credits = await response.json();
-        document.getElementById('json-viewer').textContent = JSON.stringify(credits, null, 2);
+        
+        let html = '';
+        
+        Object.entries(credits).forEach(([key, value]) => {
+          html += `<div class="credit-item">`;
+          html += `<div class="credit-key">${key.replace(/_/g, ' ')}</div>`;
+          
+          if (Array.isArray(value)) {
+            html += `<ul class="credit-list">`;
+            value.forEach(item => {
+              html += `<li>${item}</li>`;
+            });
+            html += `</ul>`;
+          } else if (typeof value === 'object' && value !== null) {
+            Object.entries(value).forEach(([subKey, subValue]) => {
+              html += `<div class="credit-value"><strong>${subKey}:</strong> `;
+              if (typeof subValue === 'string' && subValue.startsWith('http')) {
+                html += `<a href="${subValue}" target="_blank" class="credit-link">${subValue}</a>`;
+              } else if (Array.isArray(subValue)) {
+                html += `<ul class="credit-list">`;
+                subValue.forEach(item => {
+                  html += `<li>${item}</li>`;
+                });
+                html += `</ul>`;
+              } else {
+                html += `${subValue}`;
+              }
+              html += `</div>`;
+            });
+          } else {
+            if (typeof value === 'string' && value.startsWith('http')) {
+              html += `<div class="credit-value"><a href="${value}" target="_blank" class="credit-link">${value}</a></div>`;
+            } else {
+              html += `<div class="credit-value">${value}</div>`;
+            }
+          }
+          
+          html += `</div>`;
+        });
+        
+        document.getElementById('json-viewer').innerHTML = html;
         document.getElementById('main-content').classList.add('hidden');
         document.getElementById('credits-section').classList.add('active');
       } catch (error) {
