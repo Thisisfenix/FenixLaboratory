@@ -1,0 +1,77 @@
+{
+  "version": "2.0.2",
+  "lastUpdate": "2025-01-27",
+  "updates": [
+    {
+      "version": "2.0.2",
+      "date": "2025-01-27",
+      "title": "🚀 Efectos Premium y Optimización Móvil",
+      "type": "major",
+      "features": [
+        "✨ Efectos premium: Lluvia Matrix y Partículas del Mouse",
+        "🏆 Sistema de Leaderboard local",
+        "🐙 Integración avanzada con GitHub API",
+        "📱 Optimización completa para móviles",
+        "🎯 8 nuevos logros y desafíos diarios",
+        "⚡ Mejor rendimiento en dispositivos móviles"
+      ],
+      "fixes": [
+        "🔧 Corregido panel de logros que no se ocultaba",
+        "📱 Mejorada responsividad en pantallas pequeñas",
+        "⚡ Optimizadas animaciones para mejor rendimiento"
+      ]
+    },
+    {
+      "version": "2.0.1",
+      "date": "2025-01-26",
+      "title": "🎨 Temas Premium y Sistema de Gamificación",
+      "type": "major",
+      "features": [
+        "💎 15 nuevos temas premium (400-5000 puntos)",
+        "🏆 Sistema completo de logros y puntos",
+        "🔥 Sistema de rachas diarias",
+        "🖱️ Cursores personalizados premium",
+        "🎨 Temas estacionales automáticos",
+        "🌈 Editor de colores personalizado"
+      ]
+    },
+    {
+      "version": "2.0.0",
+      "date": "2025-01-25",
+      "title": "🔬 Lanzamiento de FenixLaboratory",
+      "type": "release",
+      "features": [
+        "🚀 Portfolio dinámico con GitHub API",
+        "🎨 Sistema de temas múltiples",
+        "🔍 Búsqueda y filtros avanzados",
+        "📱 Diseño responsive completo",
+        "⚡ Carga optimizada y lazy loading",
+        "🤓 Panel técnico para desarrolladores"
+      ]
+    }
+  ],
+  "roadmap": [
+    {
+      "version": "2.1.0",
+      "title": "🎮 Minijuegos y Competencia",
+      "features": [
+        "🐍 Snake clásico integrado",
+        "🧩 Tetris mini",
+        "🏆 Torneos semanales",
+        "🎯 Más desafíos interactivos"
+      ],
+      "status": "planned"
+    },
+    {
+      "version": "2.2.0", 
+      "title": "🔗 Integración Social",
+      "features": [
+        "📊 Compartir progreso",
+        "👥 Comparar con amigos",
+        "🌐 Sync entre dispositivos",
+        "📱 PWA completa"
+      ],
+      "status": "planned"
+    }
+  ]
+}

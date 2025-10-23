@@ -57,6 +57,7 @@
       background-color: rgba(10, 10, 18, 0.9);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+      padding: 0.75rem 0;
     }
 
     .navbar-brand {
@@ -64,6 +65,7 @@
       color: var(--primary) !important;
       letter-spacing: 1px;
       position: relative;
+      font-size: 1.25rem;
     }
 
 
@@ -73,10 +75,17 @@
       text-shadow: 0 0 10px var(--primary);
     }
 
+    .navbar-nav {
+      gap: 0.5rem;
+    }
+
     .nav-link {
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.85rem;
+      white-space: nowrap;
     }
 
     .nav-link:active {
@@ -511,6 +520,17 @@
     .preview-rainbow { background: linear-gradient(45deg, #ef4444 0%, #f97316 16%, #eab308 33%, #22c55e 50%, #3b82f6 66%, #8b5cf6 83%, #ec4899 100%); }
     .preview-diamond { background: linear-gradient(45deg, #f8fafc 25%, #e2e8f0 25%, #e2e8f0 50%, #cbd5e1 50%, #cbd5e1 75%, #94a3b8 75%); }
     .preview-custom { background: linear-gradient(45deg, #1a1a1a 25%, #ff6b35 25%, #ff6b35 50%, #f7931e 50%); }
+    .preview-vaporwave { background: linear-gradient(45deg, #ff006e 0%, #8338ec 25%, #3a86ff 50%, #06ffa5 75%, #ffbe0b 100%); }
+    .preview-hacker { background: linear-gradient(45deg, #000000 50%, #00ff00 50%); animation: glitch 2s infinite; }
+    .preview-neon-city { background: linear-gradient(45deg, #0a0a0a 25%, #ff0080 25%, #ff0080 50%, #00ffff 50%, #00ffff 75%, #ff8000 75%); }
+    .preview-space { background: linear-gradient(45deg, #000011 25%, #1a0033 25%, #1a0033 50%, #330066 50%, #330066 75%, #000000 75%); }
+    .preview-fire { background: linear-gradient(45deg, #ff0000 0%, #ff4500 25%, #ff8c00 50%, #ffd700 75%, #ff0000 100%); }
+    .preview-ice { background: linear-gradient(45deg, #e0f6ff 0%, #87ceeb 25%, #4682b4 50%, #191970 75%, #000080 100%); }
+    .preview-toxic { background: linear-gradient(45deg, #32cd32 0%, #7fff00 25%, #adff2f 50%, #00ff00 75%, #008000 100%); }
+    .preview-royal { background: linear-gradient(45deg, #4b0082 0%, #8a2be2 25%, #9932cc 50%, #ba55d3 75%, #dda0dd 100%); }
+    .preview-steampunk { background: linear-gradient(45deg, #8b4513 0%, #cd853f 25%, #daa520 50%, #b8860b 75%, #8b4513 100%); }
+    .preview-hologram { background: linear-gradient(45deg, transparent 0%, #00ffff 25%, transparent 50%, #ff00ff 75%, transparent 100%); }
+    .preview-legendary { background: linear-gradient(45deg, #ffd700 0%, #ffff00 12%, #ff8c00 25%, #ff0000 37%, #ff1493 50%, #8a2be2 62%, #0000ff 75%, #00ffff 87%, #ffd700 100%); animation: legendary-glow 3s infinite; }
 
     .color-picker-grid {
       display: grid;
@@ -560,6 +580,17 @@
     body.rainbow-theme { --bg-dark: #1f2937; --bg-light: #374151; --text-primary: #f9fafb; --text-secondary: #d1d5db; --primary: #ec4899; --secondary: #8b5cf6; }
     body.diamond-theme { --bg-dark: #f8fafc; --bg-light: #ffffff; --text-primary: #1e293b; --text-secondary: #475569; --primary: #0f172a; --secondary: #334155; }
     body.custom-theme { --bg-dark: var(--custom-bg, #1a1a1a); --bg-light: var(--custom-bg-light, #2d2d2d); --text-primary: var(--custom-text, #f0f0f0); --text-secondary: var(--custom-text-secondary, #b0b0b0); --primary: var(--custom-primary, #ff6b35); --secondary: var(--custom-secondary, #f7931e); }
+    body.vaporwave-theme { --bg-dark: #1a0033; --bg-light: #330066; --text-primary: #ff006e; --text-secondary: #8338ec; --primary: #3a86ff; --secondary: #06ffa5; }
+    body.hacker-theme { --bg-dark: #000000; --bg-light: #001100; --text-primary: #00ff00; --text-secondary: #00cc00; --primary: #00ff00; --secondary: #008800; }
+    body.neon-city-theme { --bg-dark: #0a0a0a; --bg-light: #1a0a1a; --text-primary: #00ffff; --text-secondary: #ff0080; --primary: #ff8000; --secondary: #00ff80; }
+    body.space-theme { --bg-dark: #000011; --bg-light: #1a0033; --text-primary: #ffffff; --text-secondary: #ccccff; --primary: #6666ff; --secondary: #9999ff; }
+    body.fire-theme { --bg-dark: #330000; --bg-light: #660000; --text-primary: #ffff00; --text-secondary: #ff8c00; --primary: #ff4500; --secondary: #ff0000; }
+    body.ice-theme { --bg-dark: #001133; --bg-light: #003366; --text-primary: #e0f6ff; --text-secondary: #87ceeb; --primary: #4682b4; --secondary: #191970; }
+    body.toxic-theme { --bg-dark: #001100; --bg-light: #003300; --text-primary: #adff2f; --text-secondary: #7fff00; --primary: #32cd32; --secondary: #00ff00; }
+    body.royal-theme { --bg-dark: #2d1b69; --bg-light: #4b0082; --text-primary: #dda0dd; --text-secondary: #ba55d3; --primary: #9932cc; --secondary: #8a2be2; }
+    body.steampunk-theme { --bg-dark: #3d2914; --bg-light: #8b4513; --text-primary: #daa520; --text-secondary: #cd853f; --primary: #b8860b; --secondary: #8b4513; }
+    body.hologram-theme { --bg-dark: #000033; --bg-light: #001166; --text-primary: #00ffff; --text-secondary: #0099cc; --primary: #ff00ff; --secondary: #cc00cc; }
+    body.legendary-theme { --bg-dark: #1a0a00; --bg-light: #330f00; --text-primary: #ffd700; --text-secondary: #ffff00; --primary: #ff8c00; --secondary: #ff1493; }
 
     
     /* FunkyAtlas - Navbar */
@@ -1029,10 +1060,12 @@
       overflow-y: auto;
       z-index: 10003;
       transition: right 0.3s ease;
+      display: none;
     }
 
     .achievements-panel.show {
       right: 2rem;
+      display: block;
     }
 
     .achievement-item {
@@ -1275,6 +1308,64 @@
       0% { text-shadow: 0 0 5px #f97316; }
       100% { text-shadow: 0 0 15px #f97316, 0 0 25px #ea580c; }
     }
+
+    @keyframes glitch {
+      0%, 100% { filter: hue-rotate(0deg); }
+      20% { filter: hue-rotate(90deg); }
+      40% { filter: hue-rotate(180deg); }
+      60% { filter: hue-rotate(270deg); }
+      80% { filter: hue-rotate(360deg); }
+    }
+
+    @keyframes legendary-glow {
+      0%, 100% { box-shadow: 0 0 20px #ffd700; }
+      50% { box-shadow: 0 0 40px #ff1493, 0 0 60px #8a2be2; }
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.5) translateY(-20px); }
+    }
+
+    /* Optimizaciones móviles */
+    @media (max-width: 768px) {
+      .hero { padding: 4rem 1rem 2rem; }
+      .hero h1 { font-size: 2rem; }
+      .theme-panel { width: 95%; padding: 1rem; }
+      .achievements-panel { width: 95%; right: -95%; }
+      .achievements-panel.show { right: 2.5%; }
+      .nerd-panel { width: 95%; }
+      #repos-container { grid-template-columns: 1fr; gap: 1rem; }
+      .card { min-height: 300px; }
+      .btn-group { flex-direction: column; gap: 0.5rem; }
+      .filter-btn { margin: 0.1rem; padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+      .theme-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+      .theme-card { padding: 0.5rem; }
+      .theme-preview { width: 40px; height: 25px; }
+      .theme-name { font-size: 0.7rem; }
+      .cursor-grid { grid-template-columns: repeat(2, 1fr); }
+      .social-btn { width: 35px; height: 35px; }
+      .navbar-brand { font-size: 1rem; }
+      .nav-link { font-size: 0.9rem; }
+      section { padding: 2rem 0; }
+      section h2 { font-size: 2rem; }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 1.8rem; }
+      .theme-panel, .achievements-panel, .nerd-panel { padding: 0.8rem; }
+      .achievement-item { padding: 0.5rem; }
+      .points-badge { font-size: 0.6rem; padding: 0.1rem 0.3rem; }
+      .filter-btn { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
+    }
+
+    /* Deshabilitar efectos en móviles para rendimiento */
+    @media (max-width: 768px) {
+      .card:hover { transform: none; }
+      .parallax-bg { display: none; }
+      .particles { display: none; }
+      * { animation-duration: 0.1s !important; }
+    }
   </style>
 </head>
 
@@ -1320,6 +1411,11 @@
             <button id="achievements-btn" class="nav-link" aria-label="Logros">
               <i class="bi bi-trophy me-1"></i> <span id="points-display">0</span>
               <span class="streak-indicator" id="streak-indicator"></span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button id="updates-btn" class="nav-link" aria-label="Ver actualizaciones">
+              <i class="bi bi-arrow-up-circle me-1"></i> v2.0.2
             </button>
           </li>
         </ul>
@@ -1501,6 +1597,14 @@
     <i class="bi bi-terminal"></i>
   </button>
 
+  <!-- Panel de Updates -->
+  <div class="panel-overlay" id="updates-overlay"></div>
+  <div class="theme-panel" id="updates-panel">
+    <button class="close-panel" id="close-updates-panel">&times;</button>
+    <h3>🚀 ACTUALIZACIONES</h3>
+    <div id="updates-content">Cargando...</div>
+  </div>
+
   <!-- Panel de Temas -->
   <div class="panel-overlay" id="theme-overlay"></div>
   <div class="theme-panel" id="theme-panel">
@@ -1625,6 +1729,73 @@
         <div class="theme-cost">500 pts</div>
       </div>
     </div>
+
+    <div class="theme-category">🔥 Temas Épicos</div>
+    <div class="theme-grid">
+      <div class="theme-card premium-theme" data-theme="vaporwave" data-cost="400">
+        <div class="theme-preview preview-vaporwave"></div>
+        <div class="theme-name">Vaporwave</div>
+        <div class="theme-cost">400 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="hacker" data-cost="500">
+        <div class="theme-preview preview-hacker"></div>
+        <div class="theme-name">Hacker Elite</div>
+        <div class="theme-cost">500 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="neon-city" data-cost="600">
+        <div class="theme-preview preview-neon-city"></div>
+        <div class="theme-name">Ciudad Neón</div>
+        <div class="theme-cost">600 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="space" data-cost="700">
+        <div class="theme-preview preview-space"></div>
+        <div class="theme-name">Espacio</div>
+        <div class="theme-cost">700 pts</div>
+      </div>
+    </div>
+
+    <div class="theme-category">⚡ Temas Extremos</div>
+    <div class="theme-grid">
+      <div class="theme-card premium-theme" data-theme="fire" data-cost="800">
+        <div class="theme-preview preview-fire"></div>
+        <div class="theme-name">Fuego</div>
+        <div class="theme-cost">800 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="ice" data-cost="900">
+        <div class="theme-preview preview-ice"></div>
+        <div class="theme-name">Hielo</div>
+        <div class="theme-cost">900 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="toxic" data-cost="1000">
+        <div class="theme-preview preview-toxic"></div>
+        <div class="theme-name">Tóxico</div>
+        <div class="theme-cost">1000 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="royal" data-cost="1200">
+        <div class="theme-preview preview-royal"></div>
+        <div class="theme-name">Realeza</div>
+        <div class="theme-cost">1200 pts</div>
+      </div>
+    </div>
+
+    <div class="theme-category">👑 Temas Legendarios</div>
+    <div class="theme-grid">
+      <div class="theme-card premium-theme" data-theme="steampunk" data-cost="1500">
+        <div class="theme-preview preview-steampunk"></div>
+        <div class="theme-name">Steampunk</div>
+        <div class="theme-cost">1500 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="hologram" data-cost="2000">
+        <div class="theme-preview preview-hologram"></div>
+        <div class="theme-name">Holograma</div>
+        <div class="theme-cost">2000 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="legendary" data-cost="5000">
+        <div class="theme-preview preview-legendary"></div>
+        <div class="theme-name">🏆 LEGENDARIO</div>
+        <div class="theme-cost">5000 pts</div>
+      </div>
+    </div>
   </div>
 
   <!-- Fondo parallax -->
@@ -1648,6 +1819,40 @@
       <div class="points-badge mt-2" id="streak-badge" style="background: #f97316;">Racha: <span id="streak-display">0</span> días</div>
       <div class="points-badge mt-2" style="background: #22c55e;">Búsquedas: <span id="search-count">0</span></div>
       <div class="points-badge mt-2" style="background: #8b5cf6;">Filtros: <span id="filter-count">0</span></div>
+      <div class="points-badge mt-2" style="background: #06b6d4;">Desafíos: <span id="challenges-count">0</span></div>
+    </div>
+
+    <div class="mb-3">
+      <h4 style="color: var(--primary); margin-bottom: 1rem;">🎯 Desafíos Diarios</h4>
+      <div id="daily-challenges"></div>
+    </div>
+
+    <div class="mb-3">
+      <h4 style="color: var(--primary); margin-bottom: 1rem;">✨ Efectos Premium</h4>
+      <div class="cursor-grid">
+        <div class="cursor-item" onclick="buyEffect('matrix-rain')">
+          <div class="cursor-preview">🌌</div>
+          <div class="cursor-name">Lluvia Matrix</div>
+          <div class="cursor-cost">300 pts</div>
+        </div>
+        <div class="cursor-item" onclick="buyEffect('mouse-particles')">
+          <div class="cursor-preview">✨</div>
+          <div class="cursor-name">Partículas</div>
+          <div class="cursor-cost">200 pts</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <h4 style="color: var(--primary); margin-bottom: 1rem;">🏆 Leaderboard Local</h4>
+      <div id="leaderboard-display"></div>
+    </div>
+
+    <div class="mb-3">
+      <h4 style="color: var(--primary); margin-bottom: 1rem;">🐈 GitHub Stats</h4>
+      <div class="points-badge" style="background: #6366f1;">Seguidores: <span id="github-followers">0</span></div>
+      <div class="points-badge mt-1" style="background: #8b5cf6;">Repos: <span id="github-repos">0</span></div>
+      <div class="points-badge mt-1" style="background: #ec4899;">Estrellas: <span id="github-stars">0</span></div>
     </div>
 
     <div class="mb-3" id="custom-colors" style="display: none;">
@@ -2055,7 +2260,7 @@
 
     function setTheme(theme) {
       const body = document.body;
-      const themes = ['light-theme', 'neon-theme', 'cyberpunk-theme', 'matrix-theme', 'synthwave-theme', 'ocean-theme', 'forest-theme', 'sunset-theme', 'christmas-theme', 'halloween-theme', 'valentine-theme', 'easter-theme', 'summer-theme', 'autumn-theme', 'funkyatlas-theme', 'galaxy-theme', 'gold-theme', 'rainbow-theme', 'diamond-theme', 'custom-theme'];
+      const themes = ['light-theme', 'neon-theme', 'cyberpunk-theme', 'matrix-theme', 'synthwave-theme', 'ocean-theme', 'forest-theme', 'sunset-theme', 'christmas-theme', 'halloween-theme', 'valentine-theme', 'easter-theme', 'summer-theme', 'autumn-theme', 'funkyatlas-theme', 'galaxy-theme', 'gold-theme', 'rainbow-theme', 'diamond-theme', 'custom-theme', 'vaporwave-theme', 'hacker-theme', 'neon-city-theme', 'space-theme', 'fire-theme', 'ice-theme', 'toxic-theme', 'royal-theme', 'steampunk-theme', 'hologram-theme', 'legendary-theme'];
       
       themes.forEach(t => body.classList.remove(t));
       
@@ -2319,6 +2524,16 @@
       filterCount: 0,
       activeCursor: 'default',
       unlockedCursors: new Set(['default']),
+      themeChangeCount: 0,
+      clickCount: 0,
+      lastClickTime: 0,
+      fastClicks: 0,
+      weekendVisits: { saturday: false, sunday: false },
+      dailyChallenges: {},
+      completedChallenges: 0,
+      activeEffects: {},
+      leaderboardName: '',
+      githubStats: { followers: 0, repos: 0, stars: 0 },
       achievements: {
         'first-visit': false,
         'theme-explorer': false,
@@ -2333,7 +2548,15 @@
         'streak-legend': false,
         'scroll-master': false,
         'search-explorer': false,
-        'filter-expert': false
+        'filter-expert': false,
+        'night-owl': false,
+        'speed-demon': false,
+        'theme-addict': false,
+        'early-bird': false,
+        'weekend-warrior': false,
+        'legendary-hunter': false,
+        'challenge-master': false,
+        'perfectionist': false
       }
     };
 
@@ -2348,7 +2571,23 @@
       'galaxy': { cost: 100, name: 'Galaxia' },
       'gold': { cost: 150, name: 'Oro' },
       'rainbow': { cost: 200, name: 'Arcoíris' },
-      'diamond': { cost: 300, name: 'Diamante' }
+      'diamond': { cost: 300, name: 'Diamante' },
+      'vaporwave': { cost: 400, name: 'Vaporwave' },
+      'hacker': { cost: 500, name: 'Hacker Elite' },
+      'neon-city': { cost: 600, name: 'Ciudad Neón' },
+      'space': { cost: 700, name: 'Espacio Profundo' },
+      'fire': { cost: 800, name: 'Llamas Infernales' },
+      'ice': { cost: 900, name: 'Hielo Ártico' },
+      'toxic': { cost: 1000, name: 'Tóxico Nuclear' },
+      'royal': { cost: 1200, name: 'Realeza' },
+      'steampunk': { cost: 1500, name: 'Steampunk' },
+      'hologram': { cost: 2000, name: 'Holograma' },
+      'legendary': { cost: 5000, name: 'Legendario' }
+    };
+
+    const premiumEffects = {
+      'matrix-rain': { cost: 300, name: 'Lluvia Matrix', duration: 30000 },
+      'mouse-particles': { cost: 200, name: 'Partículas Mouse', duration: 60000 }
     };
 
     const achievements = {
@@ -2365,7 +2604,15 @@
       'streak-legend': { name: 'Leyenda Imparable', desc: 'Visita 30 días consecutivos', points: 300, icon: '👑' },
       'scroll-master': { name: 'Explorador Completo', desc: 'Llega hasta el final de la página', points: 5, icon: '📜' },
       'search-explorer': { name: 'Buscador Activo', desc: 'Usa la búsqueda 5 veces', points: 15, icon: '🔍' },
-      'filter-expert': { name: 'Experto en Filtros', desc: 'Cambia filtros 10 veces', points: 20, icon: '🎨' }
+      'filter-expert': { name: 'Experto en Filtros', desc: 'Cambia filtros 10 veces', points: 20, icon: '🎨' },
+      'night-owl': { name: 'Búho Nocturno', desc: 'Visita entre 12AM-6AM', points: 25, icon: '🦉' },
+      'speed-demon': { name: 'Demonio Veloz', desc: 'Navega súper rápido (5 clicks en 3s)', points: 30, icon: '⚡' },
+      'theme-addict': { name: 'Adicto a Temas', desc: 'Cambia tema 20 veces', points: 40, icon: '🎭' },
+      'early-bird': { name: 'Madrugador', desc: 'Visita antes de las 7AM', points: 20, icon: '🐦' },
+      'weekend-warrior': { name: 'Guerrero de Fin de Semana', desc: 'Visita en sábado y domingo', points: 35, icon: '🏖️' },
+      'legendary-hunter': { name: 'Cazador Legendario', desc: 'Desbloquea el tema Legendario', points: 200, icon: '🏹' },
+      'challenge-master': { name: 'Maestro de Desafíos', desc: 'Completa 10 desafíos diarios', points: 100, icon: '🎯' },
+      'perfectionist': { name: 'Perfeccionista', desc: 'Completa todos los logros', points: 500, icon: '💯' }
     };
 
     function loadGameData() {
@@ -2411,8 +2658,72 @@
       if (searchCount) searchCount.textContent = gameData.searchCount;
       const filterCount = document.getElementById('filter-count');
       if (filterCount) filterCount.textContent = gameData.filterCount;
+      const challengesCount = document.getElementById('challenges-count');
+      if (challengesCount) challengesCount.textContent = gameData.completedChallenges;
+      
+      // GitHub stats
+      const followers = document.getElementById('github-followers');
+      if (followers) followers.textContent = gameData.githubStats.followers;
+      const repos = document.getElementById('github-repos');
+      if (repos) repos.textContent = gameData.githubStats.repos;
+      const stars = document.getElementById('github-stars');
+      if (stars) stars.textContent = gameData.githubStats.stars;
+      
       updateStreakDisplay();
       updateTitle();
+      updateDailyChallengesDisplay();
+      updateLeaderboardDisplay();
+    }
+
+    function updateLeaderboardDisplay() {
+      const container = document.getElementById('leaderboard-display');
+      if (!container) return;
+      
+      const leaderboard = JSON.parse(localStorage.getItem('fenix-leaderboard') || '[]');
+      let html = '';
+      
+      leaderboard.slice(0, 5).forEach((entry, index) => {
+        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+        const isMe = entry.name === gameData.leaderboardName;
+        html += `
+          <div class="achievement-item ${isMe ? 'unlocked' : ''}" style="margin-bottom: 0.3rem; padding: 0.4rem;">
+            <div class="achievement-icon" style="font-size: 0.9rem;">${medal}</div>
+            <div class="achievement-info">
+              <h4 style="font-size: 0.75rem;">${entry.name} ${isMe ? '(Tú)' : ''}</h4>
+              <p style="font-size: 0.65rem;">${entry.points} puntos</p>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html || '<p style="font-size: 0.8rem; color: var(--text-secondary);">No hay datos aún</p>';
+    }
+
+    function updateDailyChallengesDisplay() {
+      const container = document.getElementById('daily-challenges');
+      if (!container) return;
+      
+      const today = new Date().toDateString();
+      const todayChallenges = gameData.dailyChallenges[today] || {};
+      
+      let html = '';
+      Object.entries(dailyChallenges).forEach(([id, challenge]) => {
+        const progress = todayChallenges[id] || { completed: false, progress: 0 };
+        const isCompleted = progress.completed;
+        const progressText = challenge.target ? `${progress.progress}/${challenge.target}` : (isCompleted ? 'Completado' : 'Pendiente');
+        
+        html += `
+          <div class="achievement-item ${isCompleted ? 'unlocked' : ''}" style="margin-bottom: 0.5rem; padding: 0.5rem;">
+            <div class="achievement-icon" style="font-size: 1rem;">${isCompleted ? '✅' : '🎯'}</div>
+            <div class="achievement-info">
+              <h4 style="font-size: 0.8rem;">${challenge.desc}</h4>
+              <p style="font-size: 0.7rem;">${progressText} - ${challenge.reward} pts</p>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
     }
 
     function getTitle() {
@@ -2538,6 +2849,7 @@
         gameData.hasScrolledToBottom = true;
         addPoints(5);
         checkAchievement('scroll-master');
+        updateChallenge('scroll-bottom');
         saveGameData();
       }
     }
@@ -2688,19 +3000,301 @@
       return false;
     }
 
+    // Sistema de desafíos diarios
+    const dailyChallenges = {
+      'visit-morning': { desc: 'Visita antes de las 10AM', reward: 20, check: () => new Date().getHours() < 10 },
+      'use-search': { desc: 'Busca 3 proyectos', reward: 15, target: 3, current: 0 },
+      'change-theme': { desc: 'Cambia de tema 5 veces', reward: 25, target: 5, current: 0 },
+      'scroll-bottom': { desc: 'Llega al final de la página', reward: 10, check: () => gameData.hasScrolledToBottom },
+      'spend-time': { desc: 'Pasa 10 minutos en el sitio', reward: 30, target: 600, current: 0 }
+    };
+
+    function initDailyChallenges() {
+      const today = new Date().toDateString();
+      if (!gameData.dailyChallenges[today]) {
+        gameData.dailyChallenges[today] = {};
+        Object.keys(dailyChallenges).forEach(key => {
+          gameData.dailyChallenges[today][key] = { completed: false, progress: 0 };
+        });
+        saveGameData();
+      }
+    }
+
+    function updateChallenge(challengeId, increment = 1) {
+      const today = new Date().toDateString();
+      const challenge = dailyChallenges[challengeId];
+      const progress = gameData.dailyChallenges[today][challengeId];
+      
+      if (!progress.completed) {
+        progress.progress += increment;
+        if (challenge.target && progress.progress >= challenge.target) {
+          completeChallenge(challengeId);
+        } else if (challenge.check && challenge.check()) {
+          completeChallenge(challengeId);
+        }
+        saveGameData();
+      }
+    }
+
+    function completeChallenge(challengeId) {
+      const today = new Date().toDateString();
+      const challenge = dailyChallenges[challengeId];
+      gameData.dailyChallenges[today][challengeId].completed = true;
+      gameData.completedChallenges++;
+      addPoints(challenge.reward);
+      
+      if (gameData.completedChallenges >= 10) {
+        checkAchievement('challenge-master');
+      }
+      
+      showAchievementNotification({ name: `Desafío completado: ${challenge.desc}`, points: challenge.reward });
+      saveGameData();
+    }
+
+    function checkTimeBasedAchievements() {
+      const hour = new Date().getHours();
+      const day = new Date().getDay();
+      
+      // Búho nocturno (12AM-6AM)
+      if (hour >= 0 && hour < 6) {
+        checkAchievement('night-owl');
+      }
+      
+      // Madrugador (antes de 7AM)
+      if (hour < 7) {
+        checkAchievement('early-bird');
+        updateChallenge('visit-morning');
+      }
+      
+      // Fin de semana
+      if (day === 6) gameData.weekendVisits.saturday = true;
+      if (day === 0) gameData.weekendVisits.sunday = true;
+      if (gameData.weekendVisits.saturday && gameData.weekendVisits.sunday) {
+        checkAchievement('weekend-warrior');
+      }
+    }
+
+    function trackFastClicks() {
+      const now = Date.now();
+      if (now - gameData.lastClickTime < 3000) {
+        gameData.fastClicks++;
+        if (gameData.fastClicks >= 5) {
+          checkAchievement('speed-demon');
+          gameData.fastClicks = 0;
+        }
+      } else {
+        gameData.fastClicks = 1;
+      }
+      gameData.lastClickTime = now;
+      saveGameData();
+    }
+
+    // Efectos premium
+    function buyEffect(effectId) {
+      const effect = premiumEffects[effectId];
+      if (gameData.points >= effect.cost) {
+        gameData.points -= effect.cost;
+        gameData.activeEffects[effectId] = Date.now() + effect.duration;
+        updatePointsDisplay();
+        saveGameData();
+        
+        if (effectId === 'matrix-rain') activateMatrixRain();
+        if (effectId === 'mouse-particles') activateMouseParticles();
+        
+        showAchievementNotification({ name: `Efecto ${effect.name} activado!`, points: 0 });
+        return true;
+      }
+      return false;
+    }
+
+    function activateMatrixRain() {
+      const canvas = document.createElement('canvas');
+      canvas.id = 'matrix-canvas';
+      canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:-1';
+      document.body.appendChild(canvas);
+      
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+      const drops = Array(Math.floor(canvas.width/20)).fill(1);
+      
+      const draw = () => {
+        ctx.fillStyle = 'rgba(0,0,0,0.05)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#00ff00';
+        ctx.font = '15px monospace';
+        
+        drops.forEach((y,i) => {
+          const char = chars[Math.floor(Math.random()*chars.length)];
+          ctx.fillText(char, i*20, y*20);
+          if(y*20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        });
+      };
+      
+      const interval = setInterval(draw, 33);
+      setTimeout(() => {
+        clearInterval(interval);
+        canvas.remove();
+      }, gameData.activeEffects['matrix-rain'] - Date.now());
+    }
+
+    let mouseParticleActive = false;
+    function activateMouseParticles() {
+      mouseParticleActive = true;
+      const handler = (e) => {
+        if (!mouseParticleActive) return;
+        if (Math.random() < 0.3) {
+          const particle = document.createElement('div');
+          particle.style.cssText = `
+            position:fixed;width:4px;height:4px;background:var(--primary);
+            border-radius:50%;left:${e.clientX}px;top:${e.clientY}px;
+            pointer-events:none;z-index:9999;animation:fadeOut 1s ease-out forwards;
+          `;
+          document.body.appendChild(particle);
+          setTimeout(() => particle.remove(), 1000);
+        }
+      };
+      
+      document.addEventListener('mousemove', handler);
+      setTimeout(() => {
+        mouseParticleActive = false;
+        document.removeEventListener('mousemove', handler);
+      }, gameData.activeEffects['mouse-particles'] - Date.now());
+    }
+
+    // Leaderboard local
+    function addToLeaderboard() {
+      if (!gameData.leaderboardName) {
+        gameData.leaderboardName = prompt('Ingresa tu nombre para el leaderboard:') || 'Anónimo';
+      }
+      
+      const leaderboard = JSON.parse(localStorage.getItem('fenix-leaderboard') || '[]');
+      const existing = leaderboard.findIndex(entry => entry.name === gameData.leaderboardName);
+      
+      if (existing >= 0) {
+        leaderboard[existing].points = Math.max(leaderboard[existing].points, gameData.points);
+      } else {
+        leaderboard.push({ name: gameData.leaderboardName, points: gameData.points, date: new Date() });
+      }
+      
+      leaderboard.sort((a,b) => b.points - a.points);
+      localStorage.setItem('fenix-leaderboard', JSON.stringify(leaderboard.slice(0,10)));
+    }
+
+    // Sistema de updates
+    async function showUpdates() {
+      try {
+        const response = await fetch('updates.json');
+        const data = await response.json();
+        
+        let html = `<div class="mb-3"><div class="points-badge" style="background: var(--primary);">Versión Actual: ${data.version}</div></div>`;
+        
+        // Updates recientes
+        html += '<h4 style="color: var(--primary); margin-bottom: 1rem;">📝 Últimas Actualizaciones</h4>';
+        data.updates.slice(0, 3).forEach(update => {
+          const typeColor = update.type === 'major' ? '#22c55e' : update.type === 'release' ? '#3b82f6' : '#6b7280';
+          html += `
+            <div class="credit-item" style="margin-bottom: 1rem;">
+              <div class="credit-key" style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="background: ${typeColor}; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">${update.type.toUpperCase()}</span>
+                ${update.title}
+              </div>
+              <div class="credit-value" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${update.date}</div>
+              <ul class="credit-list">
+          `;
+          
+          update.features?.forEach(feature => {
+            html += `<li style="font-size: 0.8rem;">${feature}</li>`;
+          });
+          
+          if (update.fixes?.length) {
+            update.fixes.forEach(fix => {
+              html += `<li style="font-size: 0.8rem; color: #fbbf24;">${fix}</li>`;
+            });
+          }
+          
+          html += '</ul></div>';
+        });
+        
+        // Roadmap
+        if (data.roadmap?.length) {
+          html += '<h4 style="color: var(--primary); margin-bottom: 1rem; margin-top: 2rem;">🗺️ Próximas Funciones</h4>';
+          data.roadmap.forEach(item => {
+            html += `
+              <div class="credit-item" style="margin-bottom: 1rem; opacity: 0.8;">
+                <div class="credit-key">${item.title}</div>
+                <ul class="credit-list">
+            `;
+            item.features.forEach(feature => {
+              html += `<li style="font-size: 0.8rem;">${feature}</li>`;
+            });
+            html += '</ul></div>';
+          });
+        }
+        
+        document.getElementById('updates-content').innerHTML = html;
+        document.getElementById('updates-overlay').classList.add('show');
+        document.getElementById('updates-panel').classList.add('show');
+      } catch (error) {
+        document.getElementById('updates-content').innerHTML = '<p style="color: var(--text-secondary);">Error al cargar actualizaciones</p>';
+      }
+    }
+
+    function hideUpdates() {
+      document.getElementById('updates-overlay').classList.remove('show');
+      document.getElementById('updates-panel').classList.remove('show');
+    }
+
+    // GitHub stats avanzadas
+    async function updateGitHubStats() {
+      try {
+        const [userRes, reposRes] = await Promise.all([
+          fetch(`https://api.github.com/users/${user}`),
+          fetch(`https://api.github.com/users/${user}/repos?per_page=100`)
+        ]);
+        
+        const userData = await userRes.json();
+        const reposData = await reposRes.json();
+        
+        const totalStars = reposData.reduce((sum, repo) => sum + repo.stargazers_count, 0);
+        
+        gameData.githubStats = {
+          followers: userData.followers,
+          repos: userData.public_repos,
+          stars: totalStars
+        };
+        
+        // Logros basados en stats
+        if (totalStars >= 50) checkAchievement('github-star');
+        if (userData.followers >= 10) checkAchievement('github-popular');
+        
+        saveGameData();
+      } catch (error) {
+        console.log('Error loading GitHub stats:', error);
+      }
+    }
+
     // Timer para tiempo en sitio
     setInterval(() => {
       gameData.timeOnSite += 1;
-      if (gameData.timeOnSite >= 300) { // 5 minutos
-        checkAchievement('time-master');
-      }
+      updateChallenge('spend-time', 1);
+      
+      if (gameData.timeOnSite >= 300) checkAchievement('time-master');
+      if (gameData.timeOnSite % 300 === 0) addToLeaderboard(); // Cada 5 min
+      
       saveGameData();
     }, 1000);
 
     document.addEventListener('DOMContentLoaded', () => {
       loadGameData();
+      initDailyChallenges();
       checkDailyVisit();
+      checkTimeBasedAchievements();
       fetchRepos();
+      updateGitHubStats();
       createParticles();
       typeWriterEffect();
       loadTheme();
@@ -2712,6 +3306,15 @@
       updateSeasonalIndicator();
       updateCursorShop();
       setCursor(gameData.activeCursor);
+      
+      // Tracking de clicks rápidos
+      document.addEventListener('click', trackFastClicks);
+      
+      // Deshabilitar efectos en móviles
+      if (/Mobi|Android/i.test(navigator.userAgent)) {
+        document.getElementById('particles').style.display = 'none';
+        document.getElementById('parallax-bg').style.display = 'none';
+      }
       
 
 
@@ -2731,6 +3334,11 @@
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 150);
       });
+      
+      // Event listeners para updates
+      document.getElementById('updates-btn').addEventListener('click', showUpdates);
+      document.getElementById('close-updates-panel').addEventListener('click', hideUpdates);
+      document.getElementById('updates-overlay').addEventListener('click', hideUpdates);
       
       // Event listeners para temas
       document.getElementById('theme-panel-btn').addEventListener('click', showThemePanel);
@@ -2762,22 +3370,46 @@
           
           // Sistema de logros para temas
           gameData.themesUsed.add(theme);
+          gameData.themeChangeCount++;
+          updateChallenge('change-theme');
+          
           if (gameData.themesUsed.size === 1) checkAchievement('theme-explorer');
           if (gameData.themesUsed.size >= 5) checkAchievement('theme-collector');
+          if (gameData.themeChangeCount >= 20) checkAchievement('theme-addict');
           if (theme === 'funkyatlas') {
             checkAchievement('funky-fan');
             showCreditsPanel();
           }
+          if (theme === 'legendary') {
+            checkAchievement('legendary-hunter');
+          }
+          
+          // Verificar si todos los logros están completos
+          const allAchievements = Object.keys(achievements);
+          const completedAchievements = allAchievements.filter(id => gameData.achievements[id]);
+          if (completedAchievements.length === allAchievements.length - 1) { // -1 porque perfectionist se completa al final
+            checkAchievement('perfectionist');
+          }
+          
           saveGameData();
         });
       });
       
       // Event listeners para logros
       document.getElementById('achievements-btn').addEventListener('click', () => {
-        document.getElementById('achievements-panel').classList.toggle('show');
+        const panel = document.getElementById('achievements-panel');
+        if (panel.classList.contains('show')) {
+          panel.classList.remove('show');
+          setTimeout(() => panel.style.display = 'none', 300);
+        } else {
+          panel.style.display = 'block';
+          setTimeout(() => panel.classList.add('show'), 10);
+        }
       });
       document.getElementById('close-achievements').addEventListener('click', () => {
-        document.getElementById('achievements-panel').classList.remove('show');
+        const panel = document.getElementById('achievements-panel');
+        panel.classList.remove('show');
+        setTimeout(() => panel.style.display = 'none', 300);
       });
       
       // Event listeners para cursores
@@ -2904,6 +3536,7 @@
         searchRepos(e.target.value);
         if (e.target.value.length > 2) {
           trackSearch();
+          updateChallenge('use-search');
         }
       });
 
