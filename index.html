@@ -75,6 +75,8 @@
 
     .nav-link {
       transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
     }
 
     .nav-link:active {
@@ -102,12 +104,12 @@
     }
 
     .hero {
-      padding: 8rem 2rem 6rem;
+      padding: 6rem 2rem 4rem;
       text-align: center;
       background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
       position: relative;
       overflow: hidden;
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
       perspective: 100px;
     }
 
@@ -127,16 +129,16 @@
 
     .hero h1 {
       font-weight: 700;
-      font-size: 3.2rem;
-      margin-bottom: 1.5rem;
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
       color: var(--primary);
       line-height: 1.2;
     }
 
     .hero p {
-      font-size: 1.25rem;
-      max-width: 700px;
-      margin: 0 auto 2.5rem auto;
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto 2rem auto;
       color: var(--text-secondary);
     }
 
@@ -405,23 +407,206 @@
       border: 1px solid rgba(0, 240, 255, 0.1);
     }
 
-    /* Tema claro */
-    body.light-theme {
-      --bg-dark: #f0f2f5;
-      --bg-light: #ffffff;
-      --text-primary: #2d3748;
-      --text-secondary: #4a5568;
-      --primary: #3182ce;
-      --secondary: #805ad5;
+    /* Panel de Temas */
+    .theme-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bg-light);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 10001;
+      display: none;
     }
 
-    #theme-toggle {
-      background: transparent;
-      border: none;
-      color: var(--text-primary);
-      cursor: pointer;
-      font-size: 1.25rem;
+    .theme-panel.show {
+      display: block;
+      animation: slideIn 0.3s ease;
     }
+
+    .theme-panel h3 {
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.5rem;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-card {
+      background: var(--bg-dark);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .theme-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--primary);
+    }
+
+    .theme-card.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .theme-preview {
+      width: 60px;
+      height: 40px;
+      border-radius: 8px;
+      margin: 0 auto 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .theme-name {
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .theme-category {
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin: 1.5rem 0 1rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--primary);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Previews de temas */
+    .preview-dark { background: linear-gradient(45deg, #1a1a1a 50%, #ff6b35 50%); }
+    .preview-light { background: linear-gradient(45deg, #f8fafc 50%, #3182ce 50%); }
+    .preview-neon { background: linear-gradient(45deg, #0a0a0a 50%, #00ff41 50%); }
+    .preview-cyberpunk { background: linear-gradient(45deg, #0d1117 50%, #ff0080 50%); }
+    .preview-matrix { background: linear-gradient(45deg, #000000 50%, #00ff00 50%); }
+    .preview-synthwave { background: linear-gradient(45deg, #2d1b69 50%, #ff6b9d 50%); }
+    .preview-ocean { background: linear-gradient(45deg, #0f3460 50%, #00d4ff 50%); }
+    .preview-forest { background: linear-gradient(45deg, #1a3d2e 50%, #4ade80 50%); }
+    .preview-sunset { background: linear-gradient(45deg, #7c2d12 50%, #f97316 50%); }
+    .preview-christmas { background: linear-gradient(45deg, #0f172a 50%, #dc2626 50%); }
+    .preview-halloween { background: linear-gradient(45deg, #1c1917 50%, #f97316 50%); }
+    .preview-valentine { background: linear-gradient(45deg, #1f1726 50%, #ec4899 50%); }
+    .preview-easter { background: linear-gradient(45deg, #fef3c7 50%, #a855f7 50%); }
+    .preview-summer { background: linear-gradient(45deg, #fef3c7 50%, #06b6d4 50%); }
+    .preview-autumn { background: linear-gradient(45deg, #451a03 50%, #ea580c 50%); }
+    .preview-funkyatlas { background: linear-gradient(45deg, #0f0f1a 50%, #ff4444 50%); }
+    .preview-galaxy { background: linear-gradient(45deg, #0c0c0c 25%, #4c1d95 25%, #4c1d95 50%, #7c3aed 50%, #7c3aed 75%, #a855f7 75%); }
+    .preview-gold { background: linear-gradient(45deg, #451a03 50%, #fbbf24 50%); }
+    .preview-rainbow { background: linear-gradient(45deg, #ef4444 0%, #f97316 16%, #eab308 33%, #22c55e 50%, #3b82f6 66%, #8b5cf6 83%, #ec4899 100%); }
+    .preview-diamond { background: linear-gradient(45deg, #f8fafc 25%, #e2e8f0 25%, #e2e8f0 50%, #cbd5e1 50%, #cbd5e1 75%, #94a3b8 75%); }
+    .preview-custom { background: linear-gradient(45deg, #1a1a1a 25%, #ff6b35 25%, #ff6b35 50%, #f7931e 50%); }
+
+    .color-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .color-picker-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .color-picker-item label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .color-picker-item input[type="color"] {
+      width: 100%;
+      height: 30px;
+      border: 1px solid var(--primary);
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+    }
+
+
+    /* Temas */
+    body.light-theme { --bg-dark: #f8fafc; --bg-light: #ffffff; --text-primary: #1a202c; --text-secondary: #4a5568; --primary: #3182ce; --secondary: #805ad5; }
+    body.neon-theme { --bg-dark: #0a0a0a; --bg-light: #1a1a1a; --text-primary: #00ff41; --text-secondary: #00cc33; --primary: #00ff41; --secondary: #ff0080; }
+    body.cyberpunk-theme { --bg-dark: #0d1117; --bg-light: #161b22; --text-primary: #ff0080; --text-secondary: #c9d1d9; --primary: #ff0080; --secondary: #00d4ff; }
+    body.matrix-theme { --bg-dark: #000000; --bg-light: #0d1b0d; --text-primary: #00ff00; --text-secondary: #00cc00; --primary: #00ff00; --secondary: #008800; }
+    body.synthwave-theme { --bg-dark: #2d1b69; --bg-light: #3e2a7a; --text-primary: #ffd700; --text-secondary: #ffb347; --primary: #ff6b9d; --secondary: #c44569; }
+    body.ocean-theme { --bg-dark: #0f3460; --bg-light: #16537e; --text-primary: #e8f4fd; --text-secondary: #b8dff0; --primary: #00d4ff; --secondary: #0099cc; }
+    body.forest-theme { --bg-dark: #1a3d2e; --bg-light: #2d5a47; --text-primary: #ecfdf5; --text-secondary: #bbf7d0; --primary: #4ade80; --secondary: #22c55e; }
+    body.sunset-theme { --bg-dark: #7c2d12; --bg-light: #9a3412; --text-primary: #fed7aa; --text-secondary: #fdba74; --primary: #f97316; --secondary: #ea580c; }
+    body.christmas-theme { --bg-dark: #0f172a; --bg-light: #1e293b; --text-primary: #f1f5f9; --text-secondary: #cbd5e1; --primary: #dc2626; --secondary: #16a34a; }
+    body.halloween-theme { --bg-dark: #1c1917; --bg-light: #292524; --text-primary: #fbbf24; --text-secondary: #f59e0b; --primary: #f97316; --secondary: #7c2d12; }
+    body.valentine-theme { --bg-dark: #1f1726; --bg-light: #2e1f3e; --text-primary: #fce7f3; --text-secondary: #f9a8d4; --primary: #ec4899; --secondary: #be185d; }
+    body.easter-theme { --bg-dark: #fef3c7; --bg-light: #fef9c3; --text-primary: #451a03; --text-secondary: #78350f; --primary: #a855f7; --secondary: #7c3aed; }
+    body.summer-theme { --bg-dark: #fef3c7; --bg-light: #fefce8; --text-primary: #0c4a6e; --text-secondary: #0369a1; --primary: #06b6d4; --secondary: #0891b2; }
+    body.autumn-theme { --bg-dark: #451a03; --bg-light: #7c2d12; --text-primary: #fed7aa; --text-secondary: #fdba74; --primary: #ea580c; --secondary: #dc2626; }
+    body.funkyatlas-theme { --bg-dark: #0f0f1a; --bg-light: #2b1055; --text-primary: #ffffff; --text-secondary: #cccccc; --primary: #ff4444; --secondary: #7597de; }
+    body.galaxy-theme { --bg-dark: #0c0c0c; --bg-light: #1a1a2e; --text-primary: #e2e8f0; --text-secondary: #a855f7; --primary: #7c3aed; --secondary: #4c1d95; }
+    body.gold-theme { --bg-dark: #451a03; --bg-light: #78350f; --text-primary: #fef3c7; --text-secondary: #fbbf24; --primary: #f59e0b; --secondary: #d97706; }
+    body.rainbow-theme { --bg-dark: #1f2937; --bg-light: #374151; --text-primary: #f9fafb; --text-secondary: #d1d5db; --primary: #ec4899; --secondary: #8b5cf6; }
+    body.diamond-theme { --bg-dark: #f8fafc; --bg-light: #ffffff; --text-primary: #1e293b; --text-secondary: #475569; --primary: #0f172a; --secondary: #334155; }
+    body.custom-theme { --bg-dark: var(--custom-bg, #1a1a1a); --bg-light: var(--custom-bg-light, #2d2d2d); --text-primary: var(--custom-text, #f0f0f0); --text-secondary: var(--custom-text-secondary, #b0b0b0); --primary: var(--custom-primary, #ff6b35); --secondary: var(--custom-secondary, #f7931e); }
+
+    
+    /* FunkyAtlas - Navbar */
+    body.funkyatlas-theme .navbar { background: linear-gradient(90deg, #2b1055, #7597de); border-bottom: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+    body.funkyatlas-theme .navbar-brand { background: linear-gradient(to right, #ff4444, #ff9e9e); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(255, 68, 68, 0.7); }
+    body.funkyatlas-theme .nav-link { color: white !important; transition: all 0.3s ease; }
+    body.funkyatlas-theme .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+    
+    /* FunkyAtlas - Hero */
+    body.funkyatlas-theme .hero { background: linear-gradient(135deg, #0f0f1a 0%, #2b1055 100%); }
+    body.funkyatlas-theme .hero::before { background: radial-gradient(circle at 20% 30%, rgba(255, 68, 68, 0.2) 0%, transparent 20%), radial-gradient(circle at 80% 70%, rgba(117, 151, 222, 0.2) 0%, transparent 20%); }
+    body.funkyatlas-theme .hero h1 { background: linear-gradient(to right, #ff4444, #ff9e9e); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(255, 68, 68, 0.5); }
+    
+    /* FunkyAtlas - Cards */
+    body.funkyatlas-theme .card { background: linear-gradient(135deg, rgba(43, 16, 85, 0.6), rgba(117, 151, 222, 0.3)); border: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); border-radius: 12px; }
+    body.funkyatlas-theme .card:hover { transform: translateY(-15px) scale(1.02); box-shadow: 0 15px 30px rgba(255, 68, 68, 0.4); }
+    body.funkyatlas-theme .card-title { color: #ff4444; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); position: relative; padding-bottom: 0.3rem; }
+    body.funkyatlas-theme .card-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background: #ff4444; transition: width 0.3s ease; }
+    body.funkyatlas-theme .card:hover .card-title::after { width: 100%; }
+    body.funkyatlas-theme .card-text { color: #ffffff; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
+    
+    /* FunkyAtlas - Buttons */
+    body.funkyatlas-theme .btn-neon { border-color: #ff4444; color: #ff4444; box-shadow: 0 2px 6px rgba(255, 68, 68, 0.3); }
+    body.funkyatlas-theme .btn-neon:hover { background: #ff4444; color: white; box-shadow: 0 4px 12px rgba(255, 68, 68, 0.5); }
+    body.funkyatlas-theme .btn-outline-neon { border-color: #ff4444; color: #ff4444; }
+    body.funkyatlas-theme .btn-outline-neon:hover { background: #ff4444; color: white; }
+    
+    /* FunkyAtlas - Filters */
+    body.funkyatlas-theme .filters { background: linear-gradient(135deg, rgba(43, 16, 85, 0.6), rgba(117, 151, 222, 0.3)); border: 1px solid rgba(255, 68, 68, 0.3); }
+    body.funkyatlas-theme .search-box { background: rgba(15, 15, 26, 0.8); border-color: #ff4444; color: white; }
+    body.funkyatlas-theme .filter-btn { border-color: rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.7); }
+    body.funkyatlas-theme .filter-btn.active { background: #ff4444; color: white; border-color: #ff4444; }
+    
+    /* FunkyAtlas - Theme Panel */
+    body.funkyatlas-theme .theme-panel { background: linear-gradient(135deg, rgba(43, 16, 85, 0.9), rgba(117, 151, 222, 0.6)); border-color: #ff4444; backdrop-filter: blur(15px); }
+    body.funkyatlas-theme .theme-card { background: rgba(15, 15, 26, 0.8); border-color: rgba(255, 68, 68, 0.3); }
+    body.funkyatlas-theme .theme-card:hover { border-color: #ff4444; box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3); }
+    body.funkyatlas-theme .theme-card.active { border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.5); }
+    
+    /* FunkyAtlas - Footer */
+    body.funkyatlas-theme .footer { background: linear-gradient(90deg, #2b1055, #7597de); border-top: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3); }
+    body.funkyatlas-theme .social-btn { border-color: #ff4444; color: #ff4444; }
+    body.funkyatlas-theme .social-btn:hover { background: #ff4444; color: white; }
+    
+    /* FunkyAtlas - Scrollbars */
+    body.funkyatlas-theme ::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #ff4444, #ff9e9e); }
+    body.funkyatlas-theme ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
 
     /* Filtros y búsqueda */
     .filters {
@@ -456,27 +641,7 @@
       border-color: var(--primary);
     }
 
-    /* Estadísticas */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
-    }
 
-    .stat-card {
-      background: var(--bg-light);
-      padding: 1.5rem;
-      border-radius: 8px;
-      text-align: center;
-      border: 1px solid rgba(0, 240, 255, 0.1);
-    }
-
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--primary);
-    }
 
     /* Paginación */
     .pagination {
@@ -736,6 +901,380 @@
     .main-content.hidden {
       display: none;
     }
+
+    /* Mini panel de créditos */
+    .credits-mini-panel {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      background: var(--bg-light);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 1rem;
+      max-width: 300px;
+      z-index: 10002;
+      display: none;
+      animation: slideInLeft 0.3s ease;
+    }
+
+    .credits-mini-panel.show {
+      display: block;
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .credits-mini-panel h4 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .credits-mini-panel p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .credits-mini-panel a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .credits-mini-panel a:hover {
+      text-decoration: underline;
+    }
+
+    .close-credits {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* Parallax optimizado para Android */
+    .parallax-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 120%;
+      z-index: -3;
+      will-change: transform;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .parallax-bg { transform: none !important; }
+    }
+
+    /* Transiciones de página */
+    .page-transition {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .page-transition.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Timeline en cards */
+    .card-timeline {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .commit-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Sistema de logros */
+    .achievements-panel {
+      position: fixed;
+      top: 50%;
+      right: -400px;
+      transform: translateY(-50%);
+      background: var(--bg-light);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 350px;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 10003;
+      transition: right 0.3s ease;
+    }
+
+    .achievements-panel.show {
+      right: 2rem;
+    }
+
+    .achievement-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      background: var(--bg-dark);
+      border-radius: 8px;
+      border-left: 3px solid transparent;
+    }
+
+    .achievement-item.unlocked {
+      border-left-color: var(--primary);
+      box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+    }
+
+    .achievement-icon {
+      font-size: 1.5rem;
+      width: 40px;
+      text-align: center;
+    }
+
+    .achievement-item.unlocked .achievement-icon {
+      color: var(--primary);
+    }
+
+    .achievement-item:not(.unlocked) .achievement-icon {
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+
+    .achievement-info h4 {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .achievement-info p {
+      margin: 0;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .points-badge {
+      background: var(--primary);
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    /* Notificación de logro */
+    .achievement-notification {
+      position: fixed;
+      top: 2rem;
+      right: -400px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      z-index: 10004;
+      transition: right 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .achievement-notification.show {
+      right: 2rem;
+    }
+
+    /* Temas premium */
+    .premium-theme {
+      position: relative;
+    }
+
+    .premium-theme.locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .premium-theme.locked::before {
+      content: '🔒';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      z-index: 10;
+    }
+
+    .theme-cost {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: var(--primary);
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .premium-theme.owned .theme-cost {
+      background: #22c55e;
+    }
+
+    .premium-theme.owned .theme-cost::before {
+      content: '✓ ';
+    }
+
+    /* Efectos especiales para temas premium */
+    body.galaxy-theme .card { background: linear-gradient(135deg, rgba(28, 25, 46, 0.8), rgba(76, 29, 149, 0.3)); box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+    body.gold-theme .card { background: linear-gradient(135deg, rgba(120, 53, 15, 0.8), rgba(251, 191, 36, 0.2)); box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
+    body.rainbow-theme .card { background: linear-gradient(135deg, rgba(55, 65, 81, 0.8), rgba(139, 92, 246, 0.2)); box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
+    body.diamond-theme .card { background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(226, 232, 240, 0.7)); box-shadow: 0 0 20px rgba(15, 23, 42, 0.1); }
+
+
+    /* Asegurar visibilidad del indicador de racha en todos los temas */
+    body.light-theme .streak-indicator,
+    body.easter-theme .streak-indicator,
+    body.summer-theme .streak-indicator,
+    body.diamond-theme .streak-indicator {
+      color: #f97316 !important;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    /* Cursores personalizados */
+    .cursor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+
+    .cursor-grid:has(.cursor-item:nth-child(5)) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .cursor-item {
+      background: var(--bg-dark);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      padding: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .cursor-item:hover {
+      border-color: var(--primary);
+    }
+
+    .cursor-item.active {
+      border-color: var(--primary);
+      background: rgba(255, 107, 53, 0.1);
+    }
+
+    .cursor-item.locked {
+      opacity: 0.6;
+    }
+
+    .cursor-item.locked::before {
+      content: '🔒';
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 0.8rem;
+    }
+
+    .cursor-preview {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .cursor-name {
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .cursor-cost {
+      font-size: 0.7rem;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .cursor-item.owned .cursor-cost {
+      color: #22c55e;
+    }
+
+    .cursor-item.owned .cursor-cost::before {
+      content: '✓ ';
+    }
+
+
+
+
+
+    /* Indicador de tema estacional */
+    .seasonal-indicator {
+      font-size: 0.8rem;
+      color: var(--primary);
+      font-weight: normal;
+    }
+
+    .seasonal-theme.current-season {
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
+      animation: seasonalPulse 2s infinite;
+    }
+
+    @keyframes seasonalPulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(255, 107, 53, 0.4); }
+      50% { box-shadow: 0 0 25px rgba(255, 107, 53, 0.6); }
+    }
+
+    /* Indicador de racha */
+    .streak-indicator {
+      margin-left: 0.5rem;
+      font-size: 0.7rem;
+      color: var(--secondary) !important;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.1rem 0.3rem;
+      border-radius: 8px;
+    }
+
+
+
+    .streak-fire {
+      animation: fireGlow 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes fireGlow {
+      0% { text-shadow: 0 0 5px #f97316; }
+      100% { text-shadow: 0 0 15px #f97316, 0 0 25px #ea580c; }
+    }
   </style>
 </head>
 
@@ -750,9 +1289,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="#estadisticas"><i class="bi bi-graph-up me-1"></i> Estadísticas</a>
-          </li>
+
           <li class="nav-item">
             <a class="nav-link" href="#destacados"><i class="bi bi-star me-1"></i> Destacados</a>
           </li>
@@ -775,8 +1312,14 @@
             </button>
           </li>
           <li class="nav-item">
-            <button id="theme-toggle" class="nav-link" aria-label="Cambiar tema">
-              <i class="bi bi-moon-fill"></i>
+            <button id="theme-panel-btn" class="nav-link" aria-label="Panel de temas">
+              <i class="bi bi-palette me-1"></i> Temas
+            </button>
+          </li>
+          <li class="nav-item">
+            <button id="achievements-btn" class="nav-link" aria-label="Logros">
+              <i class="bi bi-trophy me-1"></i> <span id="points-display">0</span>
+              <span class="streak-indicator" id="streak-indicator"></span>
             </button>
           </li>
         </ul>
@@ -796,32 +1339,7 @@
     <div class="particles" id="particles"></div>
   </section>
 
-  <!-- Estadísticas de GitHub -->
-  <section id="estadisticas" class="container">
-    <h2>ESTADÍSTICAS</h2>
-    <div class="section-loading" id="stats-loading">
-      <div class="mini-loader"></div>
-      <div class="loading-text">Calculando estadísticas...</div>
-    </div>
-    <div class="stats-grid" id="stats-container" style="display: none;">
-      <div class="stat-card">
-        <div class="stat-number" id="total-repos">-</div>
-        <div>Repositorios</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="total-stars">-</div>
-        <div>Estrellas</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="total-forks">-</div>
-        <div>Forks</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="total-languages">-</div>
-        <div>Lenguajes</div>
-      </div>
-    </div>
-  </section>
+
 
   <!-- Proyectos Destacados -->
   <section id="destacados" class="container">
@@ -983,6 +1501,216 @@
     <i class="bi bi-terminal"></i>
   </button>
 
+  <!-- Panel de Temas -->
+  <div class="panel-overlay" id="theme-overlay"></div>
+  <div class="theme-panel" id="theme-panel">
+    <button class="close-panel" id="close-theme-panel">&times;</button>
+    <h3>🎨 SELECTOR DE TEMAS</h3>
+    
+    <div class="theme-category">🌟 Clásicos</div>
+    <div class="theme-grid">
+      <div class="theme-card" data-theme="dark">
+        <div class="theme-preview preview-dark"></div>
+        <div class="theme-name">Oscuro</div>
+      </div>
+      <div class="theme-card" data-theme="light">
+        <div class="theme-preview preview-light"></div>
+        <div class="theme-name">Claro</div>
+      </div>
+      <div class="theme-card" data-theme="neon">
+        <div class="theme-preview preview-neon"></div>
+        <div class="theme-name">Neón</div>
+      </div>
+      <div class="theme-card" data-theme="funkyatlas">
+        <div class="theme-preview preview-funkyatlas"></div>
+        <div class="theme-name">FunkyAtlas</div>
+      </div>
+    </div>
+
+    <div class="theme-category">🚀 Futuristas</div>
+    <div class="theme-grid">
+      <div class="theme-card" data-theme="cyberpunk">
+        <div class="theme-preview preview-cyberpunk"></div>
+        <div class="theme-name">Cyberpunk</div>
+      </div>
+      <div class="theme-card" data-theme="matrix">
+        <div class="theme-preview preview-matrix"></div>
+        <div class="theme-name">Matrix</div>
+      </div>
+      <div class="theme-card" data-theme="synthwave">
+        <div class="theme-preview preview-synthwave"></div>
+        <div class="theme-name">Synthwave</div>
+      </div>
+    </div>
+
+    <div class="theme-category">🌍 Naturales</div>
+    <div class="theme-grid">
+      <div class="theme-card" data-theme="ocean">
+        <div class="theme-preview preview-ocean"></div>
+        <div class="theme-name">Océano</div>
+      </div>
+      <div class="theme-card" data-theme="forest">
+        <div class="theme-preview preview-forest"></div>
+        <div class="theme-name">Bosque</div>
+      </div>
+      <div class="theme-card" data-theme="sunset">
+        <div class="theme-preview preview-sunset"></div>
+        <div class="theme-name">Atardecer</div>
+      </div>
+    </div>
+
+    <div class="theme-category">🎄 Épocas Especiales <span class="seasonal-indicator" id="seasonal-indicator"></span></div>
+    <div class="mb-2">
+      <label class="d-flex align-items-center" style="font-size: 0.8rem; color: var(--text-secondary);">
+        <input type="checkbox" id="auto-seasonal" checked style="margin-right: 0.5rem;">
+        Cambiar tema automáticamente por fechas especiales
+      </label>
+    </div>
+    <div class="theme-grid">
+      <div class="theme-card seasonal-theme" data-theme="christmas">
+        <div class="theme-preview preview-christmas"></div>
+        <div class="theme-name">Navidad</div>
+      </div>
+      <div class="theme-card seasonal-theme" data-theme="halloween">
+        <div class="theme-preview preview-halloween"></div>
+        <div class="theme-name">Halloween</div>
+      </div>
+      <div class="theme-card seasonal-theme" data-theme="valentine">
+        <div class="theme-preview preview-valentine"></div>
+        <div class="theme-name">San Valentín</div>
+      </div>
+      <div class="theme-card seasonal-theme" data-theme="easter">
+        <div class="theme-preview preview-easter"></div>
+        <div class="theme-name">Pascua</div>
+      </div>
+    </div>
+
+    <div class="theme-category">🌤️ Estaciones</div>
+    <div class="theme-grid">
+      <div class="theme-card" data-theme="summer">
+        <div class="theme-preview preview-summer"></div>
+        <div class="theme-name">Verano</div>
+      </div>
+      <div class="theme-card" data-theme="autumn">
+        <div class="theme-preview preview-autumn"></div>
+        <div class="theme-name">Otoño</div>
+      </div>
+    </div>
+
+    <div class="theme-category">💰 Temas Premium</div>
+    <div class="theme-grid">
+      <div class="theme-card premium-theme" data-theme="galaxy" data-cost="100">
+        <div class="theme-preview preview-galaxy"></div>
+        <div class="theme-name">Galaxia</div>
+        <div class="theme-cost">100 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="gold" data-cost="150">
+        <div class="theme-preview preview-gold"></div>
+        <div class="theme-name">Oro</div>
+        <div class="theme-cost">150 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="rainbow" data-cost="200">
+        <div class="theme-preview preview-rainbow"></div>
+        <div class="theme-name">Arcoíris</div>
+        <div class="theme-cost">200 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="diamond" data-cost="300">
+        <div class="theme-preview preview-diamond"></div>
+        <div class="theme-name">Diamante</div>
+        <div class="theme-cost">300 pts</div>
+      </div>
+      <div class="theme-card premium-theme" data-theme="custom" data-cost="500">
+        <div class="theme-preview preview-custom" id="custom-preview"></div>
+        <div class="theme-name">Custom</div>
+        <div class="theme-cost">500 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fondo parallax -->
+  <div class="parallax-bg" id="parallax-bg"></div>
+
+  <!-- Mini panel de créditos -->
+  <div class="credits-mini-panel" id="credits-mini-panel">
+    <button class="close-credits" id="close-credits">&times;</button>
+    <h4>🎨 Tema FunkyAtlas</h4>
+    <p>Creado por <a href="https://funkyatlas.abelitogamer.com/" target="_blank">AbelitoGamer</a></p>
+    <p>Sitio: <a href="https://funkyatlas.abelitogamer.com/" target="_blank">FunkyAtlas</a></p>
+  </div>
+
+  <!-- Panel de logros -->
+  <div class="achievements-panel" id="achievements-panel">
+    <button class="close-panel" id="close-achievements">&times;</button>
+    <h3>🏆 LOGROS</h3>
+    <div class="mb-3">
+      <div class="points-badge">Puntos: <span id="total-points">0</span></div>
+      <div class="points-badge mt-2" style="background: #dc2626;">Título: <span id="user-title">🔰 Novato</span></div>
+      <div class="points-badge mt-2" id="streak-badge" style="background: #f97316;">Racha: <span id="streak-display">0</span> días</div>
+      <div class="points-badge mt-2" style="background: #22c55e;">Búsquedas: <span id="search-count">0</span></div>
+      <div class="points-badge mt-2" style="background: #8b5cf6;">Filtros: <span id="filter-count">0</span></div>
+    </div>
+
+    <div class="mb-3" id="custom-colors" style="display: none;">
+      <h4 style="color: var(--primary); margin-bottom: 1rem;">🎨 Personalizar Tema</h4>
+      <div class="color-picker-grid">
+        <div class="color-picker-item">
+          <label>Fondo:</label>
+          <input type="color" id="bg-color" value="#1a1a1a">
+        </div>
+        <div class="color-picker-item">
+          <label>Texto:</label>
+          <input type="color" id="text-color" value="#f0f0f0">
+        </div>
+        <div class="color-picker-item">
+          <label>Primario:</label>
+          <input type="color" id="primary-color" value="#ff6b35">
+        </div>
+        <div class="color-picker-item">
+          <label>Secundario:</label>
+          <input type="color" id="secondary-color" value="#f7931e">
+        </div>
+      </div>
+      <button class="btn btn-outline-neon mt-2" id="apply-custom">Aplicar Colores</button>
+    </div>
+
+    <div class="mb-3">
+      <h4 style="color: var(--primary); margin-bottom: 1rem;">🖱️ Cursores</h4>
+      <div class="cursor-grid">
+        <div class="cursor-item" data-cursor="default">
+          <div class="cursor-preview">🖱️</div>
+          <div class="cursor-name">Normal</div>
+        </div>
+        <div class="cursor-item locked" data-cursor="neon" data-cost="50">
+          <div class="cursor-preview">✨</div>
+          <div class="cursor-name">Neón</div>
+          <div class="cursor-cost">50 pts</div>
+        </div>
+        <div class="cursor-item locked" data-cursor="fire" data-cost="75">
+          <div class="cursor-preview">🔥</div>
+          <div class="cursor-name">Fuego</div>
+          <div class="cursor-cost">75 pts</div>
+        </div>
+        <div class="cursor-item locked" data-cursor="diamond" data-cost="100">
+          <div class="cursor-preview">💎</div>
+          <div class="cursor-name">Diamante</div>
+          <div class="cursor-cost">100 pts</div>
+        </div>
+      </div>
+    </div>
+    <div id="achievements-list"></div>
+  </div>
+
+  <!-- Notificación de logro -->
+  <div class="achievement-notification" id="achievement-notification">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-trophy"></i>
+      <div>
+        <div class="fw-bold">¡Logro desbloqueado!</div>
+        <div id="notification-text"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Panel para nerds -->
   <div class="panel-overlay" id="panel-overlay"></div>
   <div class="nerd-panel" id="nerd-panel">
@@ -1073,6 +1801,15 @@
         title.className = 'card-title';
         title.textContent = repo.name.replace(/-/g, ' ');
 
+        const timeline = document.createElement('div');
+        timeline.className = 'card-timeline';
+        const commitDate = new Date(repo.updated_at);
+        const daysSince = Math.floor((new Date() - commitDate) / (1000 * 60 * 60 * 24));
+        timeline.innerHTML = `
+          <div class="commit-dot"></div>
+          <span>Actualizado hace ${daysSince} días</span>
+        `;
+
         const desc = document.createElement('p');
         desc.className = 'card-text';
         desc.textContent = repo.description || 'Sin descripción';
@@ -1096,12 +1833,22 @@
         btnGroup.appendChild(btnDemo);
 
         body.appendChild(title);
+        body.appendChild(timeline);
         body.appendChild(desc);
         body.appendChild(btnGroup);
 
         card.appendChild(img);
         card.appendChild(body);
         container.appendChild(card);
+        
+        // Tracking para logros
+        card.addEventListener('click', () => {
+          gameData.projectsViewed.add(repo.name);
+          if (gameData.projectsViewed.size >= 5) {
+            checkAchievement('project-hunter');
+          }
+          saveGameData();
+        });
       });
 
       updatePagination(repos.length, page);
@@ -1229,21 +1976,7 @@
       }, 1200);
     }
 
-    function displayStats(repos) {
-      setTimeout(() => {
-        const totalRepos = repos.length;
-        const totalStars = repos.reduce((sum, repo) => sum + repo.stargazers_count, 0);
-        const totalForks = repos.reduce((sum, repo) => sum + repo.forks_count, 0);
-        const languages = new Set(repos.filter(repo => repo.language).map(repo => repo.language));
 
-        document.getElementById('total-repos').textContent = totalRepos;
-        document.getElementById('total-stars').textContent = totalStars;
-        document.getElementById('total-forks').textContent = totalForks;
-        document.getElementById('total-languages').textContent = languages.size;
-
-        showSection('stats-container', 'stats-loading');
-      }, 800);
-    }
 
     async function fetchRepos() {
       try {
@@ -1254,7 +1987,6 @@
         allRepos = repos;
         filteredRepos = repos;
 
-        displayStats(repos);
         displayFeaturedRepos(repos);
         displayRepos(repos);
 
@@ -1321,30 +2053,127 @@
     }
 
 
-    function toggleTheme() {
+    function setTheme(theme) {
       const body = document.body;
-      const themeToggle = document.getElementById('theme-toggle');
+      const themes = ['light-theme', 'neon-theme', 'cyberpunk-theme', 'matrix-theme', 'synthwave-theme', 'ocean-theme', 'forest-theme', 'sunset-theme', 'christmas-theme', 'halloween-theme', 'valentine-theme', 'easter-theme', 'summer-theme', 'autumn-theme', 'funkyatlas-theme', 'galaxy-theme', 'gold-theme', 'rainbow-theme', 'diamond-theme', 'custom-theme'];
+      
+      themes.forEach(t => body.classList.remove(t));
+      
+      if (theme !== 'dark') {
+        body.classList.add(theme + '-theme');
+      }
+      
+      if (theme === 'custom') {
+        applyCustomTheme();
+      }
+      
+      document.querySelectorAll('.theme-card').forEach(card => {
+        card.classList.remove('active');
+        if (card.dataset.theme === theme) {
+          card.classList.add('active');
+        }
+      });
+      
+      localStorage.setItem('theme', theme);
+    }
 
-      body.classList.toggle('light-theme');
+    function applyCustomTheme() {
+      const colors = gameData.customColors;
+      document.documentElement.style.setProperty('--custom-bg', colors.bg);
+      document.documentElement.style.setProperty('--custom-bg-light', colors.bg + '33');
+      document.documentElement.style.setProperty('--custom-text', colors.text);
+      document.documentElement.style.setProperty('--custom-text-secondary', colors.text + '99');
+      document.documentElement.style.setProperty('--custom-primary', colors.primary);
+      document.documentElement.style.setProperty('--custom-secondary', colors.secondary);
+    }
 
-      if (body.classList.contains('light-theme')) {
-        themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
-        localStorage.setItem('theme', 'light');
+    function showCustomColors() {
+      document.getElementById('custom-colors').style.display = 'block';
+      document.getElementById('bg-color').value = gameData.customColors.bg;
+      document.getElementById('text-color').value = gameData.customColors.text;
+      document.getElementById('primary-color').value = gameData.customColors.primary;
+      document.getElementById('secondary-color').value = gameData.customColors.secondary;
+    }
+
+    function buyCursor(cursor, cost) {
+      if (gameData.points >= cost && !gameData.unlockedCursors.has(cursor)) {
+        gameData.points -= cost;
+        gameData.unlockedCursors.add(cursor);
+        updatePointsDisplay();
+        updateCursorShop();
+        saveGameData();
+        showAchievementNotification({ name: `Cursor ${cursors[cursor].name} desbloqueado!`, points: 0 });
+        return true;
+      }
+      return false;
+    }
+
+    function loadTheme() {
+      const seasonalTheme = getSeasonalTheme();
+      const savedTheme = localStorage.getItem('theme') || seasonalTheme || 'dark';
+      
+      // Si hay tema estacional y no se ha cambiado manualmente hoy
+      const lastThemeChange = localStorage.getItem('last-theme-change');
+      const today = new Date().toDateString();
+      
+      if (seasonalTheme && lastThemeChange !== today && gameData.autoSeasonalThemes) {
+        setTheme(seasonalTheme);
+        showSeasonalNotification(seasonalTheme);
       } else {
-        themeToggle.innerHTML = '<i class="bi bi-moon-fill"></i>';
-        localStorage.setItem('theme', 'dark');
+        setTheme(savedTheme);
       }
     }
 
+    function getSeasonalTheme() {
+      const now = new Date();
+      const month = now.getMonth() + 1; // 1-12
+      const day = now.getDate();
+      
+      // Halloween (Octubre)
+      if (month === 10) return 'halloween';
+      
+      // Navidad (Diciembre)
+      if (month === 12) return 'christmas';
+      
+      // San Valentín (14 de febrero)
+      if (month === 2 && day === 14) return 'valentine';
+      
+      // Pascua (Abril - aproximado)
+      if (month === 4) return 'easter';
+      
+      // Verano (Junio-Agosto)
+      if (month >= 6 && month <= 8) return 'summer';
+      
+      // Otoño (Septiembre-Noviembre)
+      if (month >= 9 && month <= 11) return 'autumn';
+      
+      return null;
+    }
 
-    function loadTheme() {
-      const savedTheme = localStorage.getItem('theme');
-      const themeToggle = document.getElementById('theme-toggle');
+    function showSeasonalNotification(theme) {
+      const themeNames = {
+        'halloween': '🎃 Halloween',
+        'christmas': '🎄 Navidad', 
+        'valentine': '💕 San Valentín',
+        'easter': '🐰 Pascua',
+        'summer': '☀️ Verano',
+        'autumn': '🍂 Otoño'
+      };
+      
+      const notification = document.getElementById('achievement-notification');
+      document.getElementById('notification-text').textContent = `Tema ${themeNames[theme]} activado automáticamente`;
+      notification.classList.add('show');
+      setTimeout(() => notification.classList.remove('show'), 4000);
+    }
 
-      if (savedTheme === 'light') {
-        document.body.classList.add('light-theme');
-        themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
-      }
+    function showThemePanel() {
+      document.getElementById('theme-overlay').classList.add('show');
+      document.getElementById('theme-panel').classList.add('show');
+    }
+
+    function hideThemePanel() {
+      document.getElementById('theme-overlay').classList.remove('show');
+      document.getElementById('theme-panel').classList.remove('show');
     }
 
 
@@ -1474,12 +2303,417 @@
       document.getElementById('credits-section').classList.remove('active');
     }
 
+    // Sistema de logros y puntajes
+    let gameData = {
+      points: 0,
+      timeOnSite: 0,
+      themesUsed: new Set(),
+      projectsViewed: new Set(),
+      unlockedThemes: new Set(['dark', 'light', 'neon', 'cyberpunk', 'matrix', 'synthwave', 'ocean', 'forest', 'sunset', 'christmas', 'halloween', 'valentine', 'easter', 'summer', 'autumn', 'funkyatlas']),
+      customColors: { bg: '#1a1a1a', text: '#f0f0f0', primary: '#ff6b35', secondary: '#f7931e' },
+      autoSeasonalThemes: true,
+      streak: 0,
+      lastVisit: null,
+      hasScrolledToBottom: false,
+      searchCount: 0,
+      filterCount: 0,
+      activeCursor: 'default',
+      unlockedCursors: new Set(['default']),
+      achievements: {
+        'first-visit': false,
+        'theme-explorer': false,
+        'project-hunter': false,
+        'time-master': false,
+        'theme-collector': false,
+        'funky-fan': false,
+        'big-spender': false,
+        'premium-collector': false,
+        'streak-starter': false,
+        'streak-master': false,
+        'streak-legend': false,
+        'scroll-master': false,
+        'search-explorer': false,
+        'filter-expert': false
+      }
+    };
+
+    const cursors = {
+      'default': { cost: 0, name: 'Normal', css: 'auto' },
+      'neon': { cost: 50, name: 'Neón', css: 'crosshair' },
+      'fire': { cost: 75, name: 'Fuego', css: 'pointer' },
+      'diamond': { cost: 100, name: 'Diamante', css: 'help' }
+    };
+
+    const premiumThemes = {
+      'galaxy': { cost: 100, name: 'Galaxia' },
+      'gold': { cost: 150, name: 'Oro' },
+      'rainbow': { cost: 200, name: 'Arcoíris' },
+      'diamond': { cost: 300, name: 'Diamante' }
+    };
+
+    const achievements = {
+      'first-visit': { name: 'Primera Visita', desc: 'Bienvenido al laboratorio', points: 10, icon: '🎉' },
+      'theme-explorer': { name: 'Explorador de Temas', desc: 'Cambia de tema por primera vez', points: 15, icon: '🎨' },
+      'project-hunter': { name: 'Cazador de Proyectos', desc: 'Ve 5 proyectos diferentes', points: 25, icon: '🔍' },
+      'time-master': { name: 'Maestro del Tiempo', desc: 'Pasa 5 minutos en el sitio', points: 30, icon: '⏰' },
+      'theme-collector': { name: 'Coleccionista', desc: 'Prueba 5 temas diferentes', points: 50, icon: '🌈' },
+      'funky-fan': { name: 'Fan de FunkyAtlas', desc: 'Usa el tema FunkyAtlas', points: 20, icon: '🎵' },
+      'big-spender': { name: 'Gran Gastador', desc: 'Compra tu primer tema premium', points: 25, icon: '💰' },
+      'premium-collector': { name: 'Coleccionista Premium', desc: 'Desbloquea todos los temas premium', points: 100, icon: '💎' },
+      'streak-starter': { name: 'Comenzando la Racha', desc: 'Visita 3 días consecutivos', points: 30, icon: '🔥' },
+      'streak-master': { name: 'Maestro de la Constancia', desc: 'Visita 7 días consecutivos', points: 70, icon: '🏆' },
+      'streak-legend': { name: 'Leyenda Imparable', desc: 'Visita 30 días consecutivos', points: 300, icon: '👑' },
+      'scroll-master': { name: 'Explorador Completo', desc: 'Llega hasta el final de la página', points: 5, icon: '📜' },
+      'search-explorer': { name: 'Buscador Activo', desc: 'Usa la búsqueda 5 veces', points: 15, icon: '🔍' },
+      'filter-expert': { name: 'Experto en Filtros', desc: 'Cambia filtros 10 veces', points: 20, icon: '🎨' }
+    };
+
+    function loadGameData() {
+      const saved = localStorage.getItem('fenix-lab-game');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        gameData = { ...gameData, ...parsed };
+        gameData.themesUsed = new Set(parsed.themesUsed || []);
+        gameData.projectsViewed = new Set(parsed.projectsViewed || []);
+        gameData.unlockedThemes = new Set(parsed.unlockedThemes || ['dark', 'light', 'neon', 'cyberpunk', 'matrix', 'synthwave', 'ocean', 'forest', 'sunset', 'christmas', 'halloween', 'valentine', 'easter', 'summer', 'autumn', 'funkyatlas']);
+        gameData.customColors = parsed.customColors || { bg: '#1a1a1a', text: '#f0f0f0', primary: '#ff6b35', secondary: '#f7931e' };
+        gameData.autoSeasonalThemes = parsed.autoSeasonalThemes !== false;
+        gameData.unlockedCursors = new Set(parsed.unlockedCursors || ['default']);
+      }
+      updatePointsDisplay();
+      checkAchievement('first-visit');
+    }
+
+    function saveGameData() {
+      const toSave = {
+        ...gameData,
+        themesUsed: Array.from(gameData.themesUsed),
+        projectsViewed: Array.from(gameData.projectsViewed),
+        unlockedThemes: Array.from(gameData.unlockedThemes),
+        unlockedCursors: Array.from(gameData.unlockedCursors)
+      };
+      localStorage.setItem('fenix-lab-game', JSON.stringify(toSave));
+    }
+
+    function addPoints(points) {
+      gameData.points += points;
+      updatePointsDisplay();
+      saveGameData();
+    }
+
+    function updatePointsDisplay() {
+      document.getElementById('points-display').textContent = gameData.points;
+      const totalPoints = document.getElementById('total-points');
+      if (totalPoints) totalPoints.textContent = gameData.points;
+      const streakDisplay = document.getElementById('streak-display');
+      if (streakDisplay) streakDisplay.textContent = gameData.streak;
+      const searchCount = document.getElementById('search-count');
+      if (searchCount) searchCount.textContent = gameData.searchCount;
+      const filterCount = document.getElementById('filter-count');
+      if (filterCount) filterCount.textContent = gameData.filterCount;
+      updateStreakDisplay();
+      updateTitle();
+    }
+
+    function getTitle() {
+      if (gameData.points >= 1000) return '👑 Maestro';
+      if (gameData.points >= 500) return '🏆 Veterano';
+      if (gameData.points >= 100) return '🌟 Explorador';
+      return '🔰 Novato';
+    }
+
+    function updateTitle() {
+      const titleDisplay = document.getElementById('user-title');
+      const title = getTitle();
+      if (titleDisplay) titleDisplay.textContent = title;
+    }
+
+    function buyCursor(cursor, cost) {
+      if (gameData.points >= cost && !gameData.unlockedCursors.has(cursor)) {
+        gameData.points -= cost;
+        gameData.unlockedCursors.add(cursor);
+        updatePointsDisplay();
+        updateCursorShop();
+        saveGameData();
+        showAchievementNotification({ name: `Cursor ${cursors[cursor].name} desbloqueado!`, points: 0 });
+        return true;
+      }
+      return false;
+    }
+
+    function setCursor(cursor) {
+      // Verificar que el cursor existe
+      if (!cursors[cursor]) {
+        cursor = 'default';
+      }
+      
+      gameData.activeCursor = cursor;
+      document.body.style.cursor = cursors[cursor].css;
+      saveGameData();
+    }
+
+
+
+    function updateCursorShop() {
+      document.querySelectorAll('.cursor-item').forEach(item => {
+        const cursor = item.dataset.cursor;
+        const isUnlocked = gameData.unlockedCursors.has(cursor);
+        
+        if (isUnlocked) {
+          item.classList.remove('locked');
+          item.classList.add('owned');
+        } else {
+          item.classList.add('locked');
+          item.classList.remove('owned');
+        }
+        
+        if (cursors[gameData.activeCursor] && gameData.activeCursor === cursor) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    function updateStreakDisplay() {
+      const indicator = document.getElementById('streak-indicator');
+      if (gameData.streak > 0) {
+        indicator.textContent = `🔥${gameData.streak}`;
+        if (gameData.streak >= 7) {
+          indicator.classList.add('streak-fire');
+        }
+      } else {
+        indicator.textContent = '';
+        indicator.classList.remove('streak-fire');
+      }
+    }
+
+    function checkDailyVisit() {
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      
+      if (gameData.lastVisit === today) {
+        // Ya visitó hoy, no hacer nada
+        return;
+      }
+      
+      if (gameData.lastVisit === yesterday) {
+        // Visitó ayer, continuar racha
+        gameData.streak += 1;
+        const streakPoints = Math.min(gameData.streak * 10, 100); // Máximo 100 pts por día
+        addPoints(streakPoints);
+        
+        showAchievementNotification({
+          name: `¡Racha de ${gameData.streak} días!`,
+          points: streakPoints
+        });
+        
+        // Logros de racha
+        if (gameData.streak === 3) checkAchievement('streak-starter');
+        if (gameData.streak === 7) checkAchievement('streak-master');
+        if (gameData.streak === 30) checkAchievement('streak-legend');
+        
+      } else if (gameData.lastVisit && gameData.lastVisit !== yesterday) {
+        // Rompió la racha
+        if (gameData.streak > 0) {
+          showAchievementNotification({
+            name: `Racha perdida después de ${gameData.streak} días`,
+            points: 0
+          });
+        }
+        gameData.streak = 1;
+        addPoints(10);
+      } else {
+        // Primera visita
+        gameData.streak = 1;
+        addPoints(10);
+      }
+      
+      gameData.lastVisit = today;
+      saveGameData();
+    }
+
+    function checkScrollToBottom() {
+      if (!gameData.hasScrolledToBottom && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+        gameData.hasScrolledToBottom = true;
+        addPoints(5);
+        checkAchievement('scroll-master');
+        saveGameData();
+      }
+    }
+
+    function trackSearch() {
+      gameData.searchCount++;
+      addPoints(3);
+      if (gameData.searchCount >= 5) {
+        checkAchievement('search-explorer');
+      }
+      saveGameData();
+    }
+
+    function trackFilter() {
+      gameData.filterCount++;
+      addPoints(2);
+      if (gameData.filterCount >= 10) {
+        checkAchievement('filter-expert');
+      }
+      saveGameData();
+    }
+
+    function checkAchievement(id) {
+      if (!gameData.achievements[id] && achievements[id]) {
+        gameData.achievements[id] = true;
+        addPoints(achievements[id].points);
+        showAchievementNotification(achievements[id]);
+        saveGameData();
+      }
+    }
+
+    function showAchievementNotification(achievement) {
+      const notification = document.getElementById('achievement-notification');
+      document.getElementById('notification-text').textContent = `${achievement.name} (+${achievement.points} pts)`;
+      notification.classList.add('show');
+      setTimeout(() => notification.classList.remove('show'), 3000);
+    }
+
+    function setupParallax() {
+      const parallaxBg = document.getElementById('parallax-bg');
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (!isMobile && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        window.addEventListener('scroll', () => {
+          const scrolled = window.pageYOffset;
+          const rate = scrolled * -0.5;
+          parallaxBg.style.transform = `translateY(${rate}px)`;
+        });
+      }
+    }
+
+    function setupPageTransitions() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      });
+
+      document.querySelectorAll('section').forEach(section => {
+        section.classList.add('page-transition');
+        observer.observe(section);
+      });
+    }
+
+    function setupAchievements() {
+      const list = document.getElementById('achievements-list');
+      Object.entries(achievements).forEach(([id, achievement]) => {
+        const item = document.createElement('div');
+        item.className = `achievement-item ${gameData.achievements[id] ? 'unlocked' : ''}`;
+        item.innerHTML = `
+          <div class="achievement-icon">${achievement.icon}</div>
+          <div class="achievement-info">
+            <h4>${achievement.name}</h4>
+            <p>${achievement.desc} (+${achievement.points} pts)</p>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function updatePremiumThemes() {
+      document.querySelectorAll('.premium-theme').forEach(card => {
+        const theme = card.dataset.theme;
+        const isUnlocked = gameData.unlockedThemes.has(theme);
+        
+        if (isUnlocked) {
+          card.classList.remove('locked');
+          card.classList.add('owned');
+        } else {
+          card.classList.add('locked');
+          card.classList.remove('owned');
+        }
+      });
+    }
+
+    function updateSeasonalIndicator() {
+      const currentSeason = getSeasonalTheme();
+      const indicator = document.getElementById('seasonal-indicator');
+      
+      // Limpiar clases anteriores
+      document.querySelectorAll('.seasonal-theme').forEach(card => {
+        card.classList.remove('current-season');
+      });
+      
+      if (currentSeason) {
+        const seasonNames = {
+          'halloween': '(Activo: Halloween 🎃)',
+          'christmas': '(Activo: Navidad 🎄)', 
+          'valentine': '(Activo: San Valentín 💕)',
+          'easter': '(Activo: Pascua 🐰)',
+          'summer': '(Activo: Verano ☀️)',
+          'autumn': '(Activo: Otoño 🍂)'
+        };
+        
+        indicator.textContent = seasonNames[currentSeason] || '';
+        
+        // Resaltar el tema actual
+        const currentCard = document.querySelector(`[data-theme="${currentSeason}"]`);
+        if (currentCard) {
+          currentCard.classList.add('current-season');
+        }
+      } else {
+        indicator.textContent = '';
+      }
+    }
+
+    function buyTheme(theme, cost) {
+      if (gameData.points >= cost && !gameData.unlockedThemes.has(theme)) {
+        gameData.points -= cost;
+        gameData.unlockedThemes.add(theme);
+        updatePointsDisplay();
+        updatePremiumThemes();
+        saveGameData();
+        
+        // Logros
+        if (Object.keys(premiumThemes).every(t => gameData.unlockedThemes.has(t))) {
+          checkAchievement('premium-collector');
+        }
+        if (!gameData.achievements['big-spender']) {
+          checkAchievement('big-spender');
+        }
+        
+        showAchievementNotification({ name: `Tema ${premiumThemes[theme].name} desbloqueado!`, points: 0 });
+        return true;
+      }
+      return false;
+    }
+
+    // Timer para tiempo en sitio
+    setInterval(() => {
+      gameData.timeOnSite += 1;
+      if (gameData.timeOnSite >= 300) { // 5 minutos
+        checkAchievement('time-master');
+      }
+      saveGameData();
+    }, 1000);
+
     document.addEventListener('DOMContentLoaded', () => {
+      loadGameData();
+      checkDailyVisit();
       fetchRepos();
       createParticles();
       typeWriterEffect();
       loadTheme();
       setupLazyLoading();
+      setupParallax();
+      setupPageTransitions();
+      setupAchievements();
+      updatePremiumThemes();
+      updateSeasonalIndicator();
+      updateCursorShop();
+      setCursor(gameData.activeCursor);
+      
+
 
       // Animación para el logo FenixLaboratory
       document.querySelector('.navbar-brand').addEventListener('click', (e) => {
@@ -1498,8 +2732,119 @@
         }, 150);
       });
       
-      // Event listeners
-      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      // Event listeners para temas
+      document.getElementById('theme-panel-btn').addEventListener('click', showThemePanel);
+      document.getElementById('close-theme-panel').addEventListener('click', hideThemePanel);
+      document.getElementById('theme-overlay').addEventListener('click', hideThemePanel);
+      
+      document.querySelectorAll('.theme-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          const theme = e.target.closest('.theme-card').dataset.theme;
+          const cost = parseInt(card.dataset.cost);
+          
+          if (card.classList.contains('premium-theme') && !gameData.unlockedThemes.has(theme)) {
+            if (buyTheme(theme, cost)) {
+              setTheme(theme);
+              hideThemePanel();
+              if (theme === 'custom') showCustomColors();
+            } else {
+              alert(`Necesitas ${cost} puntos para desbloquear este tema. Tienes ${gameData.points} puntos.`);
+              return;
+            }
+          } else {
+            setTheme(theme);
+            hideThemePanel();
+            if (theme === 'custom') showCustomColors();
+          }
+          
+          // Marcar que el usuario cambió tema manualmente hoy
+          localStorage.setItem('last-theme-change', new Date().toDateString());
+          
+          // Sistema de logros para temas
+          gameData.themesUsed.add(theme);
+          if (gameData.themesUsed.size === 1) checkAchievement('theme-explorer');
+          if (gameData.themesUsed.size >= 5) checkAchievement('theme-collector');
+          if (theme === 'funkyatlas') {
+            checkAchievement('funky-fan');
+            showCreditsPanel();
+          }
+          saveGameData();
+        });
+      });
+      
+      // Event listeners para logros
+      document.getElementById('achievements-btn').addEventListener('click', () => {
+        document.getElementById('achievements-panel').classList.toggle('show');
+      });
+      document.getElementById('close-achievements').addEventListener('click', () => {
+        document.getElementById('achievements-panel').classList.remove('show');
+      });
+      
+      // Event listeners para cursores
+      document.querySelectorAll('.cursor-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const cursor = e.target.closest('.cursor-item').dataset.cursor;
+          const cost = parseInt(item.dataset.cost) || 0;
+          
+          if (item.classList.contains('locked') && cost > 0) {
+            if (buyCursor(cursor, cost)) {
+              setCursor(cursor);
+            } else {
+              alert(`Necesitas ${cost} puntos para este cursor. Tienes ${gameData.points} puntos.`);
+            }
+          } else if (gameData.unlockedCursors.has(cursor)) {
+            setCursor(cursor);
+            updateCursorShop();
+          }
+        });
+      });
+      
+      // Event listener para colores custom
+      const applyCustomBtn = document.getElementById('apply-custom');
+      if (applyCustomBtn) {
+        applyCustomBtn.addEventListener('click', () => {
+          gameData.customColors.bg = document.getElementById('bg-color').value;
+          gameData.customColors.text = document.getElementById('text-color').value;
+          gameData.customColors.primary = document.getElementById('primary-color').value;
+          gameData.customColors.secondary = document.getElementById('secondary-color').value;
+          
+          applyCustomTheme();
+          saveGameData();
+          
+          showAchievementNotification({ name: 'Colores personalizados aplicados!', points: 0 });
+        });
+      }
+      
+      // Event listener para checkbox de temas estacionales
+      const autoSeasonalCheckbox = document.getElementById('auto-seasonal');
+      if (autoSeasonalCheckbox) {
+        autoSeasonalCheckbox.checked = gameData.autoSeasonalThemes;
+        autoSeasonalCheckbox.addEventListener('change', (e) => {
+          gameData.autoSeasonalThemes = e.target.checked;
+          saveGameData();
+        });
+      }
+      
+      // Event listeners para mini panel de créditos
+      document.getElementById('close-credits').addEventListener('click', hideCreditsPanel);
+      
+      function showCreditsPanel() {
+        const panel = document.getElementById('credits-mini-panel');
+        panel.classList.add('show');
+        // Aplicar estilos del tema FunkyAtlas al panel
+        if (document.body.classList.contains('funkyatlas-theme')) {
+          panel.style.background = 'linear-gradient(135deg, rgba(43, 16, 85, 0.9), rgba(117, 151, 222, 0.6))';
+          panel.style.borderColor = '#ff4444';
+          panel.style.backdropFilter = 'blur(15px)';
+        }
+        setTimeout(() => {
+          hideCreditsPanel();
+        }, 5000); // Auto-cerrar después de 5 segundos
+      }
+      
+      function hideCreditsPanel() {
+        document.getElementById('credits-mini-panel').classList.remove('show');
+      }
       document.getElementById('credits-btn').addEventListener('click', showCredits);
       document.getElementById('nerd-btn').addEventListener('click', showNerdPanel);
       document.getElementById('close-panel').addEventListener('click', hideNerdPanel);
@@ -1507,7 +2852,7 @@
       
       // Animación para enlaces de navegación
       document.querySelectorAll('.nav-link').forEach(link => {
-        if (link.id !== 'theme-toggle' && link.id !== 'credits-btn') {
+        if (link.id !== 'theme-panel-btn' && link.id !== 'credits-btn') {
           link.addEventListener('click', (e) => {
             e.preventDefault();
             const target = e.target.closest('.nav-link');
@@ -1550,18 +2895,26 @@
           document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
           e.target.classList.add('active');
           filterRepos(e.target.dataset.filter);
+          trackFilter();
         });
       });
 
       // Búsqueda
       document.getElementById('search-input').addEventListener('input', (e) => {
         searchRepos(e.target.value);
+        if (e.target.value.length > 2) {
+          trackSearch();
+        }
       });
 
       // Ordenamiento
       document.getElementById('sort-select').addEventListener('change', (e) => {
         sortRepos(e.target.value);
+        trackFilter();
       });
+
+      // Scroll tracking
+      window.addEventListener('scroll', checkScrollToBottom);
 
 
 
