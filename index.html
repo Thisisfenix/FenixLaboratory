@@ -3098,7 +3098,7 @@
         // Updates recientes
         html += '<h4 style="color: var(--primary); margin-bottom: 1rem;">📝 Últimas Actualizaciones</h4>';
         data.updates.slice(0, 3).forEach(update => {
-          const typeColor = update.type === 'major' ? '#22c55e' : update.type === 'release' ? '#3b82f6' : '#6b7280';
+          const typeColor = update.type === 'major' ? '#22c55e' : update.type === 'release' ? '#3b82f6' : update.type === 'new' ? '#ff6b35' : '#6b7280';
           html += `
             <div class="credit-item" style="margin-bottom: 1rem;">
               <div class="credit-key" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -3119,7 +3119,27 @@
             });
           }
           
-          html += '</ul></div>';
+          html += '</ul>';
+          
+          // Agregar howToInstall si existe
+          if (update.howToInstall?.length) {
+            html += '<h5 style="color: var(--secondary); margin: 1rem 0 0.5rem; font-size: 0.9rem;">📱 Cómo Instalar PWA:</h5><ul class="credit-list">';
+            update.howToInstall.forEach(instruction => {
+              html += `<li style="font-size: 0.8rem; color: #06b6d4;">${instruction}</li>`;
+            });
+            html += '</ul>';
+          }
+          
+          // Agregar autoUpdate si existe
+          if (update.autoUpdate?.length) {
+            html += '<h5 style="color: var(--secondary); margin: 1rem 0 0.5rem; font-size: 0.9rem;">🔄 Actualizaciones Automáticas:</h5><ul class="credit-list">';
+            update.autoUpdate.forEach(info => {
+              html += `<li style="font-size: 0.8rem; color: #10b981;">${info}</li>`;
+            });
+            html += '</ul>';
+          }
+          
+          html += '</div>';
         });
         
         // Roadmap
