@@ -2,12 +2,12 @@
   "name": "FenixLaboratory",
   "short_name": "FenixLab",
   "description": "Donde subo mis experimentos raros y proyectos random",
-  "start_url": "/",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#ff6b35",
-  "orientation": "portrait-primary",
-  "scope": "/",
+  "orientation": "any",
+  "scope": "./",
   "lang": "es",
   "categories": ["productivity", "developer", "portfolio"],
   "icons": [
@@ -15,17 +15,25 @@
       "src": "favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     },
     {
       "src": "placeholder/GHbDEIgXMAACVEi.jpg",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "any"
     },
     {
       "src": "placeholder/GzyBNcWWsAEcgbH.jpg",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/jpeg",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
@@ -33,14 +41,14 @@
       "name": "Ver Proyectos",
       "short_name": "Proyectos",
       "description": "Ver todos mis proyectos de GitHub",
-      "url": "/#proyectos",
+      "url": "./index.html#proyectos",
       "icons": [{ "src": "favicon.svg", "sizes": "96x96" }]
     },
     {
       "name": "Logros",
       "short_name": "Logros",
       "description": "Ver mis logros y puntos",
-      "url": "/#logros",
+      "url": "./index.html#logros",
       "icons": [{ "src": "favicon.svg", "sizes": "96x96" }]
     }
   ]

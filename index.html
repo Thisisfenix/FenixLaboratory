@@ -4181,55 +4181,104 @@
       
       // Service Worker y PWA
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('sw.js')
           .then(registration => {
             console.log('⚡ Service Worker registrado:', registration.scope);
             showAchievementNotification({ name: 'Cache offline activado!', points: 0 });
           })
           .catch(error => {
             console.log('❌ Service Worker falló:', error);
+            // Intentar con ruta absoluta
+            navigator.serviceWorker.register('/FenixLaboratory/sw.js')
+              .then(reg => console.log('⚡ SW registrado con ruta absoluta'))
+              .catch(err => console.log('❌ SW falló completamente:', err));
           });
       }
       
-      // PWA Install Prompt
+      // PWA Install Prompt - Oculto por defecto
       let deferredPrompt;
+      let installButton = null;
+      
       window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('📱 PWA install prompt disponible');
         e.preventDefault();
         deferredPrompt = e;
-        showInstallButton();
+        // No mostrar botón automáticamente para evitar molestias
+        // showInstallButton();
       });
       
       function showInstallButton() {
-        const installBtn = document.createElement('button');
-        installBtn.innerHTML = '📱 Instalar App';
-        installBtn.style.cssText = 'position: fixed; bottom: 20px; left: 20px; z-index: 9999; background: var(--primary); color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
-        installBtn.addEventListener('click', installPWA);
-        document.body.appendChild(installBtn);
+        if (installButton) return; // Evitar duplicados
         
+        installButton = document.createElement('button');
+        installButton.innerHTML = '📱 Instalar App';
+        installButton.style.cssText = 'position: fixed; bottom: 20px; left: 20px; z-index: 9999; background: var(--primary); color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: none;';
+        installButton.addEventListener('click', installPWA);
+        document.body.appendChild(installButton);
+        
+        // Solo mostrar si el usuario hace scroll o después de 10 segundos
         setTimeout(() => {
-          installBtn.style.animation = 'pulse 2s infinite';
-        }, 3000);
+          if (installButton && deferredPrompt) {
+            installButton.style.display = 'block';
+            installButton.style.animation = 'pulse 2s infinite';
+          }
+        }, 10000);
       }
       
       async function installPWA() {
-        if (deferredPrompt) {
+        if (!deferredPrompt) {
+          console.log('❌ No hay prompt de instalación disponible');
+          return;
+        }
+        
+        try {
           deferredPrompt.prompt();
           const { outcome } = await deferredPrompt.userChoice;
+          console.log('📱 Resultado instalación:', outcome);
+          
           if (outcome === 'accepted') {
             showAchievementNotification({ name: '🎉 App instalada correctamente!', points: 50 });
             addPoints(50);
             checkAchievement('pwa-installer');
           }
+          
           deferredPrompt = null;
-          document.querySelector('button[style*="Instalar App"]')?.remove();
+          if (installButton) {
+            installButton.remove();
+            installButton = null;
+          }
+        } catch (error) {
+          console.error('❌ Error en instalación PWA:', error);
         }
       }
       
       // Detectar si ya está instalada como PWA
-      if (window.matchMedia('(display-mode: standalone)').matches) {
+      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
         console.log('📱 Ejecutándose como PWA');
         checkAchievement('pwa-user');
+        // No mostrar botón de instalación si ya está instalada
+        deferredPrompt = null;
       }
+      
+      // Agregar evento para mostrar botón manualmente (para testing)
+      window.showPWAInstall = () => {
+        if (deferredPrompt) {
+          showInstallButton();
+        } else {
+          console.log('❌ No hay prompt de instalación disponible');
+        }
+      };
+      
+      // Limpiar botón si la app se instala desde el navegador
+      window.addEventListener('appinstalled', () => {
+        console.log('📱 PWA instalada desde navegador');
+        if (installButton) {
+          installButton.remove();
+          installButton = null;
+        }
+        checkAchievement('pwa-installer');
+        addPoints(50);
+      });
       
 
       

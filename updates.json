@@ -1,12 +1,12 @@
 {
   "version": "2.0.5",
-  "lastUpdate": "2025-01-27",
+  "lastUpdate": "2025-10-25",
   "updates": [
     {
       "version": "2.0.5",
-      "date": "2025-01-27",
+      "date": "2025-10-25",
       "title": "📱 PWA, Notificaciones y Editor Avanzado",
-      "type": "major",
+      "type": "new",
       "features": [
         "📱 Progressive Web App (PWA) completa - Instalable como app nativa",
         "🔔 Notificaciones push para rachas diarias con temática estacional",
@@ -24,7 +24,13 @@
         "🔧 Eliminado Google Analytics placeholder que causaba errores",
         "📱 Backgrounds animados más visibles (opacidad aumentada)",
         "🐛 Corrección de errores en Sets/Arrays para nuevos logros",
-        "⚡ Matrix Rain con código JavaScript real en lugar de caracteres"
+        "⚡ Matrix Rain con código JavaScript real en lugar de caracteres",
+        "📱 Botón de instalación PWA oculto por defecto para evitar molestias",
+        "🔧 Mejorada detección de PWA y eventos de instalación",
+        "📦 Service Worker optimizado con mejor cache y manejo offline",
+        "🎯 Manifest.json corregido para mejor compatibilidad PWA",
+        "🚀 Función window.showPWAInstall() para testing manual",
+        "🔗 Manifest.json start_url corregido para apuntar a index.html"
       ]
     },
     {
