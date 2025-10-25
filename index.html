@@ -1571,7 +1571,6 @@
     body.rainbow-theme .card { background: linear-gradient(135deg, rgba(55, 65, 81, 0.8), rgba(139, 92, 246, 0.2)); box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
     body.diamond-theme .card { background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(226, 232, 240, 0.7)); box-shadow: 0 0 20px rgba(15, 23, 42, 0.1); }
 
-
     /* Asegurar visibilidad del indicador de racha en todos los temas */
     body.light-theme .streak-indicator,
     body.easter-theme .streak-indicator,
@@ -1649,10 +1648,6 @@
       content: '✓ ';
     }
 
-
-
-
-
     /* Indicador de tema estacional */
     .seasonal-indicator {
       font-size: 0.8rem;
@@ -1684,8 +1679,6 @@
       padding: 0.1rem 0.3rem;
       border-radius: 8px;
     }
-
-
 
     .streak-fire {
       animation: fireGlow 1s ease-in-out infinite alternate;
@@ -1737,9 +1730,72 @@
       .achievements-panel { width: 95%; right: -95%; }
       .achievements-panel.show { right: 2.5%; }
       .nerd-panel { width: 95%; }
-      #repos-container { grid-template-columns: 1fr; gap: 1rem; }
-      .card { min-height: 300px; }
-      .btn-group { flex-direction: column; gap: 0.5rem; }
+      
+      /* Optimizar créditos para móviles */
+      .credits-section { padding: 6rem 1rem 2rem; }
+      .json-viewer { padding: 1rem; font-size: 0.9rem; }
+      .credit-header { padding: 1rem; margin-bottom: 1.5rem; }
+      .credit-header h3 { font-size: 1.5rem; }
+      .credit-section { padding: 1rem; margin-bottom: 1rem; }
+      .credit-section h4 { font-size: 1.1rem; }
+      .credit-item { padding: 0.75rem; margin-bottom: 0.75rem; }
+      .features-grid { grid-template-columns: 1fr; gap: 0.25rem; }
+      .feature-item { padding: 0.4rem; font-size: 0.8rem; }
+      .social-links { flex-direction: column; gap: 0.5rem; }
+      .social-link { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+      .plan-item { padding: 0.5rem; font-size: 0.85rem; }
+      .message-box { padding: 1rem; }
+      .message-box i { font-size: 1.5rem; }
+      
+      /* Mejorar tarjetas en móviles */
+      #repos-container { 
+        grid-template-columns: 1fr; 
+        gap: 1.5rem; 
+        padding: 0 0.5rem;
+      }
+      
+      .card { 
+        min-height: 280px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 1rem;
+      }
+      
+      .card-img-top {
+        height: 160px;
+        object-fit: cover;
+      }
+      
+      .card-body {
+        padding: 1.25rem;
+      }
+      
+      .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+      }
+      
+      .card-text {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin-bottom: 1rem;
+      }
+      
+      .btn-group { 
+        flex-direction: row;
+        gap: 0.5rem;
+        justify-content: space-between;
+      }
+      
+      .btn-outline-neon {
+        flex: 1;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+      }
+      
       .filter-btn { margin: 0.1rem; padding: 0.4rem 0.8rem; font-size: 0.8rem; }
       .theme-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
       .theme-card { padding: 0.5rem; }
@@ -1761,6 +1817,45 @@
       .achievement-item { padding: 0.5rem; }
       .points-badge { font-size: 0.6rem; padding: 0.1rem 0.3rem; }
       .filter-btn { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
+      
+      /* Créditos aún más compactos */
+      .credits-section { padding: 5rem 0.5rem 1rem; }
+      .json-viewer { padding: 0.75rem; font-size: 0.85rem; }
+      .credit-header { padding: 0.75rem; }
+      .credit-header h3 { font-size: 1.3rem; }
+      .credit-section { padding: 0.75rem; }
+      .credit-section h4 { font-size: 1rem; }
+      .credit-item { padding: 0.5rem; }
+      .social-link { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+      .message-box { padding: 0.75rem; }
+      .credit-badge { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+      
+      /* Tarjetas aún más optimizadas para móviles pequeños */
+      .card {
+        min-height: 260px;
+        margin-bottom: 1rem;
+      }
+      
+      .card-img-top {
+        height: 140px;
+      }
+      
+      .card-body {
+        padding: 1rem;
+      }
+      
+      .card-title {
+        font-size: 1rem;
+      }
+      
+      .card-text {
+        font-size: 0.85rem;
+      }
+      
+      .btn-outline-neon {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.75rem;
+      }
     }
 
     /* Optimizaciones RAM para móviles */
@@ -1780,16 +1875,32 @@
         transition-duration: 0.1s !important;
       }
       
-      /* Reducir sombras y efectos */
-      .card { box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important; }
-      .navbar { box-shadow: none !important; backdrop-filter: none !important; }
+      /* Mejorar tarjetas para móviles */
+      .card { 
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+        background: var(--bg-light) !important;
+        border: 1px solid rgba(255, 107, 53, 0.2) !important;
+      }
       
-      /* Deshabilitar text-shadow */
+      .navbar { box-shadow: none !important; backdrop-filter: none !important; background: var(--bg-dark) !important; }
+      
+      /* Deshabilitar text-shadow excepto en títulos importantes */
       * { text-shadow: none !important; }
+      .card-title { text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
       
-      /* Simplificar gradientes */
-      .card { background: var(--bg-light) !important; }
-      .navbar { background: var(--bg-dark) !important; }
+      /* Mejorar legibilidad en móviles */
+      .card-text {
+        color: var(--text-primary) !important;
+        opacity: 0.9;
+      }
+      
+      /* Botones más grandes para touch */
+      .btn-outline-neon {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
       
       /* Deshabilitar Matrix Rain en móviles */
       #matrix-canvas { display: none !important; }
@@ -1862,8 +1973,6 @@
     </div>
     <div class="particles" id="particles"></div>
   </section>
-
-
 
   <!-- Proyectos Destacados -->
   <section id="destacados" class="container">
@@ -2036,8 +2145,6 @@
   <button class="nerd-btn" id="nerd-btn" aria-label="Información técnica">
     <i class="bi bi-terminal"></i>
   </button>
-
-
 
   <!-- Panel de Temas -->
   <div class="panel-overlay" id="theme-overlay"></div>
@@ -2337,8 +2444,6 @@
       </div>
     </div>
 
-
-
     <div class="mb-3">
       <h4 style="color: var(--primary); margin-bottom: 1rem;">🏆 Leaderboard Local</h4>
       <div id="leaderboard-display"></div>
@@ -2440,14 +2545,6 @@
     <div class="nerd-info">🔍 <strong>SEO:</strong> Open Graph, Structured Data</div>
     <div class="nerd-info">♿ <strong>Accesibilidad:</strong> ARIA labels, semántica HTML5</div>
   </div>
-
-
-
-
-  
-
-
-
 
   <footer class="footer">
     © 2025 <a href="https://github.com/thisisfenix" target="_blank">FenixLaboratory</a>
@@ -2727,8 +2824,6 @@
       }, 1200);
     }
 
-
-
     async function fetchRepos() {
       try {
         const response = await fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=100`);
@@ -2770,7 +2865,6 @@
       }
     }
 
-
     const btnTop = document.getElementById('btn-top');
     window.addEventListener('scroll', () => {
       if (window.scrollY > 300) {
@@ -2783,7 +2877,6 @@
     btnTop.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-
 
     function typeWriterEffect() {
       const title = document.getElementById('typewriter');
@@ -2802,7 +2895,6 @@
 
       type();
     }
-
 
     function setTheme(theme) {
       const body = document.body;
@@ -3393,8 +3485,6 @@
 
     }
 
-
-
     function updateDailyChallengesDisplay() {
       const container = document.getElementById('daily-challenges');
       if (!container) return;
@@ -3943,10 +4033,6 @@
       }, gameData.activeEffects['mouse-particles'] - Date.now());
     }
 
-
-
-
-
     // Leaderboard local solamente
     
     async function addToLeaderboard() {
@@ -4144,8 +4230,6 @@
       }
     }
     
-
-
     document.addEventListener('DOMContentLoaded', async () => {
       loadGameData();
       initDailyChallenges();
@@ -4223,7 +4307,11 @@
       // PWA sin Service Worker (más simple)
       console.log('📱 PWA básica sin cache offline');
       
-
+      // Sistema de actualización automática
+      checkForUpdates();
+      
+      // Verificar actualizaciones cada 5 minutos
+      setInterval(checkForUpdates, 300000);
       
       // PWA Install Prompt - Oculto por defecto
       let deferredPrompt;
@@ -4304,6 +4392,41 @@
         window.location.reload(true);
       };
       
+      // Función para verificar actualizaciones
+      async function checkForUpdates() {
+        try {
+          const response = await fetch('./updates.json?t=' + Date.now());
+          const data = await response.json();
+          const currentVersion = '2.0.5';
+          
+          if (data.version !== currentVersion) {
+            console.log('🆕 Nueva versión disponible:', data.version);
+            showUpdateNotification(data.version);
+          }
+        } catch (error) {
+          console.log('❌ Error verificando actualizaciones:', error);
+        }
+      }
+      
+      function showUpdateNotification(newVersion) {
+        const notification = document.getElementById('achievement-notification');
+        document.getElementById('notification-text').textContent = `🆕 Nueva versión ${newVersion} disponible! Recarga para actualizar`;
+        notification.classList.add('show');
+        
+        // Añadir botón de actualización
+        notification.style.cursor = 'pointer';
+        notification.onclick = () => {
+          window.location.reload(true);
+        };
+        
+        // Auto-cerrar después de 10 segundos
+        setTimeout(() => {
+          notification.classList.remove('show');
+          notification.onclick = null;
+          notification.style.cursor = '';
+        }, 10000);
+      }
+      
       // Limpiar botón si la app se instala desde el navegador
       window.addEventListener('appinstalled', () => {
         console.log('📱 PWA instalada desde navegador');
@@ -4314,10 +4437,6 @@
         checkAchievement('pwa-installer');
         addPoints(50);
       });
-      
-
-      
-
 
       // Animación para el logo FenixLaboratory
       document.querySelector('.navbar-brand').addEventListener('click', (e) => {
