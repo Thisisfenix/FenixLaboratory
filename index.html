@@ -1971,8 +1971,7 @@
 
 
     <div class="mb-3">
-      <h4 style="color: var(--primary); margin-bottom: 1rem;">🏆 Leaderboard Global</h4>
-      <button class="btn btn-outline-neon mb-2" onclick="syncGlobalLeaderboard()" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">🔄 Sync Manual</button>
+      <h4 style="color: var(--primary); margin-bottom: 1rem;">🏆 Leaderboard Local</h4>
       <div id="leaderboard-display"></div>
     </div>
 
@@ -2091,10 +2090,7 @@
   </footer>
 
   <!-- Scripts -->
-  <script>
-    // Token será inyectado por GitHub Actions
-    window.GITHUB_TOKEN = window.GITHUB_TOKEN || null;
-  </script>
+
   <script>
     const user = 'thisisfenix';
     let allRepos = [];
@@ -3450,12 +3446,7 @@
 
 
 
-    // Leaderboard global con GitHub Gist (sin API key)
-    let GIST_ID = localStorage.getItem('fenix-gist-id');
-    if (!GIST_ID || GIST_ID === 'null') {
-      GIST_ID = '481735c69231faad0f8ad049d6a1e51a'; // Usar el existente primero
-      localStorage.setItem('fenix-gist-id', GIST_ID);
-    }
+    // Leaderboard local solamente
     
     async function addToLeaderboard() {
       if (!gameData.leaderboardName) {
@@ -3482,73 +3473,9 @@
     }
     
     async function syncGlobalLeaderboard() {
-      try {
-        let globalData = [];
-        
-        // Leer gist existente
-        if (GIST_ID && GIST_ID !== 'null') {
-          try {
-            const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
-            if (response.ok) {
-              const gist = await response.json();
-              const content = gist.files['leaderboard.json']?.content;
-              if (content) globalData = JSON.parse(content);
-            }
-          } catch (error) {
-            console.log('Error reading gist:', error);
-          }
-        }
-        
-        // Agregar/actualizar usuario actual
-        const existing = globalData.findIndex(entry => entry.name === gameData.leaderboardName);
-        const userEntry = {
-          name: gameData.leaderboardName,
-          points: gameData.points,
-          date: new Date().toISOString()
-        };
-        
-        if (existing >= 0) {
-          globalData[existing] = userEntry;
-        } else {
-          globalData.push(userEntry);
-        }
-        
-        globalData.sort((a,b) => b.points - a.points);
-        globalData = globalData.slice(0, 50);
-        
-        // Intentar crear/actualizar gist con token
-        const token = window.GITHUB_TOKEN; // Variable de entorno
-        if (token) {
-          const newGistResponse = await fetch('https://api.github.com/gists', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `token ${token}`
-            },
-            body: JSON.stringify({
-              files: {
-                'leaderboard.json': {
-                  content: JSON.stringify(globalData, null, 2)
-                }
-              },
-              public: true,
-              description: 'FenixLab Leaderboard - ' + new Date().toISOString()
-            })
-          });
-          
-          if (newGistResponse.ok) {
-            const newGist = await newGistResponse.json();
-            GIST_ID = newGist.id;
-            localStorage.setItem('fenix-gist-id', GIST_ID);
-          }
-        }
-        
-        // Guardar localmente como backup
-        localStorage.setItem('fenix-global-leaderboard', JSON.stringify(globalData));
-        
-      } catch (error) {
-        console.log('Sync failed:', error);
-      }
+      // Solo usar datos locales ahora
+      const localData = JSON.parse(localStorage.getItem('fenix-leaderboard') || '[]');
+      localStorage.setItem('fenix-global-leaderboard', JSON.stringify(localData));
     }
     
     async function updateLeaderboardDisplay() {
@@ -3567,7 +3494,7 @@
         return;
       }
       
-      let html = '<div style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">🌍 Top Global:</strong></div>';
+      let html = '<div style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">🏆 Top Local:</strong></div>';
       
       globalData.slice(0, 5).forEach((entry, index) => {
         const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
