@@ -1,12 +1,38 @@
 {
-  "version": "2.0.4",
+  "version": "2.0.5",
   "lastUpdate": "2025-01-27",
   "updates": [
     {
-      "version": "2.0.4",
+      "version": "2.0.5",
       "date": "2025-01-27",
-      "title": "🌍 Leaderboard Global y API Propia",
+      "title": "📱 PWA, Notificaciones y Editor Avanzado",
       "type": "major",
+      "features": [
+        "📱 Progressive Web App (PWA) completa - Instalable como app nativa",
+        "🔔 Notificaciones push para rachas diarias con temática estacional",
+        "🌙 Modo automático día/noche según la hora del día",
+        "🎨 Editor de temas avanzado con colores personalizables",
+        "🎨 Sistema de temas mejorado con más opciones de personalización",
+        "🌈 Nuevos temas premium y colores dinámicos",
+        "⚡ Service Worker para cache offline y carga rápida",
+        "🏆 36 logros totales (agregados 2 nuevos de PWA)",
+        "📱 Optimizaciones específicas para móviles (RAM protegida)",
+        "🔍 13 nuevos logros: GitHub, social, dispositivos, colecciones",
+        "🎯 Detección automática de navegador y dispositivo"
+      ],
+      "fixes": [
+        "🔧 Eliminado Google Analytics placeholder que causaba errores",
+        "📱 Backgrounds animados más visibles (opacidad aumentada)",
+        "🐛 Corrección de errores en Sets/Arrays para nuevos logros",
+        "⚡ Matrix Rain con código JavaScript real en lugar de caracteres"
+      ]
+    },
+    {
+      "version": "2.0.4",
+      "date": "2025-10-25",
+      "title": "❌ DESCARTADA - Leaderboard Global",
+      "type": "deprecated",
+      "status": "discarded",
       "features": [
         "🏆 Leaderboard global usando GitHub Gist API",
         "🔄 Sincronización automática cada 5 minutos",

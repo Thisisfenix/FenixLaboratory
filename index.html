@@ -12,6 +12,13 @@
   <meta name="author" content="ThisIsFenix">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="canonical" href="https://thisisfenix.github.io/FenixLaboratory/">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FenixLab">
+  <link rel="apple-touch-icon" href="favicon.svg">
   <!-- Open Graph -->
   <meta property="og:title" content="FenixLaboratory - Experimentos raros y proyectos random">
   <meta property="og:description"
@@ -560,6 +567,56 @@
       cursor: pointer;
     }
 
+    .theme-editor {
+      background: var(--bg-dark);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .editor-section h5 {
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .editor-section label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .editor-actions .btn {
+      flex: 1;
+      min-width: 120px;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+      .editor-grid {
+        grid-template-columns: 1fr;
+      }
+      .editor-actions {
+        flex-direction: column;
+      }
+    }
+
 
     /* Temas */
     body.light-theme { --bg-dark: #f8fafc; --bg-light: #ffffff; --text-primary: #1a202c; --text-secondary: #4a5568; --primary: #3182ce; --secondary: #805ad5; }
@@ -640,6 +697,212 @@
     /* FunkyAtlas - Scrollbars */
     body.funkyatlas-theme ::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #ff4444, #ff9e9e); }
     body.funkyatlas-theme ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
+
+    /* Matrix Theme - Unique Aesthetics */
+    body.matrix-theme .navbar { background: linear-gradient(90deg, #000000, #001100); border-bottom: 1px solid #00ff00; box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3); }
+    body.matrix-theme .navbar-brand { font-family: 'Courier New', monospace; text-shadow: 0 0 10px #00ff00; animation: matrixGlow 2s infinite; }
+    body.matrix-theme .card { background: linear-gradient(135deg, rgba(0, 20, 0, 0.9), rgba(0, 40, 0, 0.7)); border: 1px solid #00ff00; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
+    body.matrix-theme .card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 10px 30px rgba(0, 255, 0, 0.4); }
+    body.matrix-theme .card-title { font-family: 'Courier New', monospace; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
+    body.matrix-theme .btn-neon, body.matrix-theme .btn-outline-neon { font-family: 'Courier New', monospace; border-color: #00ff00; color: #00ff00; }
+    body.matrix-theme .btn-neon:hover, body.matrix-theme .btn-outline-neon:hover { background: #00ff00; color: #000000; box-shadow: 0 0 20px #00ff00; }
+    body.matrix-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 255, 0, 0.3) 1px, rgba(0, 255, 0, 0.3) 2px, transparent 2px, transparent 8px, rgba(0, 255, 0, 0.2) 8px, rgba(0, 255, 0, 0.2) 9px); z-index: -2; animation: matrixLines 15s linear infinite; }
+    
+    /* Cyberpunk Theme - Unique Aesthetics */
+    body.cyberpunk-theme .navbar { background: linear-gradient(90deg, #0d1117, #ff0080); border-bottom: 2px solid #00d4ff; box-shadow: 0 4px 20px rgba(255, 0, 128, 0.5); }
+    body.cyberpunk-theme .navbar-brand { background: linear-gradient(45deg, #ff0080, #00d4ff); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px #ff0080; }
+    body.cyberpunk-theme .card { background: linear-gradient(135deg, rgba(13, 17, 23, 0.9), rgba(255, 0, 128, 0.1)); border: 2px solid #ff0080; box-shadow: 0 0 30px rgba(255, 0, 128, 0.3); position: relative; overflow: hidden; }
+    body.cyberpunk-theme .card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent); animation: cyberpunkScan 3s infinite; }
+    body.cyberpunk-theme .card:hover { transform: translateY(-15px) rotateX(5deg); box-shadow: 0 20px 40px rgba(255, 0, 128, 0.6); }
+    body.cyberpunk-theme .card-title { color: #00d4ff; text-shadow: 0 0 10px #00d4ff; position: relative; }
+    body.cyberpunk-theme .card-title::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #ff0080, #00d4ff); animation: cyberpunkLine 2s infinite; }
+    body.cyberpunk-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 80%, rgba(255, 0, 128, 0.25) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.2) 0%, transparent 50%); z-index: -2; animation: cyberpunkPulse 8s ease-in-out infinite; }
+    
+    /* Ocean Theme - Unique Aesthetics */
+    body.ocean-theme .navbar { background: linear-gradient(90deg, #0f3460, #16537e); border-bottom: 2px solid rgba(0, 212, 255, 0.5); box-shadow: 0 4px 15px rgba(0, 100, 200, 0.3); }
+    body.ocean-theme .hero::before { background: radial-gradient(circle at 30% 40%, rgba(0, 212, 255, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(22, 83, 126, 0.4) 0%, transparent 50%); animation: oceanWaves 6s ease-in-out infinite; }
+    body.ocean-theme .card { background: linear-gradient(135deg, rgba(15, 52, 96, 0.8), rgba(22, 83, 126, 0.6)); border: 1px solid rgba(0, 212, 255, 0.3); box-shadow: 0 8px 32px rgba(0, 100, 200, 0.2); backdrop-filter: blur(10px); }
+    body.ocean-theme .card:hover { transform: translateY(-8px); box-shadow: 0 16px 48px rgba(0, 212, 255, 0.4); }
+    body.ocean-theme .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #00d4ff, transparent); animation: oceanShimmer 3s ease-in-out infinite; }
+    
+    /* Fire Theme - Unique Aesthetics */
+    body.fire-theme .navbar { background: linear-gradient(90deg, #330000, #660000); border-bottom: 2px solid #ff4500; box-shadow: 0 4px 20px rgba(255, 69, 0, 0.5); }
+    body.fire-theme .navbar-brand { color: #ff4500; text-shadow: 0 0 10px #ff4500, 0 0 20px #ff0000; animation: fireFlicker 1.5s infinite; }
+    body.fire-theme .card { background: linear-gradient(135deg, rgba(51, 0, 0, 0.9), rgba(102, 0, 0, 0.7)); border: 2px solid #ff4500; box-shadow: 0 0 30px rgba(255, 69, 0, 0.4); position: relative; }
+    body.fire-theme .card::before { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(45deg, #ff0000, #ff4500, #ff8c00, #ffd700); z-index: -1; border-radius: inherit; animation: fireGlow 2s ease-in-out infinite; }
+    body.fire-theme .card:hover { transform: translateY(-12px) scale(1.03); box-shadow: 0 20px 50px rgba(255, 69, 0, 0.6); }
+    body.fire-theme .card-title { color: #ffd700; text-shadow: 0 0 10px #ff4500; }
+    
+    /* Steampunk Theme - Unique Aesthetics */
+    body.steampunk-theme .navbar { background: linear-gradient(90deg, #3d2914, #8b4513); border-bottom: 3px solid #b8860b; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 4px 15px rgba(0, 0, 0, 0.5); }
+    body.steampunk-theme .navbar-brand { color: #daa520; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-weight: bold; }
+    body.steampunk-theme .card { background: linear-gradient(135deg, rgba(61, 41, 20, 0.9), rgba(139, 69, 19, 0.7)); border: 3px solid #b8860b; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 25px rgba(0, 0, 0, 0.4); position: relative; }
+    body.steampunk-theme .card::before { content: '⚙️'; position: absolute; top: 10px; right: 10px; font-size: 1.2rem; opacity: 0.3; animation: steamGear 4s linear infinite; }
+    body.steampunk-theme .card:hover { transform: translateY(-8px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 15px 35px rgba(184, 134, 11, 0.3); }
+    body.steampunk-theme .card-title { color: #daa520; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); font-family: serif; }
+    
+    /* Neon Theme - Unique Aesthetics */
+    body.neon-theme .navbar { background: linear-gradient(90deg, #0a0a0a, #1a1a1a); border-bottom: 2px solid #00ff41; box-shadow: 0 0 20px rgba(0, 255, 65, 0.5); }
+    body.neon-theme .navbar-brand { color: #00ff41; text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41; animation: neonPulse 2s ease-in-out infinite; }
+    body.neon-theme .card { background: rgba(26, 26, 26, 0.8); border: 2px solid #00ff41; box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.1); }
+    body.neon-theme .card:hover { transform: translateY(-10px); box-shadow: 0 0 40px rgba(0, 255, 65, 0.6), inset 0 0 30px rgba(0, 255, 65, 0.2); }
+    body.neon-theme .card-title { color: #00ff41; text-shadow: 0 0 10px #00ff41; }
+    body.neon-theme .card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 1px solid #00ff41; opacity: 0; animation: neonBorder 3s infinite; }
+    body.neon-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, rgba(0, 255, 65, 0.15) 0px, transparent 2px, transparent 100px, rgba(0, 255, 65, 0.1) 102px); z-index: -2; animation: neonGrid 10s linear infinite; }
+    
+    /* Vaporwave Theme - Unique Aesthetics */
+    body.vaporwave-theme .navbar { background: linear-gradient(90deg, #1a0033, #330066); border-bottom: 2px solid #ff006e; box-shadow: 0 4px 20px rgba(255, 0, 110, 0.4); }
+    body.vaporwave-theme .navbar-brand { background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: vaporwaveShift 4s ease-in-out infinite; }
+    body.vaporwave-theme .card { background: linear-gradient(135deg, rgba(26, 0, 51, 0.9), rgba(51, 0, 102, 0.7)); border: 2px solid #ff006e; box-shadow: 0 8px 32px rgba(255, 0, 110, 0.3); position: relative; overflow: hidden; }
+    body.vaporwave-theme .card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(58, 134, 255, 0.3), transparent); animation: vaporwaveScan 4s infinite; }
+    body.vaporwave-theme .card:hover { transform: translateY(-12px) rotateY(5deg); box-shadow: 0 20px 50px rgba(255, 0, 110, 0.5); }
+    
+    /* Animations */
+    @keyframes matrixGlow { 0%, 100% { text-shadow: 0 0 10px #00ff00; } 50% { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; } }
+    @keyframes cyberpunkScan { 0% { left: -100%; } 100% { left: 100%; } }
+    @keyframes cyberpunkLine { 0% { width: 0; } 50% { width: 100%; } 100% { width: 0; } }
+    @keyframes oceanWaves { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+    @keyframes oceanShimmer { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+    @keyframes fireFlicker { 0%, 100% { text-shadow: 0 0 10px #ff4500, 0 0 20px #ff0000; } 50% { text-shadow: 0 0 20px #ff4500, 0 0 30px #ff0000, 0 0 40px #ff8c00; } }
+    @keyframes fireGlow { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+    @keyframes steamGear { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes neonPulse { 0%, 100% { text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41; } 50% { text-shadow: 0 0 20px #00ff41, 0 0 30px #00ff41, 0 0 40px #00ff41; } }
+    @keyframes neonBorder { 0%, 100% { opacity: 0; } 50% { opacity: 0.8; } }
+    @keyframes vaporwaveShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+    @keyframes vaporwaveScan { 0% { left: -100%; } 100% { left: 100%; } }
+
+    /* Animated Backgrounds for Each Theme */
+    body.ocean-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, rgba(0, 100, 200, 0.3) 25%, transparent 25%), linear-gradient(-45deg, rgba(0, 212, 255, 0.25) 25%, transparent 25%); background-size: 60px 60px; z-index: -2; animation: oceanFlow 15s linear infinite; }
+    body.fire-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 30% 70%, rgba(255, 69, 0, 0.4) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(255, 140, 0, 0.3) 0%, transparent 50%); z-index: -2; animation: fireWaves 6s ease-in-out infinite; }
+    body.steampunk-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(184, 134, 11, 0.15) 0deg, transparent 30deg, rgba(139, 69, 19, 0.12) 60deg, transparent 90deg); z-index: -2; animation: steamGears 30s linear infinite; }
+    body.vaporwave-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, rgba(255, 0, 110, 0.25), rgba(131, 56, 236, 0.2), rgba(58, 134, 255, 0.25)); z-index: -2; animation: vaporwaveGradient 12s ease-in-out infinite; }
+    body.forest-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 40% 60%, rgba(74, 222, 128, 0.25) 0%, transparent 50%), radial-gradient(circle at 80% 40%, rgba(34, 197, 94, 0.2) 0%, transparent 50%); z-index: -2; animation: forestBreeze 10s ease-in-out infinite; }
+    body.sunset-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(249, 115, 22, 0.25) 0%, rgba(234, 88, 12, 0.2) 50%, rgba(124, 45, 18, 0.15) 100%); z-index: -2; animation: sunsetGlow 15s ease-in-out infinite; }
+    body.galaxy-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(2px 2px at 20px 30px, rgba(124, 58, 237, 0.8), transparent), radial-gradient(2px 2px at 40px 70px, rgba(168, 85, 247, 0.6), transparent), radial-gradient(1px 1px at 90px 40px, rgba(196, 181, 253, 0.4), transparent); background-size: 100px 100px; z-index: -2; animation: galaxyTwinkle 20s linear infinite; }
+    body.gold-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.25) 0%, transparent 20%, rgba(245, 158, 11, 0.15) 40%); z-index: -2; animation: goldShimmer 8s ease-in-out infinite; }
+    body.rainbow-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2), rgba(234, 179, 8, 0.2), rgba(34, 197, 94, 0.2), rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2)); background-size: 400% 400%; z-index: -2; animation: rainbowShift 10s ease-in-out infinite; }
+    body.diamond-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(226, 232, 240, 0.2) 0deg, rgba(203, 213, 225, 0.15) 60deg, rgba(148, 163, 184, 0.18) 120deg, transparent 180deg); background-size: 80px 80px; z-index: -2; animation: diamondSparkle 12s linear infinite; }
+    body.hacker-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, rgba(0, 255, 0, 0.15) 0px, transparent 1px, transparent 20px, rgba(0, 204, 0, 0.1) 21px); z-index: -2; animation: hackerScan 5s linear infinite; }
+    body.space-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(1px 1px at 25px 25px, rgba(102, 102, 255, 0.8), transparent), radial-gradient(1px 1px at 75px 75px, rgba(153, 153, 255, 0.6), transparent), radial-gradient(2px 2px at 125px 25px, rgba(255, 255, 255, 0.4), transparent); background-size: 150px 150px; z-index: -2; animation: spaceFloat 25s linear infinite; }
+    body.ice-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, rgba(224, 246, 255, 0.25) 0px, transparent 2px, transparent 20px, rgba(135, 206, 235, 0.2) 22px); z-index: -2; animation: iceCrystals 18s linear infinite; }
+    body.toxic-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 30% 40%, rgba(50, 205, 50, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(0, 255, 0, 0.25) 0%, transparent 50%); z-index: -2; animation: toxicBubbles 12s ease-in-out infinite; }
+    body.royal-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.25) 0%, transparent 30%, rgba(186, 85, 211, 0.15) 60%); z-index: -2; animation: royalElegance 15s ease-in-out infinite; }
+    body.hologram-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.15) 0px, transparent 2px, transparent 10px, rgba(255, 0, 255, 0.15) 12px, transparent 14px, transparent 24px); z-index: -2; animation: hologramFlicker 3s ease-in-out infinite; }
+    body.legendary-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.3) 0%, transparent 30%), radial-gradient(circle at 80% 80%, rgba(255, 20, 147, 0.25) 0%, transparent 30%), radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.2) 0%, transparent 40%); z-index: -2; animation: legendaryAura 8s ease-in-out infinite; }
+
+    /* Christmas Theme */
+    body.christmas-theme .navbar { background: linear-gradient(90deg, #0f172a, #1e293b); border-bottom: 2px solid #dc2626; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); }
+    body.christmas-theme .card { background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.7)); border: 2px solid #dc2626; box-shadow: 0 0 20px rgba(22, 163, 74, 0.2); }
+    body.christmas-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent), radial-gradient(2px 2px at 40px 70px, rgba(220, 38, 38, 0.6), transparent), radial-gradient(1px 1px at 90px 40px, rgba(22, 163, 74, 0.4), transparent); background-size: 100px 100px; z-index: -2; animation: christmasSnow 8s linear infinite; }
+
+    /* Halloween Theme */
+    body.halloween-theme .navbar { background: linear-gradient(90deg, #1c1917, #292524); border-bottom: 2px solid #f97316; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); }
+    body.halloween-theme .card { background: linear-gradient(135deg, rgba(28, 25, 23, 0.9), rgba(41, 37, 36, 0.7)); border: 2px solid #f97316; box-shadow: 0 0 25px rgba(124, 45, 18, 0.3); }
+    body.halloween-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 30% 40%, rgba(249, 115, 22, 0.35) 0%, transparent 30%), radial-gradient(circle at 70% 80%, rgba(124, 45, 18, 0.25) 0%, transparent 25%); z-index: -2; animation: halloweenGlow 10s ease-in-out infinite; }
+
+    /* Valentine Theme */
+    body.valentine-theme .navbar { background: linear-gradient(90deg, #1f1726, #2e1f3e); border-bottom: 2px solid #ec4899; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); }
+    body.valentine-theme .card { background: linear-gradient(135deg, rgba(31, 23, 38, 0.9), rgba(46, 31, 62, 0.7)); border: 2px solid #ec4899; box-shadow: 0 0 20px rgba(190, 24, 93, 0.3); }
+    body.valentine-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 25% 25%, rgba(236, 72, 153, 0.3) 0%, transparent 20%), radial-gradient(circle at 75% 75%, rgba(190, 24, 93, 0.25) 0%, transparent 25%); z-index: -2; animation: valentineHearts 15s ease-in-out infinite; }
+
+    /* Easter Theme */
+    body.easter-theme .navbar { background: linear-gradient(90deg, #fef3c7, #fef9c3); border-bottom: 2px solid #a855f7; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3); }
+    body.easter-theme .card { background: linear-gradient(135deg, rgba(254, 243, 199, 0.9), rgba(254, 249, 195, 0.8)); border: 2px solid #a855f7; box-shadow: 0 0 20px rgba(124, 58, 237, 0.2); }
+    body.easter-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.25) 0%, transparent 15%, rgba(124, 58, 237, 0.15) 30%); z-index: -2; animation: easterSpring 12s ease-in-out infinite; }
+
+    /* Summer Theme */
+    body.summer-theme .navbar { background: linear-gradient(90deg, #fef3c7, #fefce8); border-bottom: 2px solid #06b6d4; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
+    body.summer-theme .card { background: linear-gradient(135deg, rgba(254, 243, 199, 0.9), rgba(254, 252, 232, 0.8)); border: 2px solid #06b6d4; box-shadow: 0 0 20px rgba(8, 145, 178, 0.2); }
+    body.summer-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.3) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(8, 145, 178, 0.25) 0%, transparent 35%); z-index: -2; animation: summerSun 20s ease-in-out infinite; }
+
+    /* Autumn Theme */
+    body.autumn-theme .navbar { background: linear-gradient(90deg, #451a03, #7c2d12); border-bottom: 2px solid #ea580c; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4); }
+    body.autumn-theme .card { background: linear-gradient(135deg, rgba(69, 26, 3, 0.9), rgba(124, 45, 18, 0.7)); border: 2px solid #ea580c; box-shadow: 0 0 20px rgba(220, 38, 38, 0.2); }
+    body.autumn-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, rgba(234, 88, 12, 0.25) 0px, transparent 2px, transparent 30px, rgba(220, 38, 38, 0.2) 32px, transparent 34px, transparent 60px); z-index: -2; animation: autumnLeaves 18s linear infinite; }
+
+    /* Background Animations */
+    @keyframes matrixLines { 0% { transform: translateY(0); } 100% { transform: translateY(9px); } }
+    @keyframes cyberpunkPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+    @keyframes oceanFlow { 0% { background-position: 0 0; } 100% { background-position: 60px 60px; } }
+    @keyframes fireWaves { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    @keyframes steamGears { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes neonGrid { 0% { background-position: 0 0; } 100% { background-position: 100px 0; } }
+    @keyframes vaporwaveGradient { 0%, 100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(180deg); } }
+    @keyframes synthwaveLines { 0% { transform: translateY(0); } 100% { transform: translateY(42px); } }
+    @keyframes forestBreeze { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
+    @keyframes sunsetGlow { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+    @keyframes galaxyTwinkle { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+    @keyframes goldShimmer { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes rainbowShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes diamondSparkle { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes hackerScan { 0% { background-position: 0 0; } 100% { background-position: 21px 0; } }
+    @keyframes spaceFloat { 0% { background-position: 0 0; } 100% { background-position: 150px 150px; } }
+    @keyframes iceCrystals { 0% { background-position: 0 0; } 100% { background-position: 22px 22px; } }
+    @keyframes toxicBubbles { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    @keyframes royalElegance { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+    @keyframes hologramFlicker { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
+    @keyframes legendaryAura { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
+    @keyframes snowfall { 0% { transform: translateY(-100vh); } 100% { transform: translateY(100vh); } }
+    @keyframes batsFlying { 0% { transform: translateX(-100vw); } 100% { transform: translateX(100vw); } }
+    @keyframes heartsFloat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
+    @keyframes bunnyHop { 0%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-10px); } 50% { transform: translateY(-5px); } }
+    @keyframes sunRays { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
+    @keyframes leavesfall { 0% { transform: translateY(-100vh) rotate(0deg); } 100% { transform: translateY(100vh) rotate(360deg); } }
+    @keyframes christmasSnow { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }
+    @keyframes halloweenGlow { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+    @keyframes valentineHearts { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+    @keyframes easterSpring { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } }
+    @keyframes summerSun { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.05) rotate(180deg); } }
+    @keyframes autumnLeaves { 0% { background-position: 0 0; } 100% { background-position: 62px 62px; } }
+
+    /* Complete Missing Theme Aesthetics */
+    
+    /* Light Theme - Fix navbar text */
+    body.light-theme .navbar { background: linear-gradient(90deg, #f8fafc, #ffffff); border-bottom: 2px solid #3182ce; box-shadow: 0 4px 15px rgba(49, 130, 206, 0.2); }
+    body.light-theme .navbar-brand { color: #3182ce !important; text-shadow: none; }
+    body.light-theme .nav-link { color: #1a202c !important; }
+    body.light-theme .card { background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8)); border: 2px solid #3182ce; box-shadow: 0 8px 25px rgba(49, 130, 206, 0.15); }
+    body.light-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, rgba(49, 130, 206, 0.05) 0px, transparent 2px, transparent 20px, rgba(128, 90, 213, 0.03) 22px); z-index: -2; animation: lightShimmer 12s ease-in-out infinite; }
+    
+    /* Synthwave Theme - Complete Aesthetics */
+    body.synthwave-theme .navbar { background: linear-gradient(90deg, #2d1b69, #3e2a7a); border-bottom: 2px solid #ff6b9d; box-shadow: 0 4px 20px rgba(255, 107, 157, 0.4); }
+    body.synthwave-theme .navbar-brand { background: linear-gradient(45deg, #ffd700, #ff6b9d); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 15px #ff6b9d; }
+    body.synthwave-theme .card { background: linear-gradient(135deg, rgba(45, 27, 105, 0.9), rgba(62, 42, 122, 0.7)); border: 2px solid #ff6b9d; box-shadow: 0 0 25px rgba(255, 107, 157, 0.3); }
+    body.synthwave-theme .card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 15px 40px rgba(255, 107, 157, 0.5); }
+    body.synthwave-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 107, 157, 0.25) 0px, transparent 2px, transparent 40px, rgba(196, 69, 105, 0.2) 42px); z-index: -2; animation: synthwaveLines 8s linear infinite; }
+    
+    /* Forest Theme - Complete Aesthetics */
+    body.forest-theme .navbar { background: linear-gradient(90deg, #1a3d2e, #2d5a47); border-bottom: 2px solid #4ade80; box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3); }
+    body.forest-theme .navbar-brand { color: #4ade80; text-shadow: 0 0 10px #4ade80; }
+    body.forest-theme .card { background: linear-gradient(135deg, rgba(26, 61, 46, 0.9), rgba(45, 90, 71, 0.7)); border: 2px solid #4ade80; box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2); }
+    body.forest-theme .card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(74, 222, 128, 0.4); }
+    
+    /* Sunset Theme - Complete Aesthetics */
+    body.sunset-theme .navbar { background: linear-gradient(90deg, #7c2d12, #9a3412); border-bottom: 2px solid #f97316; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); }
+    body.sunset-theme .navbar-brand { color: #f97316; text-shadow: 0 0 15px #f97316; }
+    body.sunset-theme .card { background: linear-gradient(135deg, rgba(124, 45, 18, 0.9), rgba(154, 52, 18, 0.7)); border: 2px solid #f97316; box-shadow: 0 8px 25px rgba(234, 88, 12, 0.3); }
+    body.sunset-theme .card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(249, 115, 22, 0.5); }
+    
+    /* Ocean Theme - Complete Aesthetics */
+    body.ocean-theme .navbar-brand { color: #00d4ff; text-shadow: 0 0 15px #00d4ff; }
+    body.ocean-theme .card-title { color: #00d4ff; text-shadow: 0 0 8px #00d4ff; }
+    
+    /* Neon City Theme - Complete Aesthetics */
+    body.neon-city-theme .navbar { background: linear-gradient(90deg, #0a0a0a, #1a0a1a); border-bottom: 2px solid #ff8000; box-shadow: 0 4px 20px rgba(255, 128, 0, 0.5); }
+    body.neon-city-theme .navbar-brand { background: linear-gradient(45deg, #ff0080, #00ffff, #ff8000); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: neonCityGlow 3s ease-in-out infinite; }
+    body.neon-city-theme .card { background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(26, 10, 26, 0.7)); border: 2px solid #ff0080; box-shadow: 0 0 30px rgba(255, 0, 128, 0.4); }
+    body.neon-city-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, rgba(255, 0, 128, 0.1) 0px, transparent 2px, transparent 50px, rgba(0, 255, 255, 0.08) 52px, transparent 54px, transparent 100px, rgba(255, 128, 0, 0.06) 102px); z-index: -2; animation: neonCityLines 6s linear infinite; }
+    
+    /* Additional Missing Animations */
+    @keyframes lightShimmer { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+    @keyframes neonCityGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
+    @keyframes neonCityLines { 0% { background-position: 0 0; } 100% { background-position: 102px 0; } }
+    
+    /* Fix navbar text for all light themes */
+    body.easter-theme .nav-link { color: #451a03 !important; }
+    body.summer-theme .nav-link { color: #0c4a6e !important; }
+    body.diamond-theme .nav-link { color: #1e293b !important; }
+    body.diamond-theme .navbar-brand { color: #0f172a !important; text-shadow: none; }
 
     /* Filtros y búsqueda */
     .filters {
@@ -1048,6 +1311,13 @@
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.1); }
+    }
+
+    /* PWA Install Button Animation */
+    @keyframes pulse {
+      0% { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+      50% { box-shadow: 0 4px 20px rgba(255, 107, 53, 0.6); }
+      100% { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     }
 
     /* Mini panel de créditos */
@@ -1478,12 +1748,36 @@
       .filter-btn { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
     }
 
-    /* Deshabilitar efectos en móviles para rendimiento */
+    /* Optimizaciones RAM para móviles */
     @media (max-width: 768px) {
-      .card:hover { transform: none; }
-      .parallax-bg { display: none; }
-      .particles { display: none; }
-      * { animation-duration: 0.1s !important; }
+      /* Deshabilitar efectos pesados */
+      .card:hover { transform: none !important; }
+      .parallax-bg { display: none !important; }
+      .particles { display: none !important; }
+      
+      /* Deshabilitar backgrounds animados */
+      body::before { display: none !important; }
+      
+      /* Simplificar animaciones */
+      * { 
+        animation-duration: 0.1s !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.1s !important;
+      }
+      
+      /* Reducir sombras y efectos */
+      .card { box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important; }
+      .navbar { box-shadow: none !important; backdrop-filter: none !important; }
+      
+      /* Deshabilitar text-shadow */
+      * { text-shadow: none !important; }
+      
+      /* Simplificar gradientes */
+      .card { background: var(--bg-light) !important; }
+      .navbar { background: var(--bg-dark) !important; }
+      
+      /* Deshabilitar Matrix Rain en móviles */
+      #matrix-canvas { display: none !important; }
     }
   </style>
 </head>
@@ -1534,7 +1828,7 @@
           </li>
           <li class="nav-item">
             <button id="updates-btn" class="nav-link" aria-label="Ver actualizaciones">
-              <i class="bi bi-arrow-up-circle me-1"></i> v2.0.4
+              <i class="bi bi-arrow-up-circle me-1"></i> v2.0.5
             </button>
           </li>
         </ul>
@@ -1795,6 +2089,18 @@
         Cambiar tema automáticamente por fechas especiales
       </label>
     </div>
+    <div class="mb-2">
+      <label class="d-flex align-items-center" style="font-size: 0.8rem; color: var(--text-secondary);">
+        <input type="checkbox" id="push-notifications" checked style="margin-right: 0.5rem;">
+        Notificaciones de racha diaria
+      </label>
+    </div>
+    <div class="mb-2">
+      <label class="d-flex align-items-center" style="font-size: 0.8rem; color: var(--text-secondary);">
+        <input type="checkbox" id="auto-day-night" style="margin-right: 0.5rem;">
+        Modo automático día/noche
+      </label>
+    </div>
     <div class="theme-grid">
       <div class="theme-card seasonal-theme" data-theme="christmas">
         <div class="theme-preview preview-christmas"></div>
@@ -1921,6 +2227,54 @@
         <div class="theme-cost">5000 pts</div>
       </div>
     </div>
+
+    <div class="theme-category">🎨 Editor Avanzado</div>
+    <div class="theme-editor" id="theme-editor" style="display: none;">
+      <div class="editor-grid">
+        <div class="editor-section">
+          <h5>🎨 Colores Base</h5>
+          <div class="color-picker-grid">
+            <div class="color-picker-item">
+              <label>Fondo Principal:</label>
+              <input type="color" id="editor-bg" value="#1a1a1a">
+            </div>
+            <div class="color-picker-item">
+              <label>Fondo Secundario:</label>
+              <input type="color" id="editor-bg-light" value="#2d2d2d">
+            </div>
+            <div class="color-picker-item">
+              <label>Texto Principal:</label>
+              <input type="color" id="editor-text" value="#f0f0f0">
+            </div>
+            <div class="color-picker-item">
+              <label>Texto Secundario:</label>
+              <input type="color" id="editor-text-sec" value="#b0b0b0">
+            </div>
+            <div class="color-picker-item">
+              <label>Color Primario:</label>
+              <input type="color" id="editor-primary" value="#ff6b35">
+            </div>
+            <div class="color-picker-item">
+              <label>Color Secundario:</label>
+              <input type="color" id="editor-secondary" value="#f7931e">
+            </div>
+          </div>
+        </div>
+        <div class="editor-section">
+          <h5>✨ Efectos</h5>
+          <label><input type="checkbox" id="editor-shadows"> Sombras</label><br>
+          <label><input type="checkbox" id="editor-gradients"> Gradientes</label><br>
+          <label><input type="checkbox" id="editor-animations"> Animaciones</label><br>
+          <label><input type="range" id="editor-opacity" min="0.1" max="1" step="0.1" value="0.8"> Opacidad BG</label>
+        </div>
+      </div>
+      <div class="editor-actions">
+        <button class="btn btn-outline-neon" id="preview-theme">👁️ Vista Previa</button>
+        <button class="btn btn-outline-neon" id="save-custom-theme">💾 Guardar Tema</button>
+        <button class="btn btn-outline-neon" id="reset-editor">🔄 Resetear</button>
+      </div>
+    </div>
+    <button class="btn btn-outline-neon" id="toggle-editor" style="width: 100%; margin-top: 1rem;">🎨 Abrir Editor Avanzado</button>
   </div>
 
   <!-- Fondo parallax -->
@@ -2074,14 +2428,9 @@
 
 
 
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'GA_MEASUREMENT_ID');
-  </script>
+
+  
+
 
 
 
@@ -2198,6 +2547,9 @@
           }
           saveGameData();
         });
+        
+        btnCode.addEventListener('click', () => trackCodeView(repo.name));
+        btnDemo.addEventListener('click', () => trackDemo(repo.name));
       });
 
       // Añadir card de "Próximamente" al final
@@ -2793,8 +3145,15 @@
       themesUsed: new Set(),
       projectsViewed: new Set(),
       unlockedThemes: new Set(['dark', 'light', 'neon', 'cyberpunk', 'matrix', 'synthwave', 'ocean', 'forest', 'sunset', 'christmas', 'halloween', 'valentine', 'easter', 'summer', 'autumn', 'funkyatlas']),
+      visitedSocials: new Set(),
+      browsersUsed: new Set(),
+      demosTested: new Set(),
+      codeViewed: new Set(),
+      effectsPurchased: new Set(),
       customColors: { bg: '#1a1a1a', text: '#f0f0f0', primary: '#ff6b35', secondary: '#f7931e' },
       autoSeasonalThemes: true,
+      pushNotifications: true,
+      autoDayNight: false,
       streak: 0,
       lastVisit: null,
       hasScrolledToBottom: false,
@@ -2834,6 +3193,21 @@
         'weekend-warrior': false,
         'legendary-hunter': false,
         'challenge-master': false,
+        'github-star': false,
+        'github-popular': false,
+        'social-butterfly': false,
+        'code-reviewer': false,
+        'demo-master': false,
+        'mobile-user': false,
+        'desktop-power': false,
+        'multi-browser': false,
+        'seasonal-fan': false,
+        'cursor-collector': false,
+        'effect-master': false,
+        'leaderboard-king': false,
+        'marathon-runner': false,
+        'pwa-installer': false,
+        'pwa-user': false,
         'perfectionist': false
       }
     };
@@ -2890,7 +3264,22 @@
       'weekend-warrior': { name: 'Guerrero de Fin de Semana', desc: 'Visita en sábado y domingo', points: 35, icon: '🏖️' },
       'legendary-hunter': { name: 'Cazador Legendario', desc: 'Desbloquea el tema Legendario', points: 200, icon: '🏹' },
       'challenge-master': { name: 'Maestro de Desafíos', desc: 'Completa 10 desafíos diarios', points: 100, icon: '🎯' },
-      'perfectionist': { name: 'Perfeccionista', desc: 'Completa todos los logros', points: 500, icon: '💯' }
+      'github-star': { name: 'Estrella de GitHub', desc: 'Acumula 50+ estrellas en repos', points: 75, icon: '⭐' },
+      'github-popular': { name: 'Popular en GitHub', desc: 'Consigue 10+ seguidores', points: 50, icon: '👥' },
+      'social-butterfly': { name: 'Mariposa Social', desc: 'Visita todas las redes sociales', points: 30, icon: '🦋' },
+      'code-reviewer': { name: 'Revisor de Código', desc: 'Ve el código de 10 proyectos', points: 40, icon: '👨💻' },
+      'demo-master': { name: 'Maestro de Demos', desc: 'Prueba 5 demos diferentes', points: 35, icon: '🚀' },
+      'mobile-user': { name: 'Usuario Móvil', desc: 'Visita desde dispositivo móvil', points: 15, icon: '📱' },
+      'desktop-power': { name: 'Poder de Escritorio', desc: 'Visita desde PC/Mac', points: 10, icon: '🖥️' },
+      'multi-browser': { name: 'Multi-Navegador', desc: 'Usa 3 navegadores diferentes', points: 45, icon: '🌐' },
+      'seasonal-fan': { name: 'Fan Estacional', desc: 'Usa 3 temas estacionales', points: 60, icon: '🍂' },
+      'cursor-collector': { name: 'Coleccionista de Cursores', desc: 'Desbloquea todos los cursores', points: 80, icon: '🖱️' },
+      'effect-master': { name: 'Maestro de Efectos', desc: 'Compra 3 efectos premium', points: 90, icon: '✨' },
+      'leaderboard-king': { name: 'Rey del Ranking', desc: 'Llega al top 3 del leaderboard', points: 120, icon: '👑' },
+      'marathon-runner': { name: 'Corredor de Maratón', desc: 'Pasa 30+ minutos en el sitio', points: 100, icon: '🏃' },
+      'pwa-installer': { name: 'Instalador Pro', desc: 'Instala la app como PWA', points: 50, icon: '📱' },
+      'pwa-user': { name: 'Usuario PWA', desc: 'Usa la app instalada', points: 25, icon: '🚀' },
+      'perfectionist': { name: 'Perfeccionista', desc: 'Completa todos los logros', points: 1000, icon: '💯' }
     };
 
     function loadGameData() {
@@ -2904,6 +3293,11 @@
         gameData.customColors = parsed.customColors || { bg: '#1a1a1a', text: '#f0f0f0', primary: '#ff6b35', secondary: '#f7931e' };
         gameData.autoSeasonalThemes = parsed.autoSeasonalThemes !== false;
         gameData.unlockedCursors = new Set(parsed.unlockedCursors || ['default']);
+      gameData.visitedSocials = new Set(Array.isArray(parsed.visitedSocials) ? parsed.visitedSocials : []);
+      gameData.browsersUsed = new Set(Array.isArray(parsed.browsersUsed) ? parsed.browsersUsed : []);
+      gameData.demosTested = new Set(Array.isArray(parsed.demosTested) ? parsed.demosTested : []);
+      gameData.codeViewed = new Set(Array.isArray(parsed.codeViewed) ? parsed.codeViewed : []);
+      gameData.effectsPurchased = new Set(Array.isArray(parsed.effectsPurchased) ? parsed.effectsPurchased : []);
       }
       updatePointsDisplay();
       checkAchievement('first-visit');
@@ -2915,7 +3309,12 @@
         themesUsed: Array.from(gameData.themesUsed),
         projectsViewed: Array.from(gameData.projectsViewed),
         unlockedThemes: Array.from(gameData.unlockedThemes),
-        unlockedCursors: Array.from(gameData.unlockedCursors)
+        unlockedCursors: Array.from(gameData.unlockedCursors),
+        visitedSocials: Array.from(gameData.visitedSocials),
+        browsersUsed: Array.from(gameData.browsersUsed),
+        demosTested: Array.from(gameData.demosTested),
+        codeViewed: Array.from(gameData.codeViewed),
+        effectsPurchased: Array.from(gameData.effectsPurchased)
       };
       localStorage.setItem('fenix-lab-game', JSON.stringify(toSave));
     }
@@ -3055,12 +3454,63 @@
       }
     }
 
+    // Notificaciones push
+    async function requestNotificationPermission() {
+      if ('Notification' in window && gameData.pushNotifications) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          scheduleStreakReminder();
+        }
+      }
+    }
+
+    function scheduleStreakReminder() {
+      if (!gameData.pushNotifications) return;
+      
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(20, 0, 0, 0); // 8 PM
+      
+      const timeUntilReminder = tomorrow.getTime() - now.getTime();
+      
+      setTimeout(() => {
+        if (gameData.streak > 0 && gameData.lastVisit !== new Date().toDateString()) {
+          const seasonalTheme = getSeasonalTheme();
+          const message = seasonalTheme ? 
+            `🎃 ¡No pierdas tu racha de ${gameData.streak} días! Tema ${seasonalTheme} te espera` :
+            `🔥 ¡Mantén tu racha de ${gameData.streak} días viva!`;
+          
+          new Notification('FenixLaboratory', {
+            body: message,
+            icon: 'favicon.svg',
+            badge: 'favicon.svg'
+          });
+        }
+        scheduleStreakReminder(); // Programar para mañana
+      }, timeUntilReminder);
+    }
+
+    // Modo automático día/noche
+    function checkAutoDayNight() {
+      if (!gameData.autoDayNight) return;
+      
+      const hour = new Date().getHours();
+      const isDayTime = hour >= 6 && hour < 20;
+      const currentTheme = localStorage.getItem('theme') || 'dark';
+      
+      if (isDayTime && currentTheme === 'dark') {
+        setTheme('light');
+      } else if (!isDayTime && currentTheme === 'light') {
+        setTheme('dark');
+      }
+    }
+
     function checkDailyVisit() {
       const today = new Date().toDateString();
       const yesterday = new Date(Date.now() - 86400000).toDateString();
       
       if (gameData.lastVisit === today) {
-        // Ya visitó hoy, no hacer nada
         return;
       }
       
@@ -3394,14 +3844,14 @@
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       
-      const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+      const chars = 'function(){return Math.random();}console.log("Hello World");if(true){code=awesome;}for(let i=0;i<10;i++){}';
       const drops = Array(Math.floor(canvas.width/20)).fill(1);
       
       const draw = () => {
         ctx.fillStyle = 'rgba(0,0,0,0.05)';
         ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.fillStyle = '#00ff00';
-        ctx.font = '15px monospace';
+        ctx.font = '12px "Courier New", monospace';
         
         drops.forEach((y,i) => {
           const char = chars[Math.floor(Math.random()*chars.length)];
@@ -3416,6 +3866,16 @@
         clearInterval(interval);
         canvas.remove();
       }, gameData.activeEffects['matrix-rain'] - Date.now());
+    }
+
+    // Activar Matrix Rain automáticamente en tema Matrix
+    function checkMatrixTheme() {
+      if (document.body.classList.contains('matrix-theme')) {
+        if (!document.getElementById('matrix-canvas')) {
+          gameData.activeEffects['matrix-rain'] = Date.now() + 300000; // 5 minutos
+          activateMatrixRain();
+        }
+      }
     }
 
     let mouseParticleActive = false;
@@ -3567,11 +4027,83 @@
       updateChallenge('spend-time', 1);
       
       if (gameData.timeOnSite >= 300) checkAchievement('time-master');
-      if (gameData.timeOnSite % 300 === 0) addToLeaderboard(); // Cada 5 min
-
+      if (gameData.timeOnSite >= 1800) checkAchievement('marathon-runner');
+      if (gameData.timeOnSite % 300 === 0) addToLeaderboard();
       
       saveGameData();
     }, 1000);
+
+    function detectDeviceAndBrowser() {
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+      if (isMobile) checkAchievement('mobile-user');
+      else checkAchievement('desktop-power');
+      
+      const browser = navigator.userAgent.includes('Chrome') ? 'chrome' :
+        navigator.userAgent.includes('Firefox') ? 'firefox' :
+        navigator.userAgent.includes('Safari') ? 'safari' : 'other';
+      
+      gameData.browsersUsed.add(browser);
+      if (gameData.browsersUsed.size >= 3) checkAchievement('multi-browser');
+      saveGameData();
+    }
+
+    function trackSocialClick(platform) {
+      gameData.visitedSocials.add(platform);
+      if (gameData.visitedSocials.size >= 3) checkAchievement('social-butterfly');
+      saveGameData();
+    }
+
+    function trackDemo(repo) {
+      gameData.demosTested.add(repo);
+      if (gameData.demosTested.size >= 5) checkAchievement('demo-master');
+      saveGameData();
+    }
+
+    function trackCodeView(repo) {
+      gameData.codeViewed.add(repo);
+      if (gameData.codeViewed.size >= 10) checkAchievement('code-reviewer');
+      saveGameData();
+    }
+
+    function applyEditorTheme(preview = false) {
+      const bg = document.getElementById('editor-bg').value;
+      const bgLight = document.getElementById('editor-bg-light').value;
+      const text = document.getElementById('editor-text').value;
+      const textSec = document.getElementById('editor-text-sec').value;
+      const primary = document.getElementById('editor-primary').value;
+      const secondary = document.getElementById('editor-secondary').value;
+      const shadows = document.getElementById('editor-shadows').checked;
+      const gradients = document.getElementById('editor-gradients').checked;
+      const animations = document.getElementById('editor-animations').checked;
+      const opacity = document.getElementById('editor-opacity').value;
+      
+      const root = document.documentElement;
+      root.style.setProperty('--bg-dark', bg);
+      root.style.setProperty('--bg-light', bgLight);
+      root.style.setProperty('--text-primary', text);
+      root.style.setProperty('--text-secondary', textSec);
+      root.style.setProperty('--primary', primary);
+      root.style.setProperty('--secondary', secondary);
+      
+      if (!shadows) {
+        root.style.setProperty('--box-shadow', 'none');
+      }
+      
+      if (!animations) {
+        root.style.setProperty('--animation-duration', '0s');
+      }
+      
+      document.body.style.opacity = opacity;
+      
+      if (!preview) {
+        gameData.customColors = { bg, bgLight, text, textSec, primary, secondary };
+        gameData.editorSettings = { shadows, gradients, animations, opacity };
+        setTheme('custom');
+        saveGameData();
+      }
+    }
+    
+
 
     document.addEventListener('DOMContentLoaded', async () => {
       loadGameData();
@@ -3593,14 +4125,113 @@
       setCursor(gameData.activeCursor);
       await updateLeaderboardDisplay();
       
+      // Detectar dispositivo y navegador
+      detectDeviceAndBrowser();
+      
+      // Agregar listeners a redes sociales
+      document.querySelectorAll('.social-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const href = e.target.closest('a').href;
+          if (href.includes('github')) trackSocialClick('github');
+          if (href.includes('twitter')) trackSocialClick('twitter');
+          if (href.includes('tiktok')) trackSocialClick('tiktok');
+        });
+      });
+      
       // Tracking de clicks rápidos
       document.addEventListener('click', trackFastClicks);
       
-      // Deshabilitar efectos en móviles
+      // Optimizaciones para móviles
       if (/Mobi|Android/i.test(navigator.userAgent)) {
+        // Deshabilitar efectos pesados
         document.getElementById('particles').style.display = 'none';
         document.getElementById('parallax-bg').style.display = 'none';
+        
+        // Deshabilitar Matrix Rain automático
+        const originalCheckMatrix = checkMatrixTheme;
+        checkMatrixTheme = () => {};
+        
+        // Reducir partículas
+        createParticles = () => {};
+        
+        // Simplificar animaciones
+        document.documentElement.style.setProperty('--animation-speed', '0.1s');
+        
+        // Limpiar timers innecesarios cada 30s para liberar RAM
+        setInterval(() => {
+          if (window.gc) window.gc();
+        }, 30000);
       }
+      
+      // Verificar tema Matrix para activar lluvia de código
+      checkMatrixTheme();
+      
+      // Verificar cada vez que cambie el tema
+      const observer = new MutationObserver(() => {
+        checkMatrixTheme();
+      });
+      observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      
+      // Inicializar funcionalidades
+      if (gameData.pushNotifications) requestNotificationPermission();
+      if (gameData.autoDayNight) {
+        checkAutoDayNight();
+        setInterval(checkAutoDayNight, 60000);
+      }
+      
+      // Service Worker y PWA
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('⚡ Service Worker registrado:', registration.scope);
+            showAchievementNotification({ name: 'Cache offline activado!', points: 0 });
+          })
+          .catch(error => {
+            console.log('❌ Service Worker falló:', error);
+          });
+      }
+      
+      // PWA Install Prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallButton();
+      });
+      
+      function showInstallButton() {
+        const installBtn = document.createElement('button');
+        installBtn.innerHTML = '📱 Instalar App';
+        installBtn.style.cssText = 'position: fixed; bottom: 20px; left: 20px; z-index: 9999; background: var(--primary); color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+        installBtn.addEventListener('click', installPWA);
+        document.body.appendChild(installBtn);
+        
+        setTimeout(() => {
+          installBtn.style.animation = 'pulse 2s infinite';
+        }, 3000);
+      }
+      
+      async function installPWA() {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            showAchievementNotification({ name: '🎉 App instalada correctamente!', points: 50 });
+            addPoints(50);
+            checkAchievement('pwa-installer');
+          }
+          deferredPrompt = null;
+          document.querySelector('button[style*="Instalar App"]')?.remove();
+        }
+      }
+      
+      // Detectar si ya está instalada como PWA
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('📱 Ejecutándose como PWA');
+        checkAchievement('pwa-user');
+      }
+      
+
       
 
 
@@ -3732,7 +4363,7 @@
         });
       }
       
-      // Event listener para checkbox de temas estacionales
+      // Event listeners para checkboxes
       const autoSeasonalCheckbox = document.getElementById('auto-seasonal');
       if (autoSeasonalCheckbox) {
         autoSeasonalCheckbox.checked = gameData.autoSeasonalThemes;
@@ -3741,6 +4372,56 @@
           saveGameData();
         });
       }
+      
+      const pushNotificationsCheckbox = document.getElementById('push-notifications');
+      if (pushNotificationsCheckbox) {
+        pushNotificationsCheckbox.checked = gameData.pushNotifications;
+        pushNotificationsCheckbox.addEventListener('change', (e) => {
+          gameData.pushNotifications = e.target.checked;
+          if (e.target.checked) {
+            requestNotificationPermission();
+          }
+          saveGameData();
+        });
+      }
+      
+      const autoDayNightCheckbox = document.getElementById('auto-day-night');
+      if (autoDayNightCheckbox) {
+        autoDayNightCheckbox.checked = gameData.autoDayNight;
+        autoDayNightCheckbox.addEventListener('change', (e) => {
+          gameData.autoDayNight = e.target.checked;
+          if (e.target.checked) {
+            checkAutoDayNight();
+            setInterval(checkAutoDayNight, 60000); // Cada minuto
+          }
+          saveGameData();
+        });
+      }
+      
+      // Editor de temas avanzado
+      document.getElementById('toggle-editor').addEventListener('click', () => {
+        const editor = document.getElementById('theme-editor');
+        editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
+      });
+      
+      document.getElementById('preview-theme').addEventListener('click', () => {
+        applyEditorTheme(true);
+      });
+      
+      document.getElementById('save-custom-theme').addEventListener('click', () => {
+        applyEditorTheme(false);
+        showAchievementNotification({ name: 'Tema personalizado guardado!', points: 25 });
+        addPoints(25);
+      });
+      
+      document.getElementById('reset-editor').addEventListener('click', () => {
+        document.getElementById('editor-bg').value = '#1a1a1a';
+        document.getElementById('editor-bg-light').value = '#2d2d2d';
+        document.getElementById('editor-text').value = '#f0f0f0';
+        document.getElementById('editor-text-sec').value = '#b0b0b0';
+        document.getElementById('editor-primary').value = '#ff6b35';
+        document.getElementById('editor-secondary').value = '#f7931e';
+      });
       
       // Event listeners para mini panel de créditos
       document.getElementById('close-credits').addEventListener('click', hideCreditsPanel);

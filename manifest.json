@@ -1,0 +1,47 @@
+{
+  "name": "FenixLaboratory",
+  "short_name": "FenixLab",
+  "description": "Donde subo mis experimentos raros y proyectos random",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#ff6b35",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "categories": ["productivity", "developer", "portfolio"],
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "placeholder/GHbDEIgXMAACVEi.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "placeholder/GzyBNcWWsAEcgbH.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver Proyectos",
+      "short_name": "Proyectos",
+      "description": "Ver todos mis proyectos de GitHub",
+      "url": "/#proyectos",
+      "icons": [{ "src": "favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Logros",
+      "short_name": "Logros",
+      "description": "Ver mis logros y puntos",
+      "url": "/#logros",
+      "icons": [{ "src": "favicon.svg", "sizes": "96x96" }]
+    }
+  ]
+}
