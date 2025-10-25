@@ -1972,6 +1972,7 @@
 
     <div class="mb-3">
       <h4 style="color: var(--primary); margin-bottom: 1rem;">🏆 Leaderboard Global</h4>
+      <button class="btn btn-outline-neon mb-2" onclick="syncGlobalLeaderboard()" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">🔄 Sync Manual</button>
       <div id="leaderboard-display"></div>
     </div>
 
@@ -3521,20 +3522,36 @@
       }
     }
     
-    function updateLeaderboardDisplay() {
+    async function updateLeaderboardDisplay() {
       const container = document.getElementById('leaderboard-display');
       if (!container) return;
       
-      const leaderboard = JSON.parse(localStorage.getItem('fenix-leaderboard') || '[]');
+      // Intentar cargar datos globales del gist
+      let globalData = [];
+      try {
+        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+        if (response.ok) {
+          const gist = await response.json();
+          const content = gist.files['leaderboard.json']?.content;
+          if (content) globalData = JSON.parse(content);
+        }
+      } catch (error) {
+        console.log('Error loading global leaderboard:', error);
+      }
       
-      if (leaderboard.length === 0) {
+      // Si no hay datos globales, usar locales
+      if (globalData.length === 0) {
+        globalData = JSON.parse(localStorage.getItem('fenix-leaderboard') || '[]');
+      }
+      
+      if (globalData.length === 0) {
         container.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-secondary);">No hay datos aún</p>';
         return;
       }
       
       let html = '<div style="margin-bottom: 0.5rem;"><strong style="color: var(--primary);">🌍 Top Global:</strong></div>';
       
-      leaderboard.slice(0, 5).forEach((entry, index) => {
+      globalData.slice(0, 5).forEach((entry, index) => {
         const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
         const isMe = entry.name === gameData.leaderboardName;
         
@@ -3611,7 +3628,7 @@
       saveGameData();
     }, 1000);
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       loadGameData();
       initDailyChallenges();
       checkDailyVisit();
@@ -3629,7 +3646,7 @@
       updateSeasonalIndicator();
       updateCursorShop();
       setCursor(gameData.activeCursor);
-      updateLeaderboardDisplay();
+      await updateLeaderboardDisplay();
       
       // Tracking de clicks rápidos
       document.addEventListener('click', trackFastClicks);
