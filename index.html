@@ -4341,6 +4341,25 @@
         }
       };
       
+      // Función para forzar actualización del cache
+      window.forceUpdate = () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(registration => {
+              registration.unregister();
+            });
+            window.location.reload(true);
+          });
+        }
+      };
+      
+      // Auto-forzar actualización cada 5 minutos
+      setInterval(() => {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
+        }
+      }, 300000);
+      
       // Limpiar botón si la app se instala desde el navegador
       window.addEventListener('appinstalled', () => {
         console.log('📱 PWA instalada desde navegador');

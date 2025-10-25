@@ -1,16 +1,14 @@
-const CACHE_NAME = 'fenix-lab-v2.0.5';
+const CACHE_NAME = 'fenix-lab-v2.0.5-update2';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
   './favicon.svg',
   './placeholder/GHbDEIgXMAACVEi.jpg',
-  './placeholder/GzyBNcWWsAEcgbH.jpg',
-  './credits.json',
-  './updates.json'
+  './placeholder/GzyBNcWWsAEcgbH.jpg'
 ];
 
-const EXTERNAL_CACHE = 'fenix-external-v1';
+const EXTERNAL_CACHE = 'fenix-external-v3';
 const externalUrls = [
   'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css',
@@ -49,10 +47,11 @@ self.addEventListener('fetch', event => {
           return response;
         }
         
-        // Network first para API calls
-        if (event.request.url.includes('api.github.com')) {
+        // Network first para API calls y archivos JSON
+        if (event.request.url.includes('api.github.com') || 
+            event.request.url.includes('.json')) {
           return fetch(event.request).catch(() => {
-            return new Response(JSON.stringify({ error: 'Offline' }), {
+            return caches.match(event.request) || new Response(JSON.stringify({ error: 'Offline' }), {
               headers: { 'Content-Type': 'application/json' }
             });
           });

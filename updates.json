@@ -43,7 +43,9 @@
         "🔄 La PWA se actualiza automáticamente al detectar cambios",
         "⚡ Service Worker con skipWaiting() para actualizaciones instantáneas",
         "💾 Cache inteligente: archivos locales + recursos externos",
-        "🌐 Funciona offline después de la primera carga"
+        "🌐 Funciona offline después de la primera carga",
+        "🔄 Función window.forceUpdate() para forzar actualización manual",
+        "⏰ Verificación automática de updates cada 5 minutos"
       ]
     },
     {
