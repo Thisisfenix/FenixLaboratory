@@ -3447,7 +3447,11 @@
 
 
     // Leaderboard global con GitHub Gist (sin API key)
-    let GIST_ID = localStorage.getItem('fenix-gist-id') || null; // Se crea automáticamente
+    let GIST_ID = localStorage.getItem('fenix-gist-id');
+    if (!GIST_ID || GIST_ID === 'null') {
+      GIST_ID = '481735c69231faad0f8ad049d6a1e51a'; // Usar el existente primero
+      localStorage.setItem('fenix-gist-id', GIST_ID);
+    }
     
     async function addToLeaderboard() {
       if (!gameData.leaderboardName) {
@@ -3478,13 +3482,16 @@
         let globalData = [];
         
         // Si no hay GIST_ID o falla, crear uno nuevo
-        if (GIST_ID) {
+        if (GIST_ID && GIST_ID !== 'null') {
           try {
             const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
             if (response.ok) {
               const gist = await response.json();
               const content = gist.files['leaderboard.json']?.content;
               if (content) globalData = JSON.parse(content);
+            } else {
+              console.log('Gist not found, will create new one');
+              GIST_ID = null;
             }
           } catch (error) {
             console.log('Error reading existing gist, creating new one');
@@ -3529,6 +3536,9 @@
           GIST_ID = newGist.id;
           localStorage.setItem('fenix-gist-id', GIST_ID);
           console.log('New gist created:', GIST_ID);
+          
+          // Actualizar display inmediatamente
+          updateLeaderboardDisplay();
         }
         
       } catch (error) {
@@ -3542,15 +3552,17 @@
       
       // Intentar cargar datos globales del gist
       let globalData = [];
-      try {
-        const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
-        if (response.ok) {
-          const gist = await response.json();
-          const content = gist.files['leaderboard.json']?.content;
-          if (content) globalData = JSON.parse(content);
+      if (GIST_ID && GIST_ID !== 'null') {
+        try {
+          const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+          if (response.ok) {
+            const gist = await response.json();
+            const content = gist.files['leaderboard.json']?.content;
+            if (content) globalData = JSON.parse(content);
+          }
+        } catch (error) {
+          console.log('Error loading global leaderboard:', error);
         }
-      } catch (error) {
-        console.log('Error loading global leaderboard:', error);
       }
       
       // Si no hay datos globales, usar locales
