@@ -1,10 +1,28 @@
 {
-  "version": "2.0.2",
-  "lastUpdate": "2025-01-27",
+  "version": "2.0.3",
+  "lastUpdate": "2025-10-24",
   "updates": [
     {
+      "version": "2.0.3",
+      "date": "2025-10-24",
+      "title": "👀 Card Próximamente y Mejoras Visuales",
+      "type": "major",
+      "features": [
+        "🔮 Nueva card 'Próximamente' con preview de awshuck",
+        "🖼️ Imagen personalizada para proyectos futuros",
+        "📝 Información detallada en updates.json",
+        "✨ Mejoras en la presentación visual",
+        "🎨 Optimización de estilos y animaciones"
+      ],
+      "fixes": [
+        "🔧 Corregidas fechas de actualizaciones anteriores",
+        "📱 Mejorada compatibilidad móvil",
+        "⚡ Optimizado rendimiento general"
+      ]
+    },
+    {
       "version": "2.0.2",
-      "date": "2025-01-27",
+      "date": "2025-10-22",
       "title": "🚀 Efectos Premium y Optimización Móvil",
       "type": "major",
       "features": [
@@ -23,7 +41,7 @@
     },
     {
       "version": "2.0.1",
-      "date": "2025-01-26",
+      "date": "2025-10-22",
       "title": "🎨 Temas Premium y Sistema de Gamificación",
       "type": "major",
       "features": [
@@ -37,7 +55,7 @@
     },
     {
       "version": "2.0.0",
-      "date": "2025-01-25",
+      "date": "2025-10-01",
       "title": "🔬 Lanzamiento de FenixLaboratory",
       "type": "release",
       "features": [

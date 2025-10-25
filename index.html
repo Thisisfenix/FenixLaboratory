@@ -933,6 +933,121 @@
       display: none;
     }
 
+    /* Nuevo diseño de créditos */
+    .credit-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--bg-light), var(--bg-dark));
+      border-radius: 12px;
+      border: 1px solid var(--primary);
+    }
+
+    .credit-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .credit-header h3 {
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .credit-section {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: var(--bg-light);
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .credit-section h4 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-dark);
+      color: var(--primary);
+      text-decoration: none;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .social-link:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .feature-item {
+      padding: 0.5rem;
+      background: var(--bg-dark);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .future-plans {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .plan-item {
+      padding: 0.75rem;
+      background: var(--bg-dark);
+      border-radius: 6px;
+      border-left: 3px solid var(--secondary);
+    }
+
+    .final-message {
+      text-align: center;
+    }
+
+    .message-box {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .message-box i {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
     /* Mini panel de créditos */
     .credits-mini-panel {
       position: fixed;
@@ -1064,7 +1179,7 @@
     }
 
     .achievements-panel.show {
-      right: 2rem;
+      right: -5px;
       display: block;
     }
 
@@ -1346,9 +1461,11 @@
       .cursor-grid { grid-template-columns: repeat(2, 1fr); }
       .social-btn { width: 35px; height: 35px; }
       .navbar-brand { font-size: 1rem; }
-      .nav-link { font-size: 0.9rem; }
+      .nav-link { font-size: 0.75rem; padding: 0.3rem 0.4rem; }
       section { padding: 2rem 0; }
       section h2 { font-size: 2rem; }
+      .navbar-nav { overflow-x: auto; flex-wrap: nowrap; }
+      .navbar-collapse { overflow: visible; }
     }
 
     @media (max-width: 480px) {
@@ -1408,14 +1525,14 @@
             </button>
           </li>
           <li class="nav-item">
-            <button id="achievements-btn" class="nav-link" aria-label="Logros">
+            <button id="achievements-btn" class="nav-link" aria-label="Logros" style="white-space: nowrap; min-width: fit-content;">
               <i class="bi bi-trophy me-1"></i> <span id="points-display">0</span>
               <span class="streak-indicator" id="streak-indicator"></span>
             </button>
           </li>
           <li class="nav-item">
             <button id="updates-btn" class="nav-link" aria-label="Ver actualizaciones">
-              <i class="bi bi-arrow-up-circle me-1"></i> v2.0.2
+              <i class="bi bi-arrow-up-circle me-1"></i> v2.0.3
             </button>
           </li>
         </ul>
@@ -1582,7 +1699,19 @@
     <div class="container">
       <h2 class="text-center mb-4">CRÉDITOS</h2>
       <div class="json-viewer" id="json-viewer">
-        Cargando información...
+        <div class="mini-loader"></div>
+        <div class="loading-text">Cargando información...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de actualizaciones -->
+  <div class="credits-section" id="updates-section">
+    <div class="container">
+      <h2 class="text-center mb-4">🚀 ACTUALIZACIONES</h2>
+      <div class="json-viewer" id="updates-viewer">
+        <div class="mini-loader"></div>
+        <div class="loading-text">Cargando actualizaciones desde updates.json...</div>
       </div>
     </div>
   </div>
@@ -1597,13 +1726,7 @@
     <i class="bi bi-terminal"></i>
   </button>
 
-  <!-- Panel de Updates -->
-  <div class="panel-overlay" id="updates-overlay"></div>
-  <div class="theme-panel" id="updates-panel">
-    <button class="close-panel" id="close-updates-panel">&times;</button>
-    <h3>🚀 ACTUALIZACIONES</h3>
-    <div id="updates-content">Cargando...</div>
-  </div>
+
 
   <!-- Panel de Temas -->
   <div class="panel-overlay" id="theme-overlay"></div>
@@ -1916,6 +2039,18 @@
     </div>
   </div>
 
+  <!-- Panel de nombre para leaderboard -->
+  <div class="nerd-panel" id="name-panel">
+    <button class="close-panel" id="close-name-panel">&times;</button>
+    <h3>🏆 LEADERBOARD</h3>
+    <p>Ingresa tu nombre para aparecer en el ranking local:</p>
+    <input type="text" id="name-input" class="search-box" placeholder="Tu nombre" maxlength="20" style="width: 100%; margin-bottom: 1rem;">
+    <div class="btn-group">
+      <button class="btn btn-outline-neon" onclick="submitName()">💾 Guardar</button>
+      <button class="btn btn-outline-neon" onclick="hideNamePanel()">❌ Cancelar</button>
+    </div>
+  </div>
+
   <!-- Panel para nerds -->
   <div class="panel-overlay" id="panel-overlay"></div>
   <div class="nerd-panel" id="nerd-panel">
@@ -2055,6 +2190,41 @@
           saveGameData();
         });
       });
+
+      // Añadir card de "Próximamente" al final
+      const comingSoonCard = document.createElement('div');
+      comingSoonCard.className = 'card';
+      comingSoonCard.style.cssText = 'border: 2px dashed var(--primary); opacity: 0.7;';
+      
+      const comingSoonImg = document.createElement('div');
+      comingSoonImg.className = 'card-img-top';
+      comingSoonImg.style.cssText = `
+        background-image: url('placeholder/GzyBNcWWsAEcgbH.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      `;
+      
+      const comingSoonBody = document.createElement('div');
+      comingSoonBody.className = 'card-body';
+      comingSoonBody.innerHTML = `
+        <h5 class="card-title" style="text-align: center;">Próximamente</h5>
+        <p class="card-text" style="text-align: center;">Algo relacionado con awshuck está en camino... 👀<br><small style="opacity: 0.7;">Más detalles en updates.json</small></p>
+        <div class="d-flex justify-content-center align-items-center mb-3">
+          <small style="color: var(--text-secondary);">
+            <i class="fas fa-clock me-1"></i>En desarrollo
+          </small>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-outline-neon" disabled>
+            <i class="fas fa-hourglass-half me-1"></i>Esperando
+          </button>
+        </div>
+      `;
+      
+      comingSoonCard.appendChild(comingSoonImg);
+      comingSoonCard.appendChild(comingSoonBody);
+      container.appendChild(comingSoonCard);
 
       updatePagination(repos.length, page);
     }
@@ -2443,69 +2613,168 @@
     // Funcionalidad de créditos
     async function showCredits() {
       try {
+        document.getElementById('main-content').classList.add('hidden');
+        document.getElementById('credits-section').classList.add('active');
+        
         const response = await fetch('credits.json');
         const credits = await response.json();
         
-        let html = '';
+        let html = `
+          <div class="credit-header">
+            <div class="credit-badge">🏆 ${credits.version || 'v2.0.0'}</div>
+            <h3>${credits["que es esto wey"] || 'FenixLaboratory'}</h3>
+            <p>${credits.descripcion || 'Donde subo mis experimentos raros'}</p>
+          </div>
+        `;
         
-        Object.entries(credits).forEach(([key, value]) => {
-          html += `<div class="credit-item">`;
-          html += `<div class="credit-key">${key.replace(/_/g, ' ')}</div>`;
-          
-          if (Array.isArray(value)) {
-            html += `<ul class="credit-list">`;
-            value.forEach(item => {
-              html += `<li>${item}</li>`;
+        // Información del desarrollador
+        if (credits.el_wey_que_hizo_esto) {
+          const dev = credits.el_wey_que_hizo_esto;
+          html += `
+            <div class="credit-section">
+              <h4>👨‍💻 Desarrollador</h4>
+              <div class="credit-item">
+                <div class="credit-key">${dev.quien_soy}</div>
+                <div class="social-links">
+          `;
+          if (dev.redes) {
+            Object.entries(dev.redes).forEach(([platform, url]) => {
+              const icon = platform === 'github' ? 'fab fa-github' : 
+                          platform === 'twitter' ? 'fab fa-twitter' : 
+                          platform === 'tiktok' ? 'fab fa-tiktok' : 'fas fa-link';
+              html += `<a href="${url}" target="_blank" class="social-link"><i class="${icon}"></i> ${platform}</a>`;
             });
-            html += `</ul>`;
-          } else if (typeof value === 'object' && value !== null) {
-            Object.entries(value).forEach(([subKey, subValue]) => {
-              html += `<div class="credit-value"><strong>${subKey}:</strong> `;
-              if (typeof subValue === 'string' && subValue.startsWith('http')) {
-                html += `<a href="${subValue}" target="_blank" class="credit-link">${subValue}</a>`;
-              } else if (Array.isArray(subValue)) {
-                html += `<ul class="credit-list">`;
-                subValue.forEach(item => {
-                  html += `<li>${item}</li>`;
-                });
-                html += `</ul>`;
-              } else if (typeof subValue === 'object' && subValue !== null) {
-                html += `<ul class="credit-list">`;
-                Object.entries(subValue).forEach(([nestedKey, nestedValue]) => {
-                  if (typeof nestedValue === 'string' && nestedValue.startsWith('http')) {
-                    html += `<li><strong>${nestedKey}:</strong> <a href="${nestedValue}" target="_blank" class="credit-link">${nestedValue}</a></li>`;
-                  } else {
-                    html += `<li><strong>${nestedKey}:</strong> ${nestedValue}</li>`;
-                  }
-                });
-                html += `</ul>`;
-              } else {
-                html += `${subValue}`;
-              }
-              html += `</div>`;
-            });
-          } else {
-            if (typeof value === 'string' && value.startsWith('http')) {
-              html += `<div class="credit-value"><a href="${value}" target="_blank" class="credit-link">${value}</a></div>`;
-            } else {
-              html += `<div class="credit-value">${value}</div>`;
-            }
           }
-          
+          html += `</div></div></div>`;
+        }
+        
+        // Características
+        if (credits.que_hace) {
+          html += `
+            <div class="credit-section">
+              <h4>✨ Características</h4>
+              <div class="features-grid">
+          `;
+          credits.que_hace.forEach(feature => {
+            html += `<div class="feature-item">• ${feature}</div>`;
+          });
+          html += `</div></div>`;
+        }
+        
+        // Créditos especiales
+        if (credits.creditos) {
+          html += `<div class="credit-section"><h4>🙏 Créditos</h4>`;
+          Object.entries(credits.creditos).forEach(([key, value]) => {
+            html += `<div class="credit-item"><div class="credit-key">${key}:</div><div class="credit-value">${value}</div></div>`;
+          });
           html += `</div>`;
-        });
+        }
+        
+        // Planes futuros
+        if (credits.planes_a_futuro) {
+          html += `
+            <div class="credit-section">
+              <h4>🚀 Planes Futuros</h4>
+              <div class="future-plans">
+          `;
+          credits.planes_a_futuro.forEach(plan => {
+            html += `<div class="plan-item">🔮 ${plan}</div>`;
+          });
+          html += `</div></div>`;
+        }
+        
+        // Mensaje final
+        if (credits.mensaje_final) {
+          html += `
+            <div class="credit-section final-message">
+              <div class="message-box">
+                <i class="fas fa-heart"></i>
+                <p>${credits.mensaje_final}</p>
+              </div>
+            </div>
+          `;
+        }
         
         document.getElementById('json-viewer').innerHTML = html;
-        document.getElementById('main-content').classList.add('hidden');
-        document.getElementById('credits-section').classList.add('active');
       } catch (error) {
-        document.getElementById('json-viewer').textContent = 'Error al cargar créditos: ' + error.message;
+        document.getElementById('json-viewer').innerHTML = '<p style="color: var(--text-secondary);">Error al cargar credits.json: ' + error.message + '</p>';
       }
     }
     
     function hideCredits() {
       document.getElementById('main-content').classList.remove('hidden');
       document.getElementById('credits-section').classList.remove('active');
+    }
+
+    // Funcionalidad de actualizaciones
+    async function showUpdates() {
+      try {
+        const mainContent = document.getElementById('main-content');
+        const updatesSection = document.getElementById('updates-section');
+        if (mainContent) mainContent.classList.add('hidden');
+        if (updatesSection) updatesSection.classList.add('active');
+        
+        const response = await fetch('updates.json');
+        const data = await response.json();
+        
+        let html = `<div class="mb-3"><div class="points-badge" style="background: var(--primary);">Versión Actual: ${data.version}</div></div>`;
+        
+        // Updates recientes
+        html += '<h4 style="color: var(--primary); margin-bottom: 1rem;">📝 Últimas Actualizaciones</h4>';
+        data.updates.slice(0, 3).forEach(update => {
+          const typeColor = update.type === 'major' ? '#22c55e' : update.type === 'release' ? '#3b82f6' : '#6b7280';
+          html += `
+            <div class="credit-item" style="margin-bottom: 1rem;">
+              <div class="credit-key" style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="background: ${typeColor}; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">${update.type.toUpperCase()}</span>
+                ${update.title}
+              </div>
+              <div class="credit-value" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${update.date}</div>
+              <ul class="credit-list">
+          `;
+          
+          update.features?.forEach(feature => {
+            html += `<li style="font-size: 0.8rem;">${feature}</li>`;
+          });
+          
+          if (update.fixes?.length) {
+            update.fixes.forEach(fix => {
+              html += `<li style="font-size: 0.8rem; color: #fbbf24;">${fix}</li>`;
+            });
+          }
+          
+          html += '</ul></div>';
+        });
+        
+        // Roadmap
+        if (data.roadmap?.length) {
+          html += '<h4 style="color: var(--primary); margin-bottom: 1rem; margin-top: 2rem;">🗺️ Próximas Funciones</h4>';
+          data.roadmap.forEach(item => {
+            html += `
+              <div class="credit-item" style="margin-bottom: 1rem; opacity: 0.8;">
+                <div class="credit-key">${item.title}</div>
+                <ul class="credit-list">
+            `;
+            item.features.forEach(feature => {
+              html += `<li style="font-size: 0.8rem;">${feature}</li>`;
+            });
+            html += '</ul></div>';
+          });
+        }
+        
+        const updatesViewer = document.getElementById('updates-viewer');
+        if (updatesViewer) updatesViewer.innerHTML = html;
+      } catch (error) {
+        const updatesViewer = document.getElementById('updates-viewer');
+        if (updatesViewer) updatesViewer.innerHTML = '<p style="color: var(--text-secondary);">Error al cargar updates.json: ' + error.message + '</p>';
+      }
+    }
+    
+    function hideUpdates() {
+      const mainContent = document.getElementById('main-content');
+      const updatesSection = document.getElementById('updates-section');
+      if (mainContent) mainContent.classList.remove('hidden');
+      if (updatesSection) updatesSection.classList.remove('active');
     }
 
     // Sistema de logros y puntajes
@@ -2885,7 +3154,19 @@
       const notification = document.getElementById('achievement-notification');
       document.getElementById('notification-text').textContent = `${achievement.name} (+${achievement.points} pts)`;
       notification.classList.add('show');
-      setTimeout(() => notification.classList.remove('show'), 3000);
+      
+      // Limpiar timeout anterior si existe
+      if (notification.hideTimeout) {
+        clearTimeout(notification.hideTimeout);
+      }
+      
+      notification.hideTimeout = setTimeout(() => {
+        notification.classList.remove('show');
+        notification.style.right = '-400px';
+        setTimeout(() => {
+          notification.style.right = '';
+        }, 300);
+      }, 3000);
     }
 
     function setupParallax() {
@@ -3023,6 +3304,15 @@
     function updateChallenge(challengeId, increment = 1) {
       const today = new Date().toDateString();
       const challenge = dailyChallenges[challengeId];
+      
+      if (!gameData.dailyChallenges[today]) {
+        gameData.dailyChallenges[today] = {};
+      }
+      
+      if (!gameData.dailyChallenges[today][challengeId]) {
+        gameData.dailyChallenges[today][challengeId] = { completed: false, progress: 0 };
+      }
+      
       const progress = gameData.dailyChallenges[today][challengeId];
       
       if (!progress.completed) {
@@ -3168,7 +3458,8 @@
     // Leaderboard local
     function addToLeaderboard() {
       if (!gameData.leaderboardName) {
-        gameData.leaderboardName = prompt('Ingresa tu nombre para el leaderboard:') || 'Anónimo';
+        showNamePanel();
+        return;
       }
       
       const leaderboard = JSON.parse(localStorage.getItem('fenix-leaderboard') || '[]');
@@ -3184,69 +3475,25 @@
       localStorage.setItem('fenix-leaderboard', JSON.stringify(leaderboard.slice(0,10)));
     }
 
-    // Sistema de updates
-    async function showUpdates() {
-      try {
-        const response = await fetch('updates.json');
-        const data = await response.json();
-        
-        let html = `<div class="mb-3"><div class="points-badge" style="background: var(--primary);">Versión Actual: ${data.version}</div></div>`;
-        
-        // Updates recientes
-        html += '<h4 style="color: var(--primary); margin-bottom: 1rem;">📝 Últimas Actualizaciones</h4>';
-        data.updates.slice(0, 3).forEach(update => {
-          const typeColor = update.type === 'major' ? '#22c55e' : update.type === 'release' ? '#3b82f6' : '#6b7280';
-          html += `
-            <div class="credit-item" style="margin-bottom: 1rem;">
-              <div class="credit-key" style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="background: ${typeColor}; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">${update.type.toUpperCase()}</span>
-                ${update.title}
-              </div>
-              <div class="credit-value" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${update.date}</div>
-              <ul class="credit-list">
-          `;
-          
-          update.features?.forEach(feature => {
-            html += `<li style="font-size: 0.8rem;">${feature}</li>`;
-          });
-          
-          if (update.fixes?.length) {
-            update.fixes.forEach(fix => {
-              html += `<li style="font-size: 0.8rem; color: #fbbf24;">${fix}</li>`;
-            });
-          }
-          
-          html += '</ul></div>';
-        });
-        
-        // Roadmap
-        if (data.roadmap?.length) {
-          html += '<h4 style="color: var(--primary); margin-bottom: 1rem; margin-top: 2rem;">🗺️ Próximas Funciones</h4>';
-          data.roadmap.forEach(item => {
-            html += `
-              <div class="credit-item" style="margin-bottom: 1rem; opacity: 0.8;">
-                <div class="credit-key">${item.title}</div>
-                <ul class="credit-list">
-            `;
-            item.features.forEach(feature => {
-              html += `<li style="font-size: 0.8rem;">${feature}</li>`;
-            });
-            html += '</ul></div>';
-          });
-        }
-        
-        document.getElementById('updates-content').innerHTML = html;
-        document.getElementById('updates-overlay').classList.add('show');
-        document.getElementById('updates-panel').classList.add('show');
-      } catch (error) {
-        document.getElementById('updates-content').innerHTML = '<p style="color: var(--text-secondary);">Error al cargar actualizaciones</p>';
-      }
+    function showNamePanel() {
+      document.getElementById('panel-overlay').classList.add('show');
+      document.getElementById('name-panel').classList.add('show');
     }
 
-    function hideUpdates() {
-      document.getElementById('updates-overlay').classList.remove('show');
-      document.getElementById('updates-panel').classList.remove('show');
+    function hideNamePanel() {
+      document.getElementById('panel-overlay').classList.remove('show');
+      document.getElementById('name-panel').classList.remove('show');
     }
+
+    function submitName() {
+      const nameInput = document.getElementById('name-input');
+      gameData.leaderboardName = nameInput.value.trim() || 'Anónimo';
+      saveGameData();
+      hideNamePanel();
+      addToLeaderboard();
+    }
+
+
 
     // GitHub stats avanzadas
     async function updateGitHubStats() {
@@ -3325,8 +3572,9 @@
         brand.style.transform = 'scale(0.95)';
         brand.style.textShadow = '0 0 15px var(--primary)';
         
-        // Ocultar créditos si están activos
+        // Ocultar créditos y actualizaciones si están activos
         hideCredits();
+        if (typeof hideUpdates === 'function') hideUpdates();
         
         setTimeout(() => {
           brand.style.transform = '';
@@ -3337,8 +3585,6 @@
       
       // Event listeners para updates
       document.getElementById('updates-btn').addEventListener('click', showUpdates);
-      document.getElementById('close-updates-panel').addEventListener('click', hideUpdates);
-      document.getElementById('updates-overlay').addEventListener('click', hideUpdates);
       
       // Event listeners para temas
       document.getElementById('theme-panel-btn').addEventListener('click', showThemePanel);
@@ -3480,18 +3726,25 @@
       document.getElementById('credits-btn').addEventListener('click', showCredits);
       document.getElementById('nerd-btn').addEventListener('click', showNerdPanel);
       document.getElementById('close-panel').addEventListener('click', hideNerdPanel);
-      document.getElementById('panel-overlay').addEventListener('click', hideNerdPanel);
+      document.getElementById('close-name-panel').addEventListener('click', hideNamePanel);
+      document.getElementById('panel-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('panel-overlay')) {
+          hideNerdPanel();
+          hideNamePanel();
+        }
+      });
       
       // Animación para enlaces de navegación
       document.querySelectorAll('.nav-link').forEach(link => {
-        if (link.id !== 'theme-panel-btn' && link.id !== 'credits-btn') {
+        if (link.id !== 'theme-panel-btn' && link.id !== 'credits-btn' && link.id !== 'updates-btn' && link.id !== 'achievements-btn') {
           link.addEventListener('click', (e) => {
             e.preventDefault();
             const target = e.target.closest('.nav-link');
             const href = target.getAttribute('href');
             
-            // Ocultar créditos si están activos
+            // Ocultar créditos y actualizaciones si están activos
             hideCredits();
+            if (typeof hideUpdates === 'function') hideUpdates();
             
             if (href && href !== '#') {
               target.style.transform = 'scale(0.95)';
