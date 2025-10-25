@@ -1,7 +1,26 @@
 {
-  "version": "2.0.3",
-  "lastUpdate": "2025-10-24",
+  "version": "2.0.4",
+  "lastUpdate": "2025-01-27",
   "updates": [
+    {
+      "version": "2.0.4",
+      "date": "2025-01-27",
+      "title": "🌍 Leaderboard Global y API Propia",
+      "type": "major",
+      "features": [
+        "🏆 Leaderboard global usando GitHub Gist API",
+        "🔄 Sincronización automática cada 5 minutos",
+        "🆓 Sin API keys - completamente gratuito",
+        "📊 Top 50 jugadores globales",
+        "💾 Backup local + sync global",
+        "🔒 Sistema seguro sin exposición de datos personales"
+      ],
+      "fixes": [
+        "🔧 Corregido error de await en setInterval",
+        "⚡ Optimizada sincronización de datos",
+        "🛡️ Mejorada seguridad del leaderboard"
+      ]
+    },
     {
       "version": "2.0.3",
       "date": "2025-10-24",
@@ -69,6 +88,17 @@
     }
   ],
   "roadmap": [
+    {
+      "version": "2.0.5",
+      "title": "🔧 Mejoras del Leaderboard",
+      "features": [
+        "🌍 Mostrar países con banderas",
+        "📈 Gráficos de progreso",
+        "🏅 Más categorías de ranking",
+        "⏰ Historial de puntuaciones"
+      ],
+      "status": "in-progress"
+    },
     {
       "version": "2.1.0",
       "title": "🎮 Minijuegos y Competencia",
