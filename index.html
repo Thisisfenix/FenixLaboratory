@@ -3095,18 +3095,23 @@
         
         let html = `<div class="mb-3"><div class="points-badge" style="background: var(--primary);">Versión Actual: ${data.version}</div></div>`;
         
-        // Updates recientes
-        html += '<h4 style="color: var(--primary); margin-bottom: 1rem;">📝 Últimas Actualizaciones</h4>';
-        data.updates.slice(0, 3).forEach(update => {
-          const typeColor = update.type === 'major' ? '#22c55e' : update.type === 'release' ? '#3b82f6' : update.type === 'new' ? '#ff6b35' : '#6b7280';
+        // Todas las versiones en tarjetas
+        html += '<h4 style="color: var(--primary); margin-bottom: 1rem;">📝 Historial de Versiones</h4>';
+        html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 2rem;">';
+        data.updates.forEach(update => {
+          const typeColor = update.type === 'major' ? '#22c55e' : update.type === 'release' ? '#3b82f6' : update.type === 'new' ? '#ff6b35' : update.type === 'deprecated' ? '#dc2626' : '#6b7280';
+          const isDeprecated = update.status === 'discarded';
           html += `
-            <div class="credit-item" style="margin-bottom: 1rem;">
-              <div class="credit-key" style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="background: ${typeColor}; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">${update.type.toUpperCase()}</span>
-                ${update.title}
+            <div class="credit-item" style="margin-bottom: 0; border: 2px solid ${typeColor}; border-radius: 12px; padding: 1.5rem; background: var(--bg-dark); ${isDeprecated ? 'opacity: 0.7; filter: grayscale(50%);' : ''}">
+              <div class="credit-key" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="background: ${typeColor}; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.7rem; font-weight: bold; color: white;">${update.type.toUpperCase()}</span>
+                  <span style="font-size: 0.8rem; color: var(--text-secondary);">${update.date}</span>
+                </div>
+                <span style="font-size: 1.2rem; font-weight: bold;">v${update.version}</span>
               </div>
-              <div class="credit-value" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${update.date}</div>
-              <ul class="credit-list">
+              <h5 style="color: ${typeColor}; margin-bottom: 1rem; font-size: 1.1rem;">${update.title}</h5>
+              <ul class="credit-list" style="margin-bottom: 1rem;">
           `;
           
           update.features?.forEach(feature => {
@@ -3141,6 +3146,7 @@
           
           html += '</div>';
         });
+        html += '</div>'; // Cerrar grid
         
         // Roadmap
         if (data.roadmap?.length) {
@@ -4214,58 +4220,10 @@
         setInterval(checkAutoDayNight, 60000);
       }
       
-      // Service Worker y PWA con animación de actualización
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-          .then(registration => {
-            console.log('⚡ Service Worker registrado:', registration.scope);
-            showAchievementNotification({ name: 'Cache offline activado!', points: 0 });
-            
-            // Detectar actualizaciones
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  showUpdateAnimation();
-                }
-              });
-            });
-          })
-          .catch(error => {
-            console.log('❌ Service Worker falló:', error);
-            navigator.serviceWorker.register('/FenixLaboratory/sw.js')
-              .then(reg => console.log('⚡ SW registrado con ruta absoluta'))
-              .catch(err => console.log('❌ SW falló completamente:', err));
-          });
-      }
+      // PWA sin Service Worker (más simple)
+      console.log('📱 PWA básica sin cache offline');
       
-      function showUpdateAnimation() {
-        const updateNotification = document.createElement('div');
-        updateNotification.style.cssText = `
-          position: fixed; top: 20px; right: 20px; z-index: 10005;
-          background: linear-gradient(135deg, var(--primary), var(--secondary));
-          color: white; padding: 1rem 1.5rem; border-radius: 12px;
-          box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-          animation: slideInUpdate 0.5s ease, pulse 2s infinite;
-          font-family: inherit; font-weight: 500;
-        `;
-        updateNotification.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <div style="animation: spin 1s linear infinite;">🔄</div>
-            <div>
-              <div style="font-weight: bold;">¡App actualizada!</div>
-              <div style="font-size: 0.8rem; opacity: 0.9;">Nueva versión disponible</div>
-            </div>
-          </div>
-        `;
-        
-        document.body.appendChild(updateNotification);
-        
-        setTimeout(() => {
-          updateNotification.style.animation = 'slideOutUpdate 0.5s ease';
-          setTimeout(() => updateNotification.remove(), 500);
-        }, 4000);
-      }
+
       
       // PWA Install Prompt - Oculto por defecto
       let deferredPrompt;
@@ -4341,24 +4299,10 @@
         }
       };
       
-      // Función para forzar actualización del cache
+      // Función para recargar sin cache
       window.forceUpdate = () => {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(registrations => {
-            registrations.forEach(registration => {
-              registration.unregister();
-            });
-            window.location.reload(true);
-          });
-        }
+        window.location.reload(true);
       };
-      
-      // Auto-forzar actualización cada 5 minutos
-      setInterval(() => {
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({ type: 'CHECK_UPDATE' });
-        }
-      }, 300000);
       
       // Limpiar botón si la app se instala desde el navegador
       window.addEventListener('appinstalled', () => {

@@ -14,12 +14,13 @@
         "🎨 Editor de temas avanzado con colores personalizables",
         "🎨 Sistema de temas mejorado con más opciones de personalización",
         "🌈 Nuevos temas premium y colores dinámicos",
-        "⚡ Service Worker para cache offline y carga rápida",
         "🏆 36 logros totales (agregados 2 nuevos de PWA)",
         "📱 Optimizaciones específicas para móviles (RAM protegida)",
         "🔍 13 nuevos logros: GitHub, social, dispositivos, colecciones",
         "🎯 Detección automática de navegador y dispositivo",
-        "🎆 Animación visual cuando la PWA se actualiza automáticamente"
+        "🎆 Animación visual cuando la PWA se actualiza automáticamente",
+        "🎴 Panel de updates rediseñado con formato de tarjetas",
+        "📋 Historial completo de versiones (no solo las 3 recientes)"
       ],
       "fixes": [
         "🔧 Eliminado Google Analytics placeholder que causaba errores",
@@ -28,10 +29,13 @@
         "⚡ Matrix Rain con código JavaScript real en lugar de caracteres",
         "📱 Botón de instalación PWA oculto por defecto para evitar molestias",
         "🔧 Mejorada detección de PWA y eventos de instalación",
-        "📦 Service Worker optimizado con mejor cache y manejo offline",
+        "📦 Service Worker removido para evitar problemas de cache",
         "🎯 Manifest.json corregido para mejor compatibilidad PWA",
         "🚀 Función window.showPWAInstall() para testing manual",
-        "🔗 Manifest.json start_url corregido para apuntar a index.html"
+        "🔗 Manifest.json start_url corregido para apuntar a index.html",
+        "🗑️ Archivo sw.js eliminado completamente",
+        "🎨 Tarjetas de versiones con colores por tipo y efectos visuales",
+        "📱 Grid responsive para el historial de actualizaciones"
       ],
       "howToInstall": [
         "📱 Chrome/Edge: Menú → Instalar FenixLaboratory",
@@ -40,12 +44,10 @@
         "💻 Consola: window.showPWAInstall() para mostrar botón"
       ],
       "autoUpdate": [
-        "🔄 La PWA se actualiza automáticamente al detectar cambios",
-        "⚡ Service Worker con skipWaiting() para actualizaciones instantáneas",
-        "💾 Cache inteligente: archivos locales + recursos externos",
-        "🌐 Funciona offline después de la primera carga",
-        "🔄 Función window.forceUpdate() para forzar actualización manual",
-        "⏰ Verificación automática de updates cada 5 minutos"
+        "🔄 PWA básica sin cache offline (más simple y confiable)",
+        "⚡ Actualizaciones instantáneas al recargar la página",
+        "🔄 Función window.forceUpdate() para hard refresh",
+        "🌐 Siempre obtiene la última versión del servidor"
       ]
     },
     {
