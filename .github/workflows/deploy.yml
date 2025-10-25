@@ -23,6 +23,8 @@ jobs:
       - name: Inject GitHub token
         run: |
           sed -i "s/window.GITHUB_TOKEN = window.GITHUB_TOKEN || null;/window.GITHUB_TOKEN = '${{ secrets.GH_TOKEN }}';/" index.html
+          echo "Token injected successfully"
+          grep -n "GITHUB_TOKEN" index.html || echo "Token not found in file"
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
