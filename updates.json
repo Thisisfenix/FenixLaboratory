@@ -31,6 +31,12 @@
         "🎯 Manifest.json corregido para mejor compatibilidad PWA",
         "🚀 Función window.showPWAInstall() para testing manual",
         "🔗 Manifest.json start_url corregido para apuntar a index.html"
+      ],
+      "howToInstall": [
+        "📱 Chrome/Edge: Menú → Instalar FenixLaboratory",
+        "🍎 Safari iOS: Compartir → Agregar a pantalla de inicio",
+        "🤖 Android: Menú → Agregar a pantalla de inicio",
+        "💻 Consola: window.showPWAInstall() para mostrar botón"
       ]
     },
     {
