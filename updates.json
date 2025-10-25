@@ -18,7 +18,8 @@
         "🏆 36 logros totales (agregados 2 nuevos de PWA)",
         "📱 Optimizaciones específicas para móviles (RAM protegida)",
         "🔍 13 nuevos logros: GitHub, social, dispositivos, colecciones",
-        "🎯 Detección automática de navegador y dispositivo"
+        "🎯 Detección automática de navegador y dispositivo",
+        "🎆 Animación visual cuando la PWA se actualiza automáticamente"
       ],
       "fixes": [
         "🔧 Eliminado Google Analytics placeholder que causaba errores",
@@ -37,6 +38,12 @@
         "🍎 Safari iOS: Compartir → Agregar a pantalla de inicio",
         "🤖 Android: Menú → Agregar a pantalla de inicio",
         "💻 Consola: window.showPWAInstall() para mostrar botón"
+      ],
+      "autoUpdate": [
+        "🔄 La PWA se actualiza automáticamente al detectar cambios",
+        "⚡ Service Worker con skipWaiting() para actualizaciones instantáneas",
+        "💾 Cache inteligente: archivos locales + recursos externos",
+        "🌐 Funciona offline después de la primera carga"
       ]
     },
     {

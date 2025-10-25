@@ -1713,6 +1713,21 @@
       0% { opacity: 1; transform: scale(1); }
       100% { opacity: 0; transform: scale(0.5) translateY(-20px); }
     }
+    
+    @keyframes slideInUpdate {
+      0% { transform: translateX(100%); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutUpdate {
+      0% { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(100%); opacity: 0; }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
     /* Optimizaciones móviles */
     @media (max-width: 768px) {
@@ -4179,20 +4194,57 @@
         setInterval(checkAutoDayNight, 60000);
       }
       
-      // Service Worker y PWA
+      // Service Worker y PWA con animación de actualización
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
           .then(registration => {
             console.log('⚡ Service Worker registrado:', registration.scope);
             showAchievementNotification({ name: 'Cache offline activado!', points: 0 });
+            
+            // Detectar actualizaciones
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  showUpdateAnimation();
+                }
+              });
+            });
           })
           .catch(error => {
             console.log('❌ Service Worker falló:', error);
-            // Intentar con ruta absoluta
             navigator.serviceWorker.register('/FenixLaboratory/sw.js')
               .then(reg => console.log('⚡ SW registrado con ruta absoluta'))
               .catch(err => console.log('❌ SW falló completamente:', err));
           });
+      }
+      
+      function showUpdateAnimation() {
+        const updateNotification = document.createElement('div');
+        updateNotification.style.cssText = `
+          position: fixed; top: 20px; right: 20px; z-index: 10005;
+          background: linear-gradient(135deg, var(--primary), var(--secondary));
+          color: white; padding: 1rem 1.5rem; border-radius: 12px;
+          box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+          animation: slideInUpdate 0.5s ease, pulse 2s infinite;
+          font-family: inherit; font-weight: 500;
+        `;
+        updateNotification.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="animation: spin 1s linear infinite;">🔄</div>
+            <div>
+              <div style="font-weight: bold;">¡App actualizada!</div>
+              <div style="font-size: 0.8rem; opacity: 0.9;">Nueva versión disponible</div>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(updateNotification);
+        
+        setTimeout(() => {
+          updateNotification.style.animation = 'slideOutUpdate 0.5s ease';
+          setTimeout(() => updateNotification.remove(), 500);
+        }, 4000);
       }
       
       // PWA Install Prompt - Oculto por defecto
