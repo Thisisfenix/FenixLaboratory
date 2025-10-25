@@ -2092,6 +2092,10 @@
 
   <!-- Scripts -->
   <script>
+    // Token será inyectado por GitHub Actions
+    window.GITHUB_TOKEN = window.GITHUB_TOKEN || null;
+  </script>
+  <script>
     const user = 'thisisfenix';
     let allRepos = [];
     let filteredRepos = [];
@@ -3481,7 +3485,7 @@
       try {
         let globalData = [];
         
-        // Si no hay GIST_ID o falla, crear uno nuevo
+        // Leer gist existente
         if (GIST_ID && GIST_ID !== 'null') {
           try {
             const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
@@ -3489,17 +3493,13 @@
               const gist = await response.json();
               const content = gist.files['leaderboard.json']?.content;
               if (content) globalData = JSON.parse(content);
-            } else {
-              console.log('Gist not found, will create new one');
-              GIST_ID = null;
             }
           } catch (error) {
-            console.log('Error reading existing gist, creating new one');
-            GIST_ID = null;
+            console.log('Error reading gist:', error);
           }
         }
         
-        // Agregar/actualizar usuario
+        // Agregar/actualizar usuario actual
         const existing = globalData.findIndex(entry => entry.name === gameData.leaderboardName);
         const userEntry = {
           name: gameData.leaderboardName,
@@ -3514,35 +3514,40 @@
         }
         
         globalData.sort((a,b) => b.points - a.points);
-        globalData = globalData.slice(0, 50); // Top 50
+        globalData = globalData.slice(0, 50);
         
-        // Crear nuevo gist
-        const newGistResponse = await fetch('https://api.github.com/gists', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            files: {
-              'leaderboard.json': {
-                content: JSON.stringify(globalData, null, 2)
-              }
+        // Intentar crear/actualizar gist con token
+        const token = window.GITHUB_TOKEN; // Variable de entorno
+        if (token) {
+          const newGistResponse = await fetch('https://api.github.com/gists', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `token ${token}`
             },
-            public: true,
-            description: 'FenixLab Leaderboard - ' + new Date().toISOString()
-          })
-        });
-        
-        if (newGistResponse.ok) {
-          const newGist = await newGistResponse.json();
-          GIST_ID = newGist.id;
-          localStorage.setItem('fenix-gist-id', GIST_ID);
-          console.log('New gist created:', GIST_ID);
+            body: JSON.stringify({
+              files: {
+                'leaderboard.json': {
+                  content: JSON.stringify(globalData, null, 2)
+                }
+              },
+              public: true,
+              description: 'FenixLab Leaderboard - ' + new Date().toISOString()
+            })
+          });
           
-          // Actualizar display inmediatamente
-          updateLeaderboardDisplay();
+          if (newGistResponse.ok) {
+            const newGist = await newGistResponse.json();
+            GIST_ID = newGist.id;
+            localStorage.setItem('fenix-gist-id', GIST_ID);
+          }
         }
         
+        // Guardar localmente como backup
+        localStorage.setItem('fenix-global-leaderboard', JSON.stringify(globalData));
+        
       } catch (error) {
-        console.log('Gist sync failed:', error);
+        console.log('Sync failed:', error);
       }
     }
     
@@ -3550,22 +3555,9 @@
       const container = document.getElementById('leaderboard-display');
       if (!container) return;
       
-      // Intentar cargar datos globales del gist
-      let globalData = [];
-      if (GIST_ID && GIST_ID !== 'null') {
-        try {
-          const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
-          if (response.ok) {
-            const gist = await response.json();
-            const content = gist.files['leaderboard.json']?.content;
-            if (content) globalData = JSON.parse(content);
-          }
-        } catch (error) {
-          console.log('Error loading global leaderboard:', error);
-        }
-      }
+      // Usar datos globales guardados o locales como fallback
+      let globalData = JSON.parse(localStorage.getItem('fenix-global-leaderboard') || '[]');
       
-      // Si no hay datos globales, usar locales
       if (globalData.length === 0) {
         globalData = JSON.parse(localStorage.getItem('fenix-leaderboard') || '[]');
       }

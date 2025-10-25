@@ -1,0 +1,9 @@
+# Configuración con tokens
+config.js
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
