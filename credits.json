@@ -33,28 +33,9 @@
       "texto": "Me inspire demasiado en Funky Atlas cualquier parecido es mera coincidencia (posdata: no me mate abelitogamer)",
       "url": "https://funkyatlas.abelitogamer.com/",
       "autor": "AbelitoGamer",
-      "imagen": "placeholder/GHbDEIgXMAACVEi.jpg"
+      "imagen": "https://avatars.githubusercontent.com/u/77520810?v=4"
     },
     "testing": "Mi computadora (seh hay hago todas mis mierdas XD)",
-    "imagenes": {
-      "placeholders": [
-        {
-          "archivo": "placeholder/GHbDEIgXMAACVEi.jpg",
-          "uso": "Vista principal y avatar de respaldo",
-          "credito": "Imagen generada para el proyecto"
-        },
-        {
-          "archivo": "placeholder/GzyBNcWWsAEcgbH.jpg",
-          "uso": "Placeholder para proyectos futuros", 
-          "credito": "Imagen de próximamente"
-        }
-      ],
-      "iconos": {
-        "favicon": "favicon.svg",
-        "preview": "preview.png",
-        "credito_iconos": "Bootstrap Icons, Font Awesome"
-      }
-    },
     "tecnologias": {
       "frontend": ["HTML5", "CSS3", "JavaScript ES6+"],
       "frameworks": ["Bootstrap 5.3.3"],
@@ -83,23 +64,6 @@
     "features_no_planeadas": "Los bugs son features"
   },
 
-  "galeria": {
-    "imagenes_proyecto": [
-      {
-        "url": "preview.png",
-        "titulo": "Vista previa principal",
-        "descripcion": "Captura de la página principal del laboratorio"
-      },
-      {
-        "url": "placeholder/GHbDEIgXMAACVEi.jpg",
-        "titulo": "Interfaz de usuario",
-        "descripcion": "Ejemplo de la interfaz y diseño"
-      }
-    ],
-    "soporte_formatos": ["PNG", "JPG", "JPEG", "SVG", "WebP"],
-    "lazy_loading": true,
-    "responsive_images": true
-  },
   
   "mensaje_final": "Si llegaste hasta acá eres un nerd como yo. Respeto bro 🤝, la verdad dudo que vea alguien esto"
 }

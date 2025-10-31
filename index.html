@@ -2886,175 +2886,179 @@
     }
 
     // Funcionalidad de créditos
-    async function showCredits() {
-      try {
-        document.getElementById('main-content').classList.add('hidden');
-        document.getElementById('credits-section').classList.add('active');
-        
-        const response = await fetch('credits.json');
-        const credits = await response.json();
-        
-        let html = `
-          <div class="credit-header">
-            <div class="credit-badge">🏆 ${credits.version || 'v2.0.0'}</div>
-            <h3>${credits["que es esto wey"] || 'FenixLaboratory'}</h3>
-            <p>${credits.descripcion || 'Donde subo mis experimentos raros'}</p>
+async function showCredits() {
+  try {
+    document.getElementById('main-content').classList.add('hidden');
+    document.getElementById('credits-section').classList.add('active');
+    
+    const response = await fetch('credits.json');
+    const credits = await response.json();
+    
+    let html = `
+      <div class="credit-header">
+        <div class="credit-badge">🏆 ${credits.version}</div>
+        <h3>${credits["que es esto wey"]}</h3>
+        <p>${credits.descripcion}</p>
+        <div class="status-badge">${credits.estado} • ${credits.hosting}</div>
+      </div>
+    `;
+    
+    // Información del desarrollador
+    if (credits.el_wey_que_hizo_esto) {
+      const dev = credits.el_wey_que_hizo_esto;
+      html += `
+        <div class="credit-section">
+          <h4>👨💻 Desarrollador</h4>
+          <div class="credit-item">
+            <div class="developer-info">
+              <img src="${dev.foto_perfil}" alt="${dev.quien_soy}" style="width: 60px; height: 60px; border-radius: 50%; float: left; margin-right: 1rem; object-fit: cover;">
+              <div>
+                <strong>${dev.quien_soy}</strong><br>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0.5rem 0;">${dev.descripcion_personal}</p>
+                <div class="social-links">
+      `;
+      if (dev.redes) {
+        Object.entries(dev.redes).forEach(([platform, url]) => {
+          const icon = platform === 'github' ? 'fab fa-github' : 
+                      platform === 'twitter' ? 'fab fa-twitter' : 
+                      platform === 'tiktok' ? 'fab fa-tiktok' : 'fas fa-link';
+          html += `<a href="${url}" target="_blank" class="social-link"><i class="${icon}"></i> ${platform}</a>`;
+        });
+      }
+      html += `</div></div><div style="clear: both;"></div></div></div></div>`;
+    }
+    
+    // Características
+    if (credits.que_hace) {
+      html += `
+        <div class="credit-section">
+          <h4>✨ Características</h4>
+          <div class="features-grid">
+      `;
+      credits.que_hace.forEach(feature => {
+        html += `<div class="feature-item">• ${feature}</div>`;
+      });
+      html += `</div></div>`;
+    }
+    
+    // Créditos especiales
+    if (credits.creditos) {
+      html += `<div class="credit-section"><h4>🙏 Créditos</h4>`;
+      
+      // Inspiración con imagen
+      if (credits.creditos.inspiracion) {
+        const insp = credits.creditos.inspiracion;
+        html += `
+          <div class="credit-item">
+            <div class="credit-key">Inspiración:</div>
+            <div class="credit-value">
+              <img src="${insp.imagen}" alt="${insp.autor}" style="width: 60px; height: 60px; border-radius: 50%; float: left; margin-right: 1rem; object-fit: cover;">
+              <div>
+                <strong>${insp.autor}</strong><br>
+                ${insp.texto}<br>
+                <a href="${insp.url}" target="_blank" class="credit-link">Ver sitio original</a>
+              </div>
+              <div style="clear: both;"></div>
+            </div>
           </div>
         `;
-        
-        // Información del desarrollador
-        if (credits.el_wey_que_hizo_esto) {
-          const dev = credits.el_wey_que_hizo_esto;
-          html += `
-            <div class="credit-section">
-              <h4>👨‍💻 Desarrollador</h4>
-              <div class="credit-item">
-                <div class="credit-key">${dev.quien_soy}</div>
-                <div class="social-links">
-          `;
-          if (dev.redes) {
-            Object.entries(dev.redes).forEach(([platform, url]) => {
-              const icon = platform === 'github' ? 'fab fa-github' : 
-                          platform === 'twitter' ? 'fab fa-twitter' : 
-                          platform === 'tiktok' ? 'fab fa-tiktok' : 'fas fa-link';
-              html += `<a href="${url}" target="_blank" class="social-link"><i class="${icon}"></i> ${platform}</a>`;
-            });
-          }
-          html += `</div></div></div>`;
-        }
-        
-        // Características
-        if (credits.que_hace) {
-          html += `
-            <div class="credit-section">
-              <h4>✨ Características</h4>
-              <div class="features-grid">
-          `;
-          credits.que_hace.forEach(feature => {
-            html += `<div class="feature-item">• ${feature}</div>`;
-          });
-          html += `</div></div>`;
-        }
-        
-        // Créditos especiales
-        if (credits.creditos) {
-          html += `<div class="credit-section"><h4>🙏 Créditos</h4>`;
-          
-          // Inspiración con imagen
-          if (credits.creditos.inspiracion && typeof credits.creditos.inspiracion === 'object') {
-            const insp = credits.creditos.inspiracion;
-            html += `
-              <div class="credit-item">
-                <div class="credit-key">Inspiración:</div>
-                <div class="credit-value">
-                  ${insp.imagen ? `<img src="${insp.imagen}" alt="${insp.autor}" style="width: 60px; height: 60px; border-radius: 50%; float: left; margin-right: 1rem; object-fit: cover;">` : ''}
-                  <div>
-                    <strong>${insp.autor}</strong><br>
-                    ${insp.texto}<br>
-                    <a href="${insp.url}" target="_blank" class="credit-link">Ver sitio original</a>
-                  </div>
-                  <div style="clear: both;"></div>
-                </div>
-              </div>
-            `;
-          }
-          
-          // Tecnologías
-          if (credits.creditos.tecnologias) {
-            const tech = credits.creditos.tecnologias;
-            html += `
-              <div class="credit-item">
-                <div class="credit-key">Tecnologías:</div>
-                <div class="credit-value">
-                  <strong>Frontend:</strong> ${tech.frontend?.join(', ')}<br>
-                  <strong>Frameworks:</strong> ${tech.frameworks?.join(', ')}<br>
-                  <strong>APIs:</strong> ${tech.apis?.join(', ')}<br>
-                  <strong>Hosting:</strong> ${tech.hosting}<br>
-                  <strong>PWA:</strong> ${tech.pwa}<br>
-                  <strong>Fuentes:</strong> ${tech.fuentes}
-                </div>
-              </div>
-            `;
-          }
-          
-          // Imágenes
-          if (credits.creditos.imagenes) {
-            const img = credits.creditos.imagenes;
-            html += `
-              <div class="credit-item">
-                <div class="credit-key">Recursos visuales:</div>
-                <div class="credit-value">
-                  <strong>Iconos:</strong> ${img.iconos?.credito_iconos}<br>
-                  <strong>Placeholders:</strong> ${img.placeholders?.length || 0} imágenes generadas
-                </div>
-              </div>
-            `;
-          }
-          
-          // Testing
-          if (credits.creditos.testing) {
-            html += `<div class="credit-item"><div class="credit-key">Testing:</div><div class="credit-value">${credits.creditos.testing}</div></div>`;
-          }
-          
-          html += `</div>`;
-        }
-        
-        // Planes futuros
-        if (credits.planes_a_futuro) {
-          html += `
-            <div class="credit-section">
-              <h4>🚀 Planes Futuros</h4>
-              <div class="future-plans">
-          `;
-          credits.planes_a_futuro.forEach(plan => {
-            html += `<div class="plan-item">🔮 ${plan}</div>`;
-          });
-          html += `</div></div>`;
-        }
-        
-        // Galería de imágenes
-        if (credits.galeria?.imagenes_proyecto) {
-          html += `
-            <div class="credit-section">
-              <h4>🖼️ Galería</h4>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-          `;
-          credits.galeria.imagenes_proyecto.forEach(img => {
-            html += `
-              <div style="text-align: center;">
-                <img src="${img.url}" alt="${img.titulo}" style="width: 100%; max-width: 200px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid var(--primary);">
-                <h6 style="margin: 0.5rem 0 0.25rem; color: var(--primary);">${img.titulo}</h6>
-                <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary);">${img.descripcion}</p>
-              </div>
-            `;
-          });
-          html += `
-              </div>
-              <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
-                <strong>Formatos soportados:</strong> ${credits.galeria.soporte_formatos?.join(', ')}<br>
-                <strong>Características:</strong> ${credits.galeria.lazy_loading ? 'Lazy Loading, ' : ''}${credits.galeria.responsive_images ? 'Imágenes Responsivas' : ''}
-              </div>
-            </div>
-          `;
-        }
-        
-        // Mensaje final
-        if (credits.mensaje_final) {
-          html += `
-            <div class="credit-section final-message">
-              <div class="message-box">
-                <i class="fas fa-heart"></i>
-                <p>${credits.mensaje_final}</p>
-              </div>
-            </div>
-          `;
-        }
-        
-        document.getElementById('json-viewer').innerHTML = html;
-      } catch (error) {
-        document.getElementById('json-viewer').innerHTML = '<p style="color: var(--text-secondary);">Error al cargar credits.json: ' + error.message + '</p>';
       }
+      
+      // Tecnologías
+      if (credits.creditos.tecnologias) {
+        const tech = credits.creditos.tecnologias;
+        html += `
+          <div class="credit-item">
+            <div class="credit-key">Tecnologías:</div>
+            <div class="credit-value">
+              <strong>Frontend:</strong> ${tech.frontend.join(', ')}<br>
+              <strong>Frameworks:</strong> ${tech.frameworks.join(', ')}<br>
+              <strong>APIs:</strong> ${tech.apis.join(', ')}<br>
+              <strong>Hosting:</strong> ${tech.hosting}<br>
+              <strong>PWA:</strong> ${tech.pwa}<br>
+              <strong>Fuentes:</strong> ${tech.fuentes}
+            </div>
+          </div>
+        `;
+      }
+
+      // Testing
+      if (credits.creditos.testing) {
+        html += `<div class="credit-item"><div class="credit-key">Testing:</div><div class="credit-value">${credits.creditos.testing}</div></div>`;
+      }
+      
+      html += `</div>`;
     }
+    
+    // Información legal
+    if (credits.legal_stuff) {
+      html += `
+        <div class="credit-section">
+          <h4>⚖️ Legal</h4>
+          <div class="credit-item">
+            <div class="credit-key">Licencia:</div>
+            <div class="credit-value">${credits.legal_stuff.licencia}</div>
+          </div>
+          <div class="credit-item">
+            <div class="credit-key">Disclaimer:</div>
+            <div class="credit-value">${credits.legal_stuff.disclaimer}</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Bugs
+    if (credits.bugs) {
+      html += `
+        <div class="credit-section">
+          <h4>🐛 Estado de Bugs</h4>
+          <div class="credit-item">
+            <div class="credit-key">Bugs Graves:</div>
+            <div class="credit-value">${credits.bugs.bugs_graves}</div>
+          </div>
+          <div class="credit-item">
+            <div class="credit-key">Bugs Menores:</div>
+            <div class="credit-value">${credits.bugs.bugs_menores}</div>
+          </div>
+          <div class="credit-item">
+            <div class="credit-key">Features no planeadas:</div>
+            <div class="credit-value">${credits.bugs.features_no_planeadas}</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Planes futuros
+    if (credits.planes_a_futuro) {
+      html += `
+        <div class="credit-section">
+          <h4>🚀 Planes Futuros</h4>
+          <div class="future-plans">
+      `;
+      credits.planes_a_futuro.forEach(plan => {
+        html += `<div class="plan-item">🔮 ${plan}</div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    // Mensaje final
+    if (credits.mensaje_final) {
+      html += `
+        <div class="credit-section final-message">
+          <div class="message-box">
+            <i class="fas fa-heart"></i>
+            <p>${credits.mensaje_final}</p>
+          </div>
+        </div>
+      `;
+    }
+    
+    document.getElementById('json-viewer').innerHTML = html;
+  } catch (error) {
+    document.getElementById('json-viewer').innerHTML = '<p style="color: var(--text-secondary);">Error al cargar credits.json: ' + error.message + '</p>';
+  }
+}
+
     
     function hideCredits() {
       document.getElementById('main-content').classList.remove('hidden');

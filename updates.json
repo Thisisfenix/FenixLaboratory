@@ -1,6 +1,24 @@
 {
+  "proyecto": "FenixLaboratory",
   "version": "2.0.6",
   "lastUpdate": "2025-01-27",
+  "autor": "ThisIsFenix",
+  "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
+  "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
+  
+  "info_version_actual": {
+    "numero": "2.0.6",
+    "fecha": "2025-01-27",
+    "tipo": "major",
+    "estado": "estable",
+    "cambios_principales": [
+      "Sistema de gamificación avanzada completo",
+      "PWA con sincronización entre dispositivos",
+      "Soporte completo para imágenes en credits.json",
+      "Interfaz limpia y optimizada"
+    ]
+  },
+  
   "updates": [
     {
       "version": "2.0.6",
@@ -27,11 +45,12 @@
         "💾 Backup local + sync en la nube sin service workers",
         "⚡ Interfaz optimizada para modo standalone PWA",
         "🖼️ Sistema completo de soporte para imágenes en credits.json",
-        "📸 Galería de imágenes integrada en la sección de créditos",
-        "🎨 Visualización mejorada de inspiración con avatar e información",
+        "🎨 Visualización mejorada de inspiración con avatar de AbelitoGamer",
         "🔧 Información técnica reorganizada y detallada en créditos",
         "📱 Soporte para múltiples formatos de imagen (PNG, JPG, SVG, WebP)",
-        "⚡ Lazy loading y responsive images implementado"
+        "⚡ Lazy loading y responsive images implementado",
+        "📋 Apartados propios agregados a updates.json para mejor organización",
+        "📊 Estadísticas del proyecto y notas del desarrollador agregadas"
       ],
       "fixes": [
         "🔧 Código no utilizado identificado y limpiado",
@@ -44,11 +63,11 @@
         "📱 Manifest.json actualizado con nueva versión",
         "⚡ Carga más rápida al eliminar procesamiento de proyectos destacados",
         "🧹 Código más limpio y mantenible",
-        "🗑️ Eliminados campos screenshots y avatar_local de credits.json",
+        "🗑️ Eliminados campos innecesarios de credits.json (screenshots, galería)",
         "🔧 Función showCredits() actualizada para soporte completo de imágenes",
         "🎨 Renderizado mejorado de tecnologías y recursos visuales",
-        "📸 Grid responsivo implementado para galería de imágenes",
-        "🖼️ Metadatos de imagen con títulos y descripciones funcionales",
+        "🖼️ Avatar de AbelitoGamer corregido con URL real de GitHub",
+        "📋 Estructura de updates.json mejorada con apartados propios",
         "⚡ Optimización del parsing JSON para nuevas estructuras de datos"
       ]
     },
@@ -227,5 +246,45 @@
       ],
       "status": "completed"
     }
-  ]
+  ],
+  
+  "estadisticas_proyecto": {
+    "total_versiones": 7,
+    "versiones_major": 4,
+    "versiones_new": 1,
+    "versiones_deprecated": 1,
+    "versiones_release": 1,
+    "tiempo_desarrollo": "4 meses",
+    "lineas_codigo_aprox": "2500+",
+    "archivos_principales": 4
+  },
+  
+  "tecnologias_usadas": {
+    "frontend": ["HTML5", "CSS3", "JavaScript ES6+"],
+    "frameworks": ["Bootstrap 5.3.3"],
+    "apis_externas": ["GitHub REST API v3"],
+    "hosting": "GitHub Pages",
+    "pwa": "Manifest + Service Worker (removido)",
+    "fuentes": "Google Fonts (Space Grotesk)",
+    "iconos": ["Bootstrap Icons", "Font Awesome"]
+  },
+  
+  "proximas_actualizaciones": {
+    "v2.0.7": {
+      "fecha_estimada": "2025-02-15",
+      "prioridad": "media",
+      "enfoque": "Optimizaciones y correcciones menores"
+    },
+    "v2.1.0": {
+      "fecha_estimada": "2025-03-01",
+      "prioridad": "alta",
+      "enfoque": "Minijuegos integrados y competencia"
+    }
+  },
+  
+  "notas_desarrollador": {
+    "mensaje": "Cada versión es un experimento. A veces funciona, a veces no, pero siempre es divertido.",
+    "agradecimientos": "A todos los que han visitado el laboratorio y probado las cosas raras que hago.",
+    "inspiracion": "FunkyAtlas de AbelitoGamer - respeto total bro 🤝"
+  }
 }
