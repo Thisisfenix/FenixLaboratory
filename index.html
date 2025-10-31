@@ -2421,6 +2421,7 @@
   </script>
   
   <!-- Scripts -->
+  <script src="js/json-paginator.js"></script>
   <script>
     const user = 'thisisfenix';
     let allRepos = [];
@@ -2907,8 +2908,12 @@
     // Funcionalidad de créditos
 async function showCredits() {
   try {
-    document.getElementById('main-content').classList.add('hidden');
-    document.getElementById('credits-section').classList.add('active');
+    hideAllSections();
+    const creditsSection = document.getElementById('credits-section');
+    if (creditsSection) {
+      creditsSection.classList.add('active');
+      creditsSection.style.display = 'block';
+    }
     
     const response = await fetch('credits.json');
     const credits = await response.json();
@@ -3079,18 +3084,41 @@ async function showCredits() {
 }
 
     
+    function hideAllSections() {
+      const mainContent = document.getElementById('main-content');
+      const creditsSection = document.getElementById('credits-section');
+      const updatesSection = document.getElementById('updates-section');
+      
+      if (mainContent) mainContent.classList.add('hidden');
+      if (creditsSection) {
+        creditsSection.classList.remove('active');
+        creditsSection.style.display = 'none';
+      }
+      if (updatesSection) {
+        updatesSection.classList.remove('active');
+        updatesSection.style.display = 'none';
+      }
+    }
+    
+    function showMainContent() {
+      hideAllSections();
+      const mainContent = document.getElementById('main-content');
+      if (mainContent) mainContent.classList.remove('hidden');
+    }
+
     function hideCredits() {
-      document.getElementById('main-content').classList.remove('hidden');
-      document.getElementById('credits-section').classList.remove('active');
+      showMainContent();
     }
 
     // Funcionalidad de actualizaciones
     async function showUpdates() {
       try {
-        const mainContent = document.getElementById('main-content');
+        hideAllSections();
         const updatesSection = document.getElementById('updates-section');
-        if (mainContent) mainContent.classList.add('hidden');
-        if (updatesSection) updatesSection.classList.add('active');
+        if (updatesSection) {
+          updatesSection.classList.add('active');
+          updatesSection.style.display = 'block';
+        }
         
         const response = await fetch('updates.json');
         const data = await response.json();
@@ -3174,12 +3202,7 @@ async function showCredits() {
       }
     }
     
-    function hideUpdates() {
-      const mainContent = document.getElementById('main-content');
-      const updatesSection = document.getElementById('updates-section');
-      if (mainContent) mainContent.classList.remove('hidden');
-      if (updatesSection) updatesSection.classList.remove('active');
-    }
+
 
     // Sistema de logros y puntajes AVANZADO
     let gameData = {
