@@ -1,12 +1,16 @@
 {
   "que es esto wey": "FenixLaboratory",
-  "version": "2.0.0 (o la que sea, ya ni sé)",
+  "version": "2.0.6",
   "descripcion": "Donde subo mis experimentos raros",
   "estado": "Funciona (creo)",
   "hosting": "GitHub Pages",
+  "preview_image": "preview.png",
+  "favicon": "favicon.svg",
   
   "el_wey_que_hizo_esto": {
     "quien_soy": "ThisIsFenix",
+    "foto_perfil": "https://github.com/thisisfenix.png",
+    "descripcion_personal": "Solo soy alguien que le gusta hacer cosas raras en internet. A veces funcionan, a veces no, pero siempre es divertido intentarlo.",
     "redes": {
       "github": "https://github.com/thisisfenix",
       "twitter": "https://twitter.com/AntiAnkush", 
@@ -25,8 +29,40 @@
   ],
 
   "creditos": {
-    "inspiracion": "Me inspire demasiado en Funky Atlas (https://funkyatlas.abelitogamer.com/) cualquier parecido es mera coincidencia (posdata: no me mate abelitogamer)",
-    "testing": "Mi computadora (seh hay hago todas mis mierdas XD)"
+    "inspiracion": {
+      "texto": "Me inspire demasiado en Funky Atlas cualquier parecido es mera coincidencia (posdata: no me mate abelitogamer)",
+      "url": "https://funkyatlas.abelitogamer.com/",
+      "autor": "AbelitoGamer",
+      "imagen": "placeholder/GHbDEIgXMAACVEi.jpg"
+    },
+    "testing": "Mi computadora (seh hay hago todas mis mierdas XD)",
+    "imagenes": {
+      "placeholders": [
+        {
+          "archivo": "placeholder/GHbDEIgXMAACVEi.jpg",
+          "uso": "Vista principal y avatar de respaldo",
+          "credito": "Imagen generada para el proyecto"
+        },
+        {
+          "archivo": "placeholder/GzyBNcWWsAEcgbH.jpg",
+          "uso": "Placeholder para proyectos futuros", 
+          "credito": "Imagen de próximamente"
+        }
+      ],
+      "iconos": {
+        "favicon": "favicon.svg",
+        "preview": "preview.png",
+        "credito_iconos": "Bootstrap Icons, Font Awesome"
+      }
+    },
+    "tecnologias": {
+      "frontend": ["HTML5", "CSS3", "JavaScript ES6+"],
+      "frameworks": ["Bootstrap 5.3.3"],
+      "apis": ["GitHub REST API v3"],
+      "hosting": "GitHub Pages",
+      "pwa": "Service Worker + Manifest",
+      "fuentes": "Google Fonts (Space Grotesk)"
+    }
   },
 
   "legal_stuff": {
@@ -47,5 +83,23 @@
     "features_no_planeadas": "Los bugs son features"
   },
 
+  "galeria": {
+    "imagenes_proyecto": [
+      {
+        "url": "preview.png",
+        "titulo": "Vista previa principal",
+        "descripcion": "Captura de la página principal del laboratorio"
+      },
+      {
+        "url": "placeholder/GHbDEIgXMAACVEi.jpg",
+        "titulo": "Interfaz de usuario",
+        "descripcion": "Ejemplo de la interfaz y diseño"
+      }
+    ],
+    "soporte_formatos": ["PNG", "JPG", "JPEG", "SVG", "WebP"],
+    "lazy_loading": true,
+    "responsive_images": true
+  },
+  
   "mensaje_final": "Si llegaste hasta acá eres un nerd como yo. Respeto bro 🤝, la verdad dudo que vea alguien esto"
 }

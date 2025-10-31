@@ -1,7 +1,57 @@
 {
-  "version": "2.0.5",
-  "lastUpdate": "2025-10-25",
+  "version": "2.0.6",
+  "lastUpdate": "2025-01-27",
   "updates": [
+    {
+      "version": "2.0.6",
+      "date": "2025-01-27",
+      "title": "🎮 Gamificación Avanzada + Limpieza de Interfaz",
+      "type": "major",
+      "features": [
+        "🏅 Sistema de Badges/Medallas visuales por 8 categorías diferentes",
+        "📅 Racha semanal y mensual además de la diaria existente",
+        "🎪 Eventos especiales con doble puntos en fechas específicas",
+        "📋 Misiones semanales más complejas (5 nuevos desafíos)",
+        "⭐ Sistema de niveles con beneficios por nivel (descuentos, multiplicadores)",
+        "🔥 Sistema de combos - bonificaciones por logros consecutivos",
+        "🎯 8 nuevos logros para el sistema avanzado",
+        "✨ Efectos visuales mejorados con animaciones de badges",
+        "🎊 Indicador de combo visual cuando se consiguen 5+ logros seguidos",
+        "📊 Display mejorado con nivel, XP, rachas semanales/mensuales",
+        "🗑️ Sección de Proyectos Destacados completamente eliminada",
+        "🧹 Navbar simplificado - solo Proyectos, Sobre mí, Contacto, Comentarios",
+        "📱 PWA COMPLETA - Sync entre dispositivos implementado",
+        "🌐 Sincronización automática de progreso y logros",
+        "📱 Detección de Play Store y App Store",
+        "🔄 Auto-updates mejoradas con notificaciones inteligentes",
+        "💾 Backup local + sync en la nube sin service workers",
+        "⚡ Interfaz optimizada para modo standalone PWA",
+        "🖼️ Sistema completo de soporte para imágenes en credits.json",
+        "📸 Galería de imágenes integrada en la sección de créditos",
+        "🎨 Visualización mejorada de inspiración con avatar e información",
+        "🔧 Información técnica reorganizada y detallada en créditos",
+        "📱 Soporte para múltiples formatos de imagen (PNG, JPG, SVG, WebP)",
+        "⚡ Lazy loading y responsive images implementado"
+      ],
+      "fixes": [
+        "🔧 Código no utilizado identificado y limpiado",
+        "⚡ Optimización del sistema de tracking de progreso",
+        "🎨 Nuevas animaciones CSS para gamificación",
+        "💾 Sistema de guardado mejorado para datos avanzados",
+        "🔄 Integración completa con sistema existente de logros",
+        "🔧 Eliminado displayFeaturedRepos() y su lógica asociada",
+        "🎨 CSS de featured-card y featured-container removido",
+        "📱 Manifest.json actualizado con nueva versión",
+        "⚡ Carga más rápida al eliminar procesamiento de proyectos destacados",
+        "🧹 Código más limpio y mantenible",
+        "🗑️ Eliminados campos screenshots y avatar_local de credits.json",
+        "🔧 Función showCredits() actualizada para soporte completo de imágenes",
+        "🎨 Renderizado mejorado de tecnologías y recursos visuales",
+        "📸 Grid responsivo implementado para galería de imágenes",
+        "🖼️ Metadatos de imagen con títulos y descripciones funcionales",
+        "⚡ Optimización del parsing JSON para nuevas estructuras de datos"
+      ]
+    },
     {
       "version": "2.0.5",
       "date": "2025-10-25",
@@ -138,15 +188,16 @@
   ],
   "roadmap": [
     {
-      "version": "2.0.5",
-      "title": "🔧 Mejoras del Leaderboard",
+      "version": "2.0.8",
+      "title": "🔧 Mejoras del Sistema de Gamificación",
       "features": [
-        "🌍 Mostrar países con banderas",
-        "📈 Gráficos de progreso",
-        "🏅 Más categorías de ranking",
-        "⏰ Historial de puntuaciones"
+        "🌍 Leaderboard global con badges",
+        "📈 Gráficos de progreso de badges",
+        "🏅 Torneos semanales con premios especiales",
+        "⏰ Historial detallado de logros y eventos",
+        "🎭 Más eventos especiales temáticos"
       ],
-      "status": "in-progress"
+      "status": "planned"
     },
     {
       "version": "2.1.0",
@@ -155,20 +206,26 @@
         "🐍 Snake clásico integrado",
         "🧩 Tetris mini",
         "🏆 Torneos semanales",
-        "🎯 Más desafíos interactivos"
+        "🎯 Más desafíos interactivos",
+        "🎲 Sistema de apuestas con puntos"
       ],
       "status": "planned"
     },
     {
-      "version": "2.2.0", 
-      "title": "🔗 Integración Social",
+      "version": "2.0.6", 
+      "title": "🎮 Gamificación Avanzada + PWA Completa Implementada",
       "features": [
-        "📊 Compartir progreso",
-        "👥 Comparar con amigos",
-        "🌐 Sync entre dispositivos",
-        "📱 PWA completa"
+        "🏅 Sistema de badges completo - COMPLETADO",
+        "📅 Rachas semanales/mensuales - COMPLETADO",
+        "🎪 Eventos especiales - COMPLETADO",
+        "⭐ Sistema de niveles - COMPLETADO",
+        "🔥 Sistema de combos - COMPLETADO",
+        "🌐 Sync entre dispositivos - COMPLETADO",
+        "📱 PWA completa - COMPLETADO",
+        "🔄 Auto-updates inteligentes - COMPLETADO",
+        "📱 Detección de app stores - COMPLETADO"
       ],
-      "status": "planned"
+      "status": "completed"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
-  "name": "FenixLaboratory",
+  "name": "FenixLaboratory v2.0.6",
   "short_name": "FenixLab",
-  "description": "Donde subo mis experimentos raros y proyectos random",
+  "description": "PWA completa con sync entre dispositivos y actualizaciones automáticas",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1a1a1a",
@@ -9,7 +9,14 @@
   "orientation": "any",
   "scope": "./",
   "lang": "es",
-  "categories": ["productivity", "developer", "portfolio"],
+  "categories": ["productivity", "developer", "portfolio", "games"],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
   "icons": [
     {
       "src": "favicon.svg",
