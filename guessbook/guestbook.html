@@ -4,6 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Guestbook de Dibujos - FenixLaboratory</title>
+  
+  <!-- Discord/Social Media Embeds -->
+  <meta property="og:title" content="🎨 Guestbook de Dibujos v2.0 - FenixLaboratory">
+  <meta property="og:description" content="Galería interactiva con sistema de rankings, estadísticas en tiempo real, likes y comentarios. Más de 50 herramientas de dibujo, filtros y efectos. ¡Únete a la comunidad artística!">
+  <meta property="og:image" content="https://thisisfenix.github.io/FenixLaboratory/guessbook/Preview-GuestBook.png">
+  <meta property="og:url" content="https://thisisfenix.github.io/FenixLaboratory/guessbook/guestbook.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="FenixLaboratory">
+  
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="🎨 Guestbook de Dibujos v2.0 - FenixLaboratory">
+  <meta name="twitter:description" content="Galería con rankings, estadísticas en tiempo real, sistema social y más de 50 herramientas de dibujo.">
+  <meta name="twitter:image" content="https://thisisfenix.github.io/FenixLaboratory/guessbook/Preview-GuestBook.png">
+  <meta name="twitter:creator" content="@AntiAnkush">
+  
+  <!-- Additional Meta -->
+  <meta name="description" content="Guestbook interactivo v2.0 con sistema de rankings múltiples, estadísticas avanzadas, likes, comentarios y galería en tiempo real. Herramientas profesionales de dibujo.">
+  <meta name="keywords" content="dibujo, arte, canvas, pintura digital, guestbook, galería, rankings, estadísticas, likes, comentarios, tiempo real, FenixLaboratory">
+  <meta name="author" content="ThisIsFenix">
+  <meta name="robots" content="index, follow">
+  
+  <!-- PWA Meta -->
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -51,11 +77,12 @@
     }
     
     /* Permitir selección en inputs */
-    input, textarea, select {
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
-      user-select: text;
+    input, textarea, select, #commentInput, #commentAuthor {
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+      user-select: text !important;
+      -webkit-touch-callout: default !important;
     }
     .canvas-container {
       border: 2px solid var(--primary);
@@ -94,6 +121,90 @@
       transform: translateY(-5px);
       box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
     }
+    
+    /* Marcos especiales para rankings */
+    .drawing-card.rank-1 {
+      border: 2px solid #FFD700;
+      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+      background: var(--bg-light);
+      position: relative;
+    }
+    .drawing-card.rank-1::after {
+      content: '👑';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255, 215, 0, 0.9);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      z-index: 5;
+      animation: goldPulse 2s infinite;
+    }
+    .drawing-card.rank-1:hover {
+      box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+    }
+    
+    .drawing-card.rank-2 {
+      border: 2px solid #C0C0C0;
+      box-shadow: 0 4px 15px rgba(192, 192, 192, 0.3);
+    }
+    .drawing-card.rank-2::after {
+      content: '🥈';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(192, 192, 192, 0.9);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      z-index: 5;
+    }
+    
+    .drawing-card.rank-3 {
+      border: 2px solid #CD7F32;
+      box-shadow: 0 4px 12px rgba(205, 127, 50, 0.3);
+    }
+    .drawing-card.rank-3::after {
+      content: '🥉';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(205, 127, 50, 0.9);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      z-index: 5;
+    }
+    
+    @keyframes goldPulse {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+    
+    @media (max-width: 768px) {
+      .drawing-card.rank-1::after,
+      .drawing-card.rank-2::after,
+      .drawing-card.rank-3::after {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        top: 5px;
+        right: 5px;
+      }
+    }
     .btn-neon {
       background: transparent;
       border: 2px solid var(--primary);
@@ -120,17 +231,13 @@
     /* Responsive canvas */
     @media (max-width: 768px) {
       #drawCanvas {
-        width: 100%;
-        height: 300px;
         touch-action: none;
       }
       .canvas-container {
         margin: 10px auto;
         touch-action: none;
-        width: calc(100vw - 40px) !important;
         max-width: 95vw;
         padding: 5px;
-        display: block;
         text-align: center;
       }
       .color-btn {
@@ -547,15 +654,38 @@
     }
   </script>
   <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="text-center flex-grow-1" style="color: var(--primary);">🎨 Guestbook de Dibujos</h1>
-      <select id="themeSelector" class="form-select" style="width: 150px; background: var(--bg-light); border: 1px solid var(--primary); color: var(--text-primary);">
-        <option value="default">🔥 Default</option>
-        <option value="neon">💚 Neon</option>
-        <option value="retro">💜 Retro</option>
-        <option value="hacker">💚 Hacker</option>
-        <option value="sunset">🧡 Sunset</option>
-      </select>
+    <div class="text-center mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="flex-grow-1">
+          <h1 style="color: var(--primary); margin: 0;">🎨 Guestbook de Dibujos</h1>
+          <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">
+            <strong style="color: var(--primary);">v2.0</strong> • Sistema de Rankings • Estadísticas en Tiempo Real
+          </p>
+        </div>
+        <select id="themeSelector" class="form-select" style="width: 150px; background: var(--bg-light); border: 1px solid var(--primary); color: var(--text-primary);">
+          <option value="default">🔥 Default</option>
+          <option value="neon">💚 Neon</option>
+          <option value="retro">💜 Retro</option>
+          <option value="hacker">💚 Hacker</option>
+          <option value="sunset">🧡 Sunset</option>
+        </select>
+      </div>
+      
+      <!-- Badges de características -->
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <span class="badge" style="background: var(--primary); color: white; padding: 6px 12px; border-radius: 15px; font-size: 0.8em;">
+          🏆 Rankings Múltiples
+        </span>
+        <span class="badge" style="background: var(--primary); color: white; padding: 6px 12px; border-radius: 15px; font-size: 0.8em;">
+          📊 Estadísticas Avanzadas
+        </span>
+        <span class="badge" style="background: var(--primary); color: white; padding: 6px 12px; border-radius: 15px; font-size: 0.8em;">
+          💬 Sistema Social
+        </span>
+        <span class="badge" style="background: var(--primary); color: white; padding: 6px 12px; border-radius: 15px; font-size: 0.8em;">
+          🔄 Tiempo Real
+        </span>
+      </div>
     </div>
     
     <!-- Canvas para dibujar -->
@@ -748,40 +878,75 @@
     
     <!-- Galería de dibujos -->
     <hr style="border-color: var(--primary);">
-    <h2 class="text-center mb-4">🇬 Galería de Visitantes</h2>
-    
-    <div class="row justify-content-center mb-4">
-      <div class="col-md-8">
-        <div class="d-flex justify-content-center gap-2 flex-wrap mb-3">
-          <input type="text" id="searchAuthor" placeholder="Buscar por autor" class="form-control" style="width: 150px; background: var(--bg-light); border: 1px solid var(--primary); color: var(--text-primary);">
-          <select id="filterCategory" class="form-select" style="width: 150px; background: var(--bg-light); border: 1px solid var(--primary); color: var(--text-primary);">
-            <option value="">Todas las categorías</option>
-            <option value="Arte">🎨 Arte</option>
-            <option value="Meme">😂 Meme</option>
-            <option value="Divertido">🎉 Divertido</option>
-            <option value="Abstracto">🌌 Abstracto</option>
-            <option value="Otro">✨ Otro</option>
-          </select>
-          <button id="clearFilters" class="btn btn-outline-secondary btn-sm">❌ Limpiar</button>
-        </div>
-        <div class="d-flex justify-content-center gap-2">
-          <button id="prevPage" class="btn btn-outline-primary btn-sm" disabled>⬅️ Anterior</button>
-          <span id="pageInfo" style="color: var(--text-primary); padding: 5px 10px;">Página 1</span>
-          <button id="nextPage" class="btn btn-outline-primary btn-sm">➡️ Siguiente</button>
-        </div>
+    <div class="text-center mb-4">
+      <h2 style="color: var(--primary); margin-bottom: 15px;">🏛️ Galería Interactiva</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 20px;">
+        🌍 Galería pública con <strong style="color: var(--primary);">rankings en tiempo real</strong>, sistema de likes y comentarios<br>
+        <small>🔄 Actualización automática con Firebase • 📊 Estadísticas avanzadas • 🏆 Top rankings</small>
+      </p>
+      
+      <!-- Indicadores de características -->
+      <div class="d-flex justify-content-center gap-3 flex-wrap mb-4" style="font-size: 0.9em;">
+        <span style="background: var(--bg-light); padding: 6px 12px; border-radius: 15px; border: 1px solid var(--primary);">
+          🏆 <strong style="color: var(--primary);">Rankings</strong>
+        </span>
+        <span style="background: var(--bg-light); padding: 6px 12px; border-radius: 15px; border: 1px solid var(--primary);">
+          ❤️ <strong style="color: var(--primary);">Likes</strong>
+        </span>
+        <span style="background: var(--bg-light); padding: 6px 12px; border-radius: 15px; border: 1px solid var(--primary);">
+          💬 <strong style="color: var(--primary);">Comentarios</strong>
+        </span>
+        <span style="background: var(--bg-light); padding: 6px 12px; border-radius: 15px; border: 1px solid var(--primary);">
+          📊 <strong style="color: var(--primary);">Estadísticas</strong>
+        </span>
       </div>
     </div>
     
-    <p class="text-center mb-4" style="color: var(--text-secondary);">
-      🌍 Los dibujos son públicos y visibles para todos los visitantes.<br>
-      <small>🔄 Se actualizan en tiempo real gracias a Firebase</small>
-    </p>
+    <!-- Controles de filtrado y paginación -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-md-10">
+        <div style="background: var(--bg-light); border-radius: 15px; padding: 20px; border: 1px solid var(--primary);">
+          <div class="d-flex justify-content-center gap-2 flex-wrap mb-3">
+            <div class="input-group" style="width: 200px;">
+              <span class="input-group-text" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--primary);">🔍</span>
+              <input type="text" id="searchAuthor" placeholder="Buscar por autor" class="form-control" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);">
+            </div>
+            <div class="input-group" style="width: 180px;">
+              <span class="input-group-text" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--primary);">🏷️</span>
+              <select id="filterCategory" class="form-select" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);">
+                <option value="">Todas las categorías</option>
+                <option value="Arte">🎨 Arte</option>
+                <option value="Meme">😂 Meme</option>
+                <option value="Divertido">🎉 Divertido</option>
+                <option value="Abstracto">🌌 Abstracto</option>
+                <option value="Otro">✨ Otro</option>
+              </select>
+            </div>
+            <button id="clearFilters" class="btn btn-outline-secondary">❌ Limpiar</button>
+          </div>
+          
+          <div class="d-flex justify-content-center align-items-center gap-3">
+            <button id="prevPage" class="btn btn-outline-primary" disabled>
+              <i class="bi bi-chevron-left"></i> Anterior
+            </button>
+            <span id="pageInfo" style="color: var(--text-primary); padding: 8px 16px; background: var(--bg-dark); border-radius: 20px; border: 1px solid var(--primary); font-weight: bold;">
+              Página 1
+            </span>
+            <button id="nextPage" class="btn btn-outline-primary">
+              Siguiente <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
     <div id="gallery" class="row">
       <div class="col-12 text-center" style="color: var(--text-secondary);">
         <div class="spinner-border" role="status" style="color: var(--primary);">
           <span class="visually-hidden">Cargando dibujos...</span>
         </div>
-        <p class="mt-2">Cargando galería...</p>
+        <p class="mt-2">Cargando galería con sistema de rankings...</p>
       </div>
     </div>
   </div>
@@ -825,7 +990,7 @@
       const container = canvas.parentElement;
       
       if (window.innerWidth <= 768) {
-        const containerWidth = window.innerWidth - 50; // Margen para el borde
+        const containerWidth = window.innerWidth - 50;
         const maxHeight = window.innerHeight * 0.4;
         
         if (canvas.width > containerWidth) {
@@ -839,18 +1004,16 @@
             canvas.style.height = maxHeight + 'px';
           }
         }
-        
-        // En móvil, el contenedor se ajusta automáticamente con CSS
-        container.style.width = '';
-        container.style.height = '';
       } else {
         canvas.style.width = canvas.width + 'px';
         canvas.style.height = canvas.height + 'px';
-        
-        // En PC, ajustar el contenedor al tamaño del canvas
-        container.style.width = (canvas.offsetWidth + 20) + 'px';
-        container.style.height = (canvas.offsetHeight + 20) + 'px';
       }
+      
+      // Ajustar el contenedor al tamaño del canvas
+      setTimeout(() => {
+        container.style.width = (canvas.offsetWidth + 10) + 'px';
+        container.style.height = (canvas.offsetHeight + 10) + 'px';
+      }, 100);
     }
     
     // Ajustar en carga y cambio de orientación
@@ -908,43 +1071,55 @@
       drawingHistory.push(canvas.toDataURL());
     }
 
-    // Eventos de dibujo ya manejados en la sección touch events
 
-    // Touch events mejorados para móvil
-    let touchHandled = false;
+
+    // Eventos de dibujo - mouse para PC
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
     
+    // Touch events para móvil - convertir a eventos mouse
     canvas.addEventListener('touchstart', (e) => {
-      touchHandled = true;
-      handleTouch(e);
-    }, { passive: false });
-    
-    canvas.addEventListener('touchmove', (e) => {
-      if (touchHandled) handleTouch(e);
-    }, { passive: false });
-    
-    canvas.addEventListener('touchend', (e) => {
-      if (touchHandled) {
-        handleTouchEnd(e);
-        touchHandled = false;
+      e.preventDefault();
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          bubbles: true
+        });
+        canvas.dispatchEvent(mouseEvent);
       }
     }, { passive: false });
     
-    // Prevenir eventos mouse si ya se manejó touch
-    canvas.addEventListener('mousedown', (e) => {
-      if (!touchHandled) startDrawing(e);
-    });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          bubbles: true
+        });
+        canvas.dispatchEvent(mouseEvent);
+      }
+    }, { passive: false });
     
-    canvas.addEventListener('mousemove', (e) => {
-      if (!touchHandled) draw(e);
-    });
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        const touch = e.changedTouches[0];
+        const mouseEvent = new MouseEvent('mouseup', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          bubbles: true
+        });
+        canvas.dispatchEvent(mouseEvent);
+      }
+    }, { passive: false });
     
-    canvas.addEventListener('mouseup', (e) => {
-      if (!touchHandled) stopDrawing(e);
-    });
-    
-    canvas.addEventListener('mouseout', (e) => {
-      if (!touchHandled) stopDrawing(e);
-    });
+
     
     // Prevenir scroll y zoom en móvil
     document.body.addEventListener('touchstart', e => {
@@ -972,11 +1147,6 @@
 
     function startDrawing(e) {
       if (isPlacingSticker) return;
-      
-      // Vibración táctil en móvil
-      if (navigator.vibrate && window.innerWidth <= 768) {
-        navigator.vibrate(10);
-      }
       
       const rect = canvas.getBoundingClientRect();
       // Solo aplicar escala si el canvas está escalado (diferente tamaño visual vs real)
@@ -1143,40 +1313,7 @@
       }
     }
 
-    function handleTouch(e) {
-      e.preventDefault();
-      if (e.touches && e.touches.length > 0) {
-        const touch = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        
-        // Verificar que el toque esté dentro del canvas
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        
-        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-          const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
-            clientX: touch.clientX,
-            clientY: touch.clientY,
-            bubbles: true
-          });
-          canvas.dispatchEvent(mouseEvent);
-        }
-      }
-    }
-    
-    function handleTouchEnd(e) {
-      e.preventDefault();
-      const touch = e.changedTouches && e.changedTouches[0];
-      if (touch) {
-        const mouseEvent = new MouseEvent('mouseup', {
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          bubbles: true
-        });
-        canvas.dispatchEvent(mouseEvent);
-      }
-      stopDrawing();
-    }
+
     
     // Atajos de teclado
     document.addEventListener('keydown', (e) => {
@@ -1822,7 +1959,18 @@
           titulo: `Dibujo de ${author}`,
           comments: [],
           strokes: strokeCount,
-          domain: window.location.hostname
+          domain: window.location.hostname,
+          // Metadata adicional
+          canvasSize: `${canvas.width}x${canvas.height}`,
+          tools: currentTool,
+          colors: currentColor,
+          brushSize: currentSize,
+          stickersCount: stickers.length,
+          device: window.innerWidth <= 768 ? 'mobile' : 'desktop',
+          userAgent: navigator.userAgent.substring(0, 100),
+          views: 0,
+          featured: false,
+          quality: strokeCount > 100 ? 'high' : strokeCount > 50 ? 'medium' : 'basic'
         });
         
         localStorage.setItem('lastDrawingSave', Date.now().toString());
@@ -1886,6 +2034,9 @@
         return;
       }
       
+      // Calcular rankings una sola vez
+      const topLikes = [...allDrawings].sort((a, b) => (b.data.likes || 0) - (a.data.likes || 0));
+      
       pageDrawings.forEach((drawing) => {
         const data = drawing.data;
         const date = new Date(data.timestamp).toLocaleString('es-ES', {
@@ -1899,14 +2050,23 @@
         const likes = data.likes || 0;
         const category = data.categoria || 'Arte';
         
+        // Determinar ranking
+        const topLikes = [...allDrawings].sort((a, b) => (b.data.likes || 0) - (a.data.likes || 0));
+        const drawingRank = topLikes.findIndex(d => d.id === drawing.id) + 1;
+        let rankClass = '';
+        if (drawingRank === 1) rankClass = 'rank-1';
+        else if (drawingRank === 2) rankClass = 'rank-2';
+        else if (drawingRank === 3) rankClass = 'rank-3';
+        
         gallery.innerHTML += `
           <div class="col-md-4 col-sm-6 mb-3 drawing-item" data-author="${data.autor.toLowerCase()}" data-category="${category}">
-            <div class="drawing-card">
+            <div class="drawing-card ${rankClass}">
               <img src="${data.imagenData}" class="drawing-img" alt="Dibujo de ${data.autor}" loading="lazy">
               <div class="p-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <div>
                     <strong style="color: var(--primary);">🎨 ${data.autor}</strong>
+                    ${drawingRank <= 3 ? `<span style="color: ${drawingRank === 1 ? '#FFD700' : drawingRank === 2 ? '#C0C0C0' : '#CD7F32'}; font-size: 0.8em; font-weight: bold;"> #${drawingRank}</span>` : ''}
                     <br><small style="color: var(--text-secondary);">${category}</small>
                   </div>
                   <small style="color: var(--text-secondary);">${date}</small>
@@ -2058,45 +2218,210 @@
     
     function showTopRanking(drawings) {
       const gallery = document.getElementById('gallery');
-      const top3 = drawings.sort((a, b) => (b.data.likes || 0) - (a.data.likes || 0)).slice(0, 3);
       
-      if (top3.length >= 3) {
-        const topRankingDiv = document.createElement('div');
-        topRankingDiv.className = 'col-12 text-center mb-4';
-        topRankingDiv.innerHTML = `
+      // Rankings múltiples
+      const topLikes = [...drawings].sort((a, b) => (b.data.likes || 0) - (a.data.likes || 0)).slice(0, 3);
+      const topComments = [...drawings].sort((a, b) => (b.data.comments?.length || 0) - (a.data.comments?.length || 0)).slice(0, 3);
+      const topStrokes = [...drawings].sort((a, b) => (b.data.strokes || 0) - (a.data.strokes || 0)).slice(0, 3);
+      const recent = [...drawings].sort((a, b) => b.data.timestamp - a.data.timestamp).slice(0, 3);
+      
+      if (drawings.length >= 3) {
+        const rankingsDiv = document.createElement('div');
+        rankingsDiv.className = 'col-12 mb-4';
+        rankingsDiv.innerHTML = `
           <div style="background: var(--bg-light); border-radius: 15px; padding: 20px; border: 2px solid var(--primary); margin-bottom: 30px;">
-            <h4 style="color: var(--primary); margin-bottom: 20px;">🏆 Top 3 Más Populares</h4>
-            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-              ${top3.map((drawing, index) => `
-                <div style="text-align: center;">
-                  <div style="position: relative; display: inline-block; cursor: pointer; margin-bottom: 10px;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}')">  
-                    <img src="${drawing.data.imagenData}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 15px; border: 4px solid ${index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}; box-shadow: 0 4px 15px rgba(0,0,0,0.3); background: white;">
-                    <div style="position: absolute; top: -8px; right: -8px; background: ${index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}; color: ${index === 0 ? '#000' : '#fff'}; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1em; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-                      ${index + 1}
-                    </div>
-                  </div>
-                  <div style="color: var(--text-primary); font-size: 0.9em; max-width: 100px;">
-                    <strong style="color: var(--primary);">${drawing.data.autor}</strong><br>
-                    <span style="color: #ff6b35;">❤️ ${drawing.data.likes || 0}</span>
-                  </div>
-                </div>
-              `).join('')}
+            <h4 style="color: var(--primary); margin-bottom: 20px; text-align: center;">🏆 Rankings de la Galería</h4>
+            
+            <!-- Tabs de Rankings -->
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+              <button class="ranking-tab active" data-ranking="likes" style="padding: 8px 16px; border: 2px solid var(--primary); background: var(--primary); color: white; border-radius: 20px; cursor: pointer; font-size: 0.9em;">❤️ Más Populares</button>
+              <button class="ranking-tab" data-ranking="comments" style="padding: 8px 16px; border: 2px solid var(--primary); background: transparent; color: var(--primary); border-radius: 20px; cursor: pointer; font-size: 0.9em;">💬 Más Comentados</button>
+              <button class="ranking-tab" data-ranking="strokes" style="padding: 8px 16px; border: 2px solid var(--primary); background: transparent; color: var(--primary); border-radius: 20px; cursor: pointer; font-size: 0.9em;">🎨 Más Detallados</button>
+              <button class="ranking-tab" data-ranking="recent" style="padding: 8px 16px; border: 2px solid var(--primary); background: transparent; color: var(--primary); border-radius: 20px; cursor: pointer; font-size: 0.9em;">🆕 Recientes</button>
+            </div>
+            
+            <!-- Contenido de Rankings -->
+            <div id="ranking-likes" class="ranking-content" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+              ${topLikes.map((drawing, index) => createRankingCard(drawing, index, 'likes')).join('')}
+            </div>
+            
+            <div id="ranking-comments" class="ranking-content" style="display: none; flex-wrap: wrap; justify-content: center; gap: 20px;">
+              ${topComments.map((drawing, index) => createRankingCard(drawing, index, 'comments')).join('')}
+            </div>
+            
+            <div id="ranking-strokes" class="ranking-content" style="display: none; flex-wrap: wrap; justify-content: center; gap: 20px;">
+              ${topStrokes.map((drawing, index) => createRankingCard(drawing, index, 'strokes')).join('')}
+            </div>
+            
+            <div id="ranking-recent" class="ranking-content" style="display: none; flex-wrap: wrap; justify-content: center; gap: 20px;">
+              ${recent.map((drawing, index) => createRankingCard(drawing, index, 'recent')).join('')}
+            </div>
+            
+            <!-- Estadísticas Generales -->
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--primary); text-align: center;">
+              <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; font-size: 0.9em;">
+                <span style="color: var(--text-secondary);">📊 Total: <strong style="color: var(--primary);">${drawings.length}</strong></span>
+                <span style="color: var(--text-secondary);">❤️ Likes: <strong style="color: var(--primary);">${drawings.reduce((sum, d) => sum + (d.data.likes || 0), 0)}</strong></span>
+                <span style="color: var(--text-secondary);">💬 Comentarios: <strong style="color: var(--primary);">${drawings.reduce((sum, d) => sum + (d.data.comments?.length || 0), 0)}</strong></span>
+                <span style="color: var(--text-secondary);">🎨 Trazos: <strong style="color: var(--primary);">${drawings.reduce((sum, d) => sum + (d.data.strokes || 0), 0)}</strong></span>
+              </div>
             </div>
           </div>
         `;
-        gallery.prepend(topRankingDiv);
+        
+        gallery.prepend(rankingsDiv);
+        
+        // Event listeners para tabs
+        document.querySelectorAll('.ranking-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            // Remover active de todos los tabs
+            document.querySelectorAll('.ranking-tab').forEach(t => {
+              t.style.background = 'transparent';
+              t.style.color = 'var(--primary)';
+              t.classList.remove('active');
+            });
+            
+            // Activar tab seleccionado
+            tab.style.background = 'var(--primary)';
+            tab.style.color = 'white';
+            tab.classList.add('active');
+            
+            // Mostrar contenido correspondiente
+            document.querySelectorAll('.ranking-content').forEach(content => {
+              content.style.display = 'none';
+            });
+            
+            const targetRanking = tab.dataset.ranking;
+            const targetContent = document.getElementById(`ranking-${targetRanking}`);
+            if (targetContent) {
+              targetContent.style.display = 'flex';
+            }
+          });
+        });
       }
+    }
+    
+    function createRankingCard(drawing, index, type) {
+      const colors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+      const color = colors[index] || '#666';
+      
+      let metric = '';
+      let icon = '';
+      
+      switch(type) {
+        case 'likes':
+          metric = drawing.data.likes || 0;
+          icon = '❤️';
+          break;
+        case 'comments':
+          metric = drawing.data.comments?.length || 0;
+          icon = '💬';
+          break;
+        case 'strokes':
+          metric = drawing.data.strokes || 0;
+          icon = '🎨';
+          break;
+        case 'recent':
+          const date = new Date(drawing.data.timestamp);
+          metric = date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+          icon = '🆕';
+          break;
+      }
+      
+      return `
+        <div style="text-align: center; margin-bottom: 10px;">
+          <div style="position: relative; display: inline-block; cursor: pointer; margin-bottom: 10px;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}')">
+            <img src="${drawing.data.imagenData}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 15px; border: 4px solid ${color}; box-shadow: 0 4px 15px rgba(0,0,0,0.3); background: white;">
+            <div style="position: absolute; top: -8px; right: -8px; background: ${color}; color: ${index === 0 ? '#000' : '#fff'}; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1em; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+              ${index + 1}
+            </div>
+          </div>
+          <div style="color: var(--text-primary); font-size: 0.9em; max-width: 100px;">
+            <strong style="color: var(--primary);">${drawing.data.autor}</strong><br>
+            <span style="color: ${color};">${icon} ${metric}</span>
+          </div>
+        </div>
+      `;
     }
     
     function showCounter(totalDrawings) {
       const gallery = document.getElementById('gallery');
+      
+      // Calcular estadísticas avanzadas
+      const totalLikes = allDrawings.reduce((sum, d) => sum + (d.data.likes || 0), 0);
+      const totalComments = allDrawings.reduce((sum, d) => sum + (d.data.comments?.length || 0), 0);
+      const totalStrokes = allDrawings.reduce((sum, d) => sum + (d.data.strokes || 0), 0);
+      const avgLikes = totalDrawings > 0 ? (totalLikes / totalDrawings).toFixed(1) : 0;
+      const avgStrokes = totalDrawings > 0 ? Math.round(totalStrokes / totalDrawings) : 0;
+      
+      // Categorías más populares
+      const categories = {};
+      allDrawings.forEach(d => {
+        const cat = d.data.categoria || 'Arte';
+        categories[cat] = (categories[cat] || 0) + 1;
+      });
+      const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
+      
+      // Dispositivos
+      const devices = { mobile: 0, desktop: 0 };
+      allDrawings.forEach(d => {
+        const device = d.data.device || 'desktop';
+        devices[device]++;
+      });
+      
       const counterDiv = document.createElement('div');
       counterDiv.className = 'col-12 text-center mt-4';
       counterDiv.innerHTML = `
-        <div style="background: var(--bg-light); border-radius: 10px; padding: 20px; border: 1px solid var(--primary);">
-          <h5 style="color: var(--primary); margin: 0;">🎨 Total de Obras: ${totalDrawings}</h5>
-          <p style="color: var(--text-secondary); margin: 5px 0 0 0;">Atajos: B=Pincel, S=Spray, C=Círculo, R=Rectángulo, L=Línea, T=Texto, E=Borrador</p>
-          <small style="color: var(--text-secondary);">Ctrl+Z=Deshacer, Ctrl+Y=Rehacer</small>
+        <div style="background: var(--bg-light); border-radius: 15px; padding: 25px; border: 1px solid var(--primary);">
+          <!-- Título Principal -->
+          <h5 style="color: var(--primary); margin: 0 0 20px 0; font-size: 1.3em;">📊 Estadísticas de la Galería</h5>
+          
+          <!-- Estadísticas Principales -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <div style="background: var(--bg-dark); padding: 15px; border-radius: 10px; border: 1px solid var(--primary);">
+              <div style="font-size: 1.5em; color: var(--primary);">🎨</div>
+              <div style="font-size: 1.2em; font-weight: bold; color: var(--text-primary);">${totalDrawings}</div>
+              <div style="font-size: 0.8em; color: var(--text-secondary);">Obras Totales</div>
+            </div>
+            
+            <div style="background: var(--bg-dark); padding: 15px; border-radius: 10px; border: 1px solid var(--primary);">
+              <div style="font-size: 1.5em; color: var(--primary);">❤️</div>
+              <div style="font-size: 1.2em; font-weight: bold; color: var(--text-primary);">${totalLikes}</div>
+              <div style="font-size: 0.8em; color: var(--text-secondary);">Likes Totales</div>
+            </div>
+            
+            <div style="background: var(--bg-dark); padding: 15px; border-radius: 10px; border: 1px solid var(--primary);">
+              <div style="font-size: 1.5em; color: var(--primary);">💬</div>
+              <div style="font-size: 1.2em; font-weight: bold; color: var(--text-primary);">${totalComments}</div>
+              <div style="font-size: 0.8em; color: var(--text-secondary);">Comentarios</div>
+            </div>
+            
+            <div style="background: var(--bg-dark); padding: 15px; border-radius: 10px; border: 1px solid var(--primary);">
+              <div style="font-size: 1.5em; color: var(--primary);">🔥</div>
+              <div style="font-size: 1.2em; font-weight: bold; color: var(--text-primary);">${avgLikes}</div>
+              <div style="font-size: 0.8em; color: var(--text-secondary);">Promedio Likes</div>
+            </div>
+          </div>
+          
+          <!-- Estadísticas Adicionales -->
+          <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-bottom: 15px; font-size: 0.9em;">
+            <span style="color: var(--text-secondary);">📱 Móvil: <strong style="color: var(--primary);">${devices.mobile}</strong></span>
+            <span style="color: var(--text-secondary);">💻 Desktop: <strong style="color: var(--primary);">${devices.desktop}</strong></span>
+            <span style="color: var(--text-secondary);">🎨 Trazos Promedio: <strong style="color: var(--primary);">${avgStrokes}</strong></span>
+            ${topCategory ? `<span style="color: var(--text-secondary);">🏷️ Top Categoría: <strong style="color: var(--primary);">${topCategory[0]} (${topCategory[1]})</strong></span>` : ''}
+          </div>
+          
+          <!-- Atajos de Teclado -->
+          <div style="border-top: 1px solid var(--primary); padding-top: 15px;">
+            <p style="color: var(--text-secondary); margin: 5px 0; font-size: 0.9em;">⌨️ <strong>Atajos:</strong> B=Pincel, S=Spray, C=Círculo, L=Línea, T=Texto, E=Borrador, H=Mano</p>
+            <small style="color: var(--text-secondary); font-size: 0.8em;">Ctrl+Z=Deshacer, Ctrl+Y=Rehacer, F=Relleno, I=Cuentagotas</small>
+          </div>
+          
+          <!-- Información del Proyecto -->
+          <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--primary); font-size: 0.8em; color: var(--text-secondary);">
+            <p style="margin: 0;">🔬 <strong>FenixLaboratory</strong> - Experimento de arte colaborativo</p>
+            <p style="margin: 5px 0 0 0;">Creado por <strong style="color: var(--primary);">@ThisIsFenix</strong> | Powered by Firebase & Canvas API</p>
+          </div>
         </div>
       `;
       gallery.appendChild(counterDiv);
@@ -2274,8 +2599,8 @@
                 `).join('')}
               </div>
               <div style="border-top: 1px solid var(--primary); padding-top: 15px;">
-                <input type="text" id="commentAuthor" placeholder="Nombre de usuario (opcional)" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 8px; font-size: 0.9em;">
-                <input type="text" id="commentInput" placeholder="Escribe un comentario..." style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 10px;">
+                <input type="text" id="commentAuthor" placeholder="Nombre de usuario (opcional)" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 8px; font-size: 0.9em; user-select: text !important; -webkit-user-select: text !important;">
+                <input type="text" id="commentInput" placeholder="Escribe un comentario..." style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 10px; user-select: text !important; -webkit-user-select: text !important;">
                 <button onclick="addComment('${drawingId}')" style="width: 100%; padding: 8px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">➤ Comentar</button>
               </div>
             `;

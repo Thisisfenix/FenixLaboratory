@@ -1,6 +1,59 @@
-# 🎨 Guestbook de Dibujos v1.0
+# 🎨 Guestbook de Dibujos v2.0
 
-**Un lienzo digital interactivo donde los visitantes pueden dejar su huella artística**
+**Sistema avanzado de guestbook con rankings, estadísticas en tiempo real y funcionalidades sociales**
+
+## 🚀 Versión 1.0.1 - Sistema de Rankings Avanzado
+
+### 🏆 Sistema de Rankings Múltiples
+
+El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tiempo real:
+
+#### 1. **❤️ Más Populares**
+- Ranking basado en likes recibidos
+- Los dibujos con más corazones aparecen primero
+- Sistema de votación único por usuario
+
+#### 2. **💬 Más Comentados** 
+- Ranking por interacción social
+- Dibujos con más comentarios y engagement
+- Sistema de comentarios en tiempo real
+
+#### 3. **🎨 Más Detallados**
+- Ranking por cantidad de trazos/strokes
+- Reconoce el esfuerzo artístico invertido
+- Algoritmo que cuenta cada trazo del pincel
+
+#### 4. **🆕 Recientes**
+- Obras más nuevas primero
+- Ordenado por timestamp de creación
+- Permite descubrir arte fresco
+
+### 🏅 Sistema de Marcos Especiales
+
+**Marcos dinámicos según posición en ranking:**
+
+- 🥇 **Top 1**: Marco dorado con aura brillante y corona
+- 🥈 **Top 2**: Marco plateado con medalla de plata  
+- 🥉 **Top 3**: Marco bronce con medalla de bronce
+- 📊 **Indicador numérico**: Muestra posición (#1, #2, #3) junto al nombre
+
+### 📊 Estadísticas Avanzadas
+
+**Panel de métricas en tiempo real:**
+- Total de obras en la galería
+- Suma total de likes recibidos
+- Contador de comentarios globales
+- Promedio de likes por obra
+- Distribución por categorías
+- Estadísticas de dispositivos (móvil vs desktop)
+- Promedio de trazos por dibujo
+
+### 🔄 Actualización en Tiempo Real
+
+- **Firebase Firestore** para sincronización instantánea
+- Rankings que se actualizan automáticamente
+- Nuevos dibujos aparecen sin recargar página
+- Sistema de notificaciones para nuevas obras
 
 ## ✨ Características Principales
 
@@ -75,9 +128,11 @@
 - **Líneas de código**: ~1,200 líneas de JavaScript
 - **Herramientas**: 8 herramientas de dibujo diferentes
 - **Temas**: 5 temas visuales
+- **Rankings**: 4 tipos de clasificación
 - **Formatos de exportación**: 3 (PNG, JPG, SVG)
 - **Atajos de teclado**: 10+ combinaciones
 - **Eventos touch**: Optimizado para móviles
+- **Cooldown**: 10 minutos entre uploads
 
 ## 🎯 Casos de Uso
 
@@ -87,15 +142,16 @@
 4. **Entretenimiento**: Dibujo libre y creativo
 5. **Competencias**: Ranking por likes y popularidad
 
-## 🔄 Actualizaciones Futuras
+## 🔄 Roadmap v1.1
 
-- [ ] Más herramientas de dibujo (gradientes, texturas)
-- [ ] Sistema de capas
-- [ ] Colaboración en tiempo real
-- [ ] Más filtros y efectos
-- [ ] Integración con redes sociales
-- [ ] Sistema de usuarios registrados
-- [ ] Moderación automática avanzada
+- [ ] Sistema de usuarios con autenticación
+- [ ] Capas de dibujo múltiples
+- [ ] Herramientas de selección avanzadas
+- [ ] Exportar a diferentes formatos (SVG, PDF)
+- [ ] Sistema de moderación automática
+- [ ] API REST para integración externa
+- [ ] Rankings por período (diario, semanal, mensual)
+- [ ] Sistema de badges y logros
 
 ## 👨‍💻 Desarrollado por
 
