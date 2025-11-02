@@ -1,8 +1,8 @@
-# 🎨 Guestbook de Dibujos v2.0
+# 🎨 Guestbook de Dibujos v2.1
 
-**Sistema avanzado de guestbook con rankings, estadísticas en tiempo real y funcionalidades sociales**
+**Sistema avanzado de guestbook con rankings, estadísticas en tiempo real, fondos personalizados y funcionalidades sociales**
 
-## 🚀 Versión 1.0.1 - Sistema de Rankings Avanzado
+## 🚀 Versión 2.1 - Sistema de Fondos y Mejoras Avanzadas
 
 ### 🏆 Sistema de Rankings Múltiples
 
@@ -67,20 +67,30 @@ El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tie
 
 ### 🎨 Personalización Visual
 - **Paleta de colores**: 8 colores predefinidos + selector personalizado
-- **3 tamaños de canvas**: Pequeño (400x300), Mediano (600x400), Grande (800x600)
+- **4 tamaños de canvas**: Pequeño, Mediano, Grande, Panorámico
 - **Temas dinámicos**: Default, Neon, Retro, Hacker, Sunset
 - **Sincronización**: Los temas se mantienen entre páginas
 
 ### 🖼️ Contenido Multimedia
-- **Subir PNG**: Como fondo completo o stickers posicionables
-- **Emojis**: 8 emojis rápidos como stickers clickeables
-- **Filtros**: Blur, Pixel Art, Vintage + opción de quitar
+- **🌄 Fondos de Imagen**: Sistema exclusivo para fondos personalizados
+  - Subir PNG/JPG como fondo del canvas
+  - Auto-ajuste al tamaño del canvas
+  - Preserva el dibujo al cambiar fondo
+  - Botón para quitar fondo manteniendo el arte
+- **🏷️ Stickers Personalizados**: Sistema separado para elementos posicionables
+  - Subir PNG/JPG como stickers individuales
+  - Herramienta ✋ Mover para arrastrar stickers
+  - Colocación precisa con click en canvas
+  - Sistema de capas: Fondo → Dibujo → Stickers
+- **🎨 Filtros**: Blur, Pixel Art, Vintage + opción de quitar
 
 ### 🔧 Funcionalidades Avanzadas
 - **Historial completo**: Deshacer/Rehacer ilimitado (Ctrl+Z/Ctrl+Y)
 - **Zoom**: Acercar/alejar para detalles precisos
-- **Exportación múltiple**: PNG, JPG, SVG
-- **Atajos de teclado**: B=Pincel, S=Spray, C=Círculo, etc.
+- **Exportación**: PNG con todo el contenido (fondo + dibujo + stickers)
+- **Atajos de teclado**: B=Pincel, S=Spray, C=Círculo, H=Mover, etc.
+- **🌄 Sistema de Fondos**: Apartado exclusivo para imágenes de fondo
+- **🏷️ Sistema de Stickers**: Apartado separado para elementos móviles
 
 ### 📱 Optimización Móvil
 - **Touch events**: Dibujo táctil mejorado
@@ -103,16 +113,18 @@ El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tie
 - **Compartir**: Web Share API + copia al portapapeles
 
 ### 🛡️ Seguridad y Moderación
-- **Cooldown**: 10 minutos entre dibujos para evitar spam
+- **Cooldown**: 5 minutos entre dibujos para evitar spam
 - **Moderación básica**: Filtro de palabras extremadamente ofensivas
 - **Prevención de salida**: Aviso si hay trabajo sin guardar
-- **Variables de entorno**: API keys protegidas en Netlify
+- **Variables de entorno**: API keys protegidas
 
 ### ✨ Efectos Visuales
 - **Sparkles**: Partículas al dibujar
 - **Confetti**: Celebración al guardar
 - **Animaciones**: Hover effects en tarjetas
 - **Transiciones**: Suaves cambios de tema
+- **Feedback Visual**: Botones cambian estado (Listo → Aplicado)
+- **Capas Visuales**: Sistema de 3 capas (Fondo, Dibujo, Stickers)
 
 ## 🚀 Tecnologías Utilizadas
 
@@ -121,18 +133,19 @@ El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tie
 - **Base de datos**: Firebase Firestore
 - **Iconos**: Bootstrap Icons
 - **Fuentes**: Google Fonts (Space Grotesk)
-- **Hosting**: Netlify con variables de entorno
+- **Hosting**: GitHub Pages
 
 ## 📊 Estadísticas de Desarrollo
 
-- **Líneas de código**: ~1,200 líneas de JavaScript
-- **Herramientas**: 8 herramientas de dibujo diferentes
-- **Temas**: 5 temas visuales
-- **Rankings**: 4 tipos de clasificación
-- **Formatos de exportación**: 3 (PNG, JPG, SVG)
-- **Atajos de teclado**: 10+ combinaciones
+- **Líneas de código**: ~1,500 líneas de JavaScript
+- **Herramientas**: 12+ herramientas de dibujo y edición
+- **Temas**: 5 temas visuales dinámicos
+- **Rankings**: 4 tipos de clasificación en tiempo real
+- **Sistemas multimedia**: 2 (Fondos + Stickers) con apartados exclusivos
+- **Atajos de teclado**: 12+ combinaciones
 - **Eventos touch**: Optimizado para móviles
-- **Cooldown**: 10 minutos entre uploads
+- **Cooldown**: 5 minutos entre uploads
+- **Capas de renderizado**: 3 niveles (Fondo, Dibujo, Stickers)
 
 ## 🎯 Casos de Uso
 
@@ -142,21 +155,44 @@ El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tie
 4. **Entretenimiento**: Dibujo libre y creativo
 5. **Competencias**: Ranking por likes y popularidad
 
-## 🔄 Roadmap v1.1
+## 🆕 Novedades v2.1
 
+### 🌄 Sistema de Fondos de Imagen
+- **Apartado exclusivo** separado de stickers
+- **Auto-escalado** de imágenes al canvas
+- **Preservación** del dibujo al cambiar fondo
+- **Confirmación** antes de quitar fondo
+
+### 🏷️ Sistema de Stickers Mejorado
+- **Apartado independiente** del sistema de fondos
+- **Herramienta ✋ Mover** para arrastrar stickers
+- **Colocación precisa** con click en canvas
+- **Sistema de capas** bien definido
+
+### 🔧 Mejoras Técnicas
+- **Funciones JavaScript** completas para ambos sistemas
+- **Event listeners** optimizados
+- **Validación de archivos** PNG/JPG/JPEG
+- **Feedback visual** en botones de estado
+
+## 🔄 Roadmap v2.2
+
+- [x] ✅ Sistema de fondos personalizados
+- [x] ✅ Sistema de stickers con apartado exclusivo
+- [x] ✅ Herramienta de mover stickers
+- [x] ✅ Sistema de capas (Fondo → Dibujo → Stickers)
+- [ ] Galería de fondos predefinidos
+- [ ] Stickers predefinidos por categorías
 - [ ] Sistema de usuarios con autenticación
 - [ ] Capas de dibujo múltiples
 - [ ] Herramientas de selección avanzadas
-- [ ] Exportar a diferentes formatos (SVG, PDF)
-- [ ] Sistema de moderación automática
-- [ ] API REST para integración externa
 - [ ] Rankings por período (diario, semanal, mensual)
 - [ ] Sistema de badges y logros
 
-## 👨‍💻 Desarrollado por
+## 👨💻 Desarrollado por
 
-**ThisIsFenix** - Noviembre 2024
+**ThisIsFenix** - Diciembre 2024
 
 ---
 
-*Parte del ecosistema FenixLaboratory v2.0.7*
+*Parte del ecosistema FenixLaboratory v2.1*

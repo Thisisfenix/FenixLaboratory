@@ -723,6 +723,7 @@
               </div>
               <div class="d-flex gap-1">
                 <button id="brushBtn" class="btn-tool tool-active" title="Pincel (B)">🖌️ Pincel</button>
+                <button id="stickerMoveBtn" class="btn-tool" title="Mover stickers">✋ Mover</button>
                 <button id="eraserBtn" class="btn-tool" title="Borrador (E)">🧽 Borrar</button>
                 <button id="textBtn" class="btn-tool" title="Texto (T)">🅰️ Texto</button>
                 <button id="circleBtn" class="btn-tool" title="Círculo (C)">⭕ Círculo</button>
@@ -789,29 +790,28 @@
                 </div>
               </div>
               
+
+              
               <div class="control-group">
-                <span class="control-label" title="Subir imágenes PNG">🖼️</span>
-                <div class="d-flex gap-1">
-                  <button id="stickerBtn" class="btn-upload" title="Modo sticker">🏷️ Sticker</button>
-                  <button id="backgroundBtn" class="btn-upload" title="Modo fondo">🖼️ Fondo</button>
+                <span class="control-label" title="Fondos de imagen">🌄</span>
+                <div class="d-flex gap-1 flex-wrap align-items-center">
+                  <input type="file" id="bgUpload" accept=".png,.jpg,.jpeg" class="file-input" title="Subir fondo personalizado" style="width: 120px;">
+                  <button id="setBgBtn" class="btn-upload" title="Aplicar fondo subido" disabled>🖼️ Aplicar</button>
+                  <button id="clearBgBtn" class="btn-tool-sm" title="Quitar fondo">❌ Quitar</button>
                 </div>
-                <input type="file" id="pngUpload" accept=".png" class="file-input" title="Seleccionar PNG">
+                <div class="mt-1" style="font-size: 0.7em; color: var(--text-secondary); text-align: center;">
+                  📸 Sube imagen → Click Aplicar → Se ajusta al canvas automáticamente
+                </div>
               </div>
               
               <div class="control-group">
-                <span class="control-label" title="Stickers movibles">✨</span>
-                <div class="d-flex gap-1 flex-wrap">
-                  <button class="btn-emoji emoji-btn" data-emoji="😂" title="Risa - Click para colocar">😂</button>
-                  <button class="btn-emoji emoji-btn" data-emoji="🔥" title="Fuego - Click para colocar">🔥</button>
-                  <button class="btn-emoji emoji-btn" data-emoji="❤️" title="Corazón - Click para colocar">❤️</button>
-                  <button class="btn-emoji emoji-btn" data-emoji="🎉" title="Fiesta - Click para colocar">🎉</button>
-                  <button class="btn-emoji emoji-btn" data-emoji="💀" title="Calavera - Click para colocar">💀</button>
-                  <button class="btn-emoji emoji-btn" data-emoji="😎" title="Cool - Click para colocar">😎</button>
-                  <button class="btn-emoji emoji-btn" data-emoji="🤔" title="Pensando - Click para colocar">🤔</button>
-                  <button class="btn-emoji emoji-btn" data-emoji="💯" title="100 - Click para colocar">💯</button>
+                <span class="control-label" title="Stickers PNG personalizados">🏷️</span>
+                <div class="d-flex gap-1 flex-wrap align-items-center">
+                  <input type="file" id="stickerUpload" accept=".png,.jpg,.jpeg" class="file-input" title="Subir sticker personalizado" style="width: 120px;">
+                  <button id="placeStickerBtn" class="btn-upload" title="Colocar sticker subido" disabled>📌 Colocar</button>
                 </div>
                 <div class="mt-1" style="font-size: 0.7em; color: var(--text-secondary); text-align: center;">
-                  📌 Click para colocar emojis
+                  🖼️ Sube PNG/JPG → Click Colocar → Click canvas | ✋ Mover para arrastrar
                 </div>
               </div>
             </div>
@@ -967,6 +967,24 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    
+    // Verificar conexión a Firebase
+    async function testFirebaseConnection() {
+      try {
+        const testQuery = query(collection(db, 'dibujos'), orderBy('timestamp', 'desc'));
+        console.log('✅ Conexión a Firebase exitosa');
+        return true;
+      } catch (error) {
+        console.error('❌ Error de conexión a Firebase:', error);
+        if (error.code === 'permission-denied') {
+          console.error('Las reglas de Firestore no permiten acceso desde este dominio');
+        }
+        return false;
+      }
+    }
+    
+    // Probar conexión al cargar
+    testFirebaseConnection();
 
     // Canvas setup
     const canvas = document.getElementById('drawCanvas');
@@ -979,6 +997,12 @@
     let strokeCount = 0;
     let drawingHistory = [];
     let historyStep = -1;
+    
+    // Variables para stickers
+    let stickers = [];
+    let selectedSticker = null;
+    let isDragging = false;
+    let currentStickerImage = null;
 
     // Configurar canvas
     ctx.lineCap = 'round';
@@ -1067,7 +1091,26 @@
       if (historyStep < drawingHistory.length) {
         drawingHistory.length = historyStep;
       }
-      drawingHistory.push(canvas.toDataURL());
+      
+      // Crear un canvas temporal solo con el dibujo base (sin stickers)
+      const baseCanvas = document.createElement('canvas');
+      baseCanvas.width = canvas.width;
+      baseCanvas.height = canvas.height;
+      const baseCtx = baseCanvas.getContext('2d');
+      
+      // Copiar canvas actual
+      baseCtx.drawImage(canvas, 0, 0);
+      
+      // Remover stickers del canvas base
+      stickers.forEach(sticker => {
+        if (sticker && sticker.image) {
+          baseCtx.globalCompositeOperation = 'destination-out';
+          baseCtx.fillRect(sticker.x, sticker.y, sticker.width, sticker.height);
+        }
+      });
+      
+      // Guardar solo el dibujo base
+      drawingHistory.push(baseCanvas.toDataURL());
     }
 
 
@@ -1151,6 +1194,20 @@
       const x = (e.clientX - rect.left) * scaleX;
       const y = (e.clientY - rect.top) * scaleY;
       
+      if (currentTool === 'stickerMove') {
+        console.log('Intentando agarrar sticker en:', x, y);
+        console.log('Stickers disponibles:', stickers.length);
+        selectedSticker = findStickerAt(x, y);
+        if (selectedSticker) {
+          console.log('Sticker seleccionado:', selectedSticker);
+          isDragging = true;
+          canvas.style.cursor = 'grabbing';
+        } else {
+          console.log('No se encontró sticker');
+        }
+        return;
+      }
+      
       isDrawing = true;
       
       if (currentTool === 'select') {
@@ -1178,13 +1235,22 @@
     }
 
     function draw(e) {
-      if (!isDrawing) return;
-      
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
       const x = (e.clientX - rect.left) * scaleX;
       const y = (e.clientY - rect.top) * scaleY;
+      
+      if (currentTool === 'stickerMove' && isDragging && selectedSticker) {
+        selectedSticker.x = x - 30; // Centrar el sticker
+        selectedSticker.y = y - 30;
+        
+        // Redibujar con el nuevo sistema de capas
+        redrawCanvasWithLayers();
+        return;
+      }
+      
+      if (!isDrawing) return;
       
       if (currentTool === 'select' && isSelecting) {
         selectionEnd = { x, y };
@@ -1234,6 +1300,14 @@
     }
 
     function stopDrawing(e) {
+      if (currentTool === 'stickerMove' && isDragging) {
+        isDragging = false;
+        selectedSticker = null;
+        canvas.style.cursor = 'grab';
+        saveState();
+        return;
+      }
+      
       if (isDrawing || isShapeDrawing) {
         if (currentTool === 'select' && isSelecting) {
           isSelecting = false;
@@ -1312,7 +1386,7 @@
         case 'e': setTool('eraser'); break;
         case 'f': setTool('bucket'); break;
         case 'i': setTool('eyedropper'); break;
-        case 'h': setTool('hand'); break;
+        case 'h': setTool('stickerMove'); break;
       }
     });
 
@@ -1354,54 +1428,7 @@
     let sprayDensity = 20;
     let sprayRadius = 20;
     
-    // Botones de modo PNG
-    document.getElementById('stickerBtn').addEventListener('click', () => {
-      pngMode = 'sticker';
-      document.getElementById('stickerBtn').classList.add('btn-info');
-      document.getElementById('stickerBtn').classList.remove('btn-outline-info');
-      document.getElementById('backgroundBtn').classList.add('btn-outline-success');
-      document.getElementById('backgroundBtn').classList.remove('btn-success');
-    });
-    
-    document.getElementById('backgroundBtn').addEventListener('click', () => {
-      pngMode = 'background';
-      document.getElementById('backgroundBtn').classList.add('btn-success');
-      document.getElementById('backgroundBtn').classList.remove('btn-outline-success');
-      document.getElementById('stickerBtn').classList.add('btn-outline-info');
-      document.getElementById('stickerBtn').classList.remove('btn-info');
-    });
-    
-    // Subir PNG
-    document.getElementById('pngUpload').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file && file.type === 'image/png') {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.onload = () => {
-            if (pngMode === 'background') {
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            } else {
-              // Modo sticker - click para colocar
-              canvas.style.cursor = 'copy';
-              const placeSticker = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left - stickerSize/2;
-                const y = e.clientY - rect.top - stickerSize/2;
-                ctx.drawImage(img, x, y, stickerSize, stickerSize);
-                canvas.style.cursor = 'crosshair';
-                canvas.removeEventListener('click', placeSticker);
-                saveState();
-              };
-              canvas.addEventListener('click', placeSticker);
-            }
-            if (pngMode === 'background') saveState();
-          };
-          img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+
 
     document.getElementById('brushSize').addEventListener('input', (e) => {
       currentSize = e.target.value;
@@ -1416,7 +1443,12 @@
     // Herramientas
     function setTool(tool) {
       currentTool = tool;
-      canvas.style.cursor = 'crosshair';
+      
+      if (tool === 'stickerMove') {
+        canvas.style.cursor = 'grab';
+      } else {
+        canvas.style.cursor = 'crosshair';
+      }
       
       document.querySelectorAll('.tool-active').forEach(btn => {
         btn.classList.remove('tool-active');
@@ -1428,6 +1460,7 @@
     }
     
     document.getElementById('brushBtn').addEventListener('click', () => setTool('brush'));
+    document.getElementById('stickerMoveBtn').addEventListener('click', () => setTool('stickerMove'));
     document.getElementById('sprayBtn').addEventListener('click', () => setTool('spray'));
     document.getElementById('selectBtn').addEventListener('click', () => setTool('select'));
     document.getElementById('circleBtn').addEventListener('click', () => setTool('circle'));
@@ -1671,21 +1704,37 @@
       } : null;
     }
     
-    // Sistema de stickers simplificado
+    // Sistema de stickers mejorado
     function findStickerAt(x, y) {
       for (let i = stickers.length - 1; i >= 0; i--) {
         const sticker = stickers[i];
-        if (!sticker || !sticker.emoji) continue;
+        if (!sticker) continue;
         
-        const size = 50;
-        const margin = 20;
+        const width = sticker.width || 60;
+        const height = sticker.height || 60;
+        const margin = 20; // Margen más amplio
         
-        if (x >= sticker.x - margin && x <= sticker.x + size + margin &&
-            y >= sticker.y - size - margin && y <= sticker.y + margin) {
+        // Área de detección más generosa
+        if (x >= sticker.x - margin && x <= sticker.x + width + margin &&
+            y >= sticker.y - margin && y <= sticker.y + height + margin) {
+          console.log('Sticker encontrado:', sticker);
           return sticker;
         }
       }
+      console.log('No se encontró sticker en:', x, y);
       return null;
+    }
+    
+    function drawAllStickers() {
+      stickers.forEach(sticker => {
+        if (sticker && sticker.image) {
+          ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+        }
+      });
+    }
+    
+    function redrawWithStickers() {
+      drawAllStickers();
     }
     
 
@@ -1706,32 +1755,177 @@
       }
     });
     
-    // Emojis simplificados - se dibujan directamente en el canvas
-    document.querySelectorAll('.emoji-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const emoji = btn.dataset.emoji;
-        canvas.style.cursor = 'copy';
+    // Sistema de fondos con imágenes
+    let currentBackgroundImage = null;
+    
+    function setBackgroundImage(image) {
+      // Guardar el dibujo actual
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      // Limpiar canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Dibujar imagen de fondo ajustada al canvas
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      
+      // Restaurar el dibujo encima del fondo
+      ctx.drawImage(tempCanvas, 0, 0);
+      
+      currentBackgroundImage = image;
+      saveState();
+    }
+    
+    function clearBackground() {
+      // Guardar el dibujo actual
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      // Limpiar canvas completamente
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Solo restaurar el dibujo (sin fondo)
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(tempCanvas, 0, 0);
+      
+      currentBackgroundImage = null;
+      saveState();
+    }
+    
+    // Event listeners para fondos
+    document.getElementById('bgUpload').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            currentBackgroundImage = img;
+            document.getElementById('setBgBtn').disabled = false;
+            document.getElementById('setBgBtn').innerHTML = '🖼️ Listo';
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    document.getElementById('setBgBtn').addEventListener('click', () => {
+      if (currentBackgroundImage) {
+        setBackgroundImage(currentBackgroundImage);
+        document.getElementById('setBgBtn').innerHTML = '✅ Aplicado';
+        setTimeout(() => {
+          document.getElementById('setBgBtn').innerHTML = '🖼️ Aplicar';
+        }, 2000);
+      }
+    });
+    
+    document.getElementById('clearBgBtn').addEventListener('click', () => {
+      if (confirm('¿Quitar el fondo de imagen?')) {
+        clearBackground();
+      }
+    });
+    
+    // Sistema de stickers PNG personalizados
+    
+    document.getElementById('stickerUpload').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            currentStickerImage = img;
+            document.getElementById('placeStickerBtn').disabled = false;
+            document.getElementById('placeStickerBtn').innerHTML = '📌 Listo';
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    document.getElementById('placeStickerBtn').addEventListener('click', () => {
+      if (!currentStickerImage) return;
+      
+      canvas.style.cursor = 'copy';
+      
+      const placeSticker = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
         
-        const placeEmoji = (e) => {
-          const rect = canvas.getBoundingClientRect();
-          const scaleX = canvas.width / rect.width;
-          const scaleY = canvas.height / rect.height;
-          const x = (e.clientX - rect.left) * scaleX;
-          const y = (e.clientY - rect.top) * scaleY;
-          
-          // Dibujar emoji directamente
-          ctx.font = '50px Arial';
-          ctx.fillStyle = '#000';
-          ctx.fillText(emoji, x, y);
-          
-          canvas.style.cursor = 'crosshair';
-          canvas.removeEventListener('click', placeEmoji);
-          saveState();
+        // Crear sticker
+        const sticker = {
+          id: Date.now(),
+          image: currentStickerImage,
+          x: x,
+          y: y,
+          width: 60,
+          height: 60
         };
         
-        canvas.addEventListener('click', placeEmoji, { once: true });
-      });
+        stickers.push(sticker);
+        console.log('Sticker añadido:', sticker);
+        console.log('Total stickers:', stickers.length);
+        
+        // NO dibujar directamente en el canvas
+        // En su lugar, redibujar todo con capas
+        redrawCanvasWithLayers();
+        
+        canvas.style.cursor = 'crosshair';
+        canvas.removeEventListener('click', placeSticker);
+        saveState();
+      };
+      
+      canvas.addEventListener('click', placeSticker, { once: true });
     });
+    
+    // Función para redibujar canvas con capas separadas
+    function redrawCanvasWithLayers() {
+      // Guardar el estado actual del canvas (sin stickers)
+      const baseCanvas = document.createElement('canvas');
+      baseCanvas.width = canvas.width;
+      baseCanvas.height = canvas.height;
+      const baseCtx = baseCanvas.getContext('2d');
+      
+      // Copiar solo el dibujo base (restaurar desde historial)
+      if (drawingHistory.length > 0) {
+        const img = new Image();
+        img.onload = () => {
+          baseCtx.drawImage(img, 0, 0);
+          
+          // Limpiar canvas principal
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          // Redibujar base
+          ctx.drawImage(baseCanvas, 0, 0);
+          
+          // Redibujar todos los stickers encima
+          stickers.forEach(sticker => {
+            if (sticker && sticker.image) {
+              ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width, sticker.height);
+            }
+          });
+        };
+        img.src = drawingHistory[drawingHistory.length - 1];
+      } else {
+        // Si no hay historial, solo dibujar stickers
+        stickers.forEach(sticker => {
+          if (sticker && sticker.image) {
+            ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width, sticker.height);
+          }
+        });
+      }
+    }
     
     // Zoom
     document.getElementById('zoomBtn').addEventListener('click', () => {
@@ -1825,6 +2019,8 @@
     document.getElementById('clearBtn').addEventListener('click', () => {
       if (confirm('¿Limpiar todo el dibujo?')) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stickers = []; // Limpiar stickers también
+        console.log('Canvas y stickers limpiados');
         markAsSaved();
         saveState();
       }
@@ -1846,8 +2042,6 @@
     
     // Guardar dibujo con loading state
     document.getElementById('saveBtn').addEventListener('click', async () => {
-      // App Check verifica el dominio automáticamente
-      
       const saveBtn = document.getElementById('saveBtn');
       const saveText = document.getElementById('saveText');
       const saveLoader = document.getElementById('saveLoader');
@@ -1873,54 +2067,50 @@
       const category = document.getElementById('categorySelect').value;
       
       try {
-        await addDoc(collection(db, 'dibujos'), {
-          imagenData: imageData,
-          autor: author,
-          timestamp: Date.now(),
-          likes: 0,
-          categoria: category || 'Arte',
+        // Datos que coinciden exactamente con las reglas de Firestore
+        const drawingData = {
           titulo: `Dibujo de ${author}`,
+          imagenData: imageData,
+          timestamp: Date.now(),
+          autor: author,
+          categoria: category || 'Arte',
+          domain: 'thisisfenix.github.io',
+          likes: 0,
           comments: [],
-          strokes: strokeCount,
-          domain: window.location.hostname,
-          // Metadata adicional
-          canvasSize: `${canvas.width}x${canvas.height}`,
-          tools: currentTool,
-          colors: currentColor,
-          brushSize: currentSize,
-          stickersCount: stickers.length,
-          device: window.innerWidth <= 768 ? 'mobile' : 'desktop',
-          userAgent: navigator.userAgent.substring(0, 100),
-          views: 0,
-          featured: false,
-          quality: strokeCount > 100 ? 'high' : strokeCount > 50 ? 'medium' : 'basic'
-        });
+          strokes: strokeCount || 0
+        };
+        
+        await addDoc(collection(db, 'dibujos'), drawingData);
         
         localStorage.setItem('lastDrawingSave', Date.now().toString());
         createConfetti();
         
-        // Limpiar canvas y resetear estado inmediatamente
+        // Limpiar canvas y resetear estado
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.filter = 'none';
         ctx.globalAlpha = 1;
         document.getElementById('authorName').value = '';
         document.getElementById('categorySelect').value = 'Arte';
         strokeCount = 0;
-        stickers = [];
+        stickers = []; // Limpiar stickers después de guardar
         hasUnsavedWork = false;
         updateUnsavedIndicator();
         saveState();
         
         setTimeout(() => {
           alert('¡Dibujo guardado!');
-          // Hacer scroll a la galería para ver el nuevo dibujo
           document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
         }, 1000);
       } catch (error) {
-        console.error('Error:', error);
-        alert('Error al guardar. Revisa la configuración de Firebase.');
+        console.error('Error completo:', error);
+        if (error.code === 'permission-denied') {
+          alert('❌ Error de permisos. La base de datos no permite escritura desde este dominio.');
+        } else if (error.code === 'unavailable') {
+          alert('❌ Servicio no disponible. Intenta más tarde.');
+        } else {
+          alert(`❌ Error al guardar: ${error.message}`);
+        }
       } finally {
-        // Hide loading state
         saveBtn.disabled = false;
         saveText.style.display = 'inline';
         saveLoader.style.display = 'none';
@@ -2016,7 +2206,7 @@
       document.getElementById('prevPage').disabled = page === 1;
       document.getElementById('nextPage').disabled = page === totalPages;
       
-      // Add like events
+      // Add like events - solo 1 like por usuario
       document.querySelectorAll('.like-btn').forEach(btn => {
         const docId = btn.dataset.id;
         const hasLiked = localStorage.getItem(`liked_${docId}`);
@@ -2025,6 +2215,7 @@
           btn.classList.remove('btn-outline-danger');
           btn.classList.add('btn-danger');
           btn.disabled = true;
+          btn.innerHTML = '❤️ Ya votaste';
         }
         
         btn.addEventListener('click', async () => {
@@ -2039,6 +2230,7 @@
             btn.classList.remove('btn-outline-danger');
             btn.classList.add('btn-danger');
             btn.disabled = true;
+            btn.innerHTML = '❤️ Ya votaste';
           } catch (error) {
             console.error('Error al dar like:', error);
           }
