@@ -62,6 +62,8 @@
       border-radius: 8px;
       background: white;
       margin: 20px 0;
+      display: inline-block;
+      padding: 10px;
     }
     #drawCanvas {
       border-radius: 6px;
@@ -123,8 +125,13 @@
         touch-action: none;
       }
       .canvas-container {
-        margin: 10px 0;
+        margin: 10px auto;
         touch-action: none;
+        width: calc(100vw - 40px) !important;
+        max-width: 95vw;
+        padding: 5px;
+        display: block;
+        text-align: center;
       }
       .color-btn {
         width: 28px;
@@ -815,16 +822,34 @@
     
     // Ajustar canvas inicial en móvil
     function adjustCanvasForMobile() {
+      const container = canvas.parentElement;
+      
       if (window.innerWidth <= 768) {
-        const container = canvas.parentElement;
-        const containerWidth = container.clientWidth - 40;
+        const containerWidth = window.innerWidth - 50; // Margen para el borde
+        const maxHeight = window.innerHeight * 0.4;
+        
         if (canvas.width > containerWidth) {
+          const scale = containerWidth / canvas.width;
           canvas.style.width = containerWidth + 'px';
-          canvas.style.height = 'auto';
+          canvas.style.height = (canvas.height * scale) + 'px';
+          
+          if (canvas.height * scale > maxHeight) {
+            const heightScale = maxHeight / canvas.height;
+            canvas.style.width = (canvas.width * heightScale) + 'px';
+            canvas.style.height = maxHeight + 'px';
+          }
         }
+        
+        // En móvil, el contenedor se ajusta automáticamente con CSS
+        container.style.width = '';
+        container.style.height = '';
       } else {
-        canvas.style.width = '';
-        canvas.style.height = '';
+        canvas.style.width = canvas.width + 'px';
+        canvas.style.height = canvas.height + 'px';
+        
+        // En PC, ajustar el contenedor al tamaño del canvas
+        container.style.width = (canvas.offsetWidth + 20) + 'px';
+        container.style.height = (canvas.offsetHeight + 20) + 'px';
       }
     }
     
@@ -883,16 +908,43 @@
       drawingHistory.push(canvas.toDataURL());
     }
 
-    // Eventos de dibujo
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
+    // Eventos de dibujo ya manejados en la sección touch events
 
     // Touch events mejorados para móvil
-    canvas.addEventListener('touchstart', handleTouch, { passive: false });
-    canvas.addEventListener('touchmove', handleTouch, { passive: false });
-    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+    let touchHandled = false;
+    
+    canvas.addEventListener('touchstart', (e) => {
+      touchHandled = true;
+      handleTouch(e);
+    }, { passive: false });
+    
+    canvas.addEventListener('touchmove', (e) => {
+      if (touchHandled) handleTouch(e);
+    }, { passive: false });
+    
+    canvas.addEventListener('touchend', (e) => {
+      if (touchHandled) {
+        handleTouchEnd(e);
+        touchHandled = false;
+      }
+    }, { passive: false });
+    
+    // Prevenir eventos mouse si ya se manejó touch
+    canvas.addEventListener('mousedown', (e) => {
+      if (!touchHandled) startDrawing(e);
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+      if (!touchHandled) draw(e);
+    });
+    
+    canvas.addEventListener('mouseup', (e) => {
+      if (!touchHandled) stopDrawing(e);
+    });
+    
+    canvas.addEventListener('mouseout', (e) => {
+      if (!touchHandled) stopDrawing(e);
+    });
     
     // Prevenir scroll y zoom en móvil
     document.body.addEventListener('touchstart', e => {
@@ -921,9 +973,17 @@
     function startDrawing(e) {
       if (isPlacingSticker) return;
       
+      // Vibración táctil en móvil
+      if (navigator.vibrate && window.innerWidth <= 768) {
+        navigator.vibrate(10);
+      }
+      
       const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / zoomLevel - panX;
-      const y = (e.clientY - rect.top) / zoomLevel - panY;
+      // Solo aplicar escala si el canvas está escalado (diferente tamaño visual vs real)
+      const scaleX = Math.abs(canvas.width - rect.width) > 1 ? canvas.width / rect.width : 1;
+      const scaleY = Math.abs(canvas.height - rect.height) > 1 ? canvas.height / rect.height : 1;
+      const x = ((e.clientX - rect.left) * scaleX) / zoomLevel - panX;
+      const y = ((e.clientY - rect.top) * scaleY) / zoomLevel - panY;
       
       if (currentTool === 'hand') {
         // Buscar sticker en la posición del click
@@ -963,8 +1023,11 @@
 
     function draw(e) {
       const rect = canvas.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / zoomLevel - panX;
-      const y = (e.clientY - rect.top) / zoomLevel - panY;
+      // Solo aplicar escala si el canvas está escalado
+      const scaleX = Math.abs(canvas.width - rect.width) > 1 ? canvas.width / rect.width : 1;
+      const scaleY = Math.abs(canvas.height - rect.height) > 1 ? canvas.height / rect.height : 1;
+      const x = ((e.clientX - rect.left) * scaleX) / zoomLevel - panX;
+      const y = ((e.clientY - rect.top) * scaleY) / zoomLevel - panY;
       
       if (currentTool === 'hand' && isDraggingSticker && selectedSticker) {
         selectedSticker.x = x;
@@ -997,6 +1060,14 @@
         updateUnsavedIndicator();
         
         if (Math.random() < 0.2) createSparkle(e.clientX, e.clientY);
+        
+        // Indicador visual en móvil
+        if (window.innerWidth <= 768) {
+          canvas.style.boxShadow = '0 0 10px var(--primary)';
+          setTimeout(() => {
+            canvas.style.boxShadow = '';
+          }, 100);
+        }
       } else if (currentTool === 'spray') {
         drawSpray(x, y);
       } else if (currentTool === 'bucket') {
@@ -1030,8 +1101,11 @@
           isSelecting = false;
         } else if (isShapeDrawing && e) {
           const rect = canvas.getBoundingClientRect();
-          const endX = (e.clientX - rect.left) / zoomLevel - panX;
-          const endY = (e.clientY - rect.top) / zoomLevel - panY;
+          // Solo aplicar escala si el canvas está escalado
+          const scaleX = Math.abs(canvas.width - rect.width) > 1 ? canvas.width / rect.width : 1;
+          const scaleY = Math.abs(canvas.height - rect.height) > 1 ? canvas.height / rect.height : 1;
+          const endX = ((e.clientX - rect.left) * scaleX) / zoomLevel - panX;
+          const endY = ((e.clientY - rect.top) * scaleY) / zoomLevel - panY;
           drawShape(shapeStartX, shapeStartY, endX, endY);
           isShapeDrawing = false;
         }
@@ -1074,10 +1148,11 @@
       if (e.touches && e.touches.length > 0) {
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
+        
+        // Verificar que el toque esté dentro del canvas
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
         
-        // Verificar que el toque esté dentro del canvas
         if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
           const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
             clientX: touch.clientX,
@@ -1348,16 +1423,8 @@
       });
       event.target.classList.add('tool-active');
       
-      // Ajustar canvas al contenedor en móvil
-      if (window.innerWidth <= 768) {
-        const container = canvas.parentElement;
-        const containerWidth = container.clientWidth - 40; // padding
-        if (canvas.width > containerWidth) {
-          canvas.style.width = containerWidth + 'px';
-          canvas.style.height = 'auto';
-        }
-      }
-      
+      // Ajustar contenedor y canvas
+      adjustCanvasForMobile();
       saveState();
     }
     
@@ -1761,18 +1828,22 @@
         localStorage.setItem('lastDrawingSave', Date.now().toString());
         createConfetti();
         
+        // Limpiar canvas y resetear estado inmediatamente
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.filter = 'none';
+        ctx.globalAlpha = 1;
+        document.getElementById('authorName').value = '';
+        document.getElementById('categorySelect').value = 'Arte';
+        strokeCount = 0;
+        stickers = [];
+        hasUnsavedWork = false;
+        updateUnsavedIndicator();
+        saveState();
+        
         setTimeout(() => {
           alert('¡Dibujo guardado!');
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.filter = 'none';
-          ctx.globalAlpha = 1;
-          document.getElementById('authorName').value = '';
-          document.getElementById('categorySelect').value = 'Arte';
-          strokeCount = 0;
-          stickers = []; // Limpiar stickers
-          hasUnsavedWork = false;
-          updateUnsavedIndicator();
-          saveState();
+          // Hacer scroll a la galería para ver el nuevo dibujo
+          document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
         }, 1000);
       } catch (error) {
         console.error('Error:', error);
@@ -1910,7 +1981,10 @@
     
     // Cargar dibujos en tiempo real
     const q = query(collection(db, 'dibujos'), orderBy('timestamp', 'desc'));
+    let isFirstLoad = true;
+    
     onSnapshot(q, (snapshot) => {
+      const previousCount = allDrawings.length;
       allDrawings = [];
       snapshot.forEach((doc) => {
         allDrawings.push({ id: doc.id, data: doc.data() });
@@ -1931,7 +2005,10 @@
         return;
       }
       
-      currentPage = 1;
+      // Si hay un nuevo dibujo y no es la primera carga, ir a la primera página
+      if (!isFirstLoad && allDrawings.length > previousCount) {
+        currentPage = 1;
+      }
       
       // Mostrar Top 3 y contador ANTES de renderizar para no sobrescribir eventos
       showTopRanking(allDrawings);
@@ -1939,7 +2016,10 @@
       showCounter(allDrawings.length);
       
       // Configurar filtros una sola vez
-      setupFilters();
+      if (isFirstLoad) {
+        setupFilters();
+        isFirstLoad = false;
+      }
     });
     
     // Funciones auxiliares
