@@ -110,6 +110,9 @@
       background: white;
       border-radius: 4px;
       transition: transform 0.3s ease;
+      /* Asegurar que los GIFs se reproduzcan */
+      image-rendering: auto;
+      -webkit-image-rendering: auto;
     }
     .drawing-card:hover .drawing-img {
       transform: scale(1.02);
@@ -1313,6 +1316,11 @@
           console.log('Sticker seleccionado:', selectedSticker);
           isDragging = true;
           canvas.style.cursor = 'grabbing';
+          // Prevenir scroll en móvil durante arrastre
+          if (window.innerWidth <= 768) {
+            e.preventDefault();
+            document.body.style.overflow = 'hidden';
+          }
         } else {
           console.log('No se encontró sticker');
         }
@@ -1353,11 +1361,23 @@
       const y = (e.clientY - rect.top) * scaleY;
       
       if (currentTool === 'stickerMove' && isDragging && selectedSticker) {
-        selectedSticker.x = x - 30; // Centrar el sticker
-        selectedSticker.y = y - 30;
+        // Centrar el sticker en el punto de toque
+        const centerOffsetX = (selectedSticker.width || 60) / 2;
+        const centerOffsetY = (selectedSticker.height || 60) / 2;
+        selectedSticker.x = x - centerOffsetX;
+        selectedSticker.y = y - centerOffsetY;
+        
+        // Mantener dentro del canvas
+        selectedSticker.x = Math.max(0, Math.min(canvas.width - (selectedSticker.width || 60), selectedSticker.x));
+        selectedSticker.y = Math.max(0, Math.min(canvas.height - (selectedSticker.height || 60), selectedSticker.y));
         
         // Redibujar con el nuevo sistema de capas
         redrawCanvasWithLayers();
+        
+        // Prevenir scroll en móvil
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+        }
         return;
       }
       
@@ -1415,6 +1435,10 @@
         isDragging = false;
         selectedSticker = null;
         canvas.style.cursor = 'grab';
+        // Restaurar scroll en móvil
+        if (window.innerWidth <= 768) {
+          document.body.style.overflow = 'auto';
+        }
         saveState();
         return;
       }
@@ -1824,7 +1848,7 @@
       } : null;
     }
     
-    // Sistema de stickers mejorado
+    // Sistema de stickers mejorado para móvil
     function findStickerAt(x, y) {
       for (let i = stickers.length - 1; i >= 0; i--) {
         const sticker = stickers[i];
@@ -1832,7 +1856,8 @@
         
         const width = sticker.width || 60;
         const height = sticker.height || 60;
-        const margin = 20; // Margen más amplio
+        // Margen más amplio para móvil
+        const margin = window.innerWidth <= 768 ? 30 : 20;
         
         // Área de detección más generosa
         if (x >= sticker.x - margin && x <= sticker.x + width + margin &&
@@ -2328,6 +2353,8 @@
           likes: 0,
           comments: [],
           strokes: strokeCount || 0,
+          // Preservar GIF de fondo si existe
+          backgroundGif: currentBackgroundImage && currentBackgroundImage.src && currentBackgroundImage.src.includes('data:image/gif') ? currentBackgroundImage.src : null,
           moderation: {
             needsReview: imageFlags.needsReview,
             autoApproved: !imageFlags.needsReview,
@@ -2455,7 +2482,14 @@
           <div class="col-md-4 col-sm-6 mb-3 drawing-item" data-author="${data.autor.toLowerCase()}" data-category="${category}">
             <div class="drawing-card ${rankClass}${cardExtraClass}" style="position: relative;">
               ${pinnedIndicator}
-              <img src="${data.imagenData}" class="drawing-img" alt="Dibujo de ${data.autor}" loading="lazy">
+              ${data.backgroundGif ? `
+                <div style="position: relative; width: 100%; height: 200px; background: white; border-radius: 4px; overflow: hidden;">
+                  <img src="${data.backgroundGif}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 1;" alt="Fondo GIF">
+                  <img src="${data.imagenData}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 2; mix-blend-mode: multiply;" alt="Dibujo de ${data.autor}" loading="lazy">
+                </div>
+              ` : `
+                <img src="${data.imagenData}" class="drawing-img" alt="Dibujo de ${data.autor}" loading="lazy">
+              `}
               <div class="p-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <div>
@@ -2466,9 +2500,14 @@
                   <small style="color: var(--text-secondary);">${date}</small>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <button class="btn btn-sm btn-outline-danger like-btn" data-id="${drawing.id}" data-likes="${likes}">
-                    ❤️ ${likes}
-                  </button>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-danger like-btn" data-id="${drawing.id}" data-likes="${likes}">
+                      ❤️ ${likes}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="viewImage('${data.imagenData}', '${drawing.id}')" title="Ver comentarios">
+                      💬 ${data.comments?.length || 0}
+                    </button>
+                  </div>
                   <div>
                     <button class="btn btn-sm btn-outline-info me-1" onclick="viewImage('${data.imagenData}', '${drawing.id}')">🔍</button>
                     <button class="btn btn-sm btn-outline-success me-1" onclick="downloadImage('${data.imagenData}', '${data.autor}')">💾</button>
@@ -2497,7 +2536,7 @@
           btn.classList.remove('btn-outline-danger');
           btn.classList.add('btn-danger');
           btn.disabled = true;
-          btn.innerHTML = '❤️ Ya votaste';
+          btn.innerHTML = `❤️ ${btn.dataset.likes} (Votado)`;
         }
         
         btn.addEventListener('click', async () => {
@@ -2512,7 +2551,23 @@
             btn.classList.remove('btn-outline-danger');
             btn.classList.add('btn-danger');
             btn.disabled = true;
-            btn.innerHTML = '❤️ Ya votaste';
+            btn.innerHTML = `❤️ ${currentLikes + 1} (Votado)`;
+            
+            // Actualizar dataset para otros botones del mismo elemento
+            btn.dataset.likes = currentLikes + 1;
+            
+            // Actualizar otros botones del mismo dibujo
+            document.querySelectorAll(`[data-id="${docId}"]`).forEach(otherBtn => {
+              if (otherBtn !== btn) {
+                otherBtn.dataset.likes = currentLikes + 1;
+                if (otherBtn.classList.contains('like-btn')) {
+                  otherBtn.innerHTML = `❤️ ${currentLikes + 1} (Votado)`;
+                  otherBtn.classList.remove('btn-outline-danger');
+                  otherBtn.classList.add('btn-danger');
+                  otherBtn.disabled = true;
+                }
+              }
+            });
           } catch (error) {
             console.error('Error al dar like:', error);
           }
@@ -3343,7 +3398,7 @@
           btn.classList.remove('btn-outline-primary');
           btn.classList.add('btn-primary');
           btn.disabled = true;
-          btn.innerHTML = '👍 Ya votaste';
+          btn.innerHTML = `👍 ${btn.dataset.likes} (Votado)`;
         }
         
         btn.addEventListener('click', async () => {
@@ -3369,7 +3424,23 @@
             btn.classList.remove('btn-outline-primary');
             btn.classList.add('btn-primary');
             btn.disabled = true;
-            btn.innerHTML = '👍 Ya votaste';
+            btn.innerHTML = `👍 ${currentLikes + 1} (Votado)`;
+            
+            // Actualizar dataset para otros botones del mismo elemento
+            btn.dataset.likes = currentLikes + 1;
+            
+            // Actualizar otros botones de la misma sugerencia
+            document.querySelectorAll(`[data-id="${docId}"]`).forEach(otherBtn => {
+              if (otherBtn !== btn) {
+                otherBtn.dataset.likes = currentLikes + 1;
+                if (otherBtn.classList.contains('suggestion-like-btn')) {
+                  otherBtn.innerHTML = `👍 ${currentLikes + 1} (Votado)`;
+                  otherBtn.classList.remove('btn-outline-primary');
+                  otherBtn.classList.add('btn-primary');
+                  otherBtn.disabled = true;
+                }
+              }
+            });
           } catch (error) {
             console.error('Error al dar like a sugerencia:', error);
           }
