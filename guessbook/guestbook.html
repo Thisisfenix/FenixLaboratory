@@ -673,14 +673,14 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-    // Firebase config - Temporal para testing local
+    // Firebase config - Producción
     const firebaseConfig = {
-      apiKey: "AIzaSyCZk8rs_Vq9ZGgOEiP3_P6zUvZoM1QQOAM",
-      authDomain: "fenix-guestbook.firebaseapp.com",
-      projectId: "fenix-guestbook",
-      storageBucket: "fenix-guestbook.firebasestorage.app",
-      messagingSenderId: "90606615201",
-      appId: "1:90606615201:web:56c4731fdf2dbdf8c58ee0"
+      apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
+      authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER",
+      projectId: "FIREBASE_PROJECT_ID_PLACEHOLDER",
+      storageBucket: "FIREBASE_STORAGE_BUCKET_PLACEHOLDER",
+      messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID_PLACEHOLDER",
+      appId: "FIREBASE_APP_ID_PLACEHOLDER"
     };
 
     const app = initializeApp(firebaseConfig);
