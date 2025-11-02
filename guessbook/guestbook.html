@@ -1011,6 +1011,9 @@
               <div class="mb-3">
                 <label style="color: var(--text-primary); margin-bottom: 8px; font-weight: bold;">📝 Tu Sugerencia</label>
                 <textarea id="suggestionText" rows="8" placeholder="Describe tu sugerencia, idea o problema..." class="form-control" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary); resize: vertical;"></textarea>
+                <div class="mt-2" style="font-size: 0.8em; color: var(--text-secondary); padding: 8px; background: rgba(40, 167, 69, 0.1); border-radius: 6px; border-left: 3px solid #28a745;">
+                  ✅ <strong>Bug corregido:</strong> "Deshacer una acción afecta la opacidad del resto de trazos" - ¡Sigue reportando bugs!
+                </div>
               </div>
               
               <button id="submitSuggestion" class="btn w-100" style="background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold;">
@@ -2190,7 +2193,19 @@
       const img = new Image();
       img.onload = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Restaurar TODAS las propiedades del contexto
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = currentOpacity; // Usar la opacidad actual, no forzar a 1
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = currentSize;
+        
         ctx.drawImage(img, 0, 0);
+        
+        // Redibujar stickers si existen
+        drawAllStickers();
       };
       img.src = drawingHistory[historyStep];
     }
@@ -3373,9 +3388,12 @@
                     ${data.status || 'Pendiente'}
                   </span>
                 </div>
-                <div class="d-flex gap-1">
+                <div class="d-flex gap-1 flex-wrap">
                   <button class="btn btn-sm btn-outline-primary suggestion-like-btn" data-id="${suggestion.id}" data-likes="${data.likes || 0}">
                     👍 ${data.likes || 0}
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" onclick="viewSuggestionComments('${suggestion.id}')" title="Ver comentarios">
+                    💬 ${data.comments?.length || 0}
                   </button>
                   <div class="owner-controls" id="owner-${suggestion.id}" style="display: none; gap: 2px;">
                     <button class="btn btn-sm btn-success" onclick="approveSuggestion('${suggestion.id}')" title="Aprobar">✓</button>
@@ -3670,6 +3688,142 @@
         } catch (e) {
           alert('❌ Error al actualizar estado');
         }
+      }
+    };
+    
+    // Ver comentarios de sugerencia
+    window.viewSuggestionComments = function(suggestionId) {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed !important; 
+        top: 0 !important; 
+        left: 0 !important; 
+        width: 100vw !important; 
+        height: 100vh !important; 
+        background: rgba(0,0,0,0.95) !important; 
+        z-index: 99999 !important; 
+        display: flex !important; 
+        align-items: center !important; 
+        justify-content: center !important;
+      `;
+      
+      const container = document.createElement('div');
+      container.style.cssText = `
+        width: 90vw !important;
+        max-width: 600px !important;
+        max-height: 90vh !important;
+        background: var(--bg-light) !important;
+        border-radius: 20px !important;
+        padding: 20px !important;
+        overflow-y: auto !important;
+      `;
+      
+      const closeBtn = document.createElement('div');
+      closeBtn.innerHTML = '✕';
+      closeBtn.style.cssText = `
+        position: absolute !important;
+        top: 20px !important;
+        right: 30px !important;
+        color: white !important;
+        font-size: 30px !important;
+        cursor: pointer !important;
+        background: rgba(0,0,0,0.7) !important;
+        border-radius: 50% !important;
+        width: 50px !important;
+        height: 50px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      `;
+      
+      loadSuggestionComments(suggestionId, container);
+      
+      modal.appendChild(container);
+      modal.appendChild(closeBtn);
+      document.body.appendChild(modal);
+      
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal || e.target === closeBtn) {
+          modal.remove();
+        }
+      });
+    };
+    
+    // Cargar comentarios de sugerencias
+    async function loadSuggestionComments(suggestionId, panel) {
+      try {
+        let docRef = doc(db, 'sugerencias', suggestionId);
+        let docSnap;
+        
+        try {
+          docSnap = await getDoc(docRef);
+        } catch (error) {
+          docRef = doc(db, 'dibujos', suggestionId);
+          docSnap = await getDoc(docRef);
+        }
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const comments = data.comments || [];
+          
+          panel.innerHTML = `
+            <h5 style="color: var(--primary); margin-bottom: 15px;">💬 Comentarios (${comments.length})</h5>
+            <div id="suggestionCommentsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+              ${comments.map(comment => `
+                <div style="background: var(--bg-dark); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                  <strong style="color: var(--primary); font-size: 0.9em;">${comment.author}</strong>
+                  <p style="color: var(--text-primary); margin: 5px 0 0 0; font-size: 0.9em;">${comment.text}</p>
+                  <small style="color: var(--text-secondary);">${new Date(comment.timestamp).toLocaleString('es-ES')}</small>
+                </div>
+              `).join('')}
+            </div>
+            <div style="border-top: 1px solid var(--primary); padding-top: 15px;">
+              <input type="text" id="suggestionCommentAuthor" placeholder="Tu nombre (opcional)" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 8px;">
+              <input type="text" id="suggestionCommentInput" placeholder="Escribe un comentario..." style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 10px;" onkeypress="if(event.key==='Enter') addSuggestionComment('${suggestionId}')">
+              <button onclick="addSuggestionComment('${suggestionId}')" style="width: 100%; padding: 8px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">➤ Comentar</button>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+    
+    // Añadir comentario a sugerencia
+    window.addSuggestionComment = async function(suggestionId) {
+      const input = document.getElementById('suggestionCommentInput');
+      const authorInput = document.getElementById('suggestionCommentAuthor');
+      const commentText = input.value.trim();
+      if (!commentText) return;
+      
+      const author = authorInput.value.trim() || 'Anónimo';
+      
+      try {
+        let docRef = doc(db, 'sugerencias', suggestionId);
+        let docSnap;
+        
+        try {
+          docSnap = await getDoc(docRef);
+        } catch (error) {
+          docRef = doc(db, 'dibujos', suggestionId);
+          docSnap = await getDoc(docRef);
+        }
+        
+        if (docSnap.exists()) {
+          const currentComments = docSnap.data().comments || [];
+          await updateDoc(docRef, {
+            comments: [...currentComments, { 
+              author: moderateContent(author), 
+              text: moderateContent(commentText), 
+              timestamp: Date.now()
+            }]
+          });
+          input.value = '';
+          authorInput.value = '';
+          loadSuggestionComments(suggestionId, document.querySelector('.modal div'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
       }
     };
   </script>
