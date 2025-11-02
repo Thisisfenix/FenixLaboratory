@@ -723,7 +723,6 @@
               </div>
               <div class="d-flex gap-1">
                 <button id="brushBtn" class="btn-tool tool-active" title="Pincel (B)">🖌️ Pincel</button>
-                <button id="handBtn" class="btn-tool" title="Mano - Mover stickers (H)">✋ Mano</button>
                 <button id="eraserBtn" class="btn-tool" title="Borrador (E)">🧽 Borrar</button>
                 <button id="textBtn" class="btn-tool" title="Texto (T)">🅰️ Texto</button>
                 <button id="circleBtn" class="btn-tool" title="Círculo (C)">⭕ Círculo</button>
@@ -812,7 +811,7 @@
                   <button class="btn-emoji emoji-btn" data-emoji="💯" title="100 - Click para colocar">💯</button>
                 </div>
                 <div class="mt-1" style="font-size: 0.7em; color: var(--text-secondary); text-align: center;">
-                  📌 Usa la ✋ Mano para mover stickers
+                  📌 Click para colocar emojis
                 </div>
               </div>
             </div>
@@ -1146,24 +1145,11 @@
     document.addEventListener('gestureend', e => e.preventDefault());
 
     function startDrawing(e) {
-      if (isPlacingSticker) return;
-      
       const rect = canvas.getBoundingClientRect();
-      // Solo aplicar escala si el canvas está escalado (diferente tamaño visual vs real)
-      const scaleX = Math.abs(canvas.width - rect.width) > 1 ? canvas.width / rect.width : 1;
-      const scaleY = Math.abs(canvas.height - rect.height) > 1 ? canvas.height / rect.height : 1;
-      const x = ((e.clientX - rect.left) * scaleX) / zoomLevel - panX;
-      const y = ((e.clientY - rect.top) * scaleY) / zoomLevel - panY;
-      
-      if (currentTool === 'hand') {
-        // Buscar sticker en la posición del click
-        selectedSticker = findStickerAt(x, y);
-        if (selectedSticker) {
-          isDraggingSticker = true;
-          canvas.style.cursor = 'grabbing';
-        }
-        return;
-      }
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
       
       isDrawing = true;
       
@@ -1173,7 +1159,7 @@
         return;
       }
       
-      if (currentTool === 'brush' || currentTool === 'spray') {
+      if (currentTool === 'brush' || currentTool === 'spray' || currentTool === 'eraser') {
         ctx.beginPath();
         ctx.moveTo(x, y);
       } else if (['circle', 'rect', 'line'].includes(currentTool)) {
@@ -1192,21 +1178,13 @@
     }
 
     function draw(e) {
-      const rect = canvas.getBoundingClientRect();
-      // Solo aplicar escala si el canvas está escalado
-      const scaleX = Math.abs(canvas.width - rect.width) > 1 ? canvas.width / rect.width : 1;
-      const scaleY = Math.abs(canvas.height - rect.height) > 1 ? canvas.height / rect.height : 1;
-      const x = ((e.clientX - rect.left) * scaleX) / zoomLevel - panX;
-      const y = ((e.clientY - rect.top) * scaleY) / zoomLevel - panY;
-      
-      if (currentTool === 'hand' && isDraggingSticker && selectedSticker) {
-        selectedSticker.x = x;
-        selectedSticker.y = y;
-        redrawCanvas();
-        return;
-      }
-      
       if (!isDrawing) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
       
       if (currentTool === 'select' && isSelecting) {
         selectionEnd = { x, y };
@@ -1216,9 +1194,10 @@
       
       ctx.lineWidth = currentSize;
       
-      if (currentTool === 'brush') {
-        if (isEraser) {
+      if (currentTool === 'brush' || currentTool === 'eraser') {
+        if (currentTool === 'eraser') {
           ctx.globalCompositeOperation = 'destination-out';
+          ctx.globalAlpha = 1;
         } else {
           ctx.globalCompositeOperation = 'source-over';
           ctx.strokeStyle = currentColor;
@@ -1231,12 +1210,9 @@
         
         if (Math.random() < 0.2) createSparkle(e.clientX, e.clientY);
         
-        // Indicador visual en móvil
         if (window.innerWidth <= 768) {
           canvas.style.boxShadow = '0 0 10px var(--primary)';
-          setTimeout(() => {
-            canvas.style.boxShadow = '';
-          }, 100);
+          setTimeout(() => canvas.style.boxShadow = '', 100);
         }
       } else if (currentTool === 'spray') {
         drawSpray(x, y);
@@ -1258,24 +1234,15 @@
     }
 
     function stopDrawing(e) {
-      if (currentTool === 'hand' && isDraggingSticker) {
-        isDraggingSticker = false;
-        selectedSticker = null;
-        canvas.style.cursor = 'grab';
-        saveState();
-        return;
-      }
-      
       if (isDrawing || isShapeDrawing) {
         if (currentTool === 'select' && isSelecting) {
           isSelecting = false;
         } else if (isShapeDrawing && e) {
           const rect = canvas.getBoundingClientRect();
-          // Solo aplicar escala si el canvas está escalado
-          const scaleX = Math.abs(canvas.width - rect.width) > 1 ? canvas.width / rect.width : 1;
-          const scaleY = Math.abs(canvas.height - rect.height) > 1 ? canvas.height / rect.height : 1;
-          const endX = ((e.clientX - rect.left) * scaleX) / zoomLevel - panX;
-          const endY = ((e.clientY - rect.top) * scaleY) / zoomLevel - panY;
+          const scaleX = canvas.width / rect.width;
+          const scaleY = canvas.height / rect.height;
+          const endX = (e.clientX - rect.left) * scaleX;
+          const endY = (e.clientY - rect.top) * scaleY;
           drawShape(shapeStartX, shapeStartY, endX, endY);
           isShapeDrawing = false;
         }
@@ -1382,10 +1349,6 @@
     let selectionStart = { x: 0, y: 0 };
     let selectionEnd = { x: 0, y: 0 };
     let copiedData = null;
-    let isPlacingSticker = false;
-    let stickers = []; // Array para almacenar stickers colocados
-    let selectedSticker = null;
-    let isDraggingSticker = false;
     
     // Configuración de spray
     let sprayDensity = 20;
@@ -1453,23 +1416,14 @@
     // Herramientas
     function setTool(tool) {
       currentTool = tool;
-      isEraser = (tool === 'eraser');
-      
-      // Cambiar cursor según la herramienta
-      if (tool === 'hand') {
-        canvas.style.cursor = 'grab';
-      } else {
-        canvas.style.cursor = 'crosshair';
-      }
+      canvas.style.cursor = 'crosshair';
       
       document.querySelectorAll('.tool-active').forEach(btn => {
         btn.classList.remove('tool-active');
-        btn.classList.add('btn-outline-primary');
       });
       const toolBtn = document.getElementById(tool + 'Btn');
       if (toolBtn) {
         toolBtn.classList.add('tool-active');
-        toolBtn.classList.remove('btn-outline-primary');
       }
     }
     
@@ -1477,13 +1431,11 @@
     document.getElementById('sprayBtn').addEventListener('click', () => setTool('spray'));
     document.getElementById('selectBtn').addEventListener('click', () => setTool('select'));
     document.getElementById('circleBtn').addEventListener('click', () => setTool('circle'));
-
     document.getElementById('lineBtn').addEventListener('click', () => setTool('line'));
     document.getElementById('textBtn').addEventListener('click', () => setTool('text'));
     document.getElementById('eraserBtn').addEventListener('click', () => setTool('eraser'));
     document.getElementById('bucketBtn').addEventListener('click', () => setTool('bucket'));
     document.getElementById('eyedropperBtn').addEventListener('click', () => setTool('eyedropper'));
-    document.getElementById('handBtn').addEventListener('click', () => setTool('hand'));
     
     // Brush presets
     document.getElementById('presetFine').addEventListener('click', () => {
@@ -1719,45 +1671,21 @@
       } : null;
     }
     
-    // Funciones para manejar stickers
+    // Sistema de stickers simplificado
     function findStickerAt(x, y) {
-      // Buscar desde el último (más arriba) hacia el primero
       for (let i = stickers.length - 1; i >= 0; i--) {
         const sticker = stickers[i];
-        const stickerWidth = sticker.size;
-        const stickerHeight = sticker.size;
+        if (!sticker || !sticker.emoji) continue;
         
-        if (x >= sticker.x && x <= sticker.x + stickerWidth &&
-            y >= sticker.y - stickerHeight && y <= sticker.y) {
+        const size = 50;
+        const margin = 20;
+        
+        if (x >= sticker.x - margin && x <= sticker.x + size + margin &&
+            y >= sticker.y - size - margin && y <= sticker.y + margin) {
           return sticker;
         }
       }
       return null;
-    }
-    
-    function redrawCanvas() {
-      // Guardar el estado actual sin stickers
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = canvas.width;
-      tempCanvas.height = canvas.height;
-      const tempCtx = tempCanvas.getContext('2d');
-      
-      // Copiar solo el dibujo base (sin stickers)
-      tempCtx.drawImage(canvas, 0, 0);
-      
-      // Limpiar canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Redibujar el fondo base
-      ctx.drawImage(tempCanvas, 0, 0);
-      
-      // Redibujar todos los stickers
-      stickers.forEach(sticker => {
-        if (sticker.type === 'emoji') {
-          ctx.font = `${sticker.size}px Arial`;
-          ctx.fillText(sticker.emoji, sticker.x, sticker.y);
-        }
-      });
     }
     
 
@@ -1778,35 +1706,30 @@
       }
     });
     
-    // Emojis como stickers movibles
+    // Emojis simplificados - se dibujan directamente en el canvas
     document.querySelectorAll('.emoji-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const emoji = btn.dataset.emoji;
-        isPlacingSticker = true;
         canvas.style.cursor = 'copy';
+        
         const placeEmoji = (e) => {
           const rect = canvas.getBoundingClientRect();
-          const x = (e.clientX - rect.left) / zoomLevel - panX;
-          const y = (e.clientY - rect.top) / zoomLevel - panY;
+          const scaleX = canvas.width / rect.width;
+          const scaleY = canvas.height / rect.height;
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
           
-          // Crear sticker objeto
-          const sticker = {
-            id: Date.now() + Math.random(),
-            emoji: emoji,
-            x: x,
-            y: y,
-            size: stickerSize/2,
-            type: 'emoji'
-          };
+          // Dibujar emoji directamente
+          ctx.font = '50px Arial';
+          ctx.fillStyle = '#000';
+          ctx.fillText(emoji, x, y);
           
-          stickers.push(sticker);
-          redrawCanvas();
           canvas.style.cursor = 'crosshair';
           canvas.removeEventListener('click', placeEmoji);
-          isPlacingSticker = false;
           saveState();
         };
-        canvas.addEventListener('click', placeEmoji);
+        
+        canvas.addEventListener('click', placeEmoji, { once: true });
       });
     });
     
@@ -1907,12 +1830,12 @@
       }
     });
 
-    // Cooldown de 10 minutos
+    // Cooldown de 5 minutos
     function checkCooldown() {
       const lastSave = localStorage.getItem('lastDrawingSave');
       if (lastSave) {
         const timeDiff = Date.now() - parseInt(lastSave);
-        const cooldownTime = 10 * 60 * 1000; // 10 minutos
+        const cooldownTime = 5 * 60 * 1000; // 5 minutos
         if (timeDiff < cooldownTime) {
           const remaining = Math.ceil((cooldownTime - timeDiff) / 60000);
           return remaining;
