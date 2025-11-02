@@ -41,6 +41,21 @@
       background: var(--bg-dark);
       color: var(--text-primary);
       font-family: 'Space Grotesk', sans-serif;
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    
+    /* Permitir selección en inputs */
+    input, textarea, select {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
     }
     .canvas-container {
       border: 2px solid var(--primary);
@@ -105,18 +120,96 @@
       #drawCanvas {
         width: 100%;
         height: 300px;
+        touch-action: none;
       }
       .canvas-container {
         margin: 10px 0;
+        touch-action: none;
       }
       .color-btn {
-        width: 25px;
-        height: 25px;
-        margin: 1px;
+        width: 28px;
+        height: 28px;
+        margin: 2px;
+        touch-action: manipulation;
       }
       #customColor {
-        width: 40px;
-        height: 25px;
+        width: 45px;
+        height: 28px;
+      }
+      
+      /* Mejorar área de toque */
+      .btn-tool, .btn-action, .btn-danger {
+        min-height: 35px;
+        min-width: 35px;
+        touch-action: manipulation;
+      }
+      
+      .btn-emoji {
+        min-height: 35px;
+        min-width: 35px;
+        touch-action: manipulation;
+      }
+    }
+    
+    /* Orientación horizontal en móvil */
+    @media (max-width: 768px) and (orientation: landscape) {
+      #drawCanvas {
+        width: 100%;
+        height: 280px;
+        max-height: 60vh;
+      }
+      .controls-compact {
+        padding: 8px;
+      }
+      .control-row {
+        gap: 4px;
+      }
+      .control-group {
+        padding: 4px 6px;
+        gap: 4px;
+      }
+      .btn-tool, .btn-action, .btn-danger {
+        padding: 3px 6px;
+        height: 28px;
+        font-size: 0.65em;
+        min-height: 28px;
+        min-width: 28px;
+      }
+      .btn-tool-sm, .btn-size, .btn-upload, .btn-filter, .btn-export {
+        padding: 2px 4px;
+        height: 26px;
+        font-size: 0.55em;
+        min-height: 26px;
+      }
+      .btn-emoji {
+        width: 30px;
+        height: 28px;
+        font-size: 0.8em;
+        min-height: 28px;
+        min-width: 30px;
+      }
+      .color-btn {
+        width: 24px;
+        height: 24px;
+        margin: 1px;
+      }
+      .size-slider {
+        width: 50px;
+      }
+      .advanced-section {
+        padding: 6px;
+      }
+      .user-row {
+        padding: 8px;
+      }
+      .input-field, .select-field {
+        padding: 4px 8px;
+        font-size: 0.8em;
+        min-width: 100px;
+      }
+      .btn-save {
+        padding: 6px 12px;
+        font-size: 0.8em;
       }
     }
     
@@ -378,11 +471,13 @@
       }
       
       .control-group {
-        padding: 8px;
-        gap: 8px;
-        flex-direction: column;
+        padding: 6px;
+        gap: 6px;
+        flex-direction: row;
         align-items: center;
-        min-width: 100%;
+        min-width: auto;
+        flex-wrap: wrap;
+        justify-content: center;
       }
       
       .control-group .d-flex {
@@ -418,7 +513,16 @@
       
       .user-row .d-flex {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
+      }
+      
+      .input-field, .select-field {
+        min-width: 140px;
+      }
+      
+      .btn-save {
+        padding: 10px 20px;
+        font-size: 1em;
       }
       
       .advanced-section {
@@ -452,6 +556,9 @@
       <div class="col-md-8">
         <div class="canvas-container text-center">
           <canvas id="drawCanvas" width="600" height="400"></canvas>
+          <div class="mt-2">
+            <small style="color: var(--text-secondary);">💡 Gira tu móvil para más espacio de dibujo</small>
+          </div>
         </div>
         
         <!-- Controles Compactos -->
@@ -542,6 +649,7 @@
                   <button id="smallCanvas" class="btn-size" title="Pequeño (400x300)">📱 Pequeño</button>
                   <button id="mediumCanvas" class="btn-size tool-active" title="Mediano (600x400)">💻 Mediano</button>
                   <button id="largeCanvas" class="btn-size" title="Grande (800x600)">🖥️ Grande</button>
+                  <button id="wideCanvas" class="btn-size" title="Panorámico (800x400)">📺 Panorámico</button>
                 </div>
               </div>
               
@@ -622,7 +730,10 @@
             <div id="unsavedIndicator" style="display: none; color: #ffc107; margin-bottom: 10px; font-size: 0.8em;">
               ⚠️ Tienes cambios sin guardar
             </div>
-            <a href="../index.html" class="btn-back">🏠 Volver al Lab</a>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+              <a href="../index.html" class="btn-back">🏠 Volver al Lab</a>
+              <button id="fullscreenBtn" class="btn-back" style="border: none; background: transparent;">📱 Pantalla completa</button>
+            </div>
           </div>
         </div>
       </div>
@@ -673,9 +784,15 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-    // Cargar configuración desde API de Vercel (protegida)
-    const response = await fetch('/api/config');
-    const firebaseConfig = await response.json();
+    // Configuración Firebase (pública para GitHub Pages)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCZk8rs_Vq9ZGgOEiP3_P6zUvZoM1QQOAM",
+      authDomain: "fenix-guestbook.firebaseapp.com",
+      projectId: "fenix-guestbook",
+      storageBucket: "fenix-guestbook.firebasestorage.app",
+      messagingSenderId: "90606615201",
+      appId: "1:90606615201:web:7126a42ca59b57bdc58ee0"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -695,6 +812,52 @@
     // Configurar canvas
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    
+    // Ajustar canvas inicial en móvil
+    function adjustCanvasForMobile() {
+      if (window.innerWidth <= 768) {
+        const container = canvas.parentElement;
+        const containerWidth = container.clientWidth - 40;
+        if (canvas.width > containerWidth) {
+          canvas.style.width = containerWidth + 'px';
+          canvas.style.height = 'auto';
+        }
+      } else {
+        canvas.style.width = '';
+        canvas.style.height = '';
+      }
+    }
+    
+    // Ajustar en carga y cambio de orientación
+    adjustCanvasForMobile();
+    window.addEventListener('resize', adjustCanvasForMobile);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        adjustCanvasForMobile();
+        // Mostrar tip de orientación
+        if (window.innerWidth <= 768) {
+          const tip = document.createElement('div');
+          tip.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 1000;
+            font-size: 0.8em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+          `;
+          tip.textContent = window.innerHeight < window.innerWidth ? 
+            '🎨 ¡Más espacio para dibujar!' : 
+            '💡 Gira para más espacio';
+          document.body.appendChild(tip);
+          setTimeout(() => tip.remove(), 2000);
+        }
+      }, 100);
+    });
     
     // Toggle advanced controls
     document.getElementById('toggleAdvanced').addEventListener('click', () => {
@@ -727,22 +890,33 @@
     canvas.addEventListener('mouseout', stopDrawing);
 
     // Touch events mejorados para móvil
-    canvas.addEventListener('touchstart', handleTouch);
-    canvas.addEventListener('touchmove', handleTouch);
-    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchstart', handleTouch, { passive: false });
+    canvas.addEventListener('touchmove', handleTouch, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
     
-    // Prevenir scroll en móvil
+    // Prevenir scroll y zoom en móvil
     document.body.addEventListener('touchstart', e => {
-      if (e.target === canvas) e.preventDefault();
+      if (e.target === canvas || canvas.contains(e.target)) {
+        e.preventDefault();
+      }
     }, { passive: false });
     
     document.body.addEventListener('touchend', e => {
-      if (e.target === canvas) e.preventDefault();
+      if (e.target === canvas || canvas.contains(e.target)) {
+        e.preventDefault();
+      }
     }, { passive: false });
     
     document.body.addEventListener('touchmove', e => {
-      if (e.target === canvas) e.preventDefault();
+      if (e.target === canvas || canvas.contains(e.target)) {
+        e.preventDefault();
+      }
     }, { passive: false });
+    
+    // Prevenir zoom con pellizco
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('gesturechange', e => e.preventDefault());
+    document.addEventListener('gestureend', e => e.preventDefault());
 
     function startDrawing(e) {
       if (isPlacingSticker) return;
@@ -897,21 +1071,36 @@
 
     function handleTouch(e) {
       e.preventDefault();
-      const touch = e.touches[0];
-      const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
-      });
-      canvas.dispatchEvent(mouseEvent);
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        // Verificar que el toque esté dentro del canvas
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+          const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 'mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            bubbles: true
+          });
+          canvas.dispatchEvent(mouseEvent);
+        }
+      }
     }
     
     function handleTouchEnd(e) {
       e.preventDefault();
-      const mouseEvent = new MouseEvent('mouseup', {
-        clientX: 0,
-        clientY: 0
-      });
-      stopDrawing(e.changedTouches[0]);
+      const touch = e.changedTouches && e.changedTouches[0];
+      if (touch) {
+        const mouseEvent = new MouseEvent('mouseup', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          bubbles: true
+        });
+        canvas.dispatchEvent(mouseEvent);
+      }
+      stopDrawing();
     }
     
     // Atajos de teclado
@@ -1119,25 +1308,55 @@
     document.getElementById('smallCanvas').addEventListener('click', () => resizeCanvas(400, 300));
     document.getElementById('mediumCanvas').addEventListener('click', () => resizeCanvas(600, 400));
     document.getElementById('largeCanvas').addEventListener('click', () => resizeCanvas(800, 600));
+    document.getElementById('wideCanvas').addEventListener('click', () => resizeCanvas(800, 400));
     
     function resizeCanvas(width, height) {
       if (!isCanvasEmpty() && !confirm('¿Cambiar tamaño del canvas? Se perderá el dibujo actual.')) {
         return;
       }
       
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      // Guardar imagen actual si existe
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      tempCtx.drawImage(canvas, 0, 0);
+      
+      // Cambiar tamaño
       canvas.width = width;
       canvas.height = height;
-      ctx.putImageData(imageData, 0, 0);
+      
+      // Restaurar configuración del contexto
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
       
+      // Redibujar imagen escalada si no estaba vacía
+      if (!isCanvasEmpty()) {
+        const scale = Math.min(width / tempCanvas.width, height / tempCanvas.height);
+        const scaledWidth = tempCanvas.width * scale;
+        const scaledHeight = tempCanvas.height * scale;
+        const x = (width - scaledWidth) / 2;
+        const y = (height - scaledHeight) / 2;
+        ctx.drawImage(tempCanvas, x, y, scaledWidth, scaledHeight);
+      }
+      
+      // Actualizar botones
       document.querySelectorAll('[id$="Canvas"]').forEach(btn => {
         btn.classList.remove('tool-active');
-        btn.classList.add('btn-outline-info');
       });
       event.target.classList.add('tool-active');
-      event.target.classList.remove('btn-outline-info');
+      
+      // Ajustar canvas al contenedor en móvil
+      if (window.innerWidth <= 768) {
+        const container = canvas.parentElement;
+        const containerWidth = container.clientWidth - 40; // padding
+        if (canvas.width > containerWidth) {
+          canvas.style.width = containerWidth + 'px';
+          canvas.style.height = 'auto';
+        }
+      }
       
       saveState();
     }
@@ -1394,6 +1613,32 @@
       document.getElementById('zoomBtn').textContent = zoomLevel === 1 ? '🔍 Zoom' : '🔎 Zoom Out';
     });
     
+    // Pantalla completa para móvil
+    document.getElementById('fullscreenBtn').addEventListener('click', () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+        document.getElementById('fullscreenBtn').innerHTML = '📱 Pantalla completa';
+      } else {
+        document.documentElement.requestFullscreen().then(() => {
+          document.getElementById('fullscreenBtn').innerHTML = '📱 Salir pantalla completa';
+          // Ocultar barra de direcciones en móvil
+          if (window.innerHeight < window.innerWidth) {
+            canvas.style.maxHeight = '70vh';
+          }
+        }).catch(() => {
+          alert('No se pudo activar pantalla completa');
+        });
+      }
+    });
+    
+    // Detectar salida de pantalla completa
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        document.getElementById('fullscreenBtn').innerHTML = '📱 Pantalla completa';
+        canvas.style.maxHeight = '';
+      }
+    });
+    
     // Filtros
     document.getElementById('blurBtn').addEventListener('click', () => {
       ctx.filter = ctx.filter === 'blur(2px)' ? 'none' : 'blur(2px)';
@@ -1474,6 +1719,8 @@
     
     // Guardar dibujo con loading state
     document.getElementById('saveBtn').addEventListener('click', async () => {
+      // App Check verifica el dominio automáticamente
+      
       const saveBtn = document.getElementById('saveBtn');
       const saveText = document.getElementById('saveText');
       const saveLoader = document.getElementById('saveLoader');
@@ -1499,14 +1746,16 @@
       const category = document.getElementById('categorySelect').value;
       
       try {
-        await addDoc(collection(db, 'drawings'), {
-          imageData: imageData,
-          author: author,
+        await addDoc(collection(db, 'dibujos'), {
+          imagenData: imageData,
+          autor: author,
           timestamp: Date.now(),
           likes: 0,
-          category: category || 'Arte',
+          categoria: category || 'Arte',
+          titulo: `Dibujo de ${author}`,
           comments: [],
-          strokes: strokeCount
+          strokes: strokeCount,
+          domain: window.location.hostname
         });
         
         localStorage.setItem('lastDrawingSave', Date.now().toString());
@@ -1577,16 +1826,16 @@
         });
         
         const likes = data.likes || 0;
-        const category = data.category || 'Arte';
+        const category = data.categoria || 'Arte';
         
         gallery.innerHTML += `
-          <div class="col-md-4 col-sm-6 mb-3 drawing-item" data-author="${data.author.toLowerCase()}" data-category="${category}">
+          <div class="col-md-4 col-sm-6 mb-3 drawing-item" data-author="${data.autor.toLowerCase()}" data-category="${category}">
             <div class="drawing-card">
-              <img src="${data.imageData}" class="drawing-img" alt="Dibujo de ${data.author}" loading="lazy">
+              <img src="${data.imagenData}" class="drawing-img" alt="Dibujo de ${data.autor}" loading="lazy">
               <div class="p-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <div>
-                    <strong style="color: var(--primary);">🎨 ${data.author}</strong>
+                    <strong style="color: var(--primary);">🎨 ${data.autor}</strong>
                     <br><small style="color: var(--text-secondary);">${category}</small>
                   </div>
                   <small style="color: var(--text-secondary);">${date}</small>
@@ -1596,9 +1845,9 @@
                     ❤️ ${likes}
                   </button>
                   <div>
-                    <button class="btn btn-sm btn-outline-info me-1" onclick="viewImage('${data.imageData}', '${drawing.id}')">🔍</button>
-                    <button class="btn btn-sm btn-outline-success me-1" onclick="downloadImage('${data.imageData}', '${data.author}')">💾</button>
-                    <button class="btn btn-sm btn-outline-warning" onclick="shareDrawing('${data.imageData}', '${data.author}')">📤</button>
+                    <button class="btn btn-sm btn-outline-info me-1" onclick="viewImage('${data.imagenData}', '${drawing.id}')">🔍</button>
+                    <button class="btn btn-sm btn-outline-success me-1" onclick="downloadImage('${data.imagenData}', '${data.autor}')">💾</button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="shareDrawing('${data.imagenData}', '${data.autor}')">📤</button>
                   </div>
                 </div>
               </div>
@@ -1629,7 +1878,7 @@
           
           const currentLikes = parseInt(btn.dataset.likes) || 0;
           try {
-            await updateDoc(doc(db, 'drawings', docId), {
+            await updateDoc(doc(db, 'dibujos', docId), {
               likes: currentLikes + 1
             });
             localStorage.setItem(`liked_${docId}`, 'true');
@@ -1660,7 +1909,7 @@
     });
     
     // Cargar dibujos en tiempo real
-    const q = query(collection(db, 'drawings'), orderBy('timestamp', 'desc'));
+    const q = query(collection(db, 'dibujos'), orderBy('timestamp', 'desc'));
     onSnapshot(q, (snapshot) => {
       allDrawings = [];
       snapshot.forEach((doc) => {
@@ -1740,14 +1989,14 @@
             <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
               ${top3.map((drawing, index) => `
                 <div style="text-align: center;">
-                  <div style="position: relative; display: inline-block; cursor: pointer; margin-bottom: 10px;" onclick="viewImage('${drawing.data.imageData.replace(/'/g, "\\'")}'', '${drawing.id}')">  
-                    <img src="${drawing.data.imageData}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 15px; border: 4px solid ${index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}; box-shadow: 0 4px 15px rgba(0,0,0,0.3); background: white;">
+                  <div style="position: relative; display: inline-block; cursor: pointer; margin-bottom: 10px;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}')">  
+                    <img src="${drawing.data.imagenData}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 15px; border: 4px solid ${index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}; box-shadow: 0 4px 15px rgba(0,0,0,0.3); background: white;">
                     <div style="position: absolute; top: -8px; right: -8px; background: ${index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}; color: ${index === 0 ? '#000' : '#fff'}; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1em; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
                       ${index + 1}
                     </div>
                   </div>
                   <div style="color: var(--text-primary); font-size: 0.9em; max-width: 100px;">
-                    <strong style="color: var(--primary);">${drawing.data.author}</strong><br>
+                    <strong style="color: var(--primary);">${drawing.data.autor}</strong><br>
                     <span style="color: #ff6b35;">❤️ ${drawing.data.likes || 0}</span>
                   </div>
                 </div>
@@ -1927,7 +2176,7 @@
     
     async function loadComments(drawingId, panel) {
       try {
-        const docRef = doc(db, 'drawings', drawingId);
+        const docRef = doc(db, 'dibujos', drawingId);
         onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
@@ -1980,7 +2229,7 @@
       const moderatedText = moderateContent(commentText);
       
       try {
-        const docRef = doc(db, 'drawings', drawingId);
+        const docRef = doc(db, 'dibujos', drawingId);
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {

@@ -1,28 +1,63 @@
 {
   "proyecto": "FenixLaboratory",
-  "version": "2.0.7",
-  "lastUpdate": "2024-11-02",
+  "version": "2.0.8",
+  "lastUpdate": "2024-12-19",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.0.7",
-    "fecha": "2024-11-02",
+    "numero": "2.0.8",
+    "fecha": "2024-12-19",
     "tipo": "major",
     "estado": "estable",
     "cambios_principales": [
-      "Guestbook completo con herramientas avanzadas de dibujo",
-      "Sistema de likes, comentarios y ranking en tiempo real",
-      "Paginación y filtros para galería de dibujos",
-      "Exportar en múltiples formatos (PNG, JPG, SVG)",
-      "Variables de entorno seguras para Firebase en Netlify",
-      "Reorganización de Comentarios y Guestbook",
-      "Navegación mejorada y estructura más clara"
+      "Optimización móvil completa con touch events",
+      "Canvas responsivo con múltiples tamaños",
+      "Modo pantalla completa para dispositivos móviles",
+      "Configuración Firebase simplificada para GitHub Pages",
+      "Guestbook completamente funcional"
     ]
   },
   
   "updates": [
+    {
+      "version": "2.0.8",
+      "date": "2024-12-19",
+      "title": "📱 Optimización Móvil + Firebase",
+      "type": "major",
+      "features": [
+        "📱 Optimización completa para dispositivos móviles",
+        "🖱️ Touch events mejorados con passive:false",
+        "📱 Prevención de gestos del navegador durante dibujo",
+        "📏 Canvas responsivo con auto-ajuste de tamaño",
+        "🔄 Detección de cambio de orientación móvil",
+        "📱 Modo pantalla completa optimizado para móviles",
+        "🎯 Canvas panorámico para orientación horizontal",
+        "🔥 Firebase configurado para GitHub Pages",
+        "🎨 Múltiples tamaños de canvas: pequeño, mediano, grande, panorámico",
+        "⚡ Configuración simplificada y funcional"
+      ],
+      "fixes": [
+        "🔧 Configuración Firebase simplificada",
+        "📱 Corregidos eventos touch en dispositivos móviles",
+        "🖼️ Canvas se ajusta automáticamente al tamaño de pantalla",
+        "📱 Mejorada experiencia en pantalla completa móvil",
+        "⚡ Optimizado rendimiento en dispositivos de baja potencia",
+        "🎯 Prevención de zoom accidental durante dibujo",
+        "📏 Ajuste automático de canvas según orientación",
+        "🔥 Firebase funcionando perfectamente en GitHub Pages"
+      ],
+      "mobile_improvements": [
+        "📱 Touch events optimizados para dibujo fluido",
+        "🚫 Prevención de scroll/zoom durante dibujo",
+        "📏 Canvas responsivo que se adapta a cualquier pantalla",
+        "🔄 Detección automática de cambio de orientación",
+        "📱 Modo pantalla completa con controles optimizados",
+        "🎨 Tamaños de canvas específicos para móvil",
+        "⚡ Rendimiento optimizado para dispositivos móviles"
+      ]
+    },
     {
       "version": "2.0.7",
       "date": "2024-11-02",
@@ -306,21 +341,22 @@
   ],
   
   "estadisticas_proyecto": {
-    "total_versiones": 8,
-    "versiones_major": 4,
+    "total_versiones": 9,
+    "versiones_major": 5,
     "versiones_minor": 1,
     "versiones_new": 1,
     "versiones_deprecated": 1,
     "versiones_release": 1,
     "tiempo_desarrollo": "4 meses",
-    "lineas_codigo_aprox": "2500+",
+    "lineas_codigo_aprox": "3000+",
     "archivos_principales": 4
   },
   
   "tecnologias_usadas": {
     "frontend": ["HTML5", "CSS3", "JavaScript ES6+"],
     "frameworks": ["Bootstrap 5.3.3"],
-    "apis_externas": ["GitHub REST API v3"],
+    "apis_externas": ["GitHub REST API v3", "Firebase v9"],
+    "backend": ["Firebase Firestore"],
     "hosting": "GitHub Pages",
     "pwa": "Manifest + Service Worker (removido)",
     "fuentes": "Google Fonts (Space Grotesk)",
@@ -328,10 +364,10 @@
   },
   
   "proximas_actualizaciones": {
-    "v2.0.7": {
-      "fecha_estimada": "2025-02-15",
+    "v2.0.9": {
+      "fecha_estimada": "2025-01-15",
       "prioridad": "media",
-      "enfoque": "Optimizaciones y correcciones menores"
+      "enfoque": "Mejoras adicionales de UX y nuevas herramientas de dibujo"
     },
     "v2.1.0": {
       "fecha_estimada": "2025-03-01",
