@@ -710,8 +710,15 @@
     <!-- Canvas para dibujar -->
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <div class="canvas-container text-center">
-          <canvas id="drawCanvas" width="600" height="400"></canvas>
+        <div class="canvas-container text-center" style="position: relative;">
+          <!-- Fondo GIF animado -->
+          <div id="gifBackground" style="position: absolute; top: 10px; left: 10px; width: 600px; height: 400px; z-index: 1; display: none; border-radius: 6px; overflow: hidden;">
+            <img id="gifBackgroundImg" style="width: 100%; height: 100%; object-fit: cover;" alt="Fondo GIF">
+          </div>
+          <!-- Canvas transparente encima -->
+          <canvas id="drawCanvas" width="600" height="400" style="position: relative; z-index: 2; background: transparent;"></canvas>
+          <!-- Contenedor para stickers GIF animados -->
+          <div id="gifStickersContainer" style="position: absolute; top: 10px; left: 10px; width: 600px; height: 400px; z-index: 3; pointer-events: none;"></div>
           <div class="mt-2">
             <small style="color: var(--text-secondary);">💡 Gira tu móvil para más espacio de dibujo</small>
           </div>
@@ -819,7 +826,8 @@
                   <button id="clearBgBtn" class="btn-tool-sm" title="Quitar fondo">❌ Quitar</button>
                 </div>
                 <div class="mt-1" style="font-size: 0.7em; color: var(--text-secondary); text-align: center;">
-                  📸 Sube PNG/JPG/GIF → Click Aplicar → Se ajusta al canvas automáticamente
+                  📸 PNG/JPG en canvas • 🎬 GIF como fondo visual animado<br>
+                  <strong style="color: var(--primary);">✨ Dibuja encima del GIF animado</strong>
                 </div>
               </div>
               
@@ -830,7 +838,8 @@
                   <button id="placeStickerBtn" class="btn-upload" title="Colocar sticker subido" disabled>📌 Colocar</button>
                 </div>
                 <div class="mt-1" style="font-size: 0.7em; color: var(--text-secondary); text-align: center;">
-                  🖼️ Sube PNG/JPG/GIF → Click Colocar → Click canvas | ✋ Mover para arrastrar
+                  🖼️ PNG/JPG en canvas • 🎦 GIF como elemento animado<br>
+                  <strong style="color: var(--primary);">✨ GIFs totalmente animados y arrastrables</strong>
                 </div>
               </div>
             </div>
@@ -1070,7 +1079,7 @@
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc, doc, getDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
     // Configuración Firebase (pública para GitHub Pages)
     const firebaseConfig = {
@@ -1374,8 +1383,31 @@
         selectedSticker.x = Math.max(0, Math.min(canvas.width - (selectedSticker.width || 60), selectedSticker.x));
         selectedSticker.y = Math.max(0, Math.min(canvas.height - (selectedSticker.height || 60), selectedSticker.y));
         
-        // Redibujar con el nuevo sistema de capas
-        redrawCanvasWithLayers();
+        // Redibujar inmediatamente para mejor respuesta visual
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Restaurar dibujo base
+        if (drawingHistory.length > 0) {
+          const img = new Image();
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+            
+            // Dibujar todos los stickers
+            stickers.forEach(sticker => {
+              if (sticker && sticker.image) {
+                ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+              }
+            });
+          };
+          img.src = drawingHistory[drawingHistory.length - 1];
+        } else {
+          // Solo dibujar stickers
+          stickers.forEach(sticker => {
+            if (sticker && sticker.image) {
+              ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+            }
+          });
+        }
         
         // Prevenir scroll en móvil
         if (window.innerWidth <= 768) {
@@ -1875,10 +1907,67 @@
     
     function drawAllStickers() {
       stickers.forEach(sticker => {
-        if (sticker && sticker.image) {
+        if (sticker && sticker.image && !sticker.isGif) {
+          // Solo dibujar stickers estáticos en canvas
           ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
         }
       });
+    }
+    
+    function createGifStickerElement(sticker) {
+      const container = document.getElementById('gifStickersContainer');
+      const gifElement = document.createElement('img');
+      
+      gifElement.src = sticker.image.src;
+      gifElement.style.cssText = `
+        position: absolute;
+        left: ${sticker.x}px;
+        top: ${sticker.y}px;
+        width: ${sticker.width}px;
+        height: ${sticker.height}px;
+        pointer-events: auto;
+        cursor: grab;
+        z-index: 10;
+      `;
+      
+      gifElement.dataset.stickerId = sticker.id;
+      
+      // Hacer el elemento arrastrable
+      gifElement.addEventListener('mousedown', (e) => {
+        if (currentTool === 'stickerMove') {
+          e.preventDefault();
+          startDragGifSticker(gifElement, sticker, e);
+        }
+      });
+      
+      container.appendChild(gifElement);
+    }
+    
+    function startDragGifSticker(element, sticker, e) {
+      const rect = canvas.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left - sticker.x;
+      const offsetY = e.clientY - rect.top - sticker.y;
+      
+      function onMouseMove(e) {
+        const newX = e.clientX - rect.left - offsetX;
+        const newY = e.clientY - rect.top - offsetY;
+        
+        // Mantener dentro del canvas
+        sticker.x = Math.max(0, Math.min(canvas.width - sticker.width, newX));
+        sticker.y = Math.max(0, Math.min(canvas.height - sticker.height, newY));
+        
+        element.style.left = sticker.x + 'px';
+        element.style.top = sticker.y + 'px';
+      }
+      
+      function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        saveState();
+      }
+      
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
     }
     
     function redrawWithStickers() {
@@ -1905,26 +1994,54 @@
     
     // Sistema de fondos con imágenes
     let currentBackgroundImage = null;
+    let isBackgroundGif = false;
     
     function setBackgroundImage(image) {
-      // Guardar el dibujo actual
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = canvas.width;
-      tempCanvas.height = canvas.height;
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.drawImage(canvas, 0, 0);
-      
-      // Limpiar canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Dibujar imagen de fondo ajustada al canvas
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-      
-      // Restaurar el dibujo encima del fondo
-      ctx.drawImage(tempCanvas, 0, 0);
-      
       currentBackgroundImage = image;
+      
+      // Si es GIF, usar fondo visual animado
+      if (isBackgroundGif) {
+        setVisualGifBackground(image.src);
+      } else {
+        // Para imágenes estáticas, dibujar en canvas
+        hideVisualGifBackground();
+        
+        // Guardar el dibujo actual
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(canvas, 0, 0);
+        
+        // Limpiar canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Dibujar imagen de fondo ajustada al canvas
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        
+        
+        // Restaurar el dibujo encima del fondo
+        ctx.drawImage(tempCanvas, 0, 0);
+      }
+      
       saveState();
+    }
+    
+    function setVisualGifBackground(gifSrc) {
+      const gifBackground = document.getElementById('gifBackground');
+      const gifImg = document.getElementById('gifBackgroundImg');
+      
+      gifImg.src = gifSrc;
+      gifBackground.style.display = 'block';
+      
+      // Hacer el canvas semi-transparente para que se vea el GIF
+      canvas.style.background = 'rgba(255, 255, 255, 0.1)';
+    }
+    
+    function hideVisualGifBackground() {
+      const gifBackground = document.getElementById('gifBackground');
+      gifBackground.style.display = 'none';
+      canvas.style.background = 'white';
     }
     
     function clearBackground() {
@@ -1943,6 +2060,7 @@
       ctx.drawImage(tempCanvas, 0, 0);
       
       currentBackgroundImage = null;
+      isBackgroundGif = false;
       saveState();
     }
     
@@ -1950,9 +2068,9 @@
     document.getElementById('bgUpload').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/gif')) {
-        // Verificar tamaño de archivo (máx 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          alert('🚫 Archivo muy grande. Máximo 5MB permitido.');
+        // Verificar tamaño de archivo (máx 3MB para evitar problemas)
+        if (file.size > 3 * 1024 * 1024) {
+          alert('🚫 Archivo muy grande. Máximo 3MB permitido.');
           e.target.value = '';
           return;
         }
@@ -1961,19 +2079,30 @@
         reader.onload = async (event) => {
           const imageData = event.target.result;
           
-          // Moderar contenido de imagen
-          const flags = await analyzeImageContent(imageData);
-          if (flags.excessiveRed || flags.suspiciousContent) {
-            alert('🚫 Imagen rechazada: Contenido potencialmente inapropiado detectado');
-            e.target.value = '';
-            return;
+          // Solo moderar si no es GIF
+          if (file.type !== 'image/gif') {
+            const flags = await analyzeImageContent(imageData);
+            if (flags.excessiveRed || flags.suspiciousContent) {
+              alert('🚫 Imagen rechazada: Contenido potencialmente inapropiado detectado');
+              e.target.value = '';
+              return;
+            }
           }
           
           const img = new Image();
           img.onload = () => {
             currentBackgroundImage = img;
             document.getElementById('setBgBtn').disabled = false;
-            document.getElementById('setBgBtn').innerHTML = '🖼️ Listo';
+            
+            if (file.type === 'image/gif') {
+              isBackgroundGif = true;
+              document.getElementById('setBgBtn').innerHTML = '🎬 GIF Listo';
+              document.getElementById('setBgBtn').style.background = '#28a745';
+              document.getElementById('setBgBtn').style.color = 'white';
+            } else {
+              isBackgroundGif = false;
+              document.getElementById('setBgBtn').innerHTML = '🖼️ Listo';
+            }
           };
           img.src = imageData;
         };
@@ -1984,10 +2113,20 @@
     document.getElementById('setBgBtn').addEventListener('click', () => {
       if (currentBackgroundImage) {
         setBackgroundImage(currentBackgroundImage);
-        document.getElementById('setBgBtn').innerHTML = '✅ Aplicado';
+        
+        if (isBackgroundGif) {
+          document.getElementById('setBgBtn').innerHTML = '🎬 GIF Aplicado';
+          document.getElementById('setBgBtn').style.background = '#28a745';
+          document.getElementById('setBgBtn').style.color = 'white';
+        } else {
+          document.getElementById('setBgBtn').innerHTML = '✅ Aplicado';
+        }
+        
         setTimeout(() => {
           document.getElementById('setBgBtn').innerHTML = '🖼️ Aplicar';
-        }, 2000);
+          document.getElementById('setBgBtn').style.background = '';
+          document.getElementById('setBgBtn').style.color = '';
+        }, 3000);
       }
     });
     
@@ -2013,19 +2152,33 @@
         reader.onload = async (event) => {
           const imageData = event.target.result;
           
-          // Moderar contenido de sticker
-          const flags = await analyzeImageContent(imageData);
-          if (flags.excessiveRed || flags.suspiciousContent) {
-            alert('🚫 Sticker rechazado: Contenido potencialmente inapropiado detectado');
-            e.target.value = '';
-            return;
+          // Solo moderar si no es GIF (los GIFs son más complejos de analizar)
+          if (file.type !== 'image/gif') {
+            const flags = await analyzeImageContent(imageData);
+            if (flags.excessiveRed || flags.suspiciousContent) {
+              alert('🚫 Sticker rechazado: Contenido potencialmente inapropiado detectado');
+              e.target.value = '';
+              return;
+            }
           }
           
           const img = new Image();
           img.onload = () => {
             currentStickerImage = img;
-            document.getElementById('placeStickerBtn').disabled = false;
-            document.getElementById('placeStickerBtn').innerHTML = '📌 Listo';
+            const btn = document.getElementById('placeStickerBtn');
+            btn.disabled = false;
+            
+            // Mostrar preview si es GIF
+            if (file.type === 'image/gif') {
+              btn.innerHTML = '📌 GIF Listo';
+              btn.style.background = '#28a745';
+              btn.style.color = 'white';
+              console.log('GIF sticker cargado:', img.src.substring(0, 50) + '...');
+            } else {
+              btn.innerHTML = '📌 Listo';
+              btn.style.background = '';
+              btn.style.color = '';
+            }
           };
           img.src = imageData;
         };
@@ -2034,8 +2187,12 @@
     });
     
     document.getElementById('placeStickerBtn').addEventListener('click', () => {
-      if (!currentStickerImage) return;
+      if (!currentStickerImage) {
+        console.log('No hay imagen de sticker cargada');
+        return;
+      }
       
+      console.log('Botón de sticker clickeado, imagen:', currentStickerImage);
       canvas.style.cursor = 'copy';
       
       const placeSticker = (e) => {
@@ -2045,23 +2202,29 @@
         const x = (e.clientX - rect.left) * scaleX;
         const y = (e.clientY - rect.top) * scaleY;
         
-        // Crear sticker
+        console.log('Colocando sticker en:', x, y);
+        
+        // Crear sticker directamente
         const sticker = {
           id: Date.now(),
           image: currentStickerImage,
-          x: x,
-          y: y,
+          x: x - 30, // Centrar
+          y: y - 30, // Centrar
           width: 60,
-          height: 60
+          height: 60,
+          isGif: currentStickerImage.src && currentStickerImage.src.includes('data:image/gif')
         };
         
         stickers.push(sticker);
         console.log('Sticker añadido:', sticker);
-        console.log('Total stickers:', stickers.length);
         
-        // NO dibujar directamente en el canvas
-        // En su lugar, redibujar todo con capas
-        redrawCanvasWithLayers();
+        // Si es GIF, crear elemento HTML animado
+        if (sticker.isGif) {
+          createGifStickerElement(sticker);
+        } else {
+          // Para imágenes estáticas, dibujar en canvas
+          ctx.drawImage(currentStickerImage, sticker.x, sticker.y, sticker.width, sticker.height);
+        }
         
         canvas.style.cursor = 'crosshair';
         canvas.removeEventListener('click', placeSticker);
@@ -2073,28 +2236,28 @@
     
     // Función para redibujar canvas con capas separadas
     function redrawCanvasWithLayers() {
-      // Guardar el estado actual del canvas (sin stickers)
-      const baseCanvas = document.createElement('canvas');
-      baseCanvas.width = canvas.width;
-      baseCanvas.height = canvas.height;
-      const baseCtx = baseCanvas.getContext('2d');
+      // Limpiar canvas principal
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Copiar solo el dibujo base (restaurar desde historial)
+      // Restaurar dibujo base desde historial
       if (drawingHistory.length > 0) {
         const img = new Image();
         img.onload = () => {
-          baseCtx.drawImage(img, 0, 0);
-          
-          // Limpiar canvas principal
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
-          // Redibujar base
-          ctx.drawImage(baseCanvas, 0, 0);
+          ctx.drawImage(img, 0, 0);
           
           // Redibujar todos los stickers encima
           stickers.forEach(sticker => {
             if (sticker && sticker.image) {
-              ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width, sticker.height);
+              // Para GIFs, crear nueva instancia para mantener animación
+              if (sticker.isGif && sticker.image.src) {
+                const gifImg = new Image();
+                gifImg.onload = () => {
+                  ctx.drawImage(gifImg, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+                };
+                gifImg.src = sticker.image.src;
+              } else {
+                ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+              }
             }
           });
         };
@@ -2103,7 +2266,15 @@
         // Si no hay historial, solo dibujar stickers
         stickers.forEach(sticker => {
           if (sticker && sticker.image) {
-            ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width, sticker.height);
+            if (sticker.isGif && sticker.image.src) {
+              const gifImg = new Image();
+              gifImg.onload = () => {
+                ctx.drawImage(gifImg, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+              };
+              gifImg.src = sticker.image.src;
+            } else {
+              ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+            }
           }
         });
       }
@@ -2204,8 +2375,26 @@
         
         ctx.drawImage(img, 0, 0);
         
-        // Redibujar stickers si existen
-        drawAllStickers();
+        // Restaurar fondo GIF si existe
+        if (isBackgroundGif && currentBackgroundImage) {
+          startBackgroundGifAnimation();
+        }
+        
+        // Redibujar stickers si existen (con soporte para GIFs)
+        stickers.forEach(sticker => {
+          if (sticker && sticker.image) {
+            if (sticker.isGif && sticker.image.src) {
+              // Para GIFs, crear nueva instancia
+              const gifImg = new Image();
+              gifImg.onload = () => {
+                ctx.drawImage(gifImg, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+              };
+              gifImg.src = sticker.image.src;
+            } else {
+              ctx.drawImage(sticker.image, sticker.x, sticker.y, sticker.width || 60, sticker.height || 60);
+            }
+          }
+        });
       };
       img.src = drawingHistory[historyStep];
     }
@@ -2214,6 +2403,11 @@
       if (confirm('¿Limpiar todo el dibujo?')) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         stickers = []; // Limpiar stickers también
+        
+        // Limpiar stickers GIF del DOM
+        const gifContainer = document.getElementById('gifStickersContainer');
+        gifContainer.innerHTML = '';
+        
         console.log('Canvas y stickers limpiados');
         markAsSaved();
         saveState();
@@ -2301,6 +2495,111 @@
       return flags;
     }
     
+    // Función para comprimir imágenes
+    function compressImage(dataUrl, maxSizeKB = 800) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Calcular nuevo tamaño manteniendo proporción
+          let { width, height } = img;
+          const maxDimension = 800;
+          
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = (height * maxDimension) / width;
+              width = maxDimension;
+            } else {
+              width = (width * maxDimension) / height;
+              height = maxDimension;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Dibujar imagen redimensionada
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Comprimir con calidad variable (empezar con mejor calidad para GIFs)
+          let quality = 0.85;
+          let compressed = canvas.toDataURL('image/jpeg', quality);
+          
+          // Reducir calidad gradualmente hasta alcanzar el tamaño objetivo
+          while (compressed.length > maxSizeKB * 1024 * 1.37 && quality > 0.2) {
+            quality -= 0.05; // Reducción más gradual
+            compressed = canvas.toDataURL('image/jpeg', quality);
+          }
+          
+          resolve(compressed);
+        };
+        img.src = dataUrl;
+      });
+    }
+    
+    // Función para comprimir GIFs manteniendo animación usando gif.js
+    async function compressGifForFirebase(gifDataUrl) {
+      if (!gifDataUrl) return null;
+      
+      try {
+        // Convertir dataURL a blob
+        const response = await fetch(gifDataUrl);
+        const blob = await response.blob();
+        
+        // Si el GIF es pequeño, devolverlo sin comprimir
+        if (blob.size < 800000) {
+          return gifDataUrl;
+        }
+        
+        // Usar gif.js para comprimir manteniendo animación
+        return new Promise((resolve) => {
+          const gif = new GIF({
+            workers: 2,
+            quality: 20, // Baja calidad para comprimir más
+            width: 200,  // Reducir tamaño
+            height: 150,
+            workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+          });
+          
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 200;
+            canvas.height = 150;
+            
+            // Dibujar frame único (para GIFs simples)
+            ctx.drawImage(img, 0, 0, 200, 150);
+            gif.addFrame(canvas, { delay: 200 });
+            
+            gif.on('finished', (compressedBlob) => {
+              const reader = new FileReader();
+              reader.onload = () => {
+                const compressed = reader.result;
+                console.log(`GIF comprimido: ${gifDataUrl.length} → ${compressed.length} bytes`);
+                resolve(compressed);
+              };
+              reader.readAsDataURL(compressedBlob);
+            });
+            
+            gif.render();
+          };
+          
+          img.onerror = () => {
+            console.log('Error cargando GIF, usando fallback');
+            resolve(gifDataUrl); // Devolver original si falla
+          };
+          
+          img.src = gifDataUrl;
+        });
+      } catch (error) {
+        console.error('Error comprimiendo GIF:', error);
+        return gifDataUrl;
+      }
+    }
+    
     // Guardar dibujo con moderación
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const saveBtn = document.getElementById('saveBtn');
@@ -2323,9 +2622,15 @@
       saveText.style.display = 'none';
       saveLoader.style.display = 'inline';
       
-      const imageData = canvas.toDataURL();
+      let imageData = canvas.toDataURL();
       const author = document.getElementById('authorName').value || 'Anónimo';
       const category = document.getElementById('categorySelect').value;
+      
+      // Comprimir imagen si es muy grande
+      if (imageData.length > 500000) { // Si es mayor a ~500KB
+        console.log('Comprimiendo imagen...');
+        imageData = await compressImage(imageData, 600);
+      }
       
       // Moderación de contenido
       const imageFlags = await analyzeImageContent(imageData);
@@ -2368,8 +2673,21 @@
           likes: 0,
           comments: [],
           strokes: strokeCount || 0,
-          // Preservar GIF de fondo si existe
-          backgroundGif: currentBackgroundImage && currentBackgroundImage.src && currentBackgroundImage.src.includes('data:image/gif') ? currentBackgroundImage.src : null,
+          // Comprimir GIF de fondo si es muy grande (mantener animación pero reducir tamaño)
+          backgroundGif: isBackgroundGif && currentBackgroundImage ? 
+            (currentBackgroundImage.src.length > 900000 ? 
+              await compressGifForFirebase(currentBackgroundImage.src) : 
+              currentBackgroundImage.src) : null,
+          // Guardar stickers GIF animados (estructura simplificada)
+          gifStickers: stickers.filter(s => s && s.isGif && s.image && s.image.src).map(s => {
+            return {
+              src: String(s.image.src),
+              x: Number(s.x) || 0,
+              y: Number(s.y) || 0,
+              width: Number(s.width) || 60,
+              height: Number(s.height) || 60
+            };
+          }),
           moderation: {
             needsReview: imageFlags.needsReview,
             autoApproved: !imageFlags.needsReview,
@@ -2392,6 +2710,9 @@
         document.getElementById('categorySelect').value = 'Arte';
         strokeCount = 0;
         stickers = []; // Limpiar stickers después de guardar
+        // Limpiar stickers GIF del DOM
+        const gifContainer = document.getElementById('gifStickersContainer');
+        gifContainer.innerHTML = '';
         hasUnsavedWork = false;
         updateUnsavedIndicator();
         saveState();
@@ -2497,10 +2818,13 @@
           <div class="col-md-4 col-sm-6 mb-3 drawing-item" data-author="${data.autor.toLowerCase()}" data-category="${category}">
             <div class="drawing-card ${rankClass}${cardExtraClass}" style="position: relative;">
               ${pinnedIndicator}
-              ${data.backgroundGif ? `
+              ${data.backgroundGif || data.gifStickers ? `
                 <div style="position: relative; width: 100%; height: 200px; background: white; border-radius: 4px; overflow: hidden;">
-                  <img src="${data.backgroundGif}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 1;" alt="Fondo GIF">
-                  <img src="${data.imagenData}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 2; mix-blend-mode: multiply;" alt="Dibujo de ${data.autor}" loading="lazy">
+                  ${data.backgroundGif ? `<img src="${data.backgroundGif}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" alt="Fondo GIF animado" loading="lazy">` : ''}
+                  <img src="${data.imagenData}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${data.backgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" alt="Dibujo de ${data.autor}" loading="lazy">
+                  ${data.gifStickers ? data.gifStickers.map(sticker => `
+                    <img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3; image-rendering: auto;" alt="Sticker GIF" loading="lazy">
+                  `).join('') : ''}
                 </div>
               ` : `
                 <img src="${data.imagenData}" class="drawing-img" alt="Dibujo de ${data.autor}" loading="lazy">
@@ -2519,14 +2843,17 @@
                     <button class="btn btn-sm btn-outline-danger like-btn" data-id="${drawing.id}" data-likes="${likes}">
                       ❤️ ${likes}
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="viewImage('${data.imagenData}', '${drawing.id}')" title="Ver comentarios">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="viewImage('${data.imagenData}', '${drawing.id}', '${data.backgroundGif || ''}', ${data.gifStickers ? JSON.stringify(data.gifStickers).replace(/"/g, '&quot;') : 'null'})" title="Ver comentarios">
                       💬 ${data.comments?.length || 0}
                     </button>
                   </div>
-                  <div>
-                    <button class="btn btn-sm btn-outline-info me-1" onclick="viewImage('${data.imagenData}', '${drawing.id}')">🔍</button>
-                    <button class="btn btn-sm btn-outline-success me-1" onclick="downloadImage('${data.imagenData}', '${data.autor}')">💾</button>
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-info" onclick="viewImage('${data.imagenData}', '${drawing.id}', '${data.backgroundGif || ''}', ${data.gifStickers ? JSON.stringify(data.gifStickers).replace(/"/g, '&quot;') : 'null'})">🔍</button>
+                    <button class="btn btn-sm btn-outline-success" onclick="downloadImage('${data.imagenData}', '${data.autor}')">💾</button>
                     <button class="btn btn-sm btn-outline-warning" onclick="shareDrawing('${data.imagenData}', '${data.autor}')">📤</button>
+                    <div class="drawing-admin-controls" id="drawing-admin-${drawing.id}" style="display: ${isAdminMode ? 'inline-flex' : 'none'};">
+                      <button class="btn btn-sm btn-danger" onclick="deleteDrawing('${drawing.id}')" title="Eliminar dibujo">🗑️</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2811,7 +3138,7 @@
       
       return `
         <div style="text-align: center; margin-bottom: 10px;">
-          <div style="position: relative; display: inline-block; cursor: pointer; margin-bottom: 10px;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}')">
+          <div style="position: relative; display: inline-block; cursor: pointer; margin-bottom: 10px;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', '${drawing.data.backgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}')">
             <img src="${drawing.data.imagenData}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 15px; border: 4px solid ${color}; box-shadow: 0 4px 15px rgba(0,0,0,0.3); background: white;">
             <div style="position: absolute; top: -8px; right: -8px; background: ${color}; color: ${index === 0 ? '#000' : '#fff'}; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1em; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
               ${index + 1}
@@ -2979,7 +3306,7 @@
       }
     };
     
-    window.viewImage = function(imageData, drawingId) {
+    window.viewImage = function(imageData, drawingId, backgroundGif = '', gifStickers = null) {
       const modal = document.createElement('div');
       modal.style.cssText = `
         position: fixed !important; 
@@ -3005,15 +3332,61 @@
         overflow: hidden !important;
       `;
       
-      const img = document.createElement('img');
-      img.src = imageData;
-      img.style.cssText = `
+      // Crear contenedor de imagen con fondo GIF si existe
+      const imageContainer = document.createElement('div');
+      imageContainer.style.cssText = `
+        position: relative !important;
         max-width: 60vw !important; 
         max-height: 95vh !important; 
         border-radius: 15px 0 0 15px !important;
-        object-fit: contain !important;
         background: white !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
       `;
+      
+      // Si hay fondo GIF, agregarlo (MANTENER ANIMACIÓN COMPLETA)
+      if (backgroundGif && backgroundGif !== 'null' && backgroundGif !== '') {
+        console.log('Mostrando GIF animado en modal:', backgroundGif.substring(0, 50) + '...');
+        const bgImg = document.createElement('img');
+        bgImg.src = backgroundGif; // GIF original con animación completa
+        bgImg.style.cssText = `
+          position: absolute !important;
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: contain !important;
+          z-index: 1 !important;
+          image-rendering: auto !important;
+          image-rendering: -webkit-optimize-contrast !important;
+        `;
+        
+        // Asegurar que el GIF se cargue correctamente
+        bgImg.onload = () => {
+          console.log('GIF de fondo cargado exitosamente en modal');
+        };
+        
+        bgImg.onerror = () => {
+          console.error('Error cargando GIF de fondo en modal');
+        };
+        
+        imageContainer.appendChild(bgImg);
+      }
+      
+      const img = document.createElement('img');
+      img.src = imageData; // Este es el dibujo (puede estar comprimido)
+      img.style.cssText = `
+        position: relative !important;
+        max-width: 100% !important; 
+        max-height: 100% !important; 
+        object-fit: contain !important;
+        z-index: 2 !important;
+        ${backgroundGif && backgroundGif !== 'null' && backgroundGif !== '' ? 'mix-blend-mode: multiply !important;' : ''}
+      `;
+      
+      imageContainer.appendChild(img);
+      
+      // Cargar stickers GIF desde Firebase
+      loadGifStickersInModal(drawingId, imageContainer);
       
       const commentsPanel = document.createElement('div');
       commentsPanel.style.cssText = `
@@ -3046,7 +3419,7 @@
       // Cargar comentarios
       loadComments(drawingId, commentsPanel);
       
-      container.appendChild(img);
+      container.appendChild(imageContainer);
       container.appendChild(commentsPanel);
       modal.appendChild(container);
       modal.appendChild(closeBtn);
@@ -3066,33 +3439,65 @@
       });
     };
     
+    // Función para cargar stickers GIF en el modal
+    async function loadGifStickersInModal(drawingId, container) {
+      try {
+        const docRef = doc(db, 'dibujos', drawingId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const gifStickers = data.gifStickers || [];
+          
+          // Crear stickers GIF animados en el modal
+          gifStickers.forEach(sticker => {
+            const stickerImg = document.createElement('img');
+            stickerImg.src = sticker.src;
+            stickerImg.style.cssText = `
+              position: absolute !important;
+              left: ${(sticker.x / 600) * 100}% !important;
+              top: ${(sticker.y / 400) * 100}% !important;
+              width: ${(sticker.width / 600) * 100}% !important;
+              height: ${(sticker.height / 400) * 100}% !important;
+              z-index: 3 !important;
+              image-rendering: auto !important;
+              pointer-events: none !important;
+            `;
+            container.appendChild(stickerImg);
+          });
+        }
+      } catch (error) {
+        console.error('Error cargando stickers GIF:', error);
+      }
+    }
+    
     async function loadComments(drawingId, panel) {
       try {
         const docRef = doc(db, 'dibujos', drawingId);
-        onSnapshot(docRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            const comments = data.comments || [];
-            
-            panel.innerHTML = `
-              <h5 style="color: var(--primary); margin-bottom: 15px;">💬 Comentarios (${comments.length})</h5>
-              <div id="commentsList" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px;">
-                ${comments.map(comment => `
-                  <div style="background: var(--bg-dark); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
-                    <strong style="color: var(--primary); font-size: 0.9em;">${comment.author}</strong>
-                    <p style="color: var(--text-primary); margin: 5px 0 0 0; font-size: 0.9em;">${comment.text}</p>
-                    <small style="color: var(--text-secondary);">${new Date(comment.timestamp).toLocaleString('es-ES')}</small>
-                  </div>
-                `).join('')}
-              </div>
-              <div style="border-top: 1px solid var(--primary); padding-top: 15px;">
-                <input type="text" id="commentAuthor" placeholder="Nombre de usuario (opcional)" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 8px; font-size: 0.9em; user-select: text !important; -webkit-user-select: text !important;">
-                <input type="text" id="commentInput" placeholder="Escribe un comentario..." style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 10px; user-select: text !important; -webkit-user-select: text !important;" onkeypress="if(event.key==='Enter') addComment('${drawingId}')">
-                <button id="commentBtn-${drawingId}" onclick="addComment('${drawingId}')" style="width: 100%; padding: 8px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">➤ Comentar</button>
-              </div>
-            `;
-          }
-        });
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const comments = data.comments || [];
+          
+          panel.innerHTML = `
+            <h5 style="color: var(--primary); margin-bottom: 15px;">💬 Comentarios (${comments.length})</h5>
+            <div id="commentsList" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px;">
+              ${comments.map(comment => `
+                <div style="background: var(--bg-dark); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                  <strong style="color: var(--primary); font-size: 0.9em;">${comment.author}</strong>
+                  <p style="color: var(--text-primary); margin: 5px 0 0 0; font-size: 0.9em;">${comment.text}</p>
+                  <small style="color: var(--text-secondary);">${new Date(comment.timestamp).toLocaleString('es-ES')}</small>
+                </div>
+              `).join('')}
+            </div>
+            <div style="border-top: 1px solid var(--primary); padding-top: 15px;">
+              <input type="text" id="commentAuthor" placeholder="Nombre de usuario (opcional)" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 8px; font-size: 0.9em; user-select: text !important; -webkit-user-select: text !important;">
+              <input type="text" id="commentInput" placeholder="Escribe un comentario..." style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 10px; user-select: text !important; -webkit-user-select: text !important;" onkeypress="if(event.key==='Enter') addComment('${drawingId}')">
+              <button id="commentBtn-${drawingId}" onclick="addComment('${drawingId}')" style="width: 100%; padding: 8px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">➤ Comentar</button>
+            </div>
+          `;
+        }
       } catch (error) {
         console.error('Error cargando comentarios:', error);
       }
@@ -3183,6 +3588,12 @@
           });
           input.value = '';
           authorInput.value = '';
+          
+          // Recargar comentarios para mostrar el nuevo
+          const panel = document.querySelector('.modal div');
+          if (panel) {
+            loadComments(drawingId, panel);
+          }
         }
       } catch (error) {
         console.error('Error al agregar comentario:', error);
@@ -3395,7 +3806,7 @@
                   <button class="btn btn-sm btn-outline-secondary" onclick="viewSuggestionComments('${suggestion.id}')" title="Ver comentarios">
                     💬 ${data.comments?.length || 0}
                   </button>
-                  <div class="owner-controls" id="owner-${suggestion.id}" style="display: none; gap: 2px;">
+                  <div class="owner-controls" id="owner-${suggestion.id}" style="display: ${isAdminMode ? 'flex' : 'none'}; gap: 2px;">
                     <button class="btn btn-sm btn-success" onclick="approveSuggestion('${suggestion.id}')" title="Aprobar">✓</button>
                     <button class="btn btn-sm btn-warning" onclick="rejectSuggestion('${suggestion.id}')" title="Rechazar">✗</button>
                     <button class="btn btn-sm btn-info" onclick="markInProgress('${suggestion.id}')" title="En progreso">🔄</button>
@@ -3555,8 +3966,13 @@
         document.getElementById('adminBtn').innerHTML = '🔑 Admin';
         document.getElementById('adminBtn').className = 'btn btn-sm btn-outline-warning';
         
-        // Ocultar controles de admin
+        // Ocultar controles de admin para sugerencias
         document.querySelectorAll('.owner-controls').forEach(control => {
+          control.style.display = 'none';
+        });
+        
+        // Ocultar controles de admin para dibujos
+        document.querySelectorAll('.drawing-admin-controls').forEach(control => {
           control.style.display = 'none';
         });
         
@@ -3582,10 +3998,25 @@
           document.getElementById('adminBtn').innerHTML = '🚫 Salir Admin';
           document.getElementById('adminBtn').className = 'btn btn-sm btn-danger';
           
-          // Mostrar controles de admin
+          // Mostrar controles de admin para sugerencias
           document.querySelectorAll('.owner-controls').forEach(control => {
             control.style.display = 'flex';
           });
+          
+          // Mostrar controles de admin para dibujos
+          document.querySelectorAll('.drawing-admin-controls').forEach(control => {
+            control.style.display = 'inline-flex';
+          });
+          
+          // Asegurar que los botones se muestren después de cargar contenido
+          setTimeout(() => {
+            document.querySelectorAll('.drawing-admin-controls').forEach(control => {
+              control.style.display = 'inline-flex';
+            });
+            document.querySelectorAll('.owner-controls').forEach(control => {
+              control.style.display = 'flex';
+            });
+          }, 1000);
           
           alert('✓ Modo admin activado');
           
@@ -3613,9 +4044,9 @@
         await updateDoc(doc(db, 'sugerencias', suggestionId), {
           status: 'Completado',
           reviewedBy: 'Admin',
-          reviewedAt: Date.now(),
-          adminAction: true
+          reviewedAt: Date.now()
         });
+        
         alert('✓ Sugerencia aprobada');
       } catch (error) {
         try {
@@ -3625,6 +4056,7 @@
             reviewedAt: Date.now(),
             adminAction: true
           });
+          
           alert('✓ Sugerencia aprobada');
         } catch (e) {
           alert('❌ Error al aprobar sugerencia');
@@ -3646,6 +4078,7 @@
           reviewedBy: 'Admin',
           reviewedAt: Date.now()
         });
+        
         alert('✗ Sugerencia rechazada');
       } catch (error) {
         try {
@@ -3654,6 +4087,7 @@
             reviewedBy: 'Admin',
             reviewedAt: Date.now()
           });
+          
           alert('✗ Sugerencia rechazada');
         } catch (e) {
           alert('❌ Error al rechazar sugerencia');
@@ -3669,13 +4103,13 @@
       
       if (!confirm('🔄 ¿Marcar como en progreso?')) return;
       
-      
       try {
         await updateDoc(doc(db, 'sugerencias', suggestionId), {
           status: 'En Progreso',
           reviewedBy: 'Admin',
           reviewedAt: Date.now()
         });
+        
         alert('🔄 Marcado como en progreso');
       } catch (error) {
         try {
@@ -3684,9 +4118,41 @@
             reviewedBy: 'Admin',
             reviewedAt: Date.now()
           });
+          
           alert('🔄 Marcado como en progreso');
         } catch (e) {
           alert('❌ Error al actualizar estado');
+        }
+      }
+    };
+    
+    // Función para eliminar dibujos (solo admin)
+    window.deleteDrawing = async function(drawingId) {
+      if (!isAdminMode) {
+        alert('❌ Necesitas estar en modo admin');
+        return;
+      }
+      
+      if (!confirm('🗑️ ¿ELIMINAR este dibujo permanentemente?\n\n⚠️ Esta acción NO se puede deshacer')) return;
+      
+      try {
+        // Eliminar directamente (las reglas ya validan el dominio)
+        await deleteDoc(doc(db, 'dibujos', drawingId));
+        
+        // Remover elemento del DOM
+        const drawingElement = document.querySelector(`[data-id="${drawingId}"]`)?.closest('.drawing-item');
+        if (drawingElement) {
+          drawingElement.remove();
+        }
+        
+        alert('🗑️ Dibujo eliminado exitosamente');
+        
+      } catch (error) {
+        console.error('Error al eliminar:', error);
+        if (error.code === 'permission-denied') {
+          alert('❌ No tienes permisos para eliminar dibujos');
+        } else {
+          alert('❌ Error al eliminar dibujo');
         }
       }
     };
