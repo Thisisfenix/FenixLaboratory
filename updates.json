@@ -1,28 +1,85 @@
 {
   "proyecto": "FenixLaboratory",
-  "version": "2.0.6",
-  "lastUpdate": "2025-01-27",
+  "version": "2.0.7",
+  "lastUpdate": "2024-11-02",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.0.6",
-    "fecha": "2025-01-27",
+    "numero": "2.0.7",
+    "fecha": "2024-11-02",
     "tipo": "major",
     "estado": "estable",
     "cambios_principales": [
-      "Sistema de gamificación avanzada completo",
-      "PWA con sincronización entre dispositivos",
-      "Soporte completo para imágenes en credits.json",
-      "Interfaz limpia y optimizada"
+      "Guestbook completo con herramientas avanzadas de dibujo",
+      "Sistema de likes, comentarios y ranking en tiempo real",
+      "Paginación y filtros para galería de dibujos",
+      "Exportar en múltiples formatos (PNG, JPG, SVG)",
+      "Variables de entorno seguras para Firebase en Netlify",
+      "Reorganización de Comentarios y Guestbook",
+      "Navegación mejorada y estructura más clara"
     ]
   },
   
   "updates": [
     {
+      "version": "2.0.7",
+      "date": "2024-11-02",
+      "title": "🎨 Guestbook Completo + Reorganización",
+      "type": "major",
+      "features": [
+        "🖌️ Herramientas de dibujo: Pincel, Spray, Formas, Texto, Borrador",
+        "📦 Selección de área con copiar/pegar funcional",
+        "🎨 Paleta de colores + color personalizado",
+        "📱 3 tamaños de canvas: Pequeño, Mediano, Grande",
+        "😂 Emojis como stickers clickeables",
+        "🖼️ Subir PNG como fondo o sticker",
+        "🌫️ Filtros: Blur, Pixel, Vintage",
+        "🔍 Zoom y herramientas de navegación",
+        "↶ Deshacer/Rehacer con historial completo",
+        "❤️ Sistema de likes (1 por persona) con localStorage",
+        "💬 Comentarios en tiempo real con Firebase",
+        "🏆 Top 3 ranking de dibujos más populares",
+        "🔍 Búsqueda por autor y filtros por categoría",
+        "📄 Paginación (12 dibujos por página)",
+        "💾 Exportar en PNG, JPG y SVG",
+        "📤 Compartir dibujos con Web Share API",
+        "⏰ Cooldown de 10 minutos anti-spam",
+        "🎭 Adaptación automática a temas del index.html",
+        "✨ Animaciones: Sparkles al dibujar, confetti al guardar",
+        "📱 Optimizado para móvil con touch events",
+        "🔒 Variables de entorno seguras en Netlify",
+        "📝 Sección de Comentarios separada con Giscus integrado",
+        "🎨 Sección de Guestbook independiente con enlace a guestbook.html",
+        "🧭 Navegación mejorada en navbar para ambas secciones",
+        "📱 Estructura más clara y intuitiva para usuarios",
+        "🎯 Cada sección tiene su propósito específico bien definido",
+        "✨ Tarjeta explicativa en sección Guestbook con características",
+        "🔗 Enlace directo al guestbook con herramientas de dibujo"
+      ],
+      "fixes": [
+        "🔧 Formas geométricas limitadas dentro del canvas",
+        "🛡️ Filtro de moderación básica para comentarios",
+        "📱 Prevención de salida accidental con trabajo sin guardar",
+        "🔄 Corrección de error de share múltiple simultáneo",
+        "🎯 Colocación mejorada de stickers sin dibujar",
+        "⚡ Paginación eficiente para grandes cantidades de dibujos",
+        "🔐 API keys protegidas con variables de entorno",
+        "📊 Filtros de búsqueda funcionando con paginación",
+        "🎨 Sincronización de temas entre páginas",
+        "📱 Touch events mejorados para dispositivos móviles",
+        "🔧 Corregido error TypeError en scrollIntoView con elementos null",
+        "🛡️ Agregadas verificaciones de existencia de elementos antes de scroll",
+        "⚡ Implementado mecanismo de fallback para scroll manual",
+        "🧹 Función safeScrollIntoView() mejorada con manejo de errores",
+        "📱 Mejor compatibilidad con diferentes navegadores y dispositivos",
+        "🔄 Navegación más robusta entre secciones"
+      ]
+    },
+    {
       "version": "2.0.6",
-      "date": "2025-01-27",
+      "date": "2024-11-02",
       "title": "🎮 Gamificación Avanzada + Limpieza de Interfaz",
       "type": "major",
       "features": [
@@ -249,8 +306,9 @@
   ],
   
   "estadisticas_proyecto": {
-    "total_versiones": 7,
+    "total_versiones": 8,
     "versiones_major": 4,
+    "versiones_minor": 1,
     "versiones_new": 1,
     "versiones_deprecated": 1,
     "versiones_release": 1,

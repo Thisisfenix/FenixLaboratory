@@ -1,0 +1,17 @@
+# Firebase config
+firebase-config.js
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Netlify
+.netlify/
+
+# Node modules
+node_modules/
+
+# Build files
+dist/
+build/

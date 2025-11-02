@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#ff6b35">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FenixLab">
+  <meta name="apple-mobile-web-app-title" content="FenixLab v2.0.7">
   <link rel="apple-touch-icon" href="favicon.svg">
   <!-- Open Graph -->
   <meta property="og:title" content="FenixLaboratory - Experimentos raros y proyectos random">
@@ -1137,6 +1137,18 @@
       border-radius: 4px;
       font-size: 0.9rem;
     }
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .features-list > div {
+      padding: 0.5rem;
+      background: var(--bg-dark);
+      border-radius: 6px;
+      border-left: 3px solid var(--primary);
+      font-size: 0.9rem;
+    }
     .future-plans {
       display: grid;
       gap: 0.5rem;
@@ -1830,6 +1842,9 @@
             <a class="nav-link" href="#comentarios"><i class="bi bi-chat-left-text me-1"></i> Comentarios</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="#guestbook"><i class="bi bi-palette me-1"></i> Guestbook</a>
+          </li>
+          <li class="nav-item">
             <button id="credits-btn" class="nav-link" aria-label="Ver créditos">
               <i class="bi bi-info-circle me-1"></i> Créditos
             </button>
@@ -1848,7 +1863,7 @@
           </li>
           <li class="nav-item">
             <button id="updates-btn" class="nav-link" aria-label="Ver actualizaciones">
-              <i class="bi bi-arrow-up-circle me-1"></i> v2.0.6
+              <i class="bi bi-arrow-up-circle me-1"></i> v2.0.7
             </button>
           </li>
         </ul>
@@ -1862,7 +1877,7 @@
     <div class="container">
       <h1 id="typewriter"></h1>
       <p>Donde subo mis experimentos raros y proyectos random</p>
-      <a href="#proyectos" class="btn btn-neon"><i class="bi bi-arrow-down me-2"></i>Ver Proyectos</a>
+      <a href="#proyectos" class="btn btn-neon" onclick="safeScrollIntoView('proyectos'); return false;"><i class="bi bi-arrow-down me-2"></i>Ver Proyectos</a>
     </div>
     <div class="particles" id="particles"></div>
   </section>
@@ -1951,8 +1966,39 @@
   </section>
 
   <section id="comentarios" class="container">
-    <h2>COMENTARIOS</h2>
-    <div class="giscus"></div>
+    <h2>💬 COMENTARIOS</h2>
+    <div class="giscus" style="background: var(--bg-light); padding: 2rem; border: 1px solid rgba(0, 240, 255, 0.1); border-radius: 8px;">
+      <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">
+        🎨 Deja tu mensaje, comparte una imagen, o simplemente saluda.<br>
+        <small>Usa tu cuenta de GitHub para comentar</small>
+      </p>
+    </div>
+  </section>
+
+  <section id="guestbook" class="container">
+    <h2>🎨 GUESTBOOK</h2>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card" style="text-align: center; padding: 2rem;">
+          <div class="card-body">
+            <h3 class="card-title">🎨 Libro de Visitas</h3>
+            <p class="card-text">
+              ¡Deja tu huella en el laboratorio! Comparte un mensaje, dibuja algo genial, 
+              o simplemente saluda. Es tu espacio para expresarte.
+            </p>
+            <div class="features-list" style="margin: 1.5rem 0; text-align: left;">
+              <div>✨ Dibuja con herramientas avanzadas</div>
+              <div>🎨 Paleta de colores completa</div>
+              <div>📱 Compatible con móviles</div>
+              <div>💾 Guarda tus creaciones</div>
+            </div>
+            <a href="guessbook/guestbook.html" class="btn btn-neon">
+              <i class="bi bi-palette me-2"></i>Abrir Guestbook
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
   </div>
   
@@ -2408,8 +2454,9 @@
           data-repo-id="R_kgDOOxHAIg"
           data-category="General"
           data-category-id="DIC_kwDOOxHAIs4Crvbl"
-          data-mapping="pathname"
-          data-strict="1"
+          data-mapping="specific"
+          data-term="Guestbook - Deja tu mensaje aquí"
+          data-strict="0"
           data-reactions-enabled="1"
           data-emit-metadata="1"
           data-input-position="top"
@@ -2422,6 +2469,19 @@
   
   <!-- Scripts -->
   <script>
+    // Manejo de errores global
+    window.addEventListener('error', function(e) {
+      console.error('Error capturado:', e.error);
+      console.error('En línea:', e.lineno, 'Columna:', e.colno);
+      console.error('Archivo:', e.filename);
+      // Evitar que el error se propague y rompa la página
+      return true;
+    });
+    
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Promise rechazada:', e.reason);
+      e.preventDefault();
+    });
     // Fix para la navegación entre vistas
     document.addEventListener('DOMContentLoaded', () => {
       // Event listeners para navegación
@@ -2443,6 +2503,19 @@
           showMainContent();
         });
       }
+      
+      // Verificar que todos los elementos necesarios existan
+      const requiredElements = [
+        'main-content', 'credits-section', 'updates-section',
+        'theme-panel', 'achievements-panel', 'nerd-panel'
+      ];
+      
+      requiredElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+          console.warn(`Elemento requerido no encontrado: ${id}`);
+        }
+      });
     });
     const user = 'thisisfenix';
     let allRepos = [];
@@ -2724,6 +2797,51 @@
 
     btnTop.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Función de scroll seguro
+    function safeScrollIntoView(elementId, options = { behavior: 'smooth' }) {
+      try {
+        const element = typeof elementId === 'string' ? document.getElementById(elementId) : elementId;
+        if (element && element.scrollIntoView && typeof element.scrollIntoView === 'function') {
+          element.scrollIntoView(options);
+          return true;
+        } else {
+          console.warn(`Elemento no encontrado o no tiene scrollIntoView: ${elementId}`);
+          // Fallback: scroll manual
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            window.scrollTo({
+              top: scrollTop + rect.top - 100,
+              behavior: 'smooth'
+            });
+            return true;
+          }
+          return false;
+        }
+      } catch (error) {
+        console.error('Error en safeScrollIntoView:', error);
+        return false;
+      }
+    }
+
+    // Fix para navegación suave - verificar elementos antes de scrollIntoView
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (link) {
+        const targetId = link.getAttribute('href').substring(1);
+        if (targetId && targetId.length > 0) {
+          e.preventDefault();
+          // Verificar que el elemento existe antes de intentar scroll
+          const targetElement = document.getElementById(targetId);
+          if (targetElement) {
+            safeScrollIntoView(targetId);
+          } else {
+            console.warn(`Elemento con ID '${targetId}' no encontrado`);
+          }
+        }
+      }
     });
 
     function typeWriterEffect() {

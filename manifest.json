@@ -1,7 +1,7 @@
 {
-  "name": "FenixLaboratory v2.0.6",
+  "name": "FenixLaboratory v2.0.7",
   "short_name": "FenixLab",
-  "description": "PWA completa con sync entre dispositivos y actualizaciones automáticas",
+  "description": "PWA con guestbook completo, herramientas de dibujo y reorganización",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1a1a1a",
