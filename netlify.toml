@@ -1,7 +1,0 @@
-[build]
-  command = "node generate-config.js"
-  publish = "."
-
-[build.environment]
-  NODE_VERSION = "18"
-  SECRETS_SCAN_OMIT_PATHS = "guessbook/firebase-config.js"

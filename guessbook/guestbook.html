@@ -668,16 +668,14 @@
     </div>
   </div>
 
-  <!-- Firebase Config -->
-  <script src="./firebase-config.js"></script>
-  
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-    // Usar configuración generada por Netlify
-    const firebaseConfig = window.FIREBASE_CONFIG;
+    // Cargar configuración desde API de Vercel (protegida)
+    const response = await fetch('/api/config');
+    const firebaseConfig = await response.json();
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);

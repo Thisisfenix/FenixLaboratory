@@ -1,13 +1,7 @@
-# Firebase config
-firebase-config.js
-
-# Environment variables
+# Environment variables (NUNCA SUBIR)
 .env
 .env.local
 .env.production
-
-# Netlify
-.netlify/
 
 # Node modules
 node_modules/
