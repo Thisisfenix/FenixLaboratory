@@ -811,23 +811,23 @@
               <div class="control-group">
                 <span class="control-label" title="Fondos de imagen">🌄</span>
                 <div class="d-flex gap-1 flex-wrap align-items-center">
-                  <input type="file" id="bgUpload" accept=".png,.jpg,.jpeg" class="file-input" title="Subir fondo personalizado" style="width: 120px;">
+                  <input type="file" id="bgUpload" accept=".png,.jpg,.jpeg,.gif" class="file-input" title="Subir fondo personalizado" style="width: 120px;">
                   <button id="setBgBtn" class="btn-upload" title="Aplicar fondo subido" disabled>🖼️ Aplicar</button>
                   <button id="clearBgBtn" class="btn-tool-sm" title="Quitar fondo">❌ Quitar</button>
                 </div>
                 <div class="mt-1" style="font-size: 0.7em; color: var(--text-secondary); text-align: center;">
-                  📸 Sube imagen → Click Aplicar → Se ajusta al canvas automáticamente
+                  📸 Sube PNG/JPG/GIF → Click Aplicar → Se ajusta al canvas automáticamente
                 </div>
               </div>
               
               <div class="control-group">
                 <span class="control-label" title="Stickers PNG personalizados">🏷️</span>
                 <div class="d-flex gap-1 flex-wrap align-items-center">
-                  <input type="file" id="stickerUpload" accept=".png,.jpg,.jpeg" class="file-input" title="Subir sticker personalizado" style="width: 120px;">
+                  <input type="file" id="stickerUpload" accept=".png,.jpg,.jpeg,.gif" class="file-input" title="Subir sticker personalizado" style="width: 120px;">
                   <button id="placeStickerBtn" class="btn-upload" title="Colocar sticker subido" disabled>📌 Colocar</button>
                 </div>
                 <div class="mt-1" style="font-size: 0.7em; color: var(--text-secondary); text-align: center;">
-                  🖼️ Sube PNG/JPG → Click Colocar → Click canvas | ✋ Mover para arrastrar
+                  🖼️ Sube PNG/JPG/GIF → Click Colocar → Click canvas | ✋ Mover para arrastrar
                 </div>
               </div>
             </div>
@@ -999,8 +999,8 @@
               
               <div class="mb-3">
                 <label style="color: var(--text-primary); margin-bottom: 8px; font-weight: bold;">📸 Imagen (Opcional)</label>
-                <input type="file" id="suggestionImage" accept=".png,.jpg,.jpeg" class="form-control" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);">
-                <small style="color: var(--text-secondary);">Sube una captura de pantalla si es necesario</small>
+                <input type="file" id="suggestionImage" accept=".png,.jpg,.jpeg,.gif" class="form-control" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);">
+                <small style="color: var(--text-secondary);">Sube PNG/JPG/GIF si es necesario</small>
               </div>
             </div>
             
@@ -1024,7 +1024,10 @@
     <div class="row justify-content-center mb-4">
       <div class="col-md-10">
         <div style="background: var(--bg-light); border-radius: 15px; padding: 20px; border: 1px solid var(--primary);">
-          <h4 style="color: var(--primary); margin-bottom: 20px; text-align: center;">📋 Sugerencias Recientes</h4>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 style="color: var(--primary); margin: 0;">📋 Sugerencias Recientes</h4>
+            <button id="adminBtn" class="btn btn-sm btn-outline-warning" onclick="toggleAdminMode()">🔑 Admin</button>
+          </div>
           
           <div class="d-flex justify-content-center gap-2 flex-wrap mb-3">
             <div class="input-group" style="width: 200px;">
@@ -1514,9 +1517,18 @@
     document.getElementById('customColor').addEventListener('change', (e) => {
       currentColor = e.target.value;
       document.querySelector('.color-btn.active')?.classList.remove('active');
-      isEraser = false;
-      document.getElementById('eraserBtn').classList.remove('btn-secondary');
-      document.getElementById('eraserBtn').classList.add('btn-outline-secondary');
+      setTool('brush'); // Cambiar a pincel automáticamente
+      
+      // Actualizar display visual
+      const customColorBtn = document.getElementById('customColor');
+      customColorBtn.style.border = '2px solid var(--primary)';
+      customColorBtn.style.boxShadow = '0 0 10px var(--primary)';
+      
+      // Remover highlight después de 2 segundos
+      setTimeout(() => {
+        customColorBtn.style.border = '1px solid var(--primary)';
+        customColorBtn.style.boxShadow = 'none';
+      }, 2000);
     });
     
     // Variables para herramientas
@@ -1907,18 +1919,35 @@
     }
     
     // Event listeners para fondos
-    document.getElementById('bgUpload').addEventListener('change', (e) => {
+    document.getElementById('bgUpload').addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg')) {
+      if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/gif')) {
+        // Verificar tamaño de archivo (máx 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('🚫 Archivo muy grande. Máximo 5MB permitido.');
+          e.target.value = '';
+          return;
+        }
+        
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
+          const imageData = event.target.result;
+          
+          // Moderar contenido de imagen
+          const flags = await analyzeImageContent(imageData);
+          if (flags.excessiveRed || flags.suspiciousContent) {
+            alert('🚫 Imagen rechazada: Contenido potencialmente inapropiado detectado');
+            e.target.value = '';
+            return;
+          }
+          
           const img = new Image();
           img.onload = () => {
             currentBackgroundImage = img;
             document.getElementById('setBgBtn').disabled = false;
             document.getElementById('setBgBtn').innerHTML = '🖼️ Listo';
           };
-          img.src = event.target.result;
+          img.src = imageData;
         };
         reader.readAsDataURL(file);
       }
@@ -1942,18 +1971,35 @@
     
     // Sistema de stickers PNG personalizados
     
-    document.getElementById('stickerUpload').addEventListener('change', (e) => {
+    document.getElementById('stickerUpload').addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg')) {
+      if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/gif')) {
+        // Verificar tamaño de archivo (máx 2MB para stickers)
+        if (file.size > 2 * 1024 * 1024) {
+          alert('🚫 Sticker muy grande. Máximo 2MB permitido.');
+          e.target.value = '';
+          return;
+        }
+        
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
+          const imageData = event.target.result;
+          
+          // Moderar contenido de sticker
+          const flags = await analyzeImageContent(imageData);
+          if (flags.excessiveRed || flags.suspiciousContent) {
+            alert('🚫 Sticker rechazado: Contenido potencialmente inapropiado detectado');
+            e.target.value = '';
+            return;
+          }
+          
           const img = new Image();
           img.onload = () => {
             currentStickerImage = img;
             document.getElementById('placeStickerBtn').disabled = false;
             document.getElementById('placeStickerBtn').innerHTML = '📌 Listo';
           };
-          img.src = event.target.result;
+          img.src = imageData;
         };
         reader.readAsDataURL(file);
       }
@@ -2148,7 +2194,74 @@
       return 0;
     }
     
-    // Guardar dibujo con loading state
+    // Sistema de moderación
+    function analyzeImageContent(imageData) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCanvas.width = img.width;
+          tempCanvas.height = img.height;
+          tempCtx.drawImage(img, 0, 0);
+          
+          const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+          const data = imageData.data;
+          
+          // Análisis básico de contenido
+          let redPixels = 0, totalPixels = data.length / 4;
+          let suspiciousPatterns = 0;
+          
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            
+            // Detectar exceso de rojo (posible gore)
+            if (r > 200 && g < 100 && b < 100) redPixels++;
+            
+            // Detectar patrones sospechosos de color carne
+            if (r > 200 && g > 150 && b > 120 && r < 255 && g < 200 && b < 180) {
+              suspiciousPatterns++;
+            }
+          }
+          
+          const redRatio = redPixels / totalPixels;
+          const suspiciousRatio = suspiciousPatterns / totalPixels;
+          
+          // Flags de moderación
+          const flags = {
+            excessiveRed: redRatio > 0.3,
+            suspiciousContent: suspiciousRatio > 0.4,
+            tooSimple: totalPixels < 1000,
+            needsReview: redRatio > 0.2 || suspiciousRatio > 0.3
+          };
+          
+          resolve(flags);
+        };
+        img.src = imageData;
+      });
+    }
+    
+    function moderateText(text) {
+      const bannedWords = [
+        'gore', 'sangre', 'muerte', 'matar', 'suicidio', 'nazi', 'hitler',
+        'porno', 'sexo', 'desnudo', 'violacion', 'drogas', 'cocaina',
+        'terrorista', 'bomba', 'arma', 'pistola', 'cuchillo'
+      ];
+      
+      const lowerText = text.toLowerCase();
+      let flags = { hasBannedWords: false, bannedWordsFound: [] };
+      
+      for (const word of bannedWords) {
+        if (lowerText.includes(word)) {
+          flags.hasBannedWords = true;
+          flags.bannedWordsFound.push(word);
+        }
+      }
+      
+      return flags;
+    }
+    
+    // Guardar dibujo con moderación
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const saveBtn = document.getElementById('saveBtn');
       const saveText = document.getElementById('saveText');
@@ -2174,6 +2287,35 @@
       const author = document.getElementById('authorName').value || 'Anónimo';
       const category = document.getElementById('categorySelect').value;
       
+      // Moderación de contenido
+      const imageFlags = await analyzeImageContent(imageData);
+      const textFlags = moderateText(author);
+      
+      // Verificar flags de moderación
+      if (imageFlags.excessiveRed) {
+        alert('🚫 Contenido rechazado: Detectado exceso de color rojo sospechoso');
+        saveBtn.disabled = false;
+        saveText.style.display = 'inline';
+        saveLoader.style.display = 'none';
+        return;
+      }
+      
+      if (imageFlags.suspiciousContent) {
+        alert('🚫 Contenido rechazado: Detectado contenido potencialmente inapropiado');
+        saveBtn.disabled = false;
+        saveText.style.display = 'inline';
+        saveLoader.style.display = 'none';
+        return;
+      }
+      
+      if (textFlags.hasBannedWords) {
+        alert(`🚫 Nombre rechazado: Contiene palabras no permitidas`);
+        saveBtn.disabled = false;
+        saveText.style.display = 'inline';
+        saveLoader.style.display = 'none';
+        return;
+      }
+      
       try {
         // Datos que coinciden exactamente con las reglas de Firestore
         const drawingData = {
@@ -2185,7 +2327,14 @@
           domain: 'thisisfenix.github.io',
           likes: 0,
           comments: [],
-          strokes: strokeCount || 0
+          strokes: strokeCount || 0,
+          moderation: {
+            needsReview: imageFlags.needsReview,
+            autoApproved: !imageFlags.needsReview,
+            flags: imageFlags,
+            reviewedBy: null,
+            reviewedAt: null
+          }
         };
         
         await addDoc(collection(db, 'dibujos'), drawingData);
@@ -2868,8 +3017,8 @@
               </div>
               <div style="border-top: 1px solid var(--primary); padding-top: 15px;">
                 <input type="text" id="commentAuthor" placeholder="Nombre de usuario (opcional)" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 8px; font-size: 0.9em; user-select: text !important; -webkit-user-select: text !important;">
-                <input type="text" id="commentInput" placeholder="Escribe un comentario..." style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 10px; user-select: text !important; -webkit-user-select: text !important;">
-                <button onclick="addComment('${drawingId}')" style="width: 100%; padding: 8px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">➤ Comentar</button>
+                <input type="text" id="commentInput" placeholder="Escribe un comentario..." style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); margin-bottom: 10px; user-select: text !important; -webkit-user-select: text !important;" onkeypress="if(event.key==='Enter') addComment('${drawingId}')">
+                <button id="commentBtn-${drawingId}" onclick="addComment('${drawingId}')" style="width: 100%; padding: 8px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">➤ Comentar</button>
               </div>
             `;
           }
@@ -2879,26 +3028,59 @@
       }
     }
     
-    // Filtro básico - solo palabras extremadamente ofensivas
+    // Sistema de moderación mejorado
     function moderateContent(text) {
-      const bannedWords = ['nazi', 'hitler', 'terrorista', 'suicidio', 'matar'];
+      const bannedWords = [
+        'nazi', 'hitler', 'terrorista', 'suicidio', 'matar', 'muerte',
+        'gore', 'sangre', 'porno', 'sexo', 'desnudo', 'violacion',
+        'drogas', 'cocaina', 'bomba', 'arma', 'pistola', 'cuchillo'
+      ];
+      
       const lowerText = text.toLowerCase();
+      let moderatedText = text;
       
       for (const word of bannedWords) {
         if (lowerText.includes(word)) {
-          return text.replace(new RegExp(word, 'gi'), '***');
+          moderatedText = moderatedText.replace(new RegExp(word, 'gi'), '***');
         }
       }
-      return text;
+      
+      return moderatedText;
     }
     
+    function isSpamComment(text, author) {
+      if (text.length < 2 || text.length > 500) return true;
+      if (/^[^a-zA-Z0-9À-ÿ\s]+$/.test(text)) return true;
+      if ((text.match(/http/gi) || []).length > 1) return true;
+      if (author.length > 50) return true;
+      return false;
+    }
+    
+    let isSubmittingComment = false;
+    
     window.addComment = async function(drawingId) {
+      if (isSubmittingComment) return;
+      
       const input = document.getElementById('commentInput');
       const authorInput = document.getElementById('commentAuthor');
+      const commentBtn = document.getElementById(`commentBtn-${drawingId}`);
       const commentText = input.value.trim();
       if (!commentText) return;
       
-      const author = moderateContent(authorInput.value.trim() || 'Anónimo');
+      const author = authorInput.value.trim() || 'Anónimo';
+      
+      if (isSpamComment(commentText, author)) {
+        alert('🚫 Comentario rechazado: Detectado como spam');
+        return;
+      }
+      
+      isSubmittingComment = true;
+      if (commentBtn) {
+        commentBtn.disabled = true;
+        commentBtn.innerHTML = '⏳ Enviando...';
+      }
+      
+      const moderatedAuthor = moderateContent(author);
       const moderatedText = moderateContent(commentText);
       
       try {
@@ -2907,11 +3089,26 @@
         
         if (docSnap.exists()) {
           const currentComments = docSnap.data().comments || [];
+          const commentId = Date.now() + Math.random();
+          
+          // Verificar si ya existe un comentario similar reciente
+          const recentSimilar = currentComments.find(c => 
+            c.text === moderatedText && 
+            c.author === moderatedAuthor && 
+            (Date.now() - c.timestamp) < 5000
+          );
+          
+          if (recentSimilar) {
+            alert('⚠️ Comentario duplicado detectado');
+            return;
+          }
+          
           await updateDoc(docRef, {
             comments: [...currentComments, { 
-              author, 
+              id: commentId,
+              author: moderatedAuthor, 
               text: moderatedText, 
-              timestamp: Date.now() 
+              timestamp: Date.now()
             }]
           });
           input.value = '';
@@ -2919,6 +3116,13 @@
         }
       } catch (error) {
         console.error('Error al agregar comentario:', error);
+        alert('❌ Error al enviar comentario');
+      } finally {
+        isSubmittingComment = false;
+        if (commentBtn) {
+          commentBtn.disabled = false;
+          commentBtn.innerHTML = '➤ Comentar';
+        }
       }
     };
     
@@ -2926,13 +3130,32 @@
     let allSuggestions = [];
     let currentSuggestionImage = null;
     
-    // Subir imagen para sugerencia
-    document.getElementById('suggestionImage').addEventListener('change', (e) => {
+    // Subir imagen para sugerencia con moderación
+    document.getElementById('suggestionImage').addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg')) {
+      if (file && (file.type === 'image/png' || file.type === 'image/jpeg' || file.type === 'image/jpg' || file.type === 'image/gif')) {
+        // Verificar tamaño (máx 3MB)
+        if (file.size > 3 * 1024 * 1024) {
+          alert('🚫 Imagen muy grande. Máximo 3MB permitido.');
+          e.target.value = '';
+          return;
+        }
+        
         const reader = new FileReader();
-        reader.onload = (event) => {
-          currentSuggestionImage = event.target.result;
+        reader.onload = async (event) => {
+          const imageData = event.target.result;
+          
+          // Solo moderar si no es GIF (los GIFs son más complejos de analizar)
+          if (file.type !== 'image/gif') {
+            const flags = await analyzeImageContent(imageData);
+            if (flags.excessiveRed || flags.suspiciousContent) {
+              alert('🚫 Imagen rechazada: Contenido potencialmente inapropiado detectado');
+              e.target.value = '';
+              return;
+            }
+          }
+          
+          currentSuggestionImage = imageData;
         };
         reader.readAsDataURL(file);
       }
@@ -3095,9 +3318,16 @@
                     ${data.status || 'Pendiente'}
                   </span>
                 </div>
-                <button class="btn btn-sm btn-outline-primary suggestion-like-btn" data-id="${suggestion.id}" data-likes="${data.likes || 0}">
-                  👍 ${data.likes || 0}
-                </button>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-primary suggestion-like-btn" data-id="${suggestion.id}" data-likes="${data.likes || 0}">
+                    👍 ${data.likes || 0}
+                  </button>
+                  <div class="owner-controls" id="owner-${suggestion.id}" style="display: none; gap: 2px;">
+                    <button class="btn btn-sm btn-success" onclick="approveSuggestion('${suggestion.id}')" title="Aprobar">✓</button>
+                    <button class="btn btn-sm btn-warning" onclick="rejectSuggestion('${suggestion.id}')" title="Rechazar">✗</button>
+                    <button class="btn btn-sm btn-info" onclick="markInProgress('${suggestion.id}')" title="En progreso">🔄</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -3224,6 +3454,152 @@
           modal.remove();
         }
       });
+    };
+    
+    // Sistema de autenticación de admin con Firebase Rules
+    let isAdminMode = false;
+    
+    window.toggleAdminMode = async function() {
+      if (isAdminMode) {
+        // Salir del modo admin
+        isAdminMode = false;
+        document.getElementById('adminBtn').innerHTML = '🔑 Admin';
+        document.getElementById('adminBtn').className = 'btn btn-sm btn-outline-warning';
+        
+        // Ocultar controles de admin
+        document.querySelectorAll('.owner-controls').forEach(control => {
+          control.style.display = 'none';
+        });
+        
+        alert('🚫 Modo admin desactivado');
+      } else {
+        // Entrar al modo admin
+        const password = prompt('🔑 Ingresa la contraseña de admin:');
+        if (password === null) return;
+        
+        try {
+          // Intentar crear documento de autenticación
+          // Las reglas de Firebase validarán la contraseña
+          const authDoc = {
+            adminPassword: password,
+            timestamp: Date.now(),
+            domain: 'thisisfenix.github.io'
+          };
+          
+          await addDoc(collection(db, 'admin_auth'), authDoc);
+          
+          // Si llegamos aquí, la contraseña es correcta
+          isAdminMode = true;
+          document.getElementById('adminBtn').innerHTML = '🚫 Salir Admin';
+          document.getElementById('adminBtn').className = 'btn btn-sm btn-danger';
+          
+          // Mostrar controles de admin
+          document.querySelectorAll('.owner-controls').forEach(control => {
+            control.style.display = 'flex';
+          });
+          
+          alert('✓ Modo admin activado');
+          
+        } catch (error) {
+          if (error.code === 'permission-denied') {
+            alert('❌ Contraseña incorrecta');
+          } else {
+            console.error('Error de autenticación:', error);
+            alert('❌ Error de conexión');
+          }
+        }
+      }
+    };
+    
+    // Funciones de moderación (solo funcionan en modo admin)
+    window.approveSuggestion = async function(suggestionId) {
+      if (!isAdminMode) {
+        alert('❌ Necesitas estar en modo admin');
+        return;
+      }
+      
+      if (!confirm('✓ ¿Aprobar esta sugerencia?')) return;
+      
+      try {
+        await updateDoc(doc(db, 'sugerencias', suggestionId), {
+          status: 'Completado',
+          reviewedBy: 'Admin',
+          reviewedAt: Date.now(),
+          adminAction: true
+        });
+        alert('✓ Sugerencia aprobada');
+      } catch (error) {
+        try {
+          await updateDoc(doc(db, 'dibujos', suggestionId), {
+            status: 'Completado',
+            reviewedBy: 'Admin',
+            reviewedAt: Date.now(),
+            adminAction: true
+          });
+          alert('✓ Sugerencia aprobada');
+        } catch (e) {
+          alert('❌ Error al aprobar sugerencia');
+        }
+      }
+    };
+    
+    window.rejectSuggestion = async function(suggestionId) {
+      if (!isAdminMode) {
+        alert('❌ Necesitas estar en modo admin');
+        return;
+      }
+      
+      if (!confirm('✗ ¿Rechazar esta sugerencia?')) return;
+      
+      try {
+        await updateDoc(doc(db, 'sugerencias', suggestionId), {
+          status: 'Rechazado',
+          reviewedBy: 'Admin',
+          reviewedAt: Date.now()
+        });
+        alert('✗ Sugerencia rechazada');
+      } catch (error) {
+        try {
+          await updateDoc(doc(db, 'dibujos', suggestionId), {
+            status: 'Rechazado',
+            reviewedBy: 'Admin',
+            reviewedAt: Date.now()
+          });
+          alert('✗ Sugerencia rechazada');
+        } catch (e) {
+          alert('❌ Error al rechazar sugerencia');
+        }
+      }
+    };
+    
+    window.markInProgress = async function(suggestionId) {
+      if (!isAdminMode) {
+        alert('❌ Necesitas estar en modo admin');
+        return;
+      }
+      
+      if (!confirm('🔄 ¿Marcar como en progreso?')) return;
+      
+      
+      try {
+        await updateDoc(doc(db, 'sugerencias', suggestionId), {
+          status: 'En Progreso',
+          reviewedBy: 'Admin',
+          reviewedAt: Date.now()
+        });
+        alert('🔄 Marcado como en progreso');
+      } catch (error) {
+        try {
+          await updateDoc(doc(db, 'dibujos', suggestionId), {
+            status: 'En Progreso',
+            reviewedBy: 'Admin',
+            reviewedAt: Date.now()
+          });
+          alert('🔄 Marcado como en progreso');
+        } catch (e) {
+          alert('❌ Error al actualizar estado');
+        }
+      }
     };
   </script>
   
