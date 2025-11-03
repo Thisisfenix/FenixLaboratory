@@ -1,8 +1,45 @@
-# 🎨 Guestbook de Dibujos v2.1
+# 🎨 Guestbook de Dibujos v1.0.3
 
-**Sistema avanzado de guestbook con rankings, estadísticas en tiempo real, fondos personalizados y funcionalidades sociales**
+**Sistema de Perfiles y Comunidad Artística - Guestbook interactivo con sistema social completo**
 
-## 🚀 Versión 2.1 - Sistema de Fondos y Mejoras Avanzadas
+## 🚀 Versión 1.0.3 - Sistema de Perfiles y Comunidad
+
+### 👤 Sistema de Perfiles Completo
+
+**Funcionalidades principales del sistema de perfiles:**
+
+#### 🎭 **Avatares Personalizados**
+- 12 emojis predefinidos para elegir
+- Subida de imagen personalizada (PNG/JPG, máx 1MB)
+- Vista previa en tiempo real
+- Persistencia en localStorage y Firebase
+
+#### 📊 **Estadísticas Detalladas**
+- Contador de dibujos totales
+- Total de likes recibidos
+- Comentarios generados
+- Categoría favorita automática
+- Fecha de registro
+
+#### 🏆 **Sistema de Logros**
+- 🎨 **Primer Dibujo**: Tu primera obra
+- 🖌️ **Artista Activo**: 5+ dibujos
+- 🏆 **Maestro del Arte**: 10+ dibujos
+- ❤️ **Popular**: 10+ likes totales
+- ⭐ **Estrella**: 50+ likes totales
+- 💬 **Conversador**: 20+ comentarios
+
+#### 👥 **Red Social**
+- Sistema de seguimiento de artistas
+- Lista de usuarios seguidos
+- Perfiles públicos de otros usuarios
+- Botones de seguir/dejar de seguir
+
+#### 🎨 **Galería Personal**
+- Vista de todos tus dibujos
+- Estadísticas por obra (likes, categoría)
+- Acceso rápido desde el perfil
+- Límite de 12 dibujos mostrados + contador total
 
 ### 🏆 Sistema de Rankings Múltiples
 
@@ -137,7 +174,7 @@ El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tie
 
 ## 📊 Estadísticas de Desarrollo
 
-- **Líneas de código**: ~1,500 líneas de JavaScript
+- **Líneas de código**: ~2,500 líneas de JavaScript
 - **Herramientas**: 12+ herramientas de dibujo y edición
 - **Temas**: 5 temas visuales dinámicos
 - **Rankings**: 4 tipos de clasificación en tiempo real
@@ -155,39 +192,52 @@ El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tie
 4. **Entretenimiento**: Dibujo libre y creativo
 5. **Competencias**: Ranking por likes y popularidad
 
-## 🆕 Novedades v2.1
+## 🆕 Novedades v1.0.3
 
-### 🌄 Sistema de Fondos de Imagen
-- **Apartado exclusivo** separado de stickers
-- **Auto-escalado** de imágenes al canvas
-- **Preservación** del dibujo al cambiar fondo
-- **Confirmación** antes de quitar fondo
+### 👤 Sistema de Perfiles Completo
+- **Círculo de perfil** fijo en la esquina superior izquierda
+- **Modal de perfil** con toda la información del usuario
+- **Configuración completa** de avatar y nombre de usuario
+- **Persistencia** en localStorage y sincronización con Firebase
 
-### 🏷️ Sistema de Stickers Mejorado
-- **Apartado independiente** del sistema de fondos
-- **Herramienta ✋ Mover** para arrastrar stickers
-- **Colocación precisa** con click en canvas
-- **Sistema de capas** bien definido
+### 🎭 Avatares Personalizados
+- **12 emojis** predefinidos para elegir
+- **Subida de imagen** personalizada con validación
+- **Vista previa** en tiempo real del avatar
+- **Dos modos**: Emoji y Imagen personalizada
 
-### 🔧 Mejoras Técnicas
-- **Funciones JavaScript** completas para ambos sistemas
-- **Event listeners** optimizados
-- **Validación de archivos** PNG/JPG/JPEG
-- **Feedback visual** en botones de estado
+### 📊 Estadísticas y Logros
+- **6 logros** desbloqueables por actividad
+- **Estadísticas detalladas** de cada usuario
+- **Tracking automático** de actividad
+- **Sistema de achievements** progresivo
 
-## 🔄 Roadmap v2.2
+### 👥 Red Social
+- **Sistema de seguimiento** de otros artistas
+- **Perfiles públicos** con información completa
+- **Lista de seguidos** en el perfil personal
+- **Botones de seguir/dejar de seguir** en modales
 
-- [x] ✅ Sistema de fondos personalizados
-- [x] ✅ Sistema de stickers con apartado exclusivo
-- [x] ✅ Herramienta de mover stickers
-- [x] ✅ Sistema de capas (Fondo → Dibujo → Stickers)
-- [ ] Galería de fondos predefinidos
-- [ ] Stickers predefinidos por categorías
-- [ ] Sistema de usuarios con autenticación
-- [ ] Capas de dibujo múltiples
-- [ ] Herramientas de selección avanzadas
-- [ ] Rankings por período (diario, semanal, mensual)
-- [ ] Sistema de badges y logros
+### 🎨 Galería Personal
+- **Vista de todos los dibujos** del usuario
+- **Acceso directo** desde el perfil
+- **Estadísticas por obra** (likes, categoría)
+- **Integración** con el sistema de perfiles
+
+## 🔄 Roadmap v1.0.4
+
+- [x] ✅ Sistema de perfiles completo
+- [x] ✅ Avatares personalizados (emoji + imagen)
+- [x] ✅ Sistema de logros y achievements
+- [x] ✅ Red social con seguimiento
+- [x] ✅ Galería personal integrada
+- [x] ✅ Estadísticas avanzadas por usuario
+- [ ] Notificaciones de actividad
+- [ ] Sistema de mensajes privados
+- [ ] Grupos y comunidades
+- [ ] Challenges y concursos
+- [ ] Sistema de reputación
+- [ ] Badges especiales por temporada
 
 ## 👨💻 Desarrollado por
 
@@ -195,4 +245,4 @@ El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tie
 
 ---
 
-*Parte del ecosistema FenixLaboratory v2.1*
+*Parte del ecosistema FenixLaboratory v2.0.7 - Sistema de Perfiles y Comunidad Artística*
