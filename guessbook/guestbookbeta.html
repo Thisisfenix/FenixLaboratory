@@ -230,6 +230,65 @@
       0%, 100% { box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3); }
       50% { box-shadow: 0 6px 25px rgba(255, 107, 53, 0.5); }
     }
+    .btn-neon {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      transition: all 0.3s ease;
+    }
+    .btn-neon:hover {
+      background: var(--primary);
+      color: var(--bg-dark);
+    }
+    .color-btn {
+      width: 30px;
+      height: 30px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      margin: 2px;
+      cursor: pointer;
+    }
+    .color-btn.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px var(--primary);
+    }
+    
+    /* Responsive canvas */
+    @media (max-width: 768px) {
+      #drawCanvas {
+        touch-action: none;
+      }
+      .canvas-container {
+        margin: 10px auto;
+        touch-action: none;
+        max-width: 95vw;
+        padding: 5px;
+        text-align: center;
+      }
+      .color-btn {
+        width: 28px;
+        height: 28px;
+        margin: 2px;
+        touch-action: manipulation;
+      }
+      #customColor {
+        width: 45px;
+        height: 28px;
+      }
+      
+      /* Mejorar área de toque */
+      .btn-tool, .btn-action, .btn-danger {
+        min-height: 35px;
+        min-width: 35px;
+        touch-action: manipulation;
+      }
+      
+      .btn-emoji {
+        min-height: 35px;
+        min-width: 35px;
+        touch-action: manipulation;
+      }
+    }
     
     /* Sistema de Perfiles */
     .profile-circle {
@@ -357,68 +416,9 @@
       color: var(--text-secondary);
       margin-top: 5px;
     }
-    .btn-neon {
-      background: transparent;
-      border: 2px solid var(--primary);
-      color: var(--primary);
-      transition: all 0.3s ease;
-    }
-    .btn-neon:hover {
-      background: var(--primary);
-      color: var(--bg-dark);
-    }
-    .color-btn {
-      width: 30px;
-      height: 30px;
-      border: 2px solid #fff;
-      border-radius: 50%;
-      margin: 2px;
-      cursor: pointer;
-    }
-    .color-btn.active {
-      border-color: var(--primary);
-      box-shadow: 0 0 10px var(--primary);
-    }
-    
-    /* Responsive canvas */
-    @media (max-width: 768px) {
-      #drawCanvas {
-        touch-action: none;
-      }
-      .canvas-container {
-        margin: 10px auto;
-        touch-action: none;
-        max-width: 95vw;
-        padding: 5px;
-        text-align: center;
-      }
-      .color-btn {
-        width: 28px;
-        height: 28px;
-        margin: 2px;
-        touch-action: manipulation;
-      }
-      #customColor {
-        width: 45px;
-        height: 28px;
-      }
-      
-      /* Mejorar área de toque */
-      .btn-tool, .btn-action, .btn-danger {
-        min-height: 35px;
-        min-width: 35px;
-        touch-action: manipulation;
-      }
-      
-      .btn-emoji {
-        min-height: 35px;
-        min-width: 35px;
-        touch-action: manipulation;
-      }
-    }
     
     /* Orientación horizontal en móvil */
-    @media (max-width: 768px) and (orientation: landscape) {
+    @media (max-width: 768px) {
       #drawCanvas {
         width: 100%;
         height: 280px;
@@ -429,6 +429,33 @@
       }
       .control-row {
         gap: 4px;
+      }
+      
+      .profile-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2em;
+        top: 15px;
+        left: 15px;
+      }
+      
+      .profile-content {
+        padding: 20px;
+        width: 95vw;
+      }
+      
+      .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      
+      .user-drawings-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
+      }
+      
+      .user-drawing-img {
+        height: 60px;
       }
       .control-group {
         padding: 4px 6px;
@@ -736,33 +763,6 @@
         flex-direction: column;
       }
       
-      .profile-circle {
-        width: 50px;
-        height: 50px;
-        font-size: 1.2em;
-        top: 15px;
-        left: 15px;
-      }
-      
-      .profile-content {
-        padding: 20px;
-        width: 95vw;
-      }
-      
-      .profile-stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-      }
-      
-      .user-drawings-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 8px;
-      }
-      
-      .user-drawing-img {
-        height: 60px;
-      }
-      
       .control-group {
         padding: 6px;
         gap: 6px;
@@ -836,6 +836,7 @@
   <div id="profileCircle" class="profile-circle" title="Mi Perfil">
     👤
   </div>
+  
   <div class="container py-4">
     <div class="text-center mb-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1090,7 +1091,7 @@
             </div>
             <div class="d-flex justify-content-center gap-2 flex-wrap">
               <a href="../index.html" class="btn-back">🏠 Volver al Lab</a>
-              <a href="guestbookbeta.html" class="btn-back" style="border: 2px solid var(--beta-color, #00ff88); color: var(--beta-color, #00ff88); animation: betaPulse 2s infinite;">🧪 Beta Area</a>
+              <a href="guestbook-betaarea.html" class="btn-back" style="border: 2px solid var(--beta-color, #00ff88); color: var(--beta-color, #00ff88); animation: betaPulse 2s infinite;">🧪 Beta Area</a>
               <button id="fullscreenBtn" class="btn-back" style="border: none; background: transparent;">📱 Pantalla completa</button>
             </div>
           </div>
@@ -1221,7 +1222,7 @@
               </div>
               
               <button id="submitSuggestion" class="btn w-100" style="background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold;">
-                <span id="suggestionText">🚀 Enviar Sugerencia</span>
+                <span id="suggestionBtnText">🚀 Enviar Sugerencia</span>
                 <span id="suggestionLoader" style="display: none;">⏳ Enviando...</span>
               </button>
             </div>
@@ -3248,496 +3249,6 @@
       }
     }
     
-    // Sistema de Perfiles
-    let currentProfile = {
-      username: '',
-      avatar: '👤',
-      avatarType: 'emoji',
-      avatarImage: null,
-      totalDrawings: 0,
-      totalLikes: 0,
-      totalComments: 0,
-      joinDate: Date.now(),
-      favoriteCategory: 'Arte',
-      achievements: []
-    };
-    
-    // Cargar perfil desde localStorage
-    function loadProfile() {
-      const saved = localStorage.getItem('userProfile');
-      if (saved) {
-        currentProfile = { ...currentProfile, ...JSON.parse(saved) };
-      }
-      updateProfileCircle();
-    }
-    
-    // Guardar perfil en localStorage y Firebase
-    async function saveProfile() {
-      localStorage.setItem('userProfile', JSON.stringify(currentProfile));
-      
-      if (currentProfile.username) {
-        try {
-          // Verificar si ya existe un perfil con este username
-          const existingQuery = query(
-            collection(db, 'profiles'), 
-            where('username', '==', currentProfile.username)
-          );
-          const existingDocs = await getDocs(existingQuery);
-          
-          const profileData = {
-            username: currentProfile.username,
-            avatar: currentProfile.avatar,
-            avatarType: currentProfile.avatarType,
-            avatarImage: currentProfile.avatarImage,
-            totalDrawings: currentProfile.totalDrawings || 0,
-            totalLikes: currentProfile.totalLikes || 0,
-            achievements: currentProfile.achievements || [],
-            domain: 'thisisfenix.github.io',
-            joinDate: currentProfile.joinDate || Date.now(),
-            lastUpdated: Date.now()
-          };
-          
-          if (existingDocs.empty) {
-            // Solo crear si no existe
-            await addDoc(collection(db, 'profiles'), profileData);
-            console.log('Perfil creado en Firebase');
-          } else {
-            // Actualizar el existente
-            const docId = existingDocs.docs[0].id;
-            await updateDoc(doc(db, 'profiles', docId), profileData);
-            console.log('Perfil actualizado en Firebase');
-          }
-        } catch (error) {
-          if (error.code !== 'permission-denied') {
-            console.log('Error guardando perfil en Firebase:', error);
-          }
-        }
-      }
-    }
-    
-    // Actualizar círculo de perfil
-    function updateProfileCircle() {
-      const circle = document.getElementById('profileCircle');
-      if (circle) {
-        if (currentProfile.avatarType === 'image' && currentProfile.avatarImage) {
-          circle.style.backgroundImage = `url(${currentProfile.avatarImage})`;
-          circle.style.backgroundSize = 'cover';
-          circle.style.backgroundPosition = 'center';
-          circle.textContent = '';
-        } else {
-          circle.style.backgroundImage = 'none';
-          circle.textContent = currentProfile.avatar;
-        }
-        circle.title = currentProfile.username || 'Mi Perfil';
-      }
-    }
-    
-    // Actualizar estadísticas del perfil
-    function updateProfileStats() {
-      // Contar dibujos del usuario
-      const userDrawings = allDrawings.filter(d => 
-        d.data.autor.toLowerCase() === currentProfile.username.toLowerCase()
-      );
-      
-      currentProfile.totalDrawings = userDrawings.length;
-      currentProfile.totalLikes = userDrawings.reduce((sum, d) => sum + (d.data.likes || 0), 0);
-      currentProfile.totalComments = userDrawings.reduce((sum, d) => sum + (d.data.comments?.length || 0), 0);
-      
-      // Categoría favorita
-      const categories = {};
-      userDrawings.forEach(d => {
-        const cat = d.data.categoria || 'Arte';
-        categories[cat] = (categories[cat] || 0) + 1;
-      });
-      const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
-      if (topCategory) {
-        currentProfile.favoriteCategory = topCategory[0];
-      }
-      
-      // Logros
-      currentProfile.achievements = [];
-      if (currentProfile.totalDrawings >= 1) currentProfile.achievements.push('🎨 Primer Dibujo');
-      if (currentProfile.totalDrawings >= 5) currentProfile.achievements.push('🖌️ Artista Activo');
-      if (currentProfile.totalDrawings >= 10) currentProfile.achievements.push('🏆 Maestro del Arte');
-      if (currentProfile.totalLikes >= 10) currentProfile.achievements.push('❤️ Popular');
-      if (currentProfile.totalLikes >= 50) currentProfile.achievements.push('⭐ Estrella');
-      if (currentProfile.totalComments >= 20) currentProfile.achievements.push('💬 Conversador');
-      
-      saveProfile();
-    }
-    
-    // Mostrar modal de perfil
-    function showProfileModal() {
-      updateProfileStats();
-      
-      const modal = document.createElement('div');
-      modal.className = 'profile-modal';
-      
-      const content = document.createElement('div');
-      content.className = 'profile-content';
-      
-      // Obtener dibujos del usuario
-      const userDrawings = allDrawings.filter(d => 
-        d.data.autor.toLowerCase() === (currentProfile.username || '').toLowerCase()
-      ).slice(0, 12);
-      
-      content.innerHTML = `
-        <div style="text-align: center; margin-bottom: 20px;">
-          <div class="profile-avatar" id="profileAvatar" style="${currentProfile.avatarType === 'image' && currentProfile.avatarImage ? `background-image: url(${currentProfile.avatarImage}); background-size: cover; background-position: center;` : ''}">
-            ${currentProfile.avatarType === 'emoji' ? currentProfile.avatar : ''}
-          </div>
-          <h3 style="color: var(--primary); margin: 0;">${currentProfile.username || 'Usuario Anónimo'}</h3>
-          <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">
-            Miembro desde ${new Date(currentProfile.joinDate).toLocaleDateString('es-ES')}
-          </p>
-        </div>
-        
-        <div class="profile-stats">
-          <div class="stat-card">
-            <div class="stat-number">${currentProfile.totalDrawings}</div>
-            <div class="stat-label">Dibujos</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${currentProfile.totalLikes}</div>
-            <div class="stat-label">Likes</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${currentProfile.totalComments}</div>
-            <div class="stat-label">Comentarios</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${currentProfile.favoriteCategory}</div>
-            <div class="stat-label">Categoría Fav.</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${JSON.parse(localStorage.getItem('following') || '[]').length}</div>
-            <div class="stat-label">Siguiendo</div>
-          </div>
-        </div>
-        
-        ${JSON.parse(localStorage.getItem('following') || '[]').length > 0 ? `
-          <div style="margin: 20px 0;">
-            <h5 style="color: var(--primary); margin-bottom: 10px;">👥 Siguiendo (${JSON.parse(localStorage.getItem('following') || '[]').length})</h5>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-              ${JSON.parse(localStorage.getItem('following') || '[]').map(username => `
-                <span onclick="showAuthorProfile('${username}')" style="background: var(--bg-dark); padding: 6px 12px; border-radius: 15px; font-size: 0.8em; border: 1px solid var(--primary); cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='var(--bg-dark)'">
-                  👤 ${username}
-                </span>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-        
-        ${currentProfile.achievements.length > 0 ? `
-          <div style="margin: 20px 0;">
-            <h5 style="color: var(--primary); margin-bottom: 10px;">🏆 Logros</h5>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-              ${currentProfile.achievements.map(achievement => `
-                <span style="background: var(--bg-dark); padding: 6px 12px; border-radius: 15px; font-size: 0.8em; border: 1px solid var(--primary);">
-                  ${achievement}
-                </span>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-        
-${userDrawings.length > 0 ? `
-  <div style="margin: 20px 0;">
-    <h5 style="color: var(--primary); margin-bottom: 10px;">🎨 Mis Dibujos (${currentProfile.totalDrawings})</h5>
-    <div class="user-drawings-grid">
-      ${userDrawings.map(drawing => `
-        <div class="user-drawing-item" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}', '${drawing.id}', '${drawing.data.backgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'") : ''}')">
-          <img src="${drawing.data.imagenData}" class="user-drawing-img" alt="Dibujo">
-          <div class="user-drawing-info">
-            <div style="color: var(--primary); font-weight: bold;">❤️ ${drawing.data.likes || 0}</div>
-            <div style="color: var(--text-secondary); font-size: 0.7em;">${drawing.data.categoria}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-    ${currentProfile.totalDrawings > 12 ? `<p style="text-align: center; color: var(--text-secondary); font-size: 0.8em; margin-top: 10px;">... y ${currentProfile.totalDrawings - 12} más</p>` : ''}
-  </div>
-` : ''}
-
-        
-        <div style="border-top: 1px solid var(--primary); padding-top: 20px; margin-top: 20px;">
-          <h5 style="color: var(--primary); margin-bottom: 15px;">⚙️ Configuración</h5>
-          
-          <div style="margin-bottom: 15px;">
-            <label style="color: var(--text-primary); display: block; margin-bottom: 5px;">👤 Nombre de Usuario</label>
-            <input type="text" id="profileUsername" value="${currentProfile.username}" placeholder="Tu nombre de usuario" style="width: 100%; padding: 8px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); border-radius: 5px;">
-          </div>
-          
-          <div style="margin-bottom: 20px;">
-            <label style="color: var(--text-primary); display: block; margin-bottom: 5px;">😀 Avatar</label>
-            
-            <div style="margin-bottom: 10px;">
-              <button id="useEmojiAvatar" style="padding: 6px 12px; margin-right: 10px; background: ${currentProfile.avatarType === 'emoji' ? 'var(--primary)' : 'var(--bg-dark)'}; color: white; border: 1px solid var(--primary); border-radius: 5px; cursor: pointer; font-size: 0.8em;">📱 Emoji</button>
-              <button id="useImageAvatar" style="padding: 6px 12px; background: ${currentProfile.avatarType === 'image' ? 'var(--primary)' : 'var(--bg-dark)'}; color: white; border: 1px solid var(--primary); border-radius: 5px; cursor: pointer; font-size: 0.8em;">🖼️ Imagen</button>
-            </div>
-            
-            <div id="emojiAvatars" style="display: ${currentProfile.avatarType === 'emoji' ? 'flex' : 'none'}; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
-              ${['👤', '😀', '😎', '🤓', '🎨', '🖌️', '🎭', '🦄', '🐱', '🐶', '🦊', '🐼'].map(emoji => `
-                <button class="avatar-btn" data-avatar="${emoji}" style="width: 40px; height: 40px; border: 2px solid ${currentProfile.avatar === emoji && currentProfile.avatarType === 'emoji' ? 'var(--primary)' : 'transparent'}; background: var(--bg-dark); border-radius: 50%; cursor: pointer; font-size: 1.2em;">
-                  ${emoji}
-                </button>
-              `).join('')}
-            </div>
-            
-            <div id="imageAvatarSection" style="display: ${currentProfile.avatarType === 'image' ? 'block' : 'none'};">
-              <input type="file" id="avatarImageUpload" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); border-radius: 5px; margin-bottom: 10px;">
-              <small style="color: var(--text-secondary); display: block;">Sube una imagen PNG/JPG (máx 1MB)</small>
-            </div>
-          </div>
-          
-          <div style="display: flex; gap: 10px; justify-content: center;">
-            <button id="saveProfile" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">💾 Guardar</button>
-            <button id="closeProfile" style="padding: 10px 20px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer;">❌ Cerrar</button>
-          </div>
-        </div>
-      `;
-      
-      modal.appendChild(content);
-      document.body.appendChild(modal);
-      
-      // Event listeners para avatares
-      document.getElementById('useEmojiAvatar').addEventListener('click', () => {
-        currentProfile.avatarType = 'emoji';
-        document.getElementById('useEmojiAvatar').style.background = 'var(--primary)';
-        document.getElementById('useImageAvatar').style.background = 'var(--bg-dark)';
-        document.getElementById('emojiAvatars').style.display = 'flex';
-        document.getElementById('imageAvatarSection').style.display = 'none';
-        updateProfileAvatar();
-      });
-      
-      document.getElementById('useImageAvatar').addEventListener('click', () => {
-        currentProfile.avatarType = 'image';
-        document.getElementById('useImageAvatar').style.background = 'var(--primary)';
-        document.getElementById('useEmojiAvatar').style.background = 'var(--bg-dark)';
-        document.getElementById('emojiAvatars').style.display = 'none';
-        document.getElementById('imageAvatarSection').style.display = 'block';
-        updateProfileAvatar();
-      });
-      
-      document.querySelectorAll('.avatar-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('.avatar-btn').forEach(b => b.style.border = '2px solid transparent');
-          btn.style.border = '2px solid var(--primary)';
-          currentProfile.avatar = btn.dataset.avatar;
-          currentProfile.avatarType = 'emoji';
-          updateProfileAvatar();
-        });
-      });
-      
-      document.getElementById('avatarImageUpload').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-          if (file.size > 1024 * 1024) {
-            alert('🚫 Imagen muy grande. Máximo 1MB.');
-            return;
-          }
-          
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            currentProfile.avatarImage = event.target.result;
-            currentProfile.avatarType = 'image';
-            updateProfileAvatar();
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-      
-      function updateProfileAvatar() {
-        const avatar = document.getElementById('profileAvatar');
-        if (currentProfile.avatarType === 'image' && currentProfile.avatarImage) {
-          avatar.style.backgroundImage = `url(${currentProfile.avatarImage})`;
-          avatar.style.backgroundSize = 'cover';
-          avatar.style.backgroundPosition = 'center';
-          avatar.textContent = '';
-        } else {
-          avatar.style.backgroundImage = 'none';
-          avatar.textContent = currentProfile.avatar;
-        }
-      }
-      
-      document.getElementById('saveProfile').addEventListener('click', async () => {
-        const username = document.getElementById('profileUsername').value.trim();
-        if (username) {
-          currentProfile.username = username;
-          await saveProfile();
-          updateProfileCircle();
-          alert('✅ Perfil guardado');
-          modal.remove();
-        } else {
-          alert('⚠️ Ingresa un nombre de usuario');
-        }
-      });
-      
-      document.getElementById('closeProfile').addEventListener('click', () => {
-        modal.remove();
-      });
-      
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
-      });
-      
-      // Inicializar vista de avatar
-      updateProfileAvatar();
-    }
-    
-    // Funciones para sistema de seguimiento
-    async function getUserProfile(username) {
-      // Buscar primero en localStorage
-      const savedProfiles = JSON.parse(localStorage.getItem('userProfiles') || '{}');
-      const localProfile = savedProfiles[username.toLowerCase()];
-      
-      if (localProfile) {
-        return localProfile;
-      }
-      
-      // Buscar en Firebase
-      try {
-        const profileQuery = query(collection(db, 'profiles'), where('username', '==', username));
-        const querySnapshot = await getDocs(profileQuery);
-        
-        if (!querySnapshot.empty) {
-          const profileData = querySnapshot.docs[0].data();
-          // Guardar en localStorage para cache
-          savedProfiles[username.toLowerCase()] = profileData;
-          localStorage.setItem('userProfiles', JSON.stringify(savedProfiles));
-          return profileData;
-        }
-      } catch (error) {
-        console.log('Error cargando perfil desde Firebase:', error);
-      }
-      
-      // Perfil por defecto si no se encuentra
-      return {
-        username: username,
-        avatar: '👤',
-        avatarType: 'emoji',
-        avatarImage: null
-      };
-    }
-    
-    function isFollowing(username) {
-      const following = JSON.parse(localStorage.getItem('following') || '[]');
-      return following.includes(username.toLowerCase());
-    }
-    
-    function toggleFollow(username, button) {
-      const following = JSON.parse(localStorage.getItem('following') || '[]');
-      const usernameLower = username.toLowerCase();
-      
-      if (following.includes(usernameLower)) {
-        // Dejar de seguir
-        const index = following.indexOf(usernameLower);
-        following.splice(index, 1);
-        button.innerHTML = '+ Seguir';
-        button.style.background = 'var(--primary)';
-      } else {
-        // Seguir
-        following.push(usernameLower);
-        button.innerHTML = '✓ Siguiendo';
-        button.style.background = '#28a745';
-      }
-      
-      localStorage.setItem('following', JSON.stringify(following));
-    }
-    
-    // Mostrar perfil de otro usuario
-    window.showAuthorProfile = async function(username) {
-      const userDrawings = allDrawings.filter(d => 
-        d.data.autor.toLowerCase() === username.toLowerCase()
-      );
-      
-      const totalLikes = userDrawings.reduce((sum, d) => sum + (d.data.likes || 0), 0);
-      const totalComments = userDrawings.reduce((sum, d) => sum + (d.data.comments?.length || 0), 0);
-      
-      const authorProfile = await getUserProfile(username);
-      
-      const modal = document.createElement('div');
-      modal.className = 'profile-modal';
-      
-      const content = document.createElement('div');
-      content.className = 'profile-content';
-      
-      content.innerHTML = `
-        <div style="text-align: center; margin-bottom: 20px;">
-          <div class="profile-avatar" style="${authorProfile.avatarType === 'image' && authorProfile.avatarImage ? `background-image: url(${authorProfile.avatarImage}); background-size: cover; background-position: center;` : ''}">
-            ${authorProfile.avatarType === 'emoji' ? authorProfile.avatar : ''}
-          </div>
-          <h3 style="color: var(--primary); margin: 0;">${username}</h3>
-          <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">
-            ${userDrawings.length} dibujos • ${totalLikes} likes
-          </p>
-        </div>
-        
-        <div class="profile-stats">
-          <div class="stat-card">
-            <div class="stat-number">${userDrawings.length}</div>
-            <div class="stat-label">Dibujos</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${totalLikes}</div>
-            <div class="stat-label">Likes</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">${totalComments}</div>
-            <div class="stat-label">Comentarios</div>
-          </div>
-        </div>
-        
-        ${userDrawings.length > 0 ? `
-          <div style="margin: 20px 0;">
-            <h5 style="color: var(--primary); margin-bottom: 10px;">🎨 Sus Dibujos</h5>
-            <div class="user-drawings-grid">
-              ${userDrawings.slice(0, 12).map(drawing => `
-                <div class="user-drawing-item" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', '${drawing.data.backgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}'); document.querySelector('.profile-modal').remove();">
-                  <img src="${drawing.data.imagenData}" class="user-drawing-img" alt="Dibujo">
-                  <div class="user-drawing-info">
-                    <div style="color: var(--primary); font-weight: bold;">❤️ ${drawing.data.likes || 0}</div>
-                    <div style="color: var(--text-secondary); font-size: 0.7em;">${drawing.data.categoria}</div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        ` : '<p style="text-align: center; color: var(--text-secondary);">Este usuario aún no tiene dibujos</p>'}
-        
-        <div style="text-align: center; margin-top: 20px;">
-          <button onclick="this.parentElement.parentElement.parentElement.remove()" style="padding: 10px 20px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer;">❌ Cerrar</button>
-        </div>
-      `;
-      
-      modal.appendChild(content);
-      document.body.appendChild(modal);
-      
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
-      });
-    };
-    
-    // Event listener para el círculo de perfil
-    document.getElementById('profileCircle').addEventListener('click', showProfileModal);
-    
-    // Botón para usar nombre del perfil
-    document.getElementById('useProfileName').addEventListener('click', () => {
-      if (currentProfile.username) {
-        document.getElementById('authorName').value = currentProfile.username;
-      } else {
-        alert('⚠️ Configura tu perfil primero');
-        showProfileModal();
-      }
-    });
-    
-    // Cargar perfil al iniciar
-    loadProfile();
-    
     // Guardar dibujo con moderación
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const saveBtn = document.getElementById('saveBtn');
@@ -4139,6 +3650,13 @@ ${userDrawings.length > 0 ? `
       renderPage(allDrawings, currentPage);
       showCounter(allDrawings.length);
       
+      // Actualizar estadísticas del perfil cuando cambien los datos
+      setTimeout(() => {
+        if (currentProfile.username) {
+          updateProfileStats();
+        }
+      }, 1000);
+      
       // Configurar filtros una sola vez
       if (isFirstLoad) {
         setupFilters();
@@ -4431,6 +3949,495 @@ ${userDrawings.length > 0 ? `
         }, i * 50);
       }
     }
+    
+    // Sistema de Perfiles
+    let currentProfile = {
+      username: '',
+      avatar: '👤',
+      avatarType: 'emoji',
+      avatarImage: null,
+      totalDrawings: 0,
+      totalLikes: 0,
+      totalComments: 0,
+      joinDate: Date.now(),
+      favoriteCategory: 'Arte',
+      achievements: []
+    };
+    
+    // Cargar perfil desde localStorage
+    function loadProfile() {
+      const saved = localStorage.getItem('userProfile');
+      if (saved) {
+        currentProfile = { ...currentProfile, ...JSON.parse(saved) };
+      }
+      updateProfileCircle();
+    }
+    
+    // Guardar perfil en localStorage y Firebase
+    async function saveProfile() {
+      localStorage.setItem('userProfile', JSON.stringify(currentProfile));
+      
+      if (currentProfile.username) {
+        try {
+          // Verificar si ya existe un perfil con este username
+          const existingQuery = query(
+            collection(db, 'profiles'), 
+            where('username', '==', currentProfile.username)
+          );
+          const existingDocs = await getDocs(existingQuery);
+          
+          const profileData = {
+            username: currentProfile.username,
+            avatar: currentProfile.avatar,
+            avatarType: currentProfile.avatarType,
+            avatarImage: currentProfile.avatarImage,
+            totalDrawings: currentProfile.totalDrawings || 0,
+            totalLikes: currentProfile.totalLikes || 0,
+            achievements: currentProfile.achievements || [],
+            domain: 'thisisfenix.github.io',
+            joinDate: currentProfile.joinDate || Date.now(),
+            lastUpdated: Date.now()
+          };
+          
+          if (existingDocs.empty) {
+            // Solo crear si no existe
+            await addDoc(collection(db, 'profiles'), profileData);
+            console.log('Perfil creado en Firebase');
+          } else {
+            // Actualizar el existente
+            const docId = existingDocs.docs[0].id;
+            await updateDoc(doc(db, 'profiles', docId), profileData);
+            console.log('Perfil actualizado en Firebase');
+          }
+        } catch (error) {
+          if (error.code !== 'permission-denied') {
+            console.log('Error guardando perfil en Firebase:', error);
+          }
+        }
+      }
+    }
+    
+    // Actualizar círculo de perfil
+    function updateProfileCircle() {
+      const circle = document.getElementById('profileCircle');
+      if (circle) {
+        if (currentProfile.avatarType === 'image' && currentProfile.avatarImage) {
+          circle.style.backgroundImage = `url(${currentProfile.avatarImage})`;
+          circle.style.backgroundSize = 'cover';
+          circle.style.backgroundPosition = 'center';
+          circle.textContent = '';
+        } else {
+          circle.style.backgroundImage = 'none';
+          circle.textContent = currentProfile.avatar;
+        }
+        circle.title = currentProfile.username || 'Mi Perfil';
+      }
+    }
+    
+    // Actualizar estadísticas del perfil
+    function updateProfileStats() {
+      // Contar dibujos del usuario
+      const userDrawings = allDrawings.filter(d => 
+        d.data.autor.toLowerCase() === currentProfile.username.toLowerCase()
+      );
+      
+      currentProfile.totalDrawings = userDrawings.length;
+      currentProfile.totalLikes = userDrawings.reduce((sum, d) => sum + (d.data.likes || 0), 0);
+      currentProfile.totalComments = userDrawings.reduce((sum, d) => sum + (d.data.comments?.length || 0), 0);
+      
+      // Categoría favorita
+      const categories = {};
+      userDrawings.forEach(d => {
+        const cat = d.data.categoria || 'Arte';
+        categories[cat] = (categories[cat] || 0) + 1;
+      });
+      const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
+      if (topCategory) {
+        currentProfile.favoriteCategory = topCategory[0];
+      }
+      
+      // Logros
+      currentProfile.achievements = [];
+      if (currentProfile.totalDrawings >= 1) currentProfile.achievements.push('🎨 Primer Dibujo');
+      if (currentProfile.totalDrawings >= 5) currentProfile.achievements.push('🖌️ Artista Activo');
+      if (currentProfile.totalDrawings >= 10) currentProfile.achievements.push('🏆 Maestro del Arte');
+      if (currentProfile.totalLikes >= 10) currentProfile.achievements.push('❤️ Popular');
+      if (currentProfile.totalLikes >= 50) currentProfile.achievements.push('⭐ Estrella');
+      if (currentProfile.totalComments >= 20) currentProfile.achievements.push('💬 Conversador');
+      
+      saveProfile();
+    }
+    
+    // Mostrar modal de perfil
+    function showProfileModal() {
+      updateProfileStats();
+      
+      const modal = document.createElement('div');
+      modal.className = 'profile-modal';
+      
+      const content = document.createElement('div');
+      content.className = 'profile-content';
+      
+      // Obtener dibujos del usuario
+      const userDrawings = allDrawings.filter(d => 
+        d.data.autor.toLowerCase() === (currentProfile.username || '').toLowerCase()
+      ).slice(0, 12);
+      
+      content.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div class="profile-avatar" id="profileAvatar" style="${currentProfile.avatarType === 'image' && currentProfile.avatarImage ? `background-image: url(${currentProfile.avatarImage}); background-size: cover; background-position: center;` : ''}">
+            ${currentProfile.avatarType === 'emoji' ? currentProfile.avatar : ''}
+          </div>
+          <h3 style="color: var(--primary); margin: 0;">${currentProfile.username || 'Usuario Anónimo'}</h3>
+          <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">
+            Miembro desde ${new Date(currentProfile.joinDate).toLocaleDateString('es-ES')}
+          </p>
+        </div>
+        
+        <div class="profile-stats">
+          <div class="stat-card">
+            <div class="stat-number">${currentProfile.totalDrawings}</div>
+            <div class="stat-label">Dibujos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${currentProfile.totalLikes}</div>
+            <div class="stat-label">Likes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${currentProfile.totalComments}</div>
+            <div class="stat-label">Comentarios</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${currentProfile.favoriteCategory}</div>
+            <div class="stat-label">Categoría Fav.</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${JSON.parse(localStorage.getItem('following') || '[]').length}</div>
+            <div class="stat-label">Siguiendo</div>
+          </div>
+        </div>
+        
+        ${JSON.parse(localStorage.getItem('following') || '[]').length > 0 ? `
+          <div style="margin: 20px 0;">
+            <h5 style="color: var(--primary); margin-bottom: 10px;">👥 Siguiendo (${JSON.parse(localStorage.getItem('following') || '[]').length})</h5>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              ${JSON.parse(localStorage.getItem('following') || '[]').map(username => `
+                <span onclick="showAuthorProfile('${username}')" style="background: var(--bg-dark); padding: 6px 12px; border-radius: 15px; font-size: 0.8em; border: 1px solid var(--primary); cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='var(--primary)'" onmouseout="this.style.background='var(--bg-dark)'">
+                  👤 ${username}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+        
+        ${currentProfile.achievements.length > 0 ? `
+          <div style="margin: 20px 0;">
+            <h5 style="color: var(--primary); margin-bottom: 10px;">🏆 Logros</h5>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              ${currentProfile.achievements.map(achievement => `
+                <span style="background: var(--bg-dark); padding: 6px 12px; border-radius: 15px; font-size: 0.8em; border: 1px solid var(--primary);">
+                  ${achievement}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+        
+        ${userDrawings.length > 0 ? `
+          <div style="margin: 20px 0;">
+            <h5 style="color: var(--primary); margin-bottom: 10px;">🎨 Mis Dibujos (${currentProfile.totalDrawings})</h5>
+            <div class="user-drawings-grid">
+              ${userDrawings.map(drawing => `
+                <div class="user-drawing-item" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', '${drawing.data.backgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}')">
+                  <img src="${drawing.data.imagenData}" class="user-drawing-img" alt="Dibujo">
+                  <div class="user-drawing-info">
+                    <div style="color: var(--primary); font-weight: bold;">❤️ ${drawing.data.likes || 0}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.7em;">${drawing.data.categoria}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            ${currentProfile.totalDrawings > 12 ? `<p style="text-align: center; color: var(--text-secondary); font-size: 0.8em; margin-top: 10px;">... y ${currentProfile.totalDrawings - 12} más</p>` : ''}
+          </div>
+        ` : ''}
+        
+        <div style="border-top: 1px solid var(--primary); padding-top: 20px; margin-top: 20px;">
+          <h5 style="color: var(--primary); margin-bottom: 15px;">⚙️ Configuración</h5>
+          
+          <div style="margin-bottom: 15px;">
+            <label style="color: var(--text-primary); display: block; margin-bottom: 5px;">👤 Nombre de Usuario</label>
+            <input type="text" id="profileUsername" value="${currentProfile.username}" placeholder="Tu nombre de usuario" style="width: 100%; padding: 8px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); border-radius: 5px;">
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <label style="color: var(--text-primary); display: block; margin-bottom: 5px;">😀 Avatar</label>
+            
+            <div style="margin-bottom: 10px;">
+              <button id="useEmojiAvatar" style="padding: 6px 12px; margin-right: 10px; background: ${currentProfile.avatarType === 'emoji' ? 'var(--primary)' : 'var(--bg-dark)'}; color: white; border: 1px solid var(--primary); border-radius: 5px; cursor: pointer; font-size: 0.8em;">📱 Emoji</button>
+              <button id="useImageAvatar" style="padding: 6px 12px; background: ${currentProfile.avatarType === 'image' ? 'var(--primary)' : 'var(--bg-dark)'}; color: white; border: 1px solid var(--primary); border-radius: 5px; cursor: pointer; font-size: 0.8em;">🖼️ Imagen</button>
+            </div>
+            
+            <div id="emojiAvatars" style="display: ${currentProfile.avatarType === 'emoji' ? 'flex' : 'none'}; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+              ${['👤', '😀', '😎', '🤓', '🎨', '🖌️', '🎭', '🦄', '🐱', '🐶', '🦊', '🐼'].map(emoji => `
+                <button class="avatar-btn" data-avatar="${emoji}" style="width: 40px; height: 40px; border: 2px solid ${currentProfile.avatar === emoji && currentProfile.avatarType === 'emoji' ? 'var(--primary)' : 'transparent'}; background: var(--bg-dark); border-radius: 50%; cursor: pointer; font-size: 1.2em;">
+                  ${emoji}
+                </button>
+              `).join('')}
+            </div>
+            
+            <div id="imageAvatarSection" style="display: ${currentProfile.avatarType === 'image' ? 'block' : 'none'};">
+              <input type="file" id="avatarImageUpload" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); border-radius: 5px; margin-bottom: 10px;">
+              <small style="color: var(--text-secondary); display: block;">Sube una imagen PNG/JPG (máx 1MB)</small>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button id="saveProfile" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">💾 Guardar</button>
+            <button id="closeProfile" style="padding: 10px 20px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer;">❌ Cerrar</button>
+          </div>
+        </div>
+      `;
+      
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+      
+      // Event listeners para avatares
+      document.getElementById('useEmojiAvatar').addEventListener('click', () => {
+        currentProfile.avatarType = 'emoji';
+        document.getElementById('useEmojiAvatar').style.background = 'var(--primary)';
+        document.getElementById('useImageAvatar').style.background = 'var(--bg-dark)';
+        document.getElementById('emojiAvatars').style.display = 'flex';
+        document.getElementById('imageAvatarSection').style.display = 'none';
+        updateProfileAvatar();
+      });
+      
+      document.getElementById('useImageAvatar').addEventListener('click', () => {
+        currentProfile.avatarType = 'image';
+        document.getElementById('useImageAvatar').style.background = 'var(--primary)';
+        document.getElementById('useEmojiAvatar').style.background = 'var(--bg-dark)';
+        document.getElementById('emojiAvatars').style.display = 'none';
+        document.getElementById('imageAvatarSection').style.display = 'block';
+        updateProfileAvatar();
+      });
+      
+      document.querySelectorAll('.avatar-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.avatar-btn').forEach(b => b.style.border = '2px solid transparent');
+          btn.style.border = '2px solid var(--primary)';
+          currentProfile.avatar = btn.dataset.avatar;
+          currentProfile.avatarType = 'emoji';
+          updateProfileAvatar();
+        });
+      });
+      
+      document.getElementById('avatarImageUpload').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+          if (file.size > 1024 * 1024) {
+            alert('🚫 Imagen muy grande. Máximo 1MB.');
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            currentProfile.avatarImage = event.target.result;
+            currentProfile.avatarType = 'image';
+            updateProfileAvatar();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      
+      function updateProfileAvatar() {
+        const avatar = document.getElementById('profileAvatar');
+        if (currentProfile.avatarType === 'image' && currentProfile.avatarImage) {
+          avatar.style.backgroundImage = `url(${currentProfile.avatarImage})`;
+          avatar.style.backgroundSize = 'cover';
+          avatar.style.backgroundPosition = 'center';
+          avatar.textContent = '';
+        } else {
+          avatar.style.backgroundImage = 'none';
+          avatar.textContent = currentProfile.avatar;
+        }
+      }
+      
+      document.getElementById('saveProfile').addEventListener('click', async () => {
+        const username = document.getElementById('profileUsername').value.trim();
+        if (username) {
+          currentProfile.username = username;
+          await saveProfile();
+          updateProfileCircle();
+          alert('✅ Perfil guardado');
+          modal.remove();
+        } else {
+          alert('⚠️ Ingresa un nombre de usuario');
+        }
+      });
+      
+      document.getElementById('closeProfile').addEventListener('click', () => {
+        modal.remove();
+      });
+      
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+      
+      // Inicializar vista de avatar
+      updateProfileAvatar();
+    }
+    
+    // Funciones para sistema de seguimiento
+    async function getUserProfile(username) {
+      // Buscar primero en localStorage
+      const savedProfiles = JSON.parse(localStorage.getItem('userProfiles') || '{}');
+      const localProfile = savedProfiles[username.toLowerCase()];
+      
+      if (localProfile) {
+        return localProfile;
+      }
+      
+      // Buscar en Firebase
+      try {
+        const profileQuery = query(collection(db, 'profiles'), where('username', '==', username));
+        const querySnapshot = await getDocs(profileQuery);
+        
+        if (!querySnapshot.empty) {
+          const profileData = querySnapshot.docs[0].data();
+          // Guardar en localStorage para cache
+          savedProfiles[username.toLowerCase()] = profileData;
+          localStorage.setItem('userProfiles', JSON.stringify(savedProfiles));
+          return profileData;
+        }
+      } catch (error) {
+        console.log('Error cargando perfil desde Firebase:', error);
+      }
+      
+      // Perfil por defecto si no se encuentra
+      return {
+        username: username,
+        avatar: '👤',
+        avatarType: 'emoji',
+        avatarImage: null
+      };
+    }
+    
+    function isFollowing(username) {
+      const following = JSON.parse(localStorage.getItem('following') || '[]');
+      return following.includes(username.toLowerCase());
+    }
+    
+    function toggleFollow(username, button) {
+      const following = JSON.parse(localStorage.getItem('following') || '[]');
+      const usernameLower = username.toLowerCase();
+      
+      if (following.includes(usernameLower)) {
+        // Dejar de seguir
+        const index = following.indexOf(usernameLower);
+        following.splice(index, 1);
+        button.innerHTML = '+ Seguir';
+        button.style.background = 'var(--primary)';
+      } else {
+        // Seguir
+        following.push(usernameLower);
+        button.innerHTML = '✓ Siguiendo';
+        button.style.background = '#28a745';
+      }
+      
+      localStorage.setItem('following', JSON.stringify(following));
+    }
+    
+    // Mostrar perfil de otro usuario
+    window.showAuthorProfile = async function(username) {
+      const userDrawings = allDrawings.filter(d => 
+        d.data.autor.toLowerCase() === username.toLowerCase()
+      );
+      
+      const totalLikes = userDrawings.reduce((sum, d) => sum + (d.data.likes || 0), 0);
+      const totalComments = userDrawings.reduce((sum, d) => sum + (d.data.comments?.length || 0), 0);
+      
+      const authorProfile = await getUserProfile(username);
+      
+      const modal = document.createElement('div');
+      modal.className = 'profile-modal';
+      
+      const content = document.createElement('div');
+      content.className = 'profile-content';
+      
+      content.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div class="profile-avatar" style="${authorProfile.avatarType === 'image' && authorProfile.avatarImage ? `background-image: url(${authorProfile.avatarImage}); background-size: cover; background-position: center;` : ''}">
+            ${authorProfile.avatarType === 'emoji' ? authorProfile.avatar : ''}
+          </div>
+          <h3 style="color: var(--primary); margin: 0;">${username}</h3>
+          <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">
+            ${userDrawings.length} dibujos • ${totalLikes} likes
+          </p>
+        </div>
+        
+        <div class="profile-stats">
+          <div class="stat-card">
+            <div class="stat-number">${userDrawings.length}</div>
+            <div class="stat-label">Dibujos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${totalLikes}</div>
+            <div class="stat-label">Likes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${totalComments}</div>
+            <div class="stat-label">Comentarios</div>
+          </div>
+        </div>
+        
+        ${userDrawings.length > 0 ? `
+          <div style="margin: 20px 0;">
+            <h5 style="color: var(--primary); margin-bottom: 10px;">🎨 Sus Dibujos</h5>
+            <div class="user-drawings-grid">
+              ${userDrawings.slice(0, 12).map(drawing => `
+                <div class="user-drawing-item" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', '${drawing.data.backgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}'); document.querySelector('.profile-modal').remove();">
+                  <img src="${drawing.data.imagenData}" class="user-drawing-img" alt="Dibujo">
+                  <div class="user-drawing-info">
+                    <div style="color: var(--primary); font-weight: bold;">❤️ ${drawing.data.likes || 0}</div>
+                    <div style="color: var(--text-secondary); font-size: 0.7em;">${drawing.data.categoria}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : '<p style="text-align: center; color: var(--text-secondary);">Este usuario aún no tiene dibujos</p>'}
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <button onclick="this.parentElement.parentElement.parentElement.remove()" style="padding: 10px 20px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer;">❌ Cerrar</button>
+        </div>
+      `;
+      
+      modal.appendChild(content);
+      document.body.appendChild(modal);
+      
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    };
+    
+    // Event listener para el círculo de perfil
+    document.getElementById('profileCircle').addEventListener('click', showProfileModal);
+    
+    // Botón para usar nombre del perfil
+    document.getElementById('useProfileName').addEventListener('click', () => {
+      if (currentProfile.username) {
+        document.getElementById('authorName').value = currentProfile.username;
+      } else {
+        alert('⚠️ Configura tu perfil primero');
+        showProfileModal();
+      }
+    });
+    
+    // Cargar perfil al iniciar
+    loadProfile();
     
     // Funciones globales
     window.downloadImage = function(imageData, author) {
@@ -4863,7 +4870,7 @@ ${userDrawings.length > 0 ? `
     // Enviar sugerencia
     document.getElementById('submitSuggestion').addEventListener('click', async () => {
       const submitBtn = document.getElementById('submitSuggestion');
-      const suggestionTextSpan = document.getElementById('suggestionText');
+      const suggestionTextSpan = document.getElementById('suggestionBtnText');
       const suggestionLoader = document.getElementById('suggestionLoader');
       
       const author = document.getElementById('suggestionAuthor').value.trim() || 'Anónimo';

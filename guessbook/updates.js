@@ -1,4 +1,4 @@
-// Sistema de updates para Guestbook v1.0
+// Sistema de updates para Guestbook v1.0.3 - Sistema de Perfiles
 class GuestbookUpdates {
   constructor() {
     this.readmeUrl = 'README.md';
@@ -91,41 +91,65 @@ class GuestbookUpdates {
 
   getFallbackContent() {
     return `
-      <h3 style="color: var(--primary); text-align: center;">🎨 Guestbook de Dibujos v1.0</h3>
+      <h3 style="color: var(--primary); text-align: center;">🎨 Guestbook de Dibujos v1.0.3</h3>
       <p style="color: var(--text-primary); text-align: center; margin-bottom: 30px;">
-        <strong>Un lienzo digital interactivo donde los visitantes pueden dejar su huella artística</strong>
+        <strong>Sistema de Perfiles y Comunidad Artística</strong>
       </p>
+      
+      <div style="background: var(--bg-dark); padding: 20px; border-radius: 10px; border: 2px solid var(--primary); margin-bottom: 30px;">
+        <h4 style="color: var(--primary); text-align: center; margin-bottom: 15px;">🆕 Novedades v1.0.3</h4>
+        <ul style="color: var(--text-primary); margin: 0; padding-left: 20px;">
+          <li>👤 <strong>Sistema de Perfiles Completo</strong>: Avatares personalizados, estadísticas</li>
+          <li>🏆 <strong>Logros y Achievements</strong>: Desbloquea insignias por actividad</li>
+          <li>👥 <strong>Sistema de Seguimiento</strong>: Sigue a tus artistas favoritos</li>
+          <li>📊 <strong>Estadísticas Avanzadas</strong>: Tracking completo de actividad</li>
+          <li>🎨 <strong>Galería Personal</strong>: Ve todos tus dibujos en un lugar</li>
+          <li>📱 <strong>Avatares Emoji e Imagen</strong>: Personalización total</li>
+        </ul>
+      </div>
       
       <h4 style="color: var(--primary);">✨ Características Principales</h4>
       <ul style="color: var(--text-primary); margin: 15px 0; padding-left: 20px;">
-        <li>🖌️ <strong>8 herramientas de dibujo</strong>: Pincel, Spray, Formas, Texto, Borrador, Selección</li>
-        <li>🎨 <strong>Personalización completa</strong>: Colores, tamaños, temas dinámicos</li>
-        <li>🖼️ <strong>Contenido multimedia</strong>: Subir PNG, emojis, filtros</li>
-        <li>📱 <strong>Optimizado para móvil</strong>: Touch events, responsive</li>
-        <li>🌐 <strong>Sistema social</strong>: Likes, comentarios, ranking en tiempo real</li>
-        <li>📄 <strong>Galería avanzada</strong>: Paginación, filtros, búsqueda</li>
-        <li>🛡️ <strong>Seguridad</strong>: Cooldown, moderación, variables protegidas</li>
-        <li>✨ <strong>Efectos visuales</strong>: Sparkles, confetti, animaciones</li>
+        <li>🖌️ <strong>50+ herramientas de dibujo</strong>: Pincel, Spray, Formas, Efectos avanzados</li>
+        <li>🎨 <strong>Personalización completa</strong>: Colores, tamaños, 5 temas dinámicos</li>
+        <li>🖼️ <strong>Contenido multimedia</strong>: PNG, GIF animados, stickers</li>
+        <li>📱 <strong>Optimizado para móvil</strong>: Touch events, responsive, pantalla completa</li>
+        <li>🌐 <strong>Sistema social avanzado</strong>: Likes, comentarios, rankings múltiples</li>
+        <li>📄 <strong>Galería interactiva</strong>: Paginación, filtros, búsqueda, fijados</li>
+        <li>🛡️ <strong>Seguridad robusta</strong>: Moderación IA, cooldown, validaciones</li>
+        <li>✨ <strong>Efectos visuales</strong>: Sparkles, confetti, animaciones CSS</li>
+      </ul>
+      
+      <h4 style="color: var(--primary);">👤 Sistema de Perfiles</h4>
+      <ul style="color: var(--text-primary); margin: 15px 0; padding-left: 20px;">
+        <li>🎭 <strong>Avatares personalizados</strong>: 12 emojis + subida de imagen</li>
+        <li>📈 <strong>Estadísticas detalladas</strong>: Dibujos, likes, comentarios</li>
+        <li>🏆 <strong>Sistema de logros</strong>: 6+ achievements desbloqueables</li>
+        <li>👥 <strong>Red social</strong>: Seguir artistas, ver perfiles</li>
+        <li>🎨 <strong>Galería personal</strong>: Todos tus dibujos organizados</li>
+        <li>💾 <strong>Persistencia</strong>: Datos guardados en localStorage + Firebase</li>
       </ul>
       
       <h4 style="color: var(--primary);">🚀 Tecnologías</h4>
       <p style="color: var(--text-primary);">
-        HTML5 Canvas, JavaScript ES6+, Bootstrap 5.3.3, Firebase Firestore, Netlify
+        HTML5 Canvas, JavaScript ES6+, Bootstrap 5.3.3, Firebase Firestore v10.7.1, CSS Grid/Flexbox
       </p>
       
-      <h4 style="color: var(--primary);">📊 Estadísticas</h4>
+      <h4 style="color: var(--primary);">📊 Estadísticas v1.0.3</h4>
       <ul style="color: var(--text-primary); margin: 15px 0; padding-left: 20px;">
-        <li>~1,200 líneas de JavaScript</li>
-        <li>8 herramientas de dibujo</li>
-        <li>5 temas visuales</li>
-        <li>3 formatos de exportación</li>
-        <li>10+ atajos de teclado</li>
+        <li>~2,500 líneas de JavaScript</li>
+        <li>50+ herramientas y funciones</li>
+        <li>5 temas visuales dinámicos</li>
+        <li>Sistema completo de perfiles</li>
+        <li>20+ atajos de teclado</li>
+        <li>Soporte completo para móvil</li>
       </ul>
       
       <div style="text-align: center; margin-top: 30px; padding: 20px; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--primary);">
         <p style="color: var(--text-secondary); margin: 0;">
           <strong style="color: var(--primary);">👨💻 Desarrollado por ThisIsFenix</strong><br>
-          Noviembre 2024 - Parte del ecosistema FenixLaboratory v2.0.7
+          Diciembre 2024 - Parte del ecosistema FenixLaboratory v2.0.7<br>
+          <small>Sistema de Perfiles y Comunidad Artística</small>
         </p>
       </div>
     `;
