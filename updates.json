@@ -1,26 +1,74 @@
 {
   "proyecto": "FenixLaboratory",
-  "version": "2.0.8",
-  "lastUpdate": "2024-12-19",
+  "version": "2.0.9",
+  "lastUpdate": "2024-12-20",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.0.8",
-    "fecha": "2024-12-19",
+    "numero": "2.0.9",
+    "fecha": "2024-12-20",
     "tipo": "major",
     "estado": "estable",
     "cambios_principales": [
-      "Optimización móvil completa con touch events",
-      "Canvas responsivo con múltiples tamaños",
-      "Modo pantalla completa para dispositivos móviles",
-      "Configuración Firebase simplificada para GitHub Pages",
-      "Guestbook completamente funcional"
+      "Sistema de perfiles de usuario con fotos personalizadas",
+      "Avatares inteligentes con emojis únicos por usuario",
+      "Modal de perfil clickeable con estadísticas detalladas",
+      "Sistema de temas expandido con Funky Atlas",
+      "Metadatos optimizados para Discord y redes sociales"
     ]
   },
   
   "updates": [
+    {
+      "version": "2.0.9",
+      "date": "2025-11-03",
+      "title": "👤 Perfiles de Usuario + Avatares Inteligentes",
+      "type": "major",
+      "features": [
+        "📷 Sistema de fotos de perfil personalizadas (PNG/JPG hasta 1MB)",
+        "🎨 Avatares inteligentes con 20 emojis únicos por usuario",
+        "👤 Modal de perfil clickeable con estadísticas completas",
+        "💾 Persistencia de datos de perfil en localStorage",
+        "🌈 Tema Funky Atlas agregado al sistema de temas",
+        "🎯 Algoritmo determinístico para emojis (mismo usuario = mismo emoji)",
+        "📊 Perfil detallado con likes, comentarios, categoría y fecha de registro",
+        "🖼️ Compresión automática de imágenes a 150x150px máximo",
+        "✨ Avatares consistentes en comentarios, galería y modales",
+        "🎨 Integración completa con sistema de temas existente"
+      ],
+      "fixes": [
+        "🔧 Modal optimizado con perfil compacto que no cubre comentarios",
+        "📱 Comentarios más compactos para mostrar más contenido",
+        "🎨 Avatares de 32px en comentarios, 40px en perfil, 80px en modal",
+        "⚡ Validación automática de archivos (tamaño y tipo)",
+        "🔄 Botón 'Usar perfil' para reutilizar datos guardados",
+        "🚫 Supresión de errores de extensiones del navegador",
+        "📝 Metadatos de Discord/Open Graph con Preview-GuestBook.png",
+        "🎯 Favicon personalizado para el guestbook",
+        "✨ Hover effects y transiciones suaves en perfiles",
+        "🎨 Colores del tema Funky Atlas corregidos (#ff4444, #0f0f1a, #2b1055)"
+      ],
+      "guestbook_improvements": [
+        "👤 Campo de foto de perfil en panel de control",
+        "🎨 20 emojis diferentes para avatares automáticos",
+        "📊 Modal de perfil con estadísticas y descripción generada",
+        "💾 Persistencia automática de foto y nombre de usuario",
+        "🔄 Reutilización inteligente de datos de perfil",
+        "📱 Responsive design para modales en móvil y escritorio",
+        "✨ Efectos visuales mejorados con gradientes y sombras",
+        "🎯 Consistencia visual en toda la aplicación"
+      ],
+      "social_media": [
+        "📱 Open Graph optimizado para Discord",
+        "🐦 Twitter Cards con imagen grande",
+        "🖼️ Preview-GuestBook.png como imagen principal",
+        "📝 Descripción atractiva con características principales",
+        "🔗 URLs correctas para compartir en redes sociales",
+        "🎨 Favicon personalizado del guestbook"
+      ]
+    },
     {
       "version": "2.0.8",
       "date": "2024-12-19",
@@ -341,7 +389,7 @@
   ],
   
   "estadisticas_proyecto": {
-    "total_versiones": 9,
+    "total_versiones": 10,
     "versiones_major": 5,
     "versiones_minor": 1,
     "versiones_new": 1,
@@ -364,10 +412,10 @@
   },
   
   "proximas_actualizaciones": {
-    "v2.0.9": {
+    "v2.1": {
       "fecha_estimada": "2025-01-15",
-      "prioridad": "media",
-      "enfoque": "Mejoras adicionales de UX y nuevas herramientas de dibujo"
+      "prioridad": "alta",
+      "enfoque": "Herramientas de dibujo avanzadas y efectos especiales"
     },
     "v2.1.0": {
       "fecha_estimada": "2025-03-01",

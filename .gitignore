@@ -9,3 +9,9 @@ node_modules/
 # Build files
 dist/
 build/
+
+# Python server for local testing
+server.py
+run-server.bat
+__pycache__/
+*.pyc

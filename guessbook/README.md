@@ -1,248 +1,214 @@
-# 🎨 Guestbook de Dibujos v1.0.3
+# 🎨 Guestbook de Dibujos - Rework Edition
 
-**Sistema de Perfiles y Comunidad Artística - Guestbook interactivo con sistema social completo**
+**Mi experimento de guestbook que se salió de control y ahora es casi una red social**
 
-## 🚀 Versión 1.0.3 - Sistema de Perfiles y Comunidad
+## 📋 ¿Qué es esto?
 
-### 👤 Sistema de Perfiles Completo
+Empezó como un simple guestbook donde la gente podía dejar dibujos. Ahora tiene perfiles, rankings, logros y más funciones de las que probablemente necesita. Pero hey, está chévere.
 
-**Funcionalidades principales del sistema de perfiles:**
+## ✨ Lo que tiene (porque se me fue la mano)
 
-#### 🎭 **Avatares Personalizados**
-- 12 emojis predefinidos para elegir
-- Subida de imagen personalizada (PNG/JPG, máx 1MB)
-- Vista previa en tiempo real
-- Persistencia en localStorage y Firebase
+### 👤 Sistema de perfiles
 
-#### 📊 **Estadísticas Detalladas**
-- Contador de dibujos totales
-- Total de likes recibidos
-- Comentarios generados
-- Categoría favorita automática
-- Fecha de registro
+- Círculo de perfil fijo en esquina superior izquierda
+- Modal de perfil con configuración completa
+- Avatares: 12 emojis predefinidos o imagen personalizada
+- Sesión persistente (30 días)
+- Estadísticas básicas (dibujos, likes, comentarios)
+- Sistema de logros automático
 
-#### 🏆 **Sistema de Logros**
-- 🎨 **Primer Dibujo**: Tu primera obra
-- 🖌️ **Artista Activo**: 5+ dibujos
-- 🏆 **Maestro del Arte**: 10+ dibujos
-- ❤️ **Popular**: 10+ likes totales
-- ⭐ **Estrella**: 50+ likes totales
-- 💬 **Conversador**: 20+ comentarios
+### 🏆 Rankings simples
 
-#### 👥 **Red Social**
-- Sistema de seguimiento de artistas
-- Lista de usuarios seguidos
-- Perfiles públicos de otros usuarios
-- Botones de seguir/dejar de seguir
+- Top artistas por cantidad de dibujos
+- Más populares por likes
+- Más activos recientes
 
-#### 🎨 **Galería Personal**
-- Vista de todos tus dibujos
-- Estadísticas por obra (likes, categoría)
-- Acceso rápido desde el perfil
-- Límite de 12 dibujos mostrados + contador total
+### 🏅 Marcos especiales
 
-### 🏆 Sistema de Rankings Múltiples
+Los dibujos más populares tienen marcos dorados, plateados y de bronce con efectos visuales.
 
-El guestbook incluye **4 tipos de rankings dinámicos** que se actualizan en tiempo real:
+### 📊 Estadísticas que probablemente nadie ve
 
-#### 1. **❤️ Más Populares**
-- Ranking basado en likes recibidos
-- Los dibujos con más corazones aparecen primero
-- Sistema de votación único por usuario
+Tiene un montón de números que se actualizan solos: cuántos dibujos hay, likes totales, promedios y más data inútil pero interesante.
 
-#### 2. **💬 Más Comentados** 
-- Ranking por interacción social
-- Dibujos con más comentarios y engagement
-- Sistema de comentarios en tiempo real
+### 🔄 Todo en tiempo real
 
-#### 3. **🎨 Más Detallados**
-- Ranking por cantidad de trazos/strokes
-- Reconoce el esfuerzo artístico invertido
-- Algoritmo que cuenta cada trazo del pincel
+Usando Firebase porque soy flojo para hacer backend. Los dibujos aparecen al instante, los rankings se actualizan solos y no tienes que recargar nada.
 
-#### 4. **🆕 Recientes**
-- Obras más nuevas primero
-- Ordenado por timestamp de creación
-- Permite descubrir arte fresco
+## 🖌️ Herramientas de dibujo
 
-### 🏅 Sistema de Marcos Especiales
+**Básicas:**
+- Pincel con 4 tipos (normal, fino, grueso, arte)
+- Borrador
+- Relleno (bucket fill)
+- Texto con tamaño variable
+- Spray/aerógrafo
+- Cuentagotas
 
-**Marcos dinámicos según posición en ranking:**
+**Formas:**
+- Círculos
+- Líneas rectas
+- Herramienta de selección
 
-- 🥇 **Top 1**: Marco dorado con aura brillante y corona
-- 🥈 **Top 2**: Marco plateado con medalla de plata  
-- 🥉 **Top 3**: Marco bronce con medalla de bronce
-- 📊 **Indicador numérico**: Muestra posición (#1, #2, #3) junto al nombre
+**Efectos:**
+- Gradientes
+- Neón con resplandor
+- Acuarela (transparencia)
+- Simetría horizontal
 
-### 📊 Estadísticas Avanzadas
+### 🎨 Personalización
 
-**Panel de métricas en tiempo real:**
-- Total de obras en la galería
-- Suma total de likes recibidos
-- Contador de comentarios globales
-- Promedio de likes por obra
-- Distribución por categorías
-- Estadísticas de dispositivos (móvil vs desktop)
-- Promedio de trazos por dibujo
+- 16 colores predefinidos + selector personalizado
+- Control de opacidad del pincel
+- 4 tamaños de canvas + tamaño personalizado
+- Zoom in/out con atajos de teclado
+- 12+ atajos de teclado para herramientas
 
-### 🔄 Actualización en Tiempo Real
+### 🖼️ Sistema de capas y multimedia
 
-- **Firebase Firestore** para sincronización instantánea
-- Rankings que se actualizan automáticamente
-- Nuevos dibujos aparecen sin recargar página
-- Sistema de notificaciones para nuevas obras
+- Sistema de capas completo con opacidad y visibilidad
+- Subir imágenes como fondo
+- Stickers posicionables con click
+- Importar/exportar imágenes PNG
+- Filtros: blur, pixel art, vintage, óleo, carbón
 
-## ✨ Características Principales
+### 🔧 Funciones avanzadas
 
-### 🖌️ Herramientas de Dibujo Avanzadas
-- **Pincel**: Dibujo libre con grosor personalizable
-- **Spray**: Efecto aerógrafo con densidad ajustable  
-- **Formas**: Círculos, rectángulos y líneas perfectas
-- **Texto**: Añadir texto con diferentes tamaños
-- **Borrador**: Eliminar partes del dibujo
-- **Selección**: Copiar y pegar áreas del canvas
+- Historial completo deshacer/rehacer (Ctrl+Z/Ctrl+Y)
+- Zoom con atajos (+/-)
+- Captura de frames para GIF animado
+- Contador de trazos para rankings
+- Prevención de salida sin guardar
 
-### 🎨 Personalización Visual
-- **Paleta de colores**: 8 colores predefinidos + selector personalizado
-- **4 tamaños de canvas**: Pequeño, Mediano, Grande, Panorámico
-- **Temas dinámicos**: Default, Neon, Retro, Hacker, Sunset
-- **Sincronización**: Los temas se mantienen entre páginas
+### 📱 Compatible con móvil
 
-### 🖼️ Contenido Multimedia
-- **🌄 Fondos de Imagen**: Sistema exclusivo para fondos personalizados
-  - Subir PNG/JPG como fondo del canvas
-  - Auto-ajuste al tamaño del canvas
-  - Preserva el dibujo al cambiar fondo
-  - Botón para quitar fondo manteniendo el arte
-- **🏷️ Stickers Personalizados**: Sistema separado para elementos posicionables
-  - Subir PNG/JPG como stickers individuales
-  - Herramienta ✋ Mover para arrastrar stickers
-  - Colocación precisa con click en canvas
-  - Sistema de capas: Fondo → Dibujo → Stickers
-- **🎨 Filtros**: Blur, Pixel Art, Vintage + opción de quitar
+Touch events optimizados y diseño responsive.
 
-### 🔧 Funcionalidades Avanzadas
-- **Historial completo**: Deshacer/Rehacer ilimitado (Ctrl+Z/Ctrl+Y)
-- **Zoom**: Acercar/alejar para detalles precisos
-- **Exportación**: PNG con todo el contenido (fondo + dibujo + stickers)
-- **Atajos de teclado**: B=Pincel, S=Spray, C=Círculo, H=Mover, etc.
-- **🌄 Sistema de Fondos**: Apartado exclusivo para imágenes de fondo
-- **🏷️ Sistema de Stickers**: Apartado separado para elementos móviles
+### 🌐 Sistema social
 
-### 📱 Optimización Móvil
-- **Touch events**: Dibujo táctil mejorado
-- **Responsive**: Adaptación automática a pantallas pequeñas
-- **Prevención de scroll**: No interfiere con el dibujo
-- **Canvas adaptativo**: Se ajusta al dispositivo
+- Likes únicos por usuario
+- Comentarios en tiempo real
+- Búsqueda y filtros
+- Sistema de sugerencias
 
-### 🌐 Sistema Social en Tiempo Real
-- **Firebase**: Base de datos en tiempo real
-- **Likes únicos**: 1 like por persona usando localStorage
-- **Comentarios**: Sistema de comentarios por dibujo
-- **Ranking Top 3**: Los dibujos más populares destacados
-- **Búsqueda**: Por autor y filtros por categoría
+### 📄 Galería
 
-### 📄 Galería Avanzada
-- **Paginación**: 12 dibujos por página
-- **Filtros**: Por autor y categoría
-- **Categorías**: Arte, Meme, Divertido, Abstracto, Otro
-- **Vista modal**: Ampliación con panel de comentarios
-- **Compartir**: Web Share API + copia al portapapeles
+- Paginación de 12 dibujos
+- Filtros por autor y categoría
+- Modal con comentarios
+- Compartir dibujos
 
-### 🛡️ Seguridad y Moderación
-- **Cooldown**: 5 minutos entre dibujos para evitar spam
-- **Moderación básica**: Filtro de palabras extremadamente ofensivas
-- **Prevención de salida**: Aviso si hay trabajo sin guardar
-- **Variables de entorno**: API keys protegidas
+### 🛡️ Anti-spam básico
 
-### ✨ Efectos Visuales
-- **Sparkles**: Partículas al dibujar
-- **Confetti**: Celebración al guardar
-- **Animaciones**: Hover effects en tarjetas
-- **Transiciones**: Suaves cambios de tema
-- **Feedback Visual**: Botones cambian estado (Listo → Aplicado)
-- **Capas Visuales**: Sistema de 3 capas (Fondo, Dibujo, Stickers)
+- 5 minutos entre dibujos (para que no spameen)
+- Filtro de palabrotas extremas
+- Te avisa si te vas sin guardar
+- API keys escondidas como debe ser
 
-## 🚀 Tecnologías Utilizadas
+### ✨ Efectos porque se ve cool
 
-- **Frontend**: HTML5 Canvas, CSS3, JavaScript ES6+
-- **Framework**: Bootstrap 5.3.3
-- **Base de datos**: Firebase Firestore
-- **Iconos**: Bootstrap Icons
-- **Fuentes**: Google Fonts (Space Grotesk)
-- **Hosting**: GitHub Pages
+- Partículas cuando dibujas
+- Confetti cuando guardas
+- Animaciones suaves
+- Feedback visual en los botones
 
-## 📊 Estadísticas de Desarrollo
+## 🛠️ Con qué está hecho
 
-- **Líneas de código**: ~2,500 líneas de JavaScript
-- **Herramientas**: 12+ herramientas de dibujo y edición
-- **Temas**: 5 temas visuales dinámicos
-- **Rankings**: 4 tipos de clasificación en tiempo real
-- **Sistemas multimedia**: 2 (Fondos + Stickers) con apartados exclusivos
-- **Atajos de teclado**: 12+ combinaciones
-- **Eventos touch**: Optimizado para móviles
-- **Cooldown**: 5 minutos entre uploads
-- **Capas de renderizado**: 3 niveles (Fondo, Dibujo, Stickers)
+- HTML5 Canvas para el dibujo
+- JavaScript vanilla (nada de frameworks raros)
+- Bootstrap para no sufrir con CSS
+- Firebase para la base de datos
+- GitHub Pages para hosting gratis
 
-## 🎯 Casos de Uso
+## 📊 Stats actuales
 
-1. **Libro de visitas artístico**: Los visitantes dejan dibujos en lugar de texto
-2. **Galería colaborativa**: Comunidad de arte digital
-3. **Herramienta educativa**: Enseñanza de arte digital
-4. **Entretenimiento**: Dibujo libre y creativo
-5. **Competencias**: Ranking por likes y popularidad
+- ~2,000 líneas de JavaScript
+- 10+ herramientas de dibujo implementadas
+- Sistema modular (8 archivos JS especializados)
+- 11 temas visuales dinámicos
+- 5 filtros de imagen + efectos
+- Panel de admin con gestión completa
+- Sistema dual de comentarios
+- Optimizado para móvil y desktop
 
-## 🆕 Novedades v1.0.3
+## 🎯 Para qué sirve
 
-### 👤 Sistema de Perfiles Completo
-- **Círculo de perfil** fijo en la esquina superior izquierda
-- **Modal de perfil** con toda la información del usuario
-- **Configuración completa** de avatar y nombre de usuario
-- **Persistencia** en localStorage y sincronización con Firebase
+- Libro de visitas pero con dibujos
+- Galería colaborativa
+- Entretenimiento cuando te aburres
+- Competir por likes (porque somos así)
 
-### 🎭 Avatares Personalizados
-- **12 emojis** predefinidos para elegir
-- **Subida de imagen** personalizada con validación
-- **Vista previa** en tiempo real del avatar
-- **Dos modos**: Emoji y Imagen personalizada
+## 🚀 El Rework
 
-### 📊 Estadísticas y Logros
-- **6 logros** desbloqueables por actividad
-- **Estadísticas detalladas** de cada usuario
-- **Tracking automático** de actividad
-- **Sistema de achievements** progresivo
+Lo que empezó como un guestbook simple ahora tiene:
 
-### 👥 Red Social
-- **Sistema de seguimiento** de otros artistas
-- **Perfiles públicos** con información completa
-- **Lista de seguidos** en el perfil personal
-- **Botones de seguir/dejar de seguir** en modales
+- Sistema de perfiles con fotos
+- Panel de administración
+- Sistema de sugerencias
+- Rankings en tiempo real
+- Herramientas de dibujo avanzadas
+- Galería interactiva
+- Comentarios y likes
 
-### 🎨 Galería Personal
-- **Vista de todos los dibujos** del usuario
-- **Acceso directo** desde el perfil
-- **Estadísticas por obra** (likes, categoría)
-- **Integración** con el sistema de perfiles
+### 🎨 Temas visuales (11 disponibles)
 
-## 🔄 Roadmap v1.0.4
+- 🎨 Clásico, 📚 Neón, 💜 Retro, 💻 Hacker
+- 🌊 Océano, 🌅 Atardecer, 🌲 Bosque
+- 🤖 Cyberpunk, ✨ Dorado, ❄️ Hielo
+- 🌈 Funky Atlas (nuevo)
 
-- [x] ✅ Sistema de perfiles completo
-- [x] ✅ Avatares personalizados (emoji + imagen)
-- [x] ✅ Sistema de logros y achievements
-- [x] ✅ Red social con seguimiento
-- [x] ✅ Galería personal integrada
-- [x] ✅ Estadísticas avanzadas por usuario
-- [ ] Notificaciones de actividad
-- [ ] Sistema de mensajes privados
-- [ ] Grupos y comunidades
-- [ ] Challenges y concursos
-- [ ] Sistema de reputación
-- [ ] Badges especiales por temporada
+### 🔮 Coming Soon
 
-## 👨💻 Desarrollado por
+- [ ] Red social (seguir usuarios)
+- [ ] Galería personal por usuario
+- [ ] Herramientas de perspectiva y reglas
+- [ ] Histograma de colores
+- [ ] Herramienta de clonado
 
-**ThisIsFenix** - Diciembre 2024
+## 🔄 Roadmap
+
+### ✅ Implementado
+- Sistema completo de dibujo con 10+ herramientas
+- Sistema de capas con opacidad y visibilidad
+- Perfiles con avatares y estadísticas
+- Sistema de logros automático
+- Galería con comentarios y likes
+- Panel de administración funcional
+- Sistema de sugerencias con imágenes
+- Rankings en tiempo real (3 tipos)
+- Filtros de imagen (5 tipos)
+- 11 temas visuales dinámicos
+- Captura de frames para GIF
+- Estadísticas avanzadas de la galería
+- Sistema de comentarios dual (en documento + colección)
+- Perfiles de usuario clickeables con modal
+
+### 🔮 En desarrollo
+- Generación de GIF animado (frames capturados)
+- Herramientas avanzadas (perspectiva, clonado)
+- Más efectos visuales
+
+### 💭 Ideas futuras
+- Red social completa (seguir usuarios)
+- Notificaciones en tiempo real
+- Concursos de dibujo
+- Modo colaborativo
+- Exportar a más formatos
+
+## 🚀 Cómo usarlo
+
+1. Entra y dibuja con las herramientas del panel derecho
+2. Haz click en el círculo de arriba a la izquierda para configurar tu perfil
+3. Guarda tu dibujo y ve cómo aparece en la galería
+4. Dale like y comenta otros dibujos
+5. Compite en los rankings
+
+**Atajos útiles:** B=Pincel, E=Borrador, T=Texto, Ctrl+Z=Deshacer, +/-=Zoom
+
+## 👨💻 Hecho por
+
+**ThisIsFenix** - El tipo que no sabe cuándo parar de agregar funciones
 
 ---
 
-*Parte del ecosistema FenixLaboratory v2.0.7 - Sistema de Perfiles y Comunidad Artística*
+*Parte del ecosistema FenixLaboratory - Donde los proyectos simples se vuelven complicados*
