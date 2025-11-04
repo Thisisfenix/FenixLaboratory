@@ -585,6 +585,7 @@
                 <button id="eraserBtn" class="btn btn-neon btn-sm">🧽 Borrar</button>
                 <button id="bucketBtn" class="btn btn-neon btn-sm">🪣 Relleno</button>
                 <button id="textBtn" class="btn btn-neon btn-sm">🅰️ Texto</button>
+                <button id="stickerMoveBtn" class="btn btn-neon btn-sm">✋ Mover</button>
               </div>
             </div>
             
@@ -952,6 +953,7 @@
         document.getElementById('eraserBtn')?.addEventListener('click', () => this.canvas.setTool('eraser'));
         document.getElementById('bucketBtn')?.addEventListener('click', () => this.canvas.setTool('bucket'));
         document.getElementById('textBtn')?.addEventListener('click', () => this.canvas.setTool('text'));
+        document.getElementById('stickerMoveBtn')?.addEventListener('click', () => this.setStickerMoveTool());
         
         // Controles de tamaño y opacidad
         document.getElementById('brushSize')?.addEventListener('input', (e) => {
@@ -1034,7 +1036,13 @@
         tools.forEach(tool => {
           const btn = document.getElementById(tool + 'Btn');
           if (btn) {
-            btn.addEventListener('click', () => this.canvas.setTool(tool));
+            btn.addEventListener('click', () => {
+              this.canvas.setTool(tool);
+              this.currentTool = tool;
+              // Actualizar botones
+              document.querySelectorAll('.btn-neon').forEach(b => b.classList.remove('btn-primary'));
+              btn.classList.add('btn-primary');
+            });
           }
         });
         
@@ -1140,9 +1148,15 @@
         this.currentStickerImage = null;
         this.isStickerGif = false;
         this.gifStickers = [];
+        this.selectedSticker = null;
+        this.isDragging = false;
+        this.currentTool = 'brush';
         
         // Configurar canvas para GIFs
         this.setupGifCanvas();
+        
+        // Configurar eventos para mover stickers
+        this.setupStickerMoveEvents();
       }
       
       setupGifCanvas() {
@@ -1588,8 +1602,125 @@
           x: sticker.x,
           y: sticker.y,
           width: sticker.width,
-          height: sticker.height
+          height: sticker.height,
+          element: gifElement
         });
+      }
+      
+      setStickerMoveTool() {
+        this.currentTool = 'stickerMove';
+        this.canvas.canvas.style.cursor = 'grab';
+        
+        // Actualizar botones
+        document.querySelectorAll('.btn-neon').forEach(btn => btn.classList.remove('btn-primary'));
+        document.getElementById('stickerMoveBtn').classList.add('btn-primary');
+        
+        this.ui.showNotification('✋ Herramienta de mover stickers activada', 'info');
+      }
+      
+      setupStickerMoveEvents() {
+        const canvas = this.canvas.canvas;
+        
+        canvas.addEventListener('mousedown', (e) => {
+          if (this.currentTool === 'stickerMove') {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+            
+            this.selectedSticker = this.findStickerAt(x, y);
+            if (this.selectedSticker) {
+              this.isDragging = true;
+              canvas.style.cursor = 'grabbing';
+              e.preventDefault();
+            }
+          }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+          if (this.currentTool === 'stickerMove' && this.isDragging && this.selectedSticker) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+            
+            // Centrar el sticker en el punto de toque
+            const centerOffsetX = this.selectedSticker.width / 2;
+            const centerOffsetY = this.selectedSticker.height / 2;
+            this.selectedSticker.x = x - centerOffsetX;
+            this.selectedSticker.y = y - centerOffsetY;
+            
+            // Mantener dentro del canvas
+            this.selectedSticker.x = Math.max(0, Math.min(canvas.width - this.selectedSticker.width, this.selectedSticker.x));
+            this.selectedSticker.y = Math.max(0, Math.min(canvas.height - this.selectedSticker.height, this.selectedSticker.y));
+            
+            // Actualizar posición del elemento
+            if (this.selectedSticker.element) {
+              this.selectedSticker.element.style.left = this.selectedSticker.x + 'px';
+              this.selectedSticker.element.style.top = this.selectedSticker.y + 'px';
+            }
+            
+            e.preventDefault();
+          }
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+          if (this.currentTool === 'stickerMove' && this.isDragging) {
+            this.isDragging = false;
+            this.selectedSticker = null;
+            canvas.style.cursor = 'grab';
+            this.canvas.saveState();
+          }
+        });
+        
+        // Touch events para móvil
+        canvas.addEventListener('touchstart', (e) => {
+          if (this.currentTool === 'stickerMove') {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+              clientX: touch.clientX,
+              clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+          }
+        }, { passive: false });
+        
+        canvas.addEventListener('touchmove', (e) => {
+          if (this.currentTool === 'stickerMove' && this.isDragging) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+              clientX: touch.clientX,
+              clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+          }
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', (e) => {
+          if (this.currentTool === 'stickerMove') {
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mouseup', {});
+            canvas.dispatchEvent(mouseEvent);
+          }
+        }, { passive: false });
+      }
+      
+      findStickerAt(x, y) {
+        if (!this.gifStickers) return null;
+        
+        // Buscar desde el último (más arriba) hacia el primero
+        for (let i = this.gifStickers.length - 1; i >= 0; i--) {
+          const sticker = this.gifStickers[i];
+          if (!sticker) continue;
+          
+          const margin = 10; // Margen para facilitar la selección
+          
+          if (x >= sticker.x - margin && x <= sticker.x + sticker.width + margin &&
+              y >= sticker.y - margin && y <= sticker.y + sticker.height + margin) {
+            return sticker;
+          }
+        }
+        return null;
       }
       
       async submitSuggestion() {
