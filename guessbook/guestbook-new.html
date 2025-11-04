@@ -340,28 +340,29 @@
       100% { box-shadow: 0 0 15px rgba(40, 167, 69, 0.8); }
     }
     
-    /* Botón F5 para móviles */
+    /* Botón de actualización para móviles */
     .mobile-refresh {
       position: fixed;
-      bottom: 20px;
-      left: 20px;
+      bottom: 80px;
+      right: 20px;
       z-index: 1000;
-      background: var(--primary);
+      background: rgba(255, 107, 53, 0.8);
       color: white;
       border: none;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      font-size: 1.5em;
-      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+      border-radius: 25px;
+      width: 50px;
+      height: 50px;
+      font-size: 1.2em;
+      box-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
       transition: all 0.3s ease;
       display: none;
+      backdrop-filter: blur(10px);
     }
     
     .mobile-refresh:hover {
-      background: #ff8c42;
-      transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+      background: rgba(255, 140, 66, 0.9);
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.5);
     }
     
     .mobile-refresh:active {
@@ -376,9 +377,9 @@
   </style>
 </head>
 <body>
-  <!-- Botón F5 para móviles -->
-  <button class="mobile-refresh" onclick="refreshPage()" title="Refrescar página">
-    🔄
+  <!-- Botón de actualización para móviles -->
+  <button class="mobile-refresh" onclick="refreshPage()" title="Actualizar Guestbook - Limpia cache y recarga la página">
+    ↻
   </button>
   
   <div class="container py-4">
@@ -987,6 +988,9 @@
       }
       
       setupCanvasControls() {
+        // Configurar detección de cambios en canvas
+        this.setupUnsavedChangesDetection();
+        
         // Controles de herramientas
         document.getElementById('brushBtn')?.addEventListener('click', () => {
           this.canvas.setTool('brush');
@@ -1078,6 +1082,8 @@
             this.gifStickers = [];
             this.currentBackgroundImage = null;
             this.isBackgroundGif = false;
+            // Resetear cambios sin guardar
+            window.hasUnsavedChanges = false;
           }
         });
         
@@ -1430,6 +1436,9 @@
           document.getElementById('placeStickerBtn').innerHTML = '📌 Sticker';
           document.getElementById('bgUpload').value = '';
           document.getElementById('stickerUpload').value = '';
+          
+          // Marcar como guardado
+          window.hasUnsavedChanges = false;
           
           this.ui.showNotification('✅ ¡Dibujo guardado!', 'success');
           this.ui.createConfetti();
@@ -2308,6 +2317,38 @@
           img.src = dataUrl;
         });
       }
+      
+      setupUnsavedChangesDetection() {
+        const canvas = this.canvas.canvas;
+        if (!canvas) return;
+        
+        // Detectar cambios en el canvas
+        const detectChange = () => {
+          window.hasUnsavedChanges = true;
+        };
+        
+        // Eventos de dibujo
+        canvas.addEventListener('mousedown', detectChange);
+        canvas.addEventListener('touchstart', detectChange);
+        
+        // Detectar cambios en herramientas que modifican el canvas
+        const toolButtons = [
+          'brushBtn', 'eraserBtn', 'bucketBtn', 'textBtn',
+          'sprayBtn', 'lineBtn', 'clearBtn', 'undoBtn', 'redoBtn'
+        ];
+        
+        toolButtons.forEach(btnId => {
+          const btn = document.getElementById(btnId);
+          if (btn) {
+            btn.addEventListener('click', detectChange);
+          }
+        });
+        
+        // Detectar importación de imágenes
+        document.getElementById('importBtn')?.addEventListener('change', detectChange);
+        document.getElementById('setBgBtn')?.addEventListener('click', detectChange);
+        document.getElementById('placeStickerBtn')?.addEventListener('click', detectChange);
+      }
     }
     
     // Inicializar aplicación
@@ -2335,8 +2376,27 @@
     // Variables globales para admin
     let isAdminLoggedIn = false;
     
+    // Variable global para cambios sin guardar
+    window.hasUnsavedChanges = false;
+    
     // Función global para refrescar página
     window.refreshPage = function() {
+      // Verificar cambios sin guardar
+      if (window.hasUnsavedChanges) {
+        const confirmRefresh = confirm(
+          '⚠️ ¿Estás seguro de actualizar la página?\n\n' +
+          '🎨 Tienes cambios sin guardar en tu dibujo\n' +
+          '🔄 Esta acción limpiará el cache y recargará completamente la página\n' +
+          '💾 Se perderán todos los cambios no guardados\n\n' +
+          '✅ Presiona OK para continuar\n' +
+          '❌ Presiona Cancelar para seguir dibujando'
+        );
+        
+        if (!confirmRefresh) {
+          return;
+        }
+      }
+      
       // Mostrar animación de carga
       const btn = document.querySelector('.mobile-refresh');
       if (btn) {
