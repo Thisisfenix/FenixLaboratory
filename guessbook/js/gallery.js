@@ -552,7 +552,7 @@ window.downloadImage = function(imageData, author) {
   link.click();
 };
 
-window.viewImage = async function(imageData, drawingId, isAnimated = 'false', backgroundGif = '', gifStickers = null) {
+window.viewImage = async function(imageData, drawingId, isAnimated = false, backgroundGif = '', gifStickers = null) {
   isAnimated = isAnimated === 'true' || isAnimated === true;
   const existingModal = document.querySelector('.image-modal');
   if (existingModal) existingModal.remove();
@@ -780,18 +780,14 @@ async function loadComments(drawingId) {
   try {
     console.log('Cargando comentarios para:', drawingId);
     
-    // Intentar obtener comentarios de ambas fuentes
-    const [drawing, separateComments] = await Promise.all([
-      window.guestbookApp.firebase.getDrawing(drawingId),
-      window.guestbookApp.firebase.getComments(drawingId)
-    ]);
+    // Usar solo el sistema antiguo de comentarios
+    const drawing = await window.guestbookApp.firebase.getDrawing(drawingId);
     
     const container = document.getElementById('commentsContainer');
     if (!container) return;
     
-    // Combinar comentarios de ambas fuentes
-    const drawingComments = drawing?.data?.comments || [];
-    const allComments = [...drawingComments, ...separateComments.map(c => c.data)];
+    // Solo comentarios del documento del dibujo
+    const allComments = drawing?.data?.comments || [];
     
     console.log('Comentarios encontrados:', allComments.length);
     
@@ -878,6 +874,27 @@ window.addComment = async function(drawingId) {
     return;
   }
   
+  // Prevención de comentarios duplicados
+  try {
+    const drawing = await window.guestbookApp.firebase.getDrawing(drawingId);
+    const existingComments = drawing?.data?.comments || [];
+    
+    // Verificar duplicado exacto en los últimos 5 minutos
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+    const isDuplicate = existingComments.some(existingComment => 
+      existingComment.texto === comment && 
+      existingComment.autor === author &&
+      existingComment.timestamp > fiveMinutesAgo
+    );
+    
+    if (isDuplicate) {
+      alert('Ya enviaste este comentario recientemente. Espera un poco antes de comentar lo mismo.');
+      return;
+    }
+  } catch (error) {
+    console.warn('Error verificando duplicados:', error);
+  }
+  
   const btn = document.querySelector(`button[onclick="addComment('${drawingId}')"]`);
   if (!btn) {
     console.error('No se encontró el botón de comentar');
@@ -898,23 +915,26 @@ window.addComment = async function(drawingId) {
     
     console.log('Enviando comentario:', commentData);
     
-    // Intentar ambos métodos para compatibilidad
-    try {
-      // Método 1: Colección separada
-      await window.guestbookApp.firebase.addComment(drawingId, commentData);
-      console.log('Comentario guardado en colección separada');
-    } catch (separateError) {
-      console.log('Error en colección separada, intentando en documento:', separateError);
+    // Solo usar el sistema antiguo (dentro del documento del dibujo)
+    const drawing = await window.guestbookApp.firebase.getDrawing(drawingId);
+    if (drawing) {
+      const currentComments = drawing.data.comments || [];
       
-      // Método 2: Dentro del documento del dibujo
-      const drawing = await window.guestbookApp.firebase.getDrawing(drawingId);
-      if (drawing) {
-        const currentComments = drawing.data.comments || [];
-        await window.guestbookApp.firebase.updateDrawing(drawingId, {
-          comments: [...currentComments, commentData]
-        });
-        console.log('Comentario guardado en documento del dibujo');
+      // Verificación final antes de guardar
+      const finalCheck = currentComments.some(c => 
+        c.texto === commentData.texto && 
+        c.autor === commentData.autor &&
+        Math.abs(c.timestamp - commentData.timestamp) < 10000
+      );
+      
+      if (finalCheck) {
+        throw new Error('Comentario duplicado detectado');
       }
+      
+      await window.guestbookApp.firebase.updateDrawing(drawingId, {
+        comments: [...currentComments, commentData]
+      });
+      console.log('Comentario guardado en documento del dibujo');
     }
     
     // Limpiar campos
@@ -930,12 +950,22 @@ window.addComment = async function(drawingId) {
         }
         window.galleryManager.allDrawings[drawingIndex].data.comments.push(commentData);
         
-        // Actualizar contador en la galería
-        const commentBtns = document.querySelectorAll(`button[onclick*="viewImage"][onclick*="${drawingId}"]`);
-        commentBtns.forEach(commentBtn => {
-          const currentCount = parseInt(commentBtn.textContent.match(/\d+/)?.[0] || '0');
-          commentBtn.innerHTML = `💬 ${currentCount + 1}`;
-        });
+        // Actualizar contador en la galería - buscar por data-id
+        const galleryCard = document.querySelector(`[data-id="${drawingId}"]`);
+        if (galleryCard) {
+          const commentBtn = galleryCard.querySelector('button[onclick*="viewImage"]');
+          if (commentBtn && commentBtn.innerHTML.includes('💬')) {
+            const currentCount = parseInt(commentBtn.textContent.match(/\d+/)?.[0] || '0');
+            commentBtn.innerHTML = `💬 ${currentCount + 1}`;
+          }
+        }
+        
+        // Actualizar contador en el modal si está abierto
+        const modalCommentCount = document.querySelector('#imageModal .comment-count');
+        if (modalCommentCount) {
+          const currentCount = parseInt(modalCommentCount.textContent.match(/\d+/)?.[0] || '0');
+          modalCommentCount.textContent = `💬 ${currentCount + 1} comentarios`;
+        }
         
         // Actualizar rankings
         setTimeout(() => window.galleryManager.updateRankingsSection(), 500);
