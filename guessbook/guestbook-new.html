@@ -514,6 +514,11 @@
     <div class="text-center mb-4">
       <h1 style="color: var(--primary);">🎨 Guestbook NEW</h1>
       <p style="color: var(--text-secondary);">Sistema modular avanzado</p>
+      <div class="d-flex justify-content-center gap-2 mb-3">
+        <a href="../index.html" class="btn btn-outline-secondary btn-sm">
+          🏠 Volver al Lab
+        </a>
+      </div>
     </div>
     
     <!-- Canvas y Controles -->
@@ -689,12 +694,14 @@
               </button>
               <div class="collapse mt-2" id="mediaTools">
                 <div class="mb-2">
-                  <input type="file" id="bgUpload" accept="image/*" class="form-control form-control-sm mb-1">
+                  <input type="file" id="bgUpload" accept=".png,.jpg,.jpeg,.gif" class="form-control form-control-sm mb-1">
                   <button id="setBgBtn" class="btn btn-outline-primary btn-sm w-100" disabled>🖼️ Aplicar Fondo</button>
+                  <small class="text-muted d-block mt-1">📸 PNG/JPG en canvas • 🎬 GIF como fondo animado</small>
                 </div>
                 <div>
-                  <input type="file" id="stickerUpload" accept="image/*" class="form-control form-control-sm mb-1">
+                  <input type="file" id="stickerUpload" accept=".png,.jpg,.jpeg,.gif" class="form-control form-control-sm mb-1">
                   <button id="placeStickerBtn" class="btn btn-outline-success btn-sm w-100" disabled>📌 Sticker</button>
+                  <small class="text-muted d-block mt-1">🖼️ PNG/JPG en canvas • 🎦 GIF como elemento animado</small>
                 </div>
               </div>
             </div>
@@ -1008,6 +1015,12 @@
         document.getElementById('clearBtn')?.addEventListener('click', () => {
           if (confirm('¿Limpiar todo el dibujo?')) {
             this.canvas.clear();
+            // Limpiar también fondos y stickers GIF
+            this.hideVisualGifBackground();
+            document.getElementById('gifStickersContainer').innerHTML = '';
+            this.gifStickers = [];
+            this.currentBackgroundImage = null;
+            this.isBackgroundGif = false;
           }
         });
         
@@ -1087,6 +1100,13 @@
         document.getElementById('stickerUpload')?.addEventListener('change', (e) => this.handleStickerUpload(e));
         document.getElementById('placeStickerBtn')?.addEventListener('click', () => this.placeSticker());
         
+        // Botón para limpiar fondo
+        const clearBgBtn = document.createElement('button');
+        clearBgBtn.className = 'btn btn-outline-warning btn-sm w-100 mt-1';
+        clearBgBtn.innerHTML = '❌ Quitar Fondo';
+        clearBgBtn.addEventListener('click', () => this.clearBackground());
+        document.getElementById('setBgBtn').parentNode.appendChild(clearBgBtn);
+        
 
         
         // Controles de GIF
@@ -1113,6 +1133,39 @@
         // Inicializar lista de capas y contador de frames
         this.canvas.updateLayersList();
         this.updateFrameCounter();
+        
+        // Inicializar variables para GIFs
+        this.currentBackgroundImage = null;
+        this.isBackgroundGif = false;
+        this.currentStickerImage = null;
+        this.isStickerGif = false;
+        this.gifStickers = [];
+        
+        // Configurar canvas para GIFs
+        this.setupGifCanvas();
+      }
+      
+      setupGifCanvas() {
+        // Ajustar contenedores GIF al cambiar tamaño de canvas
+        const observer = new ResizeObserver(() => {
+          const canvas = this.canvas.canvas;
+          const gifBackground = document.getElementById('gifBackground');
+          const gifStickersContainer = document.getElementById('gifStickersContainer');
+          
+          if (gifBackground && canvas) {
+            gifBackground.style.width = canvas.width + 'px';
+            gifBackground.style.height = canvas.height + 'px';
+          }
+          
+          if (gifStickersContainer && canvas) {
+            gifStickersContainer.style.width = canvas.width + 'px';
+            gifStickersContainer.style.height = canvas.height + 'px';
+          }
+        });
+        
+        if (this.canvas.canvas) {
+          observer.observe(this.canvas.canvas);
+        }
       }
       
       resizeCanvas(width, height) {
@@ -1126,6 +1179,20 @@
         const canvasInfo = document.getElementById('canvasInfo');
         if (canvasInfo) {
           canvasInfo.textContent = `${width}×${height}`;
+        }
+        
+        // Actualizar contenedores GIF
+        const gifBackground = document.getElementById('gifBackground');
+        const gifStickersContainer = document.getElementById('gifStickersContainer');
+        
+        if (gifBackground) {
+          gifBackground.style.width = width + 'px';
+          gifBackground.style.height = height + 'px';
+        }
+        
+        if (gifStickersContainer) {
+          gifStickersContainer.style.width = width + 'px';
+          gifStickersContainer.style.height = height + 'px';
         }
         
         this.canvas.saveState();
@@ -1232,12 +1299,47 @@
             drawingData.backgroundGif = imageData;
           }
           
+          // Guardar fondo GIF si existe
+          if (this.isBackgroundGif && this.currentBackgroundImage) {
+            drawingData.backgroundGif = this.currentBackgroundImage.src.length > 900000 ? 
+              await this.compressGifForFirebase(this.currentBackgroundImage.src) : 
+              this.currentBackgroundImage.src;
+          }
+          
+          // Guardar stickers GIF animados
+          if (this.gifStickers && this.gifStickers.length > 0) {
+            drawingData.gifStickers = this.gifStickers.map(s => ({
+              src: String(s.src),
+              x: Number(s.x) || 0,
+              y: Number(s.y) || 0,
+              width: Number(s.width) || 60,
+              height: Number(s.height) || 60
+            }));
+          }
+          
           await this.firebase.saveDrawing(drawingData);
           
           this.canvas.clear();
           document.getElementById('authorName').value = '';
           document.getElementById('categorySelect').value = 'Arte';
           document.getElementById('profilePicture').value = '';
+          
+          // Limpiar fondos y stickers GIF
+          this.hideVisualGifBackground();
+          document.getElementById('gifStickersContainer').innerHTML = '';
+          this.gifStickers = [];
+          this.currentBackgroundImage = null;
+          this.isBackgroundGif = false;
+          this.currentStickerImage = null;
+          this.isStickerGif = false;
+          
+          // Resetear botones
+          document.getElementById('setBgBtn').disabled = true;
+          document.getElementById('setBgBtn').innerHTML = '🖼️ Aplicar Fondo';
+          document.getElementById('placeStickerBtn').disabled = true;
+          document.getElementById('placeStickerBtn').innerHTML = '📌 Sticker';
+          document.getElementById('bgUpload').value = '';
+          document.getElementById('stickerUpload').value = '';
           
           this.ui.showNotification('✅ ¡Dibujo guardado!', 'success');
           this.ui.createConfetti();
@@ -1262,12 +1364,32 @@
         const file = e.target.files[0];
         if (!file) return;
         
+        // Verificar tamaño de archivo (máx 3MB para evitar problemas)
+        if (file.size > 3 * 1024 * 1024) {
+          this.ui.showNotification('🚫 Archivo muy grande. Máximo 3MB permitido.', 'error');
+          e.target.value = '';
+          return;
+        }
+        
         const reader = new FileReader();
         reader.onload = (event) => {
           const img = new Image();
           img.onload = () => {
             this.currentBackgroundImage = img;
-            document.getElementById('setBgBtn').disabled = false;
+            this.isBackgroundGif = file.type === 'image/gif';
+            
+            const btn = document.getElementById('setBgBtn');
+            btn.disabled = false;
+            
+            if (this.isBackgroundGif) {
+              btn.innerHTML = '🎬 GIF Listo';
+              btn.style.background = '#28a745';
+              btn.style.color = 'white';
+            } else {
+              btn.innerHTML = '🖼️ Listo';
+              btn.style.background = '';
+              btn.style.color = '';
+            }
           };
           img.src = event.target.result;
         };
@@ -1277,28 +1399,126 @@
       setBackground() {
         if (!this.currentBackgroundImage) return;
         
+        // Si es GIF, usar fondo visual animado
+        if (this.isBackgroundGif) {
+          this.setVisualGifBackground(this.currentBackgroundImage.src);
+        } else {
+          // Para imágenes estáticas, dibujar en canvas
+          this.hideVisualGifBackground();
+          
+          // Guardar el dibujo actual
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = this.canvas.canvas.width;
+          tempCanvas.height = this.canvas.canvas.height;
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.drawImage(this.canvas.canvas, 0, 0);
+          
+          // Limpiar canvas
+          this.canvas.ctx.clearRect(0, 0, this.canvas.canvas.width, this.canvas.canvas.height);
+          
+          // Dibujar imagen de fondo adaptada al canvas
+          this.canvas.ctx.drawImage(this.currentBackgroundImage, 0, 0, this.canvas.canvas.width, this.canvas.canvas.height);
+          
+          // Restaurar el dibujo encima del fondo
+          this.canvas.ctx.drawImage(tempCanvas, 0, 0);
+        }
+        
+        this.canvas.saveState();
+        
+        const btn = document.getElementById('setBgBtn');
+        if (this.isBackgroundGif) {
+          btn.innerHTML = '🎬 GIF Aplicado';
+          btn.style.background = '#28a745';
+          btn.style.color = 'white';
+        } else {
+          btn.innerHTML = '✅ Aplicado';
+        }
+        
+        setTimeout(() => {
+          btn.innerHTML = '🖼️ Aplicar Fondo';
+          btn.style.background = '';
+          btn.style.color = '';
+        }, 3000);
+      }
+      
+      setVisualGifBackground(gifSrc) {
+        const gifBackground = document.getElementById('gifBackground');
+        const gifImg = document.getElementById('gifBackgroundImg');
+        
+        gifImg.src = gifSrc;
+        gifBackground.style.display = 'block';
+        
+        // Ajustar el contenedor GIF al tamaño actual del canvas
+        gifBackground.style.width = this.canvas.canvas.width + 'px';
+        gifBackground.style.height = this.canvas.canvas.height + 'px';
+        
+        // Hacer el canvas semi-transparente para que se vea el GIF
+        this.canvas.canvas.style.background = 'rgba(255, 255, 255, 0.1)';
+      }
+      
+      hideVisualGifBackground() {
+        const gifBackground = document.getElementById('gifBackground');
+        gifBackground.style.display = 'none';
+        this.canvas.canvas.style.background = 'white';
+      }
+      
+      clearBackground() {
+        if (!confirm('¿Quitar el fondo de imagen?')) return;
+        
+        // Guardar el dibujo actual
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = this.canvas.canvas.width;
         tempCanvas.height = this.canvas.canvas.height;
         const tempCtx = tempCanvas.getContext('2d');
         tempCtx.drawImage(this.canvas.canvas, 0, 0);
         
+        // Limpiar canvas completamente
         this.canvas.ctx.clearRect(0, 0, this.canvas.canvas.width, this.canvas.canvas.height);
-        this.canvas.ctx.drawImage(this.currentBackgroundImage, 0, 0, this.canvas.canvas.width, this.canvas.canvas.height);
+        
+        // Solo restaurar el dibujo (sin fondo)
+        this.canvas.ctx.globalCompositeOperation = 'source-over';
         this.canvas.ctx.drawImage(tempCanvas, 0, 0);
+        
+        // Limpiar variables de fondo
+        this.currentBackgroundImage = null;
+        this.isBackgroundGif = false;
+        this.hideVisualGifBackground();
+        
         this.canvas.saveState();
+        this.ui.showNotification('✅ Fondo eliminado', 'success');
       }
       
       handleStickerUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
         
+        // Verificar tamaño de archivo (máx 2MB para stickers)
+        if (file.size > 2 * 1024 * 1024) {
+          this.ui.showNotification('🚫 Sticker muy grande. Máximo 2MB permitido.', 'error');
+          e.target.value = '';
+          return;
+        }
+        
         const reader = new FileReader();
         reader.onload = (event) => {
           const img = new Image();
           img.onload = () => {
             this.currentStickerImage = img;
-            document.getElementById('placeStickerBtn').disabled = false;
+            this.isStickerGif = file.type === 'image/gif';
+            
+            const btn = document.getElementById('placeStickerBtn');
+            btn.disabled = false;
+            
+            // Mostrar preview si es GIF
+            if (this.isStickerGif) {
+              btn.innerHTML = '📌 GIF Listo';
+              btn.style.background = '#28a745';
+              btn.style.color = 'white';
+            } else {
+              btn.innerHTML = '📌 Listo';
+              btn.style.background = '';
+              btn.style.color = '';
+            }
           };
           img.src = event.target.result;
         };
@@ -1316,13 +1536,60 @@
           const x = (e.clientX - rect.left) * (this.canvas.canvas.width / rect.width) - 30;
           const y = (e.clientY - rect.top) * (this.canvas.canvas.height / rect.height) - 30;
           
-          this.canvas.ctx.drawImage(this.currentStickerImage, x, y, 60, 60);
+          if (this.isStickerGif) {
+            // Para GIFs, crear elemento HTML animado
+            this.createGifStickerElement({
+              id: Date.now(),
+              image: this.currentStickerImage,
+              x: x,
+              y: y,
+              width: 60,
+              height: 60,
+              isGif: true
+            });
+          } else {
+            // Para imágenes estáticas, dibujar en canvas
+            this.canvas.ctx.drawImage(this.currentStickerImage, x, y, 60, 60);
+          }
+          
           this.canvas.canvas.style.cursor = 'crosshair';
           this.canvas.canvas.removeEventListener('click', placeHandler);
           this.canvas.saveState();
         };
         
         this.canvas.canvas.addEventListener('click', placeHandler, { once: true });
+      }
+      
+      createGifStickerElement(sticker) {
+        const container = document.getElementById('gifStickersContainer');
+        const gifElement = document.createElement('img');
+        
+        gifElement.src = sticker.image.src;
+        gifElement.style.cssText = `
+          position: absolute;
+          left: ${sticker.x}px;
+          top: ${sticker.y}px;
+          width: ${sticker.width}px;
+          height: ${sticker.height}px;
+          pointer-events: auto;
+          cursor: grab;
+          z-index: 10;
+          image-rendering: auto;
+        `;
+        
+        gifElement.dataset.stickerId = sticker.id;
+        
+        container.appendChild(gifElement);
+        
+        // Agregar a la lista de stickers para guardar
+        if (!this.gifStickers) this.gifStickers = [];
+        this.gifStickers.push({
+          src: sticker.image.src,
+          x: sticker.x,
+          y: sticker.y,
+          width: sticker.width,
+          height: sticker.height
+        });
       }
       
       async submitSuggestion() {
@@ -1662,6 +1929,64 @@
           reader.onerror = () => reject(new Error('Error leyendo archivo'));
           reader.readAsDataURL(file);
         });
+      }
+      
+      // Función para comprimir GIFs manteniendo animación
+      async compressGifForFirebase(gifDataUrl) {
+        if (!gifDataUrl) return null;
+        
+        try {
+          // Convertir dataURL a blob
+          const response = await fetch(gifDataUrl);
+          const blob = await response.blob();
+          
+          // Si el GIF es pequeño, devolverlo sin comprimir
+          if (blob.size < 800000) {
+            return gifDataUrl;
+          }
+          
+          // Para GIFs grandes, crear una versión comprimida simple
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              
+              // Reducir tamaño manteniendo proporción
+              const maxSize = 400;
+              let { width, height } = img;
+              
+              if (width > maxSize || height > maxSize) {
+                if (width > height) {
+                  height = (height * maxSize) / width;
+                  width = maxSize;
+                } else {
+                  width = (width * maxSize) / height;
+                  height = maxSize;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              ctx.drawImage(img, 0, 0, width, height);
+              
+              // Comprimir como JPEG para reducir tamaño
+              const compressed = canvas.toDataURL('image/jpeg', 0.6);
+              console.log(`GIF comprimido: ${gifDataUrl.length} → ${compressed.length} bytes`);
+              resolve(compressed);
+            };
+            
+            img.onerror = () => {
+              console.log('Error comprimiendo GIF, usando original');
+              resolve(gifDataUrl);
+            };
+            
+            img.src = gifDataUrl;
+          });
+        } catch (error) {
+          console.error('Error comprimiendo GIF:', error);
+          return gifDataUrl;
+        }
       }
     }
     
