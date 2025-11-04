@@ -339,9 +339,48 @@
       0% { box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); }
       100% { box-shadow: 0 0 15px rgba(40, 167, 69, 0.8); }
     }
+    
+    /* Botón F5 para móviles */
+    .mobile-refresh {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 1.5em;
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+      transition: all 0.3s ease;
+      display: none;
+    }
+    
+    .mobile-refresh:hover {
+      background: #ff8c42;
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+    }
+    
+    .mobile-refresh:active {
+      transform: scale(0.95);
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-refresh {
+        display: block;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Botón F5 para móviles -->
+  <button class="mobile-refresh" onclick="refreshPage()" title="Refrescar página">
+    🔄
+  </button>
+  
   <div class="container py-4">
     <div class="version-toggle" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
       <a href="guestbook-old.html" class="btn btn-outline-warning btn-sm">
@@ -1686,6 +1725,16 @@
       setupStickerMoveEvents() {
         const canvas = this.canvas.canvas;
         
+        // Función para limpiar el estado de arrastre
+        const cleanupDrag = () => {
+          if (this.isDragging) {
+            this.isDragging = false;
+            this.selectedSticker = null;
+            canvas.style.cursor = this.currentTool === 'stickerMove' ? 'grab' : 'crosshair';
+            this.canvas.saveState();
+          }
+        };
+        
         canvas.addEventListener('mousedown', (e) => {
           if (this.currentTool === 'stickerMove') {
             const rect = canvas.getBoundingClientRect();
@@ -1697,6 +1746,7 @@
               this.isDragging = true;
               canvas.style.cursor = 'grabbing';
               e.preventDefault();
+              e.stopPropagation();
             }
           }
         });
@@ -1724,50 +1774,80 @@
             }
             
             e.preventDefault();
+            e.stopPropagation();
           }
         });
         
-        canvas.addEventListener('mouseup', () => {
-          if (this.currentTool === 'stickerMove' && this.isDragging) {
-            this.isDragging = false;
-            this.selectedSticker = null;
-            canvas.style.cursor = 'grab';
-            this.canvas.saveState();
-          }
-        });
+        // Eventos de mouseup en canvas y document para asegurar que se libere
+        canvas.addEventListener('mouseup', cleanupDrag);
+        document.addEventListener('mouseup', cleanupDrag);
         
-        // Touch events para móvil
+        // Limpiar cuando el mouse sale del canvas
+        canvas.addEventListener('mouseleave', cleanupDrag);
+        
+        // Limpiar cuando se cambia de herramienta
+        const originalSetTool = this.canvas.setTool;
+        this.canvas.setTool = (tool) => {
+          cleanupDrag();
+          originalSetTool.call(this.canvas, tool);
+        };
+        
+        // Touch events para móvil con mejor manejo
         canvas.addEventListener('touchstart', (e) => {
           if (this.currentTool === 'stickerMove') {
             e.preventDefault();
             const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('mousedown', {
-              clientX: touch.clientX,
-              clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
+            const rect = canvas.getBoundingClientRect();
+            const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+            
+            this.selectedSticker = this.findStickerAt(x, y);
+            if (this.selectedSticker) {
+              this.isDragging = true;
+              canvas.style.cursor = 'grabbing';
+            }
           }
         }, { passive: false });
         
         canvas.addEventListener('touchmove', (e) => {
-          if (this.currentTool === 'stickerMove' && this.isDragging) {
+          if (this.currentTool === 'stickerMove' && this.isDragging && this.selectedSticker) {
             e.preventDefault();
             const touch = e.touches[0];
-            const mouseEvent = new MouseEvent('mousemove', {
-              clientX: touch.clientX,
-              clientY: touch.clientY
-            });
-            canvas.dispatchEvent(mouseEvent);
+            const rect = canvas.getBoundingClientRect();
+            const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+            
+            // Centrar el sticker en el punto de toque
+            const centerOffsetX = this.selectedSticker.width / 2;
+            const centerOffsetY = this.selectedSticker.height / 2;
+            this.selectedSticker.x = x - centerOffsetX;
+            this.selectedSticker.y = y - centerOffsetY;
+            
+            // Mantener dentro del canvas
+            this.selectedSticker.x = Math.max(0, Math.min(canvas.width - this.selectedSticker.width, this.selectedSticker.x));
+            this.selectedSticker.y = Math.max(0, Math.min(canvas.height - this.selectedSticker.height, this.selectedSticker.y));
+            
+            // Actualizar posición del elemento
+            if (this.selectedSticker.element) {
+              this.selectedSticker.element.style.left = this.selectedSticker.x + 'px';
+              this.selectedSticker.element.style.top = this.selectedSticker.y + 'px';
+            }
           }
         }, { passive: false });
         
-        canvas.addEventListener('touchend', (e) => {
-          if (this.currentTool === 'stickerMove') {
-            e.preventDefault();
-            const mouseEvent = new MouseEvent('mouseup', {});
-            canvas.dispatchEvent(mouseEvent);
+        canvas.addEventListener('touchend', cleanupDrag, { passive: false });
+        canvas.addEventListener('touchcancel', cleanupDrag, { passive: false });
+        
+        // Limpiar cuando se pierde el foco de la ventana
+        window.addEventListener('blur', cleanupDrag);
+        
+        // Limpiar cuando se presiona Escape
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.isDragging) {
+            cleanupDrag();
+            this.ui.showNotification('❌ Movimiento de sticker cancelado', 'info');
           }
-        }, { passive: false });
+        });
       }
       
       findStickerAt(x, y) {
@@ -2255,6 +2335,39 @@
     // Variables globales para admin
     let isAdminLoggedIn = false;
     
+    // Función global para refrescar página
+    window.refreshPage = function() {
+      // Mostrar animación de carga
+      const btn = document.querySelector('.mobile-refresh');
+      if (btn) {
+        btn.innerHTML = '⏳';
+        btn.style.animation = 'spin 1s linear infinite';
+      }
+      
+      // Limpiar cache del service worker si existe
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+          }
+        });
+      }
+      
+      // Limpiar cache del navegador
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (let name of names) {
+            caches.delete(name);
+          }
+        });
+      }
+      
+      // Refrescar con cache bypass
+      setTimeout(() => {
+        window.location.reload(true);
+      }, 500);
+    };
+    
     // Funciones globales de administración
     window.toggleAdminPanel = function() {
       const modal = new bootstrap.Modal(document.getElementById('adminPanel'));
@@ -2353,6 +2466,16 @@
       }
       originalConsoleError.apply(console, args);
     };
+    
+    // Agregar animación de spin para el botón de refresh
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>

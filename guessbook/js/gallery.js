@@ -140,7 +140,7 @@ export class GalleryManager {
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
         <div class="card h-100 ${rankClass}" data-id="${drawing.id}" style="background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%); border: 2px solid var(--primary); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative;">
           ${rankBadge}
-          <div style="position: relative; overflow: hidden; cursor: pointer; transition: transform 0.3s ease;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', '${isAnimated}', '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="position: relative; overflow: hidden; cursor: pointer; transition: transform 0.3s ease;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', ${isAnimated}, '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
             ${imageContent}
             <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8em;">
               ${drawing.data.categoria}
@@ -160,7 +160,7 @@ export class GalleryManager {
                 <button class="btn btn-sm like-btn ${isLiked ? 'liked' : ''}" data-id="${drawing.id}" style="background: ${isLiked ? 'var(--primary)' : 'transparent'}; color: ${isLiked ? 'white' : 'var(--primary)'}; border: 2px solid var(--primary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;">
                   ❤️ <span class="like-count">${likes}</span>
                 </button>
-                <button class="btn btn-sm" onclick="event.stopPropagation(); viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', '${isAnimated}', '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" style="background: transparent; color: var(--text-secondary); border: 2px solid var(--text-secondary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;" title="Ver comentarios">
+                <button class="btn btn-sm" onclick="event.stopPropagation(); viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', ${isAnimated}, '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" style="background: transparent; color: var(--text-secondary); border: 2px solid var(--text-secondary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;" title="Ver comentarios">
                   💬 ${comments.length}
                 </button>
               </div>
