@@ -6,6 +6,7 @@ export class GalleryManager {
     this.currentFilter = 'all';
     this.allDrawings = [];
     this.filteredDrawings = [];
+    this.realTimeUpdateInterval = null;
     
     // Hacer disponible globalmente
     window.galleryManager = this;
@@ -14,6 +15,7 @@ export class GalleryManager {
   async init() {
     await this.loadGallery();
     this.setupEventListeners();
+    this.startRealTimeUpdates();
   }
   
   // Alias para compatibilidad
@@ -114,7 +116,7 @@ export class GalleryManager {
     
     return `
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-        <div class="card h-100 ${rankClass}" style="background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%); border: 2px solid var(--primary); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative;">
+        <div class="card h-100 ${rankClass}" data-id="${drawing.id}" style="background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%); border: 2px solid var(--primary); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative;">
           ${rankBadge}
           <div style="position: relative; overflow: hidden;">
             <img src="${imageSource}" class="card-img-top drawing-img" style="height: 200px; object-fit: contain; background: white; cursor: pointer; transition: transform 0.3s ease; image-rendering: auto; -webkit-image-rendering: auto;" onclick="viewImage('${imageSource}', '${drawing.id}', '${isAnimated}')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" loading="lazy">
@@ -174,6 +176,16 @@ export class GalleryManager {
 
         try {
           await this.firebase.toggleLike(drawingId, !isLiked);
+          
+          // Actualizar datos locales inmediatamente
+          const drawingIndex = this.allDrawings.findIndex(d => d.id === drawingId);
+          if (drawingIndex !== -1) {
+            this.allDrawings[drawingIndex].data.likes = Math.max(0, currentLikes + (isLiked ? -1 : 1));
+          }
+          
+          // Actualizar rankings si es necesario
+          setTimeout(() => this.updateRankingsSection(), 500);
+          
         } catch (error) {
           // Revert on error
           if (isLiked) {
@@ -300,6 +312,27 @@ export class GalleryManager {
         this.filterByCategory(e.target.value);
       });
     }
+    
+    // Filtros de búsqueda
+    const searchAuthor = document.getElementById('searchAuthor');
+    const filterCategory = document.getElementById('filterCategory');
+    const clearFilters = document.getElementById('clearFilters');
+    
+    if (searchAuthor) {
+      searchAuthor.addEventListener('input', () => this.applySearchFilters());
+    }
+    
+    if (filterCategory) {
+      filterCategory.addEventListener('change', () => this.applySearchFilters());
+    }
+    
+    if (clearFilters) {
+      clearFilters.addEventListener('click', () => {
+        if (searchAuthor) searchAuthor.value = '';
+        if (filterCategory) filterCategory.value = '';
+        this.applySearchFilters();
+      });
+    }
   }
 
   showError(message) {
@@ -314,6 +347,159 @@ export class GalleryManager {
         </div>
       `;
     }
+  }
+  
+  // Actualizaciones en tiempo real
+  startRealTimeUpdates() {
+    // Actualizar cada 30 segundos
+    this.realTimeUpdateInterval = setInterval(() => {
+      this.updateGalleryData();
+    }, 30000);
+  }
+  
+  stopRealTimeUpdates() {
+    if (this.realTimeUpdateInterval) {
+      clearInterval(this.realTimeUpdateInterval);
+      this.realTimeUpdateInterval = null;
+    }
+  }
+  
+  async updateGalleryData() {
+    try {
+      const newDrawings = await this.firebase.getDrawings();
+      const hasChanges = this.checkForChanges(newDrawings);
+      
+      if (hasChanges) {
+        this.allDrawings = newDrawings.sort((a, b) => b.data.timestamp - a.data.timestamp);
+        this.applyFilter();
+        this.displayGallery();
+        this.displayRankings();
+        
+        // Actualización silenciosa
+      }
+    } catch (error) {
+      console.error('Error en actualización en tiempo real:', error);
+    }
+  }
+  
+  checkForChanges(newDrawings) {
+    if (newDrawings.length !== this.allDrawings.length) {
+      return true;
+    }
+    
+    // Verificar cambios en likes o comentarios
+    let hasChanges = false;
+    for (let i = 0; i < newDrawings.length; i++) {
+      const newDrawing = newDrawings[i];
+      const oldDrawing = this.allDrawings.find(d => d.id === newDrawing.id);
+      
+      if (!oldDrawing) {
+        hasChanges = true;
+        continue;
+      }
+      
+      const oldLikes = oldDrawing.data.likes || 0;
+      const newLikes = newDrawing.data.likes || 0;
+      const oldComments = oldDrawing.data.comments?.length || 0;
+      const newComments = newDrawing.data.comments?.length || 0;
+      
+      if (newLikes !== oldLikes || newComments !== oldComments) {
+        hasChanges = true;
+        
+        // Mostrar indicador de cambio
+        if (newLikes > oldLikes) {
+          this.showChangeIndicator(newDrawing.id, 'like', newLikes - oldLikes);
+        }
+        if (newComments > oldComments) {
+          this.showChangeIndicator(newDrawing.id, 'comment', newComments - oldComments);
+        }
+      }
+    }
+    
+    return hasChanges;
+  }
+  
+  showChangeIndicator(drawingId, type, count) {
+    // Buscar la tarjeta del dibujo
+    const drawingCard = document.querySelector(`[data-id="${drawingId}"]`);
+    if (!drawingCard) return;
+    
+    const indicator = document.createElement('div');
+    indicator.style.cssText = `
+      position: absolute; top: -5px; right: -5px; z-index: 100;
+      background: ${type === 'like' ? '#ff4757' : '#3742fa'};
+      color: white; border-radius: 50%; width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7em; font-weight: bold;
+      animation: bounce 0.6s ease-in-out;
+    `;
+    indicator.innerHTML = type === 'like' ? '❤️' : '💬';
+    
+    drawingCard.style.position = 'relative';
+    drawingCard.appendChild(indicator);
+    
+    setTimeout(() => {
+      if (indicator.parentNode) {
+        indicator.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => indicator.remove(), 300);
+      }
+    }, 3000);
+  }
+  
+
+  
+  showRandomSuggestion() {
+    const suggestions = [
+      '💡 ¿Sabías que puedes hacer doble clic en una imagen para verla en pantalla completa?',
+      '✨ Prueba los filtros de búsqueda para encontrar dibujos específicos',
+      '🎨 Los dibujos con más likes aparecen destacados con efectos especiales',
+      '💬 Deja comentarios en los dibujos para interactuar con otros artistas',
+      '🔄 La galería se actualiza automáticamente cada 30 segundos',
+      '🏆 Revisa los rankings para ver quiénes son los artistas más populares',
+      '📱 El guestbook está optimizado para dispositivos móviles',
+      '🎆 Usa el botón de capturar frames para crear GIFs animados'
+    ];
+    
+    const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+    
+    const suggestionDiv = document.createElement('div');
+    suggestionDiv.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+      background: linear-gradient(135deg, #4CAF50, #45a049); color: white;
+      padding: 12px 16px; border-radius: 10px; font-size: 0.85em;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 300px;
+      animation: slideIn 0.3s ease-out; cursor: pointer;
+    `;
+    suggestionDiv.innerHTML = randomSuggestion;
+    
+    suggestionDiv.addEventListener('click', () => {
+      suggestionDiv.style.animation = 'slideOut 0.3s ease-in';
+      setTimeout(() => suggestionDiv.remove(), 300);
+    });
+    
+    document.body.appendChild(suggestionDiv);
+    
+    setTimeout(() => {
+      if (suggestionDiv.parentNode) {
+        suggestionDiv.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => suggestionDiv.remove(), 300);
+      }
+    }, 5000);
+  }
+  
+  // Filtros de búsqueda
+  applySearchFilters() {
+    const searchTerm = document.getElementById('searchAuthor')?.value.toLowerCase().trim() || '';
+    const categoryFilter = document.getElementById('filterCategory')?.value || '';
+    
+    this.filteredDrawings = this.allDrawings.filter(drawing => {
+      const matchesAuthor = !searchTerm || (drawing.data.autor || '').toLowerCase().includes(searchTerm);
+      const matchesCategory = !categoryFilter || drawing.data.categoria === categoryFilter;
+      return matchesAuthor && matchesCategory;
+    });
+    
+    this.currentPage = 1;
+    this.displayGallery();
   }
 }
 
@@ -677,6 +863,27 @@ window.addComment = async function(drawingId) {
     if (authorInput) authorInput.value = '';
     if (textarea) textarea.value = '';
     
+    // Actualizar datos locales inmediatamente
+    if (window.galleryManager) {
+      const drawingIndex = window.galleryManager.allDrawings.findIndex(d => d.id === drawingId);
+      if (drawingIndex !== -1) {
+        if (!window.galleryManager.allDrawings[drawingIndex].data.comments) {
+          window.galleryManager.allDrawings[drawingIndex].data.comments = [];
+        }
+        window.galleryManager.allDrawings[drawingIndex].data.comments.push(commentData);
+        
+        // Actualizar contador en la galería
+        const commentBtns = document.querySelectorAll(`button[onclick*="viewImage"][onclick*="${drawingId}"]`);
+        commentBtns.forEach(commentBtn => {
+          const currentCount = parseInt(commentBtn.textContent.match(/\d+/)?.[0] || '0');
+          commentBtn.innerHTML = `💬 ${currentCount + 1}`;
+        });
+        
+        // Actualizar rankings
+        setTimeout(() => window.galleryManager.updateRankingsSection(), 500);
+      }
+    }
+    
     // Recargar comentarios
     await loadComments(drawingId);
     
@@ -712,3 +919,34 @@ window.addComment = async function(drawingId) {
 
 // Hacer galleryManager disponible globalmente
 window.galleryManager = null;
+
+// Agregar estilos para animaciones
+if (!document.getElementById('gallery-animations')) {
+  const style = document.createElement('style');
+  style.id = 'gallery-animations';
+  style.textContent = `
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.8); }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  `;
+  document.head.appendChild(style);
+}
