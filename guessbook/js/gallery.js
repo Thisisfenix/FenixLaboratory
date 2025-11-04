@@ -106,8 +106,8 @@ export class GalleryManager {
     const rankBadge = rank ? `<div class="rank-badge rank-${rank}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}</div>` : '';
     
     // Detectar si tiene contenido animado o stickers GIF
-    const hasBackgroundGif = drawing.data.backgroundGif;
-    const hasGifStickers = drawing.data.gifStickers && drawing.data.gifStickers.length > 0;
+    const hasBackgroundGif = drawing.data.backgroundGif && drawing.data.backgroundGif !== '';
+    const hasGifStickers = drawing.data.gifStickers && Array.isArray(drawing.data.gifStickers) && drawing.data.gifStickers.length > 0;
     const isAnimated = hasBackgroundGif || drawing.data.isAnimated || hasGifStickers;
     
     // Debug: Log para verificar datos de stickers
@@ -115,27 +115,21 @@ export class GalleryManager {
       console.log(`Dibujo ${drawing.id} tiene ${drawing.data.gifStickers.length} stickers GIF:`, drawing.data.gifStickers);
     }
     
-    // Crear contenedor de imagen con capas
+    // Crear contenedor de imagen EXACTO como guestbook-old
     let imageContent = '';
     
     if (hasBackgroundGif || hasGifStickers) {
-      // Imagen compuesta con fondo GIF y/o stickers
       imageContent = `
-        <div style="position: relative; width: 100%; height: 200px; background: white; overflow: hidden; border-radius: 4px;">
-          ${hasBackgroundGif ? `<img src="${drawing.data.backgroundGif}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" loading="lazy">` : ''}
-          <img src="${drawing.data.imagenData}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" loading="lazy">
-          ${hasGifStickers ? drawing.data.gifStickers.map(sticker => {
-            const leftPercent = (sticker.x / 600) * 100;
-            const topPercent = (sticker.y / 400) * 100;
-            const widthPercent = (sticker.width / 600) * 100;
-            const heightPercent = (sticker.height / 400) * 100;
-            return `<img src="${sticker.src}" style="position: absolute; left: ${leftPercent}%; top: ${topPercent}%; width: ${widthPercent}%; height: ${heightPercent}%; z-index: 3; image-rendering: auto; pointer-events: none;" loading="lazy">`;
-          }).join('') : ''}
+        <div style="position: relative; width: 100%; height: 200px; background: white; border-radius: 4px; overflow: hidden;">
+          ${hasBackgroundGif ? `<img src="${drawing.data.backgroundGif}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" alt="Fondo GIF animado" loading="lazy">` : ''}
+          <img src="${drawing.data.imagenData}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" alt="Dibujo de ${drawing.data.autor}" loading="lazy">
+          ${hasGifStickers ? drawing.data.gifStickers.map(sticker => `
+            <img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3; image-rendering: auto;" alt="Sticker GIF" loading="lazy">
+          `).join('') : ''}
         </div>
       `;
     } else {
-      // Imagen simple
-      imageContent = `<img src="${drawing.data.imagenData}" class="card-img-top drawing-img" style="height: 200px; object-fit: contain; background: white; cursor: pointer; transition: transform 0.3s ease;" loading="lazy">`;
+      imageContent = `<img src="${drawing.data.imagenData}" class="drawing-img" style="width: 100%; height: 200px; object-fit: contain; background: white; border-radius: 4px; transition: transform 0.3s ease; image-rendering: auto; -webkit-image-rendering: auto;" loading="lazy">`;
     }
     
     const animatedBadge = isAnimated ? `
@@ -148,7 +142,7 @@ export class GalleryManager {
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
         <div class="card h-100 ${rankClass}" data-id="${drawing.id}" style="background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%); border: 2px solid var(--primary); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative;">
           ${rankBadge}
-          <div style="position: relative; overflow: hidden; cursor: pointer; transition: transform 0.3s ease;" onclick="viewImage('${drawing.data.imagenData}', '${drawing.id}', '${isAnimated}', '${hasBackgroundGif ? drawing.data.backgroundGif : ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="position: relative; overflow: hidden; cursor: pointer; transition: transform 0.3s ease;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', '${isAnimated}', '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
             ${imageContent}
             <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8em;">
               ${drawing.data.categoria}
@@ -168,7 +162,7 @@ export class GalleryManager {
                 <button class="btn btn-sm like-btn ${isLiked ? 'liked' : ''}" data-id="${drawing.id}" style="background: ${isLiked ? 'var(--primary)' : 'transparent'}; color: ${isLiked ? 'white' : 'var(--primary)'}; border: 2px solid var(--primary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;">
                   ❤️ <span class="like-count">${likes}</span>
                 </button>
-                <button class="btn btn-sm" onclick="event.stopPropagation(); viewImage('${drawing.data.imagenData}', '${drawing.id}', '${isAnimated}', '${hasBackgroundGif ? drawing.data.backgroundGif : ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" style="background: transparent; color: var(--text-secondary); border: 2px solid var(--text-secondary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;" title="Ver comentarios">
+                <button class="btn btn-sm" onclick="event.stopPropagation(); viewImage('${drawing.data.imagenData.replace(/'/g, "\\'")}'', '${drawing.id}', '${isAnimated}', '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'"): ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" style="background: transparent; color: var(--text-secondary); border: 2px solid var(--text-secondary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;" title="Ver comentarios">
                   💬 ${comments.length}
                 </button>
               </div>
@@ -635,10 +629,9 @@ window.viewImage = async function(imageData, drawingId, isAnimated = 'false', ba
     </div>
   ` : '';
   
-  // Crear contenido de imagen con capas
+  // Crear contenido de imagen EXACTO como guestbook-old
   let imageContent = '';
   if (hasBackgroundGif || hasGifStickers) {
-    // Calcular dimensiones del contenedor basado en la imagen principal
     const containerStyle = `position: relative; max-width: 100%; max-height: ${isMobile ? '35vh' : '70vh'}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; display: inline-block; aspect-ratio: 3/2;`;
     
     imageContent = `
@@ -646,12 +639,10 @@ window.viewImage = async function(imageData, drawingId, isAnimated = 'false', ba
         ${hasBackgroundGif ? `<img src="${backgroundGif}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" loading="lazy">` : ''}
         <img src="${imageData}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" loading="lazy">
         ${hasGifStickers ? parsedGifStickers.map(sticker => {
-          // Calcular posición y tamaño relativo basado en canvas de 600x400
           const leftPercent = (sticker.x / 600) * 100;
           const topPercent = (sticker.y / 400) * 100;
           const widthPercent = (sticker.width / 600) * 100;
           const heightPercent = (sticker.height / 400) * 100;
-          
           return `<img src="${sticker.src}" style="position: absolute; left: ${leftPercent}%; top: ${topPercent}%; width: ${widthPercent}%; height: ${heightPercent}%; z-index: 3; image-rendering: auto; pointer-events: none;" loading="lazy">`;
         }).join('') : ''}
       </div>
