@@ -949,10 +949,26 @@
       
       setupCanvasControls() {
         // Controles de herramientas
-        document.getElementById('brushBtn')?.addEventListener('click', () => this.canvas.setTool('brush'));
-        document.getElementById('eraserBtn')?.addEventListener('click', () => this.canvas.setTool('eraser'));
-        document.getElementById('bucketBtn')?.addEventListener('click', () => this.canvas.setTool('bucket'));
-        document.getElementById('textBtn')?.addEventListener('click', () => this.canvas.setTool('text'));
+        document.getElementById('brushBtn')?.addEventListener('click', () => {
+          this.canvas.setTool('brush');
+          this.currentTool = 'brush';
+          this.updateToolButtons('brushBtn');
+        });
+        document.getElementById('eraserBtn')?.addEventListener('click', () => {
+          this.canvas.setTool('eraser');
+          this.currentTool = 'eraser';
+          this.updateToolButtons('eraserBtn');
+        });
+        document.getElementById('bucketBtn')?.addEventListener('click', () => {
+          this.canvas.setTool('bucket');
+          this.currentTool = 'bucket';
+          this.updateToolButtons('bucketBtn');
+        });
+        document.getElementById('textBtn')?.addEventListener('click', () => {
+          this.canvas.setTool('text');
+          this.currentTool = 'text';
+          this.updateToolButtons('textBtn');
+        });
         document.getElementById('stickerMoveBtn')?.addEventListener('click', () => this.setStickerMoveTool());
         
         // Controles de tamaño y opacidad
@@ -1039,9 +1055,7 @@
             btn.addEventListener('click', () => {
               this.canvas.setTool(tool);
               this.currentTool = tool;
-              // Actualizar botones
-              document.querySelectorAll('.btn-neon').forEach(b => b.classList.remove('btn-primary'));
-              btn.classList.add('btn-primary');
+              this.updateToolButtons(tool + 'Btn');
             });
           }
         });
@@ -1275,9 +1289,18 @@
             this.ui.showNotification('🎬 Creando GIF animado...', 'info');
           }
           
-          const imageData = await this.canvas.getImageData();
+          let imageData = await this.canvas.getImageData();
           const author = document.getElementById('authorName').value || 'Anónimo';
           const category = document.getElementById('categorySelect').value;
+          
+          // Comprimir imagen si es muy grande
+          const imageSize = imageData.length;
+          if (imageSize > 800000) { // ~800KB
+            console.log('🗂️ Comprimiendo imagen:', imageSize, 'bytes');
+            imageData = await this.compressImage(imageData, 600);
+            console.log('✅ Imagen comprimida:', imageData.length, 'bytes');
+            this.ui.showNotification('🗂️ Imagen comprimida para Firebase', 'info');
+          }
           
           // Procesar foto de perfil si se subió
           let profilePicture = null;
@@ -1315,20 +1338,34 @@
           
           // Guardar fondo GIF si existe
           if (this.isBackgroundGif && this.currentBackgroundImage) {
-            drawingData.backgroundGif = this.currentBackgroundImage.src.length > 900000 ? 
-              await this.compressGifForFirebase(this.currentBackgroundImage.src) : 
-              this.currentBackgroundImage.src;
+            const bgSize = this.currentBackgroundImage.src.length;
+            if (bgSize > 800000) {
+              console.warn('⚠️ Fondo GIF muy grande:', bgSize, 'bytes');
+              this.ui.showNotification('⚠️ Fondo GIF muy grande, se comprimirá', 'warning');
+              drawingData.backgroundGif = await this.compressGifForFirebase(this.currentBackgroundImage.src);
+            } else {
+              drawingData.backgroundGif = this.currentBackgroundImage.src;
+            }
           }
           
-          // Guardar stickers GIF animados
+          // Guardar stickers GIF animados (solo datos primitivos)
           if (this.gifStickers && this.gifStickers.length > 0) {
-            drawingData.gifStickers = this.gifStickers.map(s => ({
-              src: String(s.src),
-              x: Number(s.x) || 0,
-              y: Number(s.y) || 0,
-              width: Number(s.width) || 60,
-              height: Number(s.height) || 60
-            }));
+            drawingData.gifStickers = this.gifStickers.map(s => {
+              // Verificar tamaño del src
+              const srcSize = s.src ? s.src.length : 0;
+              if (srcSize > 800000) { // ~800KB
+                console.warn('⚠️ Sticker GIF muy grande, se omitirá:', srcSize, 'bytes');
+                return null;
+              }
+              
+              return {
+                src: String(s.src || ''),
+                x: Number(s.x) || 0,
+                y: Number(s.y) || 0,
+                width: Number(s.width) || 60,
+                height: Number(s.height) || 60
+              };
+            }).filter(s => s !== null); // Filtrar stickers nulos
           }
           
           await this.firebase.saveDrawing(drawingData);
@@ -1366,7 +1403,20 @@
           
         } catch (error) {
           console.error('Error:', error);
-          this.ui.showNotification('❌ Error al guardar', 'error');
+          
+          // Mensajes de error más específicos
+          let errorMessage = '❌ Error al guardar';
+          if (error.message && error.message.includes('invalid nested entity')) {
+            errorMessage = '❌ Error: Datos demasiado complejos para Firebase';
+          } else if (error.message && error.message.includes('too large')) {
+            errorMessage = '❌ Error: Archivo muy grande (máx 800KB)';
+          } else if (error.code === 'permission-denied') {
+            errorMessage = '❌ Error: Sin permisos para guardar';
+          } else if (error.code === 'unavailable') {
+            errorMessage = '❌ Error: Servicio no disponible';
+          }
+          
+          this.ui.showNotification(errorMessage, 'error');
         } finally {
           saveBtn.disabled = false;
           saveText.style.display = 'inline';
@@ -1595,27 +1645,42 @@
         
         container.appendChild(gifElement);
         
-        // Agregar a la lista de stickers para guardar
+        // Agregar a la lista de stickers para guardar (sin elemento DOM)
         if (!this.gifStickers) this.gifStickers = [];
-        this.gifStickers.push({
+        const stickerData = {
           src: sticker.image.src,
           x: sticker.x,
           y: sticker.y,
           width: sticker.width,
-          height: sticker.height,
-          element: gifElement
-        });
+          height: sticker.height
+        };
+        
+        // Verificar tamaño antes de agregar
+        const srcSize = stickerData.src ? stickerData.src.length : 0;
+        if (srcSize > 800000) {
+          this.ui.showNotification('⚠️ Sticker GIF muy grande (>800KB), se guardará localmente pero no en Firebase', 'warning');
+        }
+        
+        // Agregar referencia al elemento para mover
+        stickerData.element = gifElement;
+        this.gifStickers.push(stickerData);
       }
       
       setStickerMoveTool() {
         this.currentTool = 'stickerMove';
         this.canvas.canvas.style.cursor = 'grab';
-        
-        // Actualizar botones
-        document.querySelectorAll('.btn-neon').forEach(btn => btn.classList.remove('btn-primary'));
-        document.getElementById('stickerMoveBtn').classList.add('btn-primary');
-        
+        this.updateToolButtons('stickerMoveBtn');
         this.ui.showNotification('✋ Herramienta de mover stickers activada', 'info');
+      }
+      
+      updateToolButtons(activeButtonId) {
+        // Remover clase activa de todos los botones
+        document.querySelectorAll('.btn-neon').forEach(btn => btn.classList.remove('btn-primary'));
+        // Agregar clase activa al botón seleccionado
+        const activeBtn = document.getElementById(activeButtonId);
+        if (activeBtn) {
+          activeBtn.classList.add('btn-primary');
+        }
       }
       
       setupStickerMoveEvents() {
@@ -2118,6 +2183,50 @@
           console.error('Error comprimiendo GIF:', error);
           return gifDataUrl;
         }
+      }
+      
+      // Función para comprimir imágenes
+      async compressImage(dataUrl, maxSizeKB = 600) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Calcular nuevo tamaño manteniendo proporción
+            let { width, height } = img;
+            const maxDimension = 800;
+            
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = (height * maxDimension) / width;
+                width = maxDimension;
+              } else {
+                width = (width * maxDimension) / height;
+                height = maxDimension;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Dibujar imagen redimensionada
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Comprimir con calidad variable
+            let quality = 0.8;
+            let compressed = canvas.toDataURL('image/jpeg', quality);
+            
+            // Reducir calidad hasta alcanzar el tamaño objetivo
+            while (compressed.length > maxSizeKB * 1024 * 1.37 && quality > 0.3) {
+              quality -= 0.1;
+              compressed = canvas.toDataURL('image/jpeg', quality);
+            }
+            
+            resolve(compressed);
+          };
+          img.src = dataUrl;
+        });
       }
     }
     

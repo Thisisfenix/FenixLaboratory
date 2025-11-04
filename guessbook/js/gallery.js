@@ -105,12 +105,42 @@ export class GalleryManager {
     const rankClass = rank ? `top-drawing rank-${rank}` : '';
     const rankBadge = rank ? `<div class="rank-badge rank-${rank}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}</div>` : '';
     
-    // Detectar si es GIF animado
-    const isAnimated = drawing.data.backgroundGif || drawing.data.isAnimated;
-    const imageSource = isAnimated ? (drawing.data.backgroundGif || drawing.data.imagenData) : drawing.data.imagenData;
+    // Detectar si tiene contenido animado o stickers GIF
+    const hasBackgroundGif = drawing.data.backgroundGif;
+    const hasGifStickers = drawing.data.gifStickers && drawing.data.gifStickers.length > 0;
+    const isAnimated = hasBackgroundGif || drawing.data.isAnimated || hasGifStickers;
+    
+    // Debug: Log para verificar datos de stickers
+    if (hasGifStickers) {
+      console.log(`Dibujo ${drawing.id} tiene ${drawing.data.gifStickers.length} stickers GIF:`, drawing.data.gifStickers);
+    }
+    
+    // Crear contenedor de imagen con capas
+    let imageContent = '';
+    
+    if (hasBackgroundGif || hasGifStickers) {
+      // Imagen compuesta con fondo GIF y/o stickers
+      imageContent = `
+        <div style="position: relative; width: 100%; height: 200px; background: white; overflow: hidden; border-radius: 4px;">
+          ${hasBackgroundGif ? `<img src="${drawing.data.backgroundGif}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" loading="lazy">` : ''}
+          <img src="${drawing.data.imagenData}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" loading="lazy">
+          ${hasGifStickers ? drawing.data.gifStickers.map(sticker => {
+            const leftPercent = (sticker.x / 600) * 100;
+            const topPercent = (sticker.y / 400) * 100;
+            const widthPercent = (sticker.width / 600) * 100;
+            const heightPercent = (sticker.height / 400) * 100;
+            return `<img src="${sticker.src}" style="position: absolute; left: ${leftPercent}%; top: ${topPercent}%; width: ${widthPercent}%; height: ${heightPercent}%; z-index: 3; image-rendering: auto; pointer-events: none;" loading="lazy">`;
+          }).join('') : ''}
+        </div>
+      `;
+    } else {
+      // Imagen simple
+      imageContent = `<img src="${drawing.data.imagenData}" class="card-img-top drawing-img" style="height: 200px; object-fit: contain; background: white; cursor: pointer; transition: transform 0.3s ease;" loading="lazy">`;
+    }
+    
     const animatedBadge = isAnimated ? `
-      <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(255, 107, 53, 0.9); color: white; padding: 4px 8px; border-radius: 15px; font-size: 0.7em; font-weight: bold;">
-        🎬 GIF
+      <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(255, 107, 53, 0.9); color: white; padding: 4px 8px; border-radius: 15px; font-size: 0.7em; font-weight: bold; z-index: 10;">
+        🎬 ${hasGifStickers && hasBackgroundGif ? 'GIF+Stickers' : hasGifStickers ? 'Stickers' : 'GIF'}
       </div>
     ` : '';
     
@@ -118,8 +148,8 @@ export class GalleryManager {
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
         <div class="card h-100 ${rankClass}" data-id="${drawing.id}" style="background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%); border: 2px solid var(--primary); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative;">
           ${rankBadge}
-          <div style="position: relative; overflow: hidden;">
-            <img src="${imageSource}" class="card-img-top drawing-img" style="height: 200px; object-fit: contain; background: white; cursor: pointer; transition: transform 0.3s ease; image-rendering: auto; -webkit-image-rendering: auto;" onclick="viewImage('${imageSource}', '${drawing.id}', '${isAnimated}')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" loading="lazy">
+          <div style="position: relative; overflow: hidden; cursor: pointer; transition: transform 0.3s ease;" onclick="viewImage('${drawing.data.imagenData}', '${drawing.id}', '${isAnimated}', '${hasBackgroundGif ? drawing.data.backgroundGif : ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            ${imageContent}
             <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8em;">
               ${drawing.data.categoria}
             </div>
@@ -138,7 +168,7 @@ export class GalleryManager {
                 <button class="btn btn-sm like-btn ${isLiked ? 'liked' : ''}" data-id="${drawing.id}" style="background: ${isLiked ? 'var(--primary)' : 'transparent'}; color: ${isLiked ? 'white' : 'var(--primary)'}; border: 2px solid var(--primary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;">
                   ❤️ <span class="like-count">${likes}</span>
                 </button>
-                <button class="btn btn-sm" onclick="viewImage('${imageSource}', '${drawing.id}', '${isAnimated}')" style="background: transparent; color: var(--text-secondary); border: 2px solid var(--text-secondary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;" title="Ver comentarios">
+                <button class="btn btn-sm" onclick="event.stopPropagation(); viewImage('${drawing.data.imagenData}', '${drawing.id}', '${isAnimated}', '${hasBackgroundGif ? drawing.data.backgroundGif : ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;') : 'null'})" style="background: transparent; color: var(--text-secondary); border: 2px solid var(--text-secondary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;" title="Ver comentarios">
                   💬 ${comments.length}
                 </button>
               </div>
@@ -530,10 +560,27 @@ window.downloadImage = function(imageData, author) {
   link.click();
 };
 
-window.viewImage = async function(imageData, drawingId, isAnimated = 'false') {
+window.viewImage = async function(imageData, drawingId, isAnimated = 'false', backgroundGif = '', gifStickers = null) {
   isAnimated = isAnimated === 'true' || isAnimated === true;
   const existingModal = document.querySelector('.image-modal');
   if (existingModal) existingModal.remove();
+  
+  // Parsear stickers GIF si existen
+  let parsedGifStickers = null;
+  if (gifStickers && gifStickers !== 'null' && gifStickers !== 'undefined') {
+    try {
+      if (typeof gifStickers === 'string') {
+        // Decodificar HTML entities si es necesario
+        const decodedStickers = gifStickers.replace(/&quot;/g, '"');
+        parsedGifStickers = JSON.parse(decodedStickers);
+      } else if (Array.isArray(gifStickers)) {
+        parsedGifStickers = gifStickers;
+      }
+      console.log('Stickers GIF parseados:', parsedGifStickers);
+    } catch (e) {
+      console.warn('Error parseando gifStickers:', e, 'Datos originales:', gifStickers);
+    }
+  }
   
   // Obtener información del dibujo para mostrar perfil del usuario
   let drawingData = null;
@@ -579,15 +626,43 @@ window.viewImage = async function(imageData, drawingId, isAnimated = 'false') {
     display: flex; flex-direction: column;
   `;
   
+  const hasGifStickers = parsedGifStickers && parsedGifStickers.length > 0;
+  const hasBackgroundGif = backgroundGif && backgroundGif !== '';
+  
   const animatedBadge = isAnimated ? `
     <div style="position: absolute; top: 15px; right: 15px; background: rgba(255, 107, 53, 0.9); color: white; padding: 8px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-      🎬 GIF Animado
+      🎬 ${hasGifStickers ? 'GIF + Stickers' : 'GIF Animado'}
     </div>
   ` : '';
   
+  // Crear contenido de imagen con capas
+  let imageContent = '';
+  if (hasBackgroundGif || hasGifStickers) {
+    // Calcular dimensiones del contenedor basado en la imagen principal
+    const containerStyle = `position: relative; max-width: 100%; max-height: ${isMobile ? '35vh' : '70vh'}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; display: inline-block; aspect-ratio: 3/2;`;
+    
+    imageContent = `
+      <div style="${containerStyle}">
+        ${hasBackgroundGif ? `<img src="${backgroundGif}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" loading="lazy">` : ''}
+        <img src="${imageData}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" loading="lazy">
+        ${hasGifStickers ? parsedGifStickers.map(sticker => {
+          // Calcular posición y tamaño relativo basado en canvas de 600x400
+          const leftPercent = (sticker.x / 600) * 100;
+          const topPercent = (sticker.y / 400) * 100;
+          const widthPercent = (sticker.width / 600) * 100;
+          const heightPercent = (sticker.height / 400) * 100;
+          
+          return `<img src="${sticker.src}" style="position: absolute; left: ${leftPercent}%; top: ${topPercent}%; width: ${widthPercent}%; height: ${heightPercent}%; z-index: 3; image-rendering: auto; pointer-events: none;" loading="lazy">`;
+        }).join('') : ''}
+      </div>
+    `;
+  } else {
+    imageContent = `<img src="${imageData}" style="max-width: 100%; max-height: ${isMobile ? '35vh' : '70vh'}; border-radius: 12px; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; image-rendering: auto; -webkit-image-rendering: auto;" loading="lazy">`;
+  }
+  
   imageSection.innerHTML = `
     ${animatedBadge}
-    <img src="${imageData}" style="max-width: 100%; max-height: ${isMobile ? '35vh' : '70vh'}; border-radius: 12px; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; image-rendering: auto; -webkit-image-rendering: auto;" loading="lazy">
+    ${imageContent}
     <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
       <button onclick="this.closest('.image-modal').remove()" class="btn btn-secondary">✖️ Cerrar</button>
       <button onclick="downloadImage('${imageData}', 'dibujo')" class="btn btn-primary">💾 Descargar</button>
@@ -920,6 +995,44 @@ window.addComment = async function(drawingId) {
 // Hacer galleryManager disponible globalmente
 window.galleryManager = null;
 
+// Función de debug para verificar datos de stickers
+window.debugGifStickers = function(drawingId) {
+  if (!window.galleryManager) {
+    console.log('Gallery manager no disponible');
+    return;
+  }
+  
+  const drawing = window.galleryManager.allDrawings.find(d => d.id === drawingId);
+  if (!drawing) {
+    console.log('Dibujo no encontrado:', drawingId);
+    return;
+  }
+  
+  console.log('Datos del dibujo:', drawing.data);
+  console.log('GIF Stickers:', drawing.data.gifStickers);
+  console.log('Background GIF:', drawing.data.backgroundGif);
+  console.log('Is Animated:', drawing.data.isAnimated);
+};
+
+// Función para testear la visualización de stickers
+window.testGifStickers = function() {
+  const testData = {
+    imagenData: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+    backgroundGif: null,
+    gifStickers: [
+      {
+        src: 'data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wjRLEuQRNnGeFl+2iSJZmUq2fqTFqAAlhMa/ruJqUUn9ZGo/XQHAkp2ynqQAAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wjRLEuQRNnGeFl+2iSJZmUq2fqTFqAAlhMa/ruJqUUn9ZGo/XQHAkp2ynqQAAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpFI5TAAAOw==',
+        x: 100,
+        y: 100,
+        width: 50,
+        height: 50
+      }
+    ]
+  };
+  
+  viewImage(testData.imagenData, 'test-id', true, '', JSON.stringify(testData.gifStickers));
+};
+
 // Agregar estilos para animaciones
 if (!document.getElementById('gallery-animations')) {
   const style = document.createElement('style');
@@ -946,6 +1059,29 @@ if (!document.getElementById('gallery-animations')) {
       0% { transform: scale(1); }
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
+    }
+    
+    .comment-item:hover {
+      background: var(--bg-dark) !important;
+      transform: translateX(5px);
+    }
+    
+    .comments-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .comments-container::-webkit-scrollbar-track {
+      background: var(--bg-light);
+      border-radius: 3px;
+    }
+    
+    .comments-container::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 3px;
+    }
+    
+    .comments-container::-webkit-scrollbar-thumb:hover {
+      background: var(--secondary);
     }
   `;
   document.head.appendChild(style);
