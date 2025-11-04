@@ -123,9 +123,7 @@ export class GalleryManager {
         <div style="position: relative; width: 100%; height: 200px; background: white; border-radius: 4px; overflow: hidden;">
           ${hasBackgroundGif ? `<img src="${drawing.data.backgroundGif}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" alt="Fondo GIF animado" loading="lazy">` : ''}
           <img src="${drawing.data.imagenData}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" alt="Dibujo de ${drawing.data.autor}" loading="lazy">
-          ${hasGifStickers ? drawing.data.gifStickers.map(sticker => `
-            <img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3; image-rendering: auto;" alt="Sticker GIF" loading="lazy">
-          `).join('') : ''}
+          ${hasGifStickers ? drawing.data.gifStickers.map(sticker => `<img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3; image-rendering: auto; pointer-events: none;" alt="Sticker GIF" loading="lazy">`).join('') : ''}
         </div>
       `;
     } else {
@@ -638,13 +636,7 @@ window.viewImage = async function(imageData, drawingId, isAnimated = 'false', ba
       <div style="${containerStyle}">
         ${hasBackgroundGif ? `<img src="${backgroundGif}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" loading="lazy">` : ''}
         <img src="${imageData}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" loading="lazy">
-        ${hasGifStickers ? parsedGifStickers.map(sticker => {
-          const leftPercent = (sticker.x / 600) * 100;
-          const topPercent = (sticker.y / 400) * 100;
-          const widthPercent = (sticker.width / 600) * 100;
-          const heightPercent = (sticker.height / 400) * 100;
-          return `<img src="${sticker.src}" style="position: absolute; left: ${leftPercent}%; top: ${topPercent}%; width: ${widthPercent}%; height: ${heightPercent}%; z-index: 3; image-rendering: auto; pointer-events: none;" loading="lazy">`;
-        }).join('') : ''}
+        ${hasGifStickers ? parsedGifStickers.map(sticker => `<img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3; image-rendering: auto; pointer-events: none;" loading="lazy">`).join('') : ''}
       </div>
     `;
   } else {
