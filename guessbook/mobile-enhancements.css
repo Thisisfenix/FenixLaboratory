@@ -196,11 +196,45 @@
     font-weight: 600;
   }
   
+  /* Botones de admin/mod optimizados */
+  .version-toggle {
+    position: fixed !important;
+    top: 8px !important;
+    right: 8px !important;
+    z-index: 1003 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+    max-width: 120px !important;
+  }
+  
+  .version-toggle .btn {
+    font-size: 0.7rem !important;
+    padding: 0.3rem 0.5rem !important;
+    margin: 0 !important;
+    min-height: 32px !important;
+    border-radius: 6px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+  
   /* Ajustes para pantallas muy pequeñas */
   @media (max-width: 480px) {
     .container {
       padding-left: 8px;
       padding-right: 8px;
+    }
+    
+    .version-toggle {
+      top: 5px !important;
+      right: 5px !important;
+      max-width: 100px !important;
+    }
+    
+    .version-toggle .btn {
+      font-size: 0.6rem !important;
+      padding: 0.25rem 0.4rem !important;
+      min-height: 28px !important;
     }
     
     .canvas-container {
