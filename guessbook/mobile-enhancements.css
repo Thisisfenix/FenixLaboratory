@@ -1,0 +1,334 @@
+/* Mejoras específicas para dispositivos móviles */
+
+/* Optimizaciones generales para touch */
+@media (max-width: 768px) {
+  /* Prevenir zoom en inputs */
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    -webkit-border-radius: 0;
+  }
+  
+  /* Mejorar área de toque para botones */
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 1rem;
+    font-size: 16px;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+  }
+  
+  /* Botones de herramientas más grandes */
+  .btn-group-custom .btn {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem;
+  }
+  
+  /* Colores más grandes para touch */
+  .color-btn {
+    width: 36px !important;
+    height: 36px !important;
+    margin: 3px !important;
+    border-width: 3px !important;
+  }
+  
+  /* Sliders más fáciles de usar */
+  .form-range {
+    height: 10px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  .form-range::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  
+  .form-range::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  
+  /* Canvas más responsive */
+  .canvas-container {
+    max-width: 98vw;
+    padding: 8px;
+    margin: 8px auto;
+  }
+  
+  #drawCanvas {
+    max-width: 100%;
+    height: auto;
+    touch-action: none;
+  }
+  
+  /* Panel de control más espacioso */
+  .control-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 107, 53, 0.2);
+  }
+  
+  /* Modales optimizados */
+  .modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    height: 100vh;
+  }
+  
+  .modal-content {
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+  
+  /* Galería más touch-friendly */
+  .drawing-card {
+    margin-bottom: 2rem;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  
+  .drawing-img {
+    height: 280px !important;
+    object-fit: contain;
+  }
+  
+  /* Botones de acción más grandes */
+  .drawing-card .btn {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 0.75rem 1rem;
+    margin: 0.25rem;
+  }
+  
+  /* Comentarios más legibles */
+  .comment-item {
+    padding: 1rem !important;
+    margin-bottom: 0.75rem !important;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  
+  /* Navegación sticky */
+  .gallery-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-dark);
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--primary);
+  }
+  
+  /* Filtros más accesibles */
+  .form-control,
+  .form-select {
+    min-height: 48px;
+    font-size: 16px;
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+  
+  /* Paginación más touch-friendly */
+  #pagination .btn {
+    min-height: 48px;
+    min-width: 48px;
+    margin: 0.25rem;
+    font-size: 16px;
+  }
+  
+  /* Rankings más compactos */
+  .card-body {
+    padding: 1rem;
+  }
+  
+  /* Sugerencias más accesibles */
+  #suggestionText {
+    min-height: 120px;
+    font-size: 16px;
+    padding: 1rem;
+  }
+  
+  /* Botones flotantes mejorados */
+  .mobile-refresh,
+  .mobile-scroll-top {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5em;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    backdrop-filter: blur(15px);
+  }
+  
+  /* Barra de herramientas flotante */
+  .mobile-toolbar {
+    padding: 12px;
+    gap: 8px;
+  }
+  
+  .mobile-toolbar .btn {
+    flex: 1;
+    min-height: 48px;
+    font-size: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  
+  /* Ajustes para pantallas muy pequeñas */
+  @media (max-width: 480px) {
+    .container {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    
+    .canvas-container {
+      max-width: 100vw;
+      padding: 4px;
+      margin: 4px auto;
+    }
+    
+    .btn-group-custom .btn {
+      font-size: 0.8rem;
+      padding: 0.4rem 0.6rem;
+      min-height: 40px;
+      min-width: 40px;
+    }
+    
+    .color-btn {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    
+    .control-section {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .drawing-img {
+      height: 220px !important;
+    }
+    
+    .mobile-toolbar .btn {
+      font-size: 12px;
+      min-height: 44px;
+    }
+    
+    /* Modales de pantalla completa */
+    .image-modal {
+      padding: 0 !important;
+    }
+    
+    .image-modal > div {
+      border-radius: 0 !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+    }
+  }
+}
+
+/* Mejoras para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .canvas-container {
+    max-width: 90vw;
+  }
+  
+  .btn-group-custom .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.7rem;
+  }
+  
+  .drawing-img {
+    height: 240px !important;
+  }
+}
+
+/* Animaciones suaves para interacciones touch */
+.btn:active,
+.color-btn:active,
+.drawing-card:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Feedback visual mejorado */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+  outline: 3px solid rgba(255, 107, 53, 0.5);
+  outline-offset: 2px;
+}
+
+/* Scroll suave en contenedores */
+.comments-container,
+.modal-body {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Prevenir selección accidental */
+.btn,
+.color-btn,
+.drawing-card img {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Mejorar contraste para accesibilidad */
+@media (prefers-contrast: high) {
+  .btn {
+    border-width: 2px;
+  }
+  
+  .color-btn {
+    border-width: 3px;
+  }
+  
+  .drawing-card {
+    border-width: 3px;
+  }
+}
+
+/* Reducir movimiento para usuarios sensibles */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode específico para móviles */
+@media (prefers-color-scheme: dark) {
+  .canvas-container {
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.3);
+  }
+  
+  .drawing-card {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+}

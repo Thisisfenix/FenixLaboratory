@@ -30,6 +30,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="mobile-enhancements.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
   
@@ -295,38 +296,134 @@
         padding: 10px;
         text-align: center;
       }
+      
+      /* Botones más grandes para móvil */
       .btn-group-custom .btn {
-        font-size: 0.7rem;
-        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+        margin: 0.1rem;
+        min-height: 36px;
+        min-width: 44px;
       }
       
-      /* Modal responsive */
+      /* Controles de color más grandes */
+      .color-btn {
+        width: 32px !important;
+        height: 32px !important;
+        margin: 2px !important;
+      }
+      
+      /* Inputs más grandes */
+      .form-control, .form-select {
+        font-size: 16px !important;
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+      }
+      
+      /* Sliders más fáciles de usar */
+      .form-range {
+        height: 8px;
+      }
+      
+      .form-range::-webkit-slider-thumb {
+        width: 24px;
+        height: 24px;
+      }
+      
+      /* Panel de control más espacioso */
+      .control-section {
+        margin-bottom: 1.5rem;
+        padding: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+      }
+      
+      /* Modal responsive mejorado */
+      .image-modal {
+        padding: 0 !important;
+      }
+      
       .image-modal > div {
         flex-direction: column !important;
         height: 100vh !important;
         max-height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
       }
       
       .image-modal > div > div:first-child {
         flex: 0 0 auto !important;
-        max-height: 50vh !important;
-        padding: 10px !important;
+        max-height: 45vh !important;
+        padding: 15px !important;
+        overflow: hidden;
       }
       
       .image-modal > div > div:last-child {
         flex: 1 !important;
         min-height: 0 !important;
         border-left: none !important;
-        border-top: 1px solid var(--primary) !important;
-        padding: 10px !important;
+        border-top: 2px solid var(--primary) !important;
+        padding: 15px !important;
+        overflow-y: auto;
       }
       
       .image-modal img {
-        max-height: 40vh !important;
+        max-height: 35vh !important;
+        width: 100% !important;
+        object-fit: contain !important;
       }
       
       .image-modal textarea {
-        font-size: 16px !important; /* Evita zoom en iOS */
+        font-size: 16px !important;
+        min-height: 120px !important;
+        resize: vertical;
+      }
+      
+      /* Botones de acción del modal */
+      .image-modal .btn {
+        min-height: 44px;
+        font-size: 16px;
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+      }
+      
+      /* Header del modal más compacto */
+      .image-modal .d-flex.justify-content-between {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      
+      /* Comentarios más legibles */
+      .comment-item {
+        padding: 0.75rem !important;
+        margin-bottom: 0.5rem !important;
+        font-size: 14px;
+      }
+      
+      /* Navegación de galería */
+      .gallery-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg-dark);
+        padding: 1rem 0;
+        margin-bottom: 1rem;
+      }
+      
+      /* Cards de dibujos más grandes */
+      .drawing-card {
+        margin-bottom: 2rem;
+      }
+      
+      .drawing-img {
+        height: 250px !important;
+      }
+      
+      /* Botones de like y comentarios más grandes */
+      .drawing-card .btn {
+        min-height: 44px;
+        font-size: 16px;
+        padding: 0.5rem 1rem;
       }
     }
     
@@ -340,47 +437,141 @@
       100% { box-shadow: 0 0 15px rgba(40, 167, 69, 0.8); }
     }
     
-    /* Botón de actualización para móviles */
+    /* Botones flotantes para móviles */
     .mobile-refresh {
       position: fixed;
       bottom: 80px;
       right: 20px;
       z-index: 1000;
-      background: rgba(255, 107, 53, 0.8);
+      background: rgba(255, 107, 53, 0.9);
       color: white;
       border: none;
       border-radius: 25px;
-      width: 50px;
-      height: 50px;
-      font-size: 1.2em;
-      box-shadow: 0 2px 10px rgba(255, 107, 53, 0.3);
+      width: 56px;
+      height: 56px;
+      font-size: 1.4em;
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
       transition: all 0.3s ease;
       display: none;
       backdrop-filter: blur(10px);
     }
     
     .mobile-refresh:hover {
-      background: rgba(255, 140, 66, 0.9);
+      background: rgba(255, 140, 66, 0.95);
       transform: scale(1.05);
-      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.5);
+      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
     }
     
     .mobile-refresh:active {
       transform: scale(0.95);
     }
     
+    /* Botón para volver arriba en móvil */
+    .mobile-scroll-top {
+      position: fixed;
+      bottom: 150px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(0, 123, 255, 0.9);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      width: 56px;
+      height: 56px;
+      font-size: 1.4em;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+      transition: all 0.3s ease;
+      display: none;
+      backdrop-filter: blur(10px);
+    }
+    
+    .mobile-scroll-top:hover {
+      background: rgba(0, 123, 255, 0.95);
+      transform: scale(1.05);
+    }
+    
+    .mobile-scroll-top:active {
+      transform: scale(0.95);
+    }
+    
+    /* Barra de herramientas flotante para móvil */
+    .mobile-toolbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 2px solid var(--primary);
+      padding: 10px;
+      z-index: 1001;
+      display: none;
+    }
+    
+    .mobile-toolbar .btn {
+      flex: 1;
+      margin: 0 2px;
+      min-height: 44px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+    }
+    
     @media (max-width: 768px) {
-      .mobile-refresh {
+      .mobile-refresh,
+      .mobile-scroll-top {
         display: block;
+      }
+      
+      .mobile-toolbar {
+        display: flex;
+      }
+      
+      /* Ajustar contenido para la barra flotante */
+      body {
+        padding-bottom: 80px;
+      }
+      
+      /* Ocultar versión toggle en móvil */
+      .version-toggle {
+        position: fixed !important;
+        top: 10px !important;
+        right: 10px !important;
+        z-index: 1002;
+      }
+      
+      .version-toggle .btn {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        margin: 0 1px;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Botón de actualización para móviles -->
+  <!-- Botones flotantes para móviles -->
   <button class="mobile-refresh" onclick="refreshPage()" title="Actualizar Guestbook - Limpia cache y recarga la página">
     ↻
   </button>
+  
+  <button class="mobile-scroll-top" onclick="scrollToTop()" title="Volver arriba">
+    ↑
+  </button>
+  
+  <!-- Barra de herramientas flotante para móvil -->
+  <div class="mobile-toolbar">
+    <button class="btn btn-primary" onclick="scrollToCanvas()">
+      🎨 Dibujar
+    </button>
+    <button class="btn btn-info" onclick="scrollToGallery()">
+      🏛️ Galería
+    </button>
+    <button class="btn btn-success" onclick="document.getElementById('saveBtn').click()">
+      💾 Guardar
+    </button>
+    <button class="btn btn-warning" onclick="toggleMobileMenu()">
+      ⚙️ Menú
+    </button>
+  </div>
   
   <div class="container py-4">
     <div class="version-toggle" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
@@ -1131,6 +1322,7 @@
     import { GalleryManager } from './js/gallery.js';
     import { UIManager } from './js/ui.js';
     import { ProfileManager } from './js/profiles.js';
+    import { MobileOptimizer } from './js/mobile-optimizer.js';
     
     class GuestbookApp {
       constructor() {
@@ -1139,6 +1331,7 @@
         this.gallery = new GalleryManager(this.firebase);
         this.ui = new UIManager();
         this.profiles = new ProfileManager(this.firebase);
+        this.mobileOptimizer = new MobileOptimizer();
         
         // Hacer disponible globalmente
         window.guestbookApp = this;
@@ -1158,6 +1351,11 @@
           }, 1000);
           
           console.log('✅ Guestbook NEW inicializado correctamente');
+          
+          // Mostrar información de dispositivo si está en modo debug
+          if (this.mobileOptimizer) {
+            this.mobileOptimizer.showDebugInfo();
+          }
         } catch (error) {
           console.error('❌ Error inicializando:', error);
         }
@@ -1392,6 +1590,9 @@
         
         // Configurar eventos para mover stickers
         this.setupStickerMoveEvents();
+        
+        // Configurar mejoras móviles
+        this.setupMobileEnhancements();
       }
       
       setupGifCanvas() {
@@ -2494,6 +2695,74 @@
         });
       }
       
+      setupMobileEnhancements() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // Mejorar touch events para canvas
+          const canvas = this.canvas.canvas;
+          if (canvas) {
+            // Prevenir scroll cuando se dibuja
+            canvas.addEventListener('touchstart', (e) => {
+              if (this.currentTool !== 'stickerMove') {
+                e.preventDefault();
+              }
+            }, { passive: false });
+            
+            canvas.addEventListener('touchmove', (e) => {
+              if (this.currentTool !== 'stickerMove') {
+                e.preventDefault();
+              }
+            }, { passive: false });
+          }
+          
+          // Ajustar tamaño de canvas para móviles pequeños
+          if (window.innerWidth < 480) {
+            this.resizeCanvas(400, 300);
+          }
+          
+          // Configurar gestos de pellizco para zoom (futuro)
+          this.setupPinchZoom();
+        }
+      }
+      
+      setupPinchZoom() {
+        const canvas = this.canvas.canvas;
+        if (!canvas) return;
+        
+        let initialDistance = 0;
+        let initialScale = 1;
+        
+        canvas.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 2) {
+            initialDistance = this.getDistance(e.touches[0], e.touches[1]);
+            initialScale = this.canvas.zoomLevel || 1;
+          }
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+          if (e.touches.length === 2) {
+            e.preventDefault();
+            const currentDistance = this.getDistance(e.touches[0], e.touches[1]);
+            const scale = (currentDistance / initialDistance) * initialScale;
+            
+            // Limitar zoom entre 0.5x y 3x
+            const clampedScale = Math.max(0.5, Math.min(3, scale));
+            
+            if (this.canvas.setZoom) {
+              this.canvas.setZoom(clampedScale);
+              this.updateZoomInfo();
+            }
+          }
+        }, { passive: false });
+      }
+      
+      getDistance(touch1, touch2) {
+        const dx = touch1.clientX - touch2.clientX;
+        const dy = touch1.clientY - touch2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+      
       setupUnsavedChangesDetection() {
         const canvas = this.canvas.canvas;
         if (!canvas) return;
@@ -2737,6 +3006,51 @@
     
     // Variable global para cambios sin guardar
     window.hasUnsavedChanges = false;
+    
+    // Funciones de navegación móvil
+    window.scrollToTop = function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    
+    window.scrollToCanvas = function() {
+      const canvas = document.querySelector('.canvas-container');
+      if (canvas) {
+        canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
+    
+    window.scrollToGallery = function() {
+      const gallery = document.getElementById('gallery');
+      if (gallery) {
+        gallery.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+    
+    window.toggleMobileMenu = function() {
+      const menu = document.querySelector('.version-toggle');
+      if (menu) {
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        setTimeout(() => {
+          if (menu.style.display !== 'none') {
+            menu.style.display = 'none';
+          }
+        }, 3000);
+      }
+    };
+    
+    // Mostrar/ocultar botón de scroll según posición
+    window.addEventListener('scroll', function() {
+      const scrollTopBtn = document.querySelector('.mobile-scroll-top');
+      if (scrollTopBtn) {
+        if (window.scrollY > 300) {
+          scrollTopBtn.style.opacity = '1';
+          scrollTopBtn.style.pointerEvents = 'auto';
+        } else {
+          scrollTopBtn.style.opacity = '0';
+          scrollTopBtn.style.pointerEvents = 'none';
+        }
+      }
+    });
     
     // Función global para refrescar página
     window.refreshPage = function() {
@@ -3257,15 +3571,85 @@
       originalConsoleError.apply(console, args);
     };
     
-    // Agregar animación de spin para el botón de refresh
+    // Agregar animaciones y estilos adicionales
     const style = document.createElement('style');
     style.textContent = `
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
+      
+      /* Transiciones suaves para botones flotantes */
+      .mobile-scroll-top {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      
+      /* Mejoras para touch en iOS */
+      .btn, .color-btn, .form-control, .form-select {
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      
+      /* Prevenir zoom en inputs en iOS */
+      @media screen and (max-width: 768px) {
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="number"],
+        textarea,
+        select {
+          font-size: 16px !important;
+        }
+      }
+      
+      /* Mejorar visibilidad de elementos activos */
+      .btn:active,
+      .color-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+      }
+      
+      /* Canvas más responsive */
+      @media (max-width: 480px) {
+        .canvas-container {
+          max-width: 98vw;
+          padding: 5px;
+        }
+        
+        #drawCanvas {
+          max-width: 100%;
+          height: auto;
+        }
+      }
     `;
     document.head.appendChild(style);
+    
+    // Detectar dispositivo móvil y ajustar comportamiento
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // Prevenir zoom en double tap
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function (event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+      
+      // Mejorar scroll en modales
+      document.addEventListener('touchmove', function(e) {
+        if (e.target.closest('.image-modal')) {
+          // Permitir scroll en modales
+          return;
+        }
+      }, { passive: true });
+    }
   </script>
 </body>
 </html>

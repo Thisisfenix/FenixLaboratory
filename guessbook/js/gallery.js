@@ -626,30 +626,34 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   `;
   
   const isMobile = window.innerWidth <= 768;
+  const isSmallMobile = window.innerWidth <= 480;
   
   const container = document.createElement('div');
   container.style.cssText = `
     display: flex; ${isMobile ? 'flex-direction: column;' : ''}
     max-width: ${isMobile ? '100%' : '90vw'}; max-height: ${isMobile ? '100%' : '90vh'};
-    background: var(--bg-light); border-radius: 15px; overflow: hidden;
+    background: var(--bg-light); border-radius: ${isMobile ? '0' : '15px'}; overflow: hidden;
     border: 2px solid var(--primary); width: 100%; height: ${isMobile ? '100%' : 'auto'};
+    ${isMobile ? 'margin: 0;' : ''}
   `;
   
   const imageSection = document.createElement('div');
   imageSection.style.cssText = `
-    ${isMobile ? 'flex: 0 0 50%;' : 'flex: 1;'}
-    padding: 20px; text-align: center;
+    ${isMobile ? 'flex: 0 0 45%;' : 'flex: 1;'}
+    padding: ${isMobile ? '15px' : '20px'}; text-align: center;
     display: flex; flex-direction: column; justify-content: center;
     background: white; position: relative;
+    ${isMobile ? 'min-height: 0; overflow: hidden;' : ''}
   `;
   
   const commentsSection = document.createElement('div');
   commentsSection.style.cssText = `
     ${isMobile ? 'flex: 1; min-height: 0;' : 'width: 400px; min-width: 400px;'}
-    padding: 20px;
+    padding: ${isMobile ? '15px' : '20px'};
     ${isMobile ? 'border-top: 2px solid var(--primary);' : 'border-left: 2px solid var(--primary);'}
     overflow-y: auto; background: var(--bg-dark);
     display: flex; flex-direction: column;
+    -webkit-overflow-scrolling: touch;
   `;
   
   const hasGifStickers = parsedGifStickers && parsedGifStickers.length > 0;
@@ -661,10 +665,12 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
     </div>
   ` : '';
   
-  // Crear contenido de imagen EXACTO como guestbook-old
+  // Crear contenido de imagen optimizado para móvil
   let imageContent = '';
+  const maxImageHeight = isMobile ? (isSmallMobile ? '25vh' : '30vh') : '70vh';
+  
   if (hasBackgroundGif || hasGifStickers) {
-    const containerStyle = `position: relative; max-width: 100%; max-height: ${isMobile ? '35vh' : '70vh'}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; display: inline-block; aspect-ratio: 3/2;`;
+    const containerStyle = `position: relative; max-width: 100%; max-height: ${maxImageHeight}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; display: inline-block; ${isMobile ? 'width: 100%;' : 'aspect-ratio: 3/2;'}`;
     
     imageContent = `
       <div style="${containerStyle}">
@@ -674,15 +680,21 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
       </div>
     `;
   } else {
-    imageContent = `<img src="${imageData}" style="max-width: 100%; max-height: ${isMobile ? '35vh' : '70vh'}; border-radius: 12px; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; image-rendering: auto; -webkit-image-rendering: auto;" loading="lazy">`;
+    imageContent = `<img src="${imageData}" style="max-width: 100%; max-height: ${maxImageHeight}; border-radius: 12px; object-fit: contain; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; image-rendering: auto; -webkit-image-rendering: auto; ${isMobile ? 'width: 100%;' : ''}" loading="lazy">`;
   }
   
   imageSection.innerHTML = `
     ${animatedBadge}
-    ${imageContent}
-    <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-      <button onclick="this.closest('.image-modal').remove()" class="btn btn-secondary">✖️ Cerrar</button>
-      <button onclick="downloadImage('${imageData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', 'dibujo')" class="btn btn-primary">💾 Descargar</button>
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; ${isMobile ? 'min-height: 0;' : ''}">
+      ${imageContent}
+    </div>
+    <div style="margin-top: ${isMobile ? '10px' : '20px'}; display: flex; gap: ${isMobile ? '8px' : '12px'}; justify-content: center; flex-wrap: wrap;">
+      <button onclick="this.closest('.image-modal').remove()" class="btn btn-secondary" style="${isMobile ? 'min-height: 44px; font-size: 16px; padding: 0.5rem 1rem;' : ''}">
+        ${isMobile ? '✖️' : '✖️ Cerrar'}
+      </button>
+      <button onclick="downloadImage('${imageData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', 'dibujo')" class="btn btn-primary" style="${isMobile ? 'min-height: 44px; font-size: 16px; padding: 0.5rem 1rem;' : ''}">
+        ${isMobile ? '💾' : '💾 Descargar'}
+      </button>
     </div>
   `;
   
@@ -720,13 +732,13 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
         <p class="mt-3 mb-0">Cargando comentarios...</p>
       </div>
     </div>
-    <div style="border-top: 2px solid var(--primary); padding-top: 20px;">
+    <div style="border-top: 2px solid var(--primary); padding-top: ${isMobile ? '15px' : '20px'}; margin-top: auto;">
       <div class="mb-3">
-        <input type="text" id="commentAuthor" placeholder="Tu nombre (opcional)" class="form-control mb-2" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: ${isMobile ? '16px' : '14px'};" maxlength="50">
-        <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="3" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: ${isMobile ? '16px' : '14px'};" maxlength="500"></textarea>
+        <input type="text" id="commentAuthor" placeholder="Tu nombre (opcional)" class="form-control mb-2" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 16px; min-height: ${isMobile ? '44px' : 'auto'}; padding: ${isMobile ? '0.75rem' : '0.5rem'};" maxlength="50">
+        <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="${isMobile ? '2' : '3'}" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 16px; min-height: ${isMobile ? '80px' : 'auto'}; padding: ${isMobile ? '0.75rem' : '0.5rem'};" maxlength="500"></textarea>
         <small style="color: var(--text-secondary); font-size: 0.8em;">Máximo 500 caracteres</small>
       </div>
-      <button onclick="addComment('${drawingId}')" class="btn btn-primary w-100" style="padding: 12px; font-weight: 600; border-radius: 8px;">💭 Comentar</button>
+      <button onclick="addComment('${drawingId}')" class="btn btn-primary w-100" style="padding: ${isMobile ? '0.75rem' : '12px'}; font-weight: 600; border-radius: 8px; min-height: ${isMobile ? '44px' : 'auto'}; font-size: ${isMobile ? '16px' : '14px'};">💭 Comentar</button>
     </div>
   `;
   
