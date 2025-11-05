@@ -31,11 +31,40 @@ export class FirebaseManager {
   
   async saveDrawing(drawingData) {
     try {
+      // Solo verificar rol para usuarios específicos conocidos
+      if (drawingData.autor === 'ThisIsFenix' || drawingData.autor === 'Admin') {
+        drawingData.userRole = 'admin';
+      }
+      
       await addDoc(collection(this.db, 'dibujos'), drawingData);
       return true;
     } catch (error) {
       console.error('Error guardando dibujo:', error);
       throw error;
+    }
+  }
+  
+  async getUserRole(username) {
+    try {
+      // Verificar si es admin (hardcoded)
+      if (username === 'ThisIsFenix' || username === 'Admin') {
+        return 'admin';
+      }
+      
+      // Solo verificar moderadores si estamos autenticados
+      if (window.currentUser && window.currentUser.role) {
+        const q = query(collection(this.db, 'moderators'), where('username', '==', username), where('active', '==', true));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          return 'moderator';
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      // Silenciar error de permisos para usuarios normales
+      return null;
     }
   }
   
@@ -49,9 +78,14 @@ export class FirebaseManager {
     }
   }
   
-  async deleteDrawing(id) {
+  async deleteDrawing(id, moderator = null, reason = '') {
     try {
       await deleteDoc(doc(this.db, 'dibujos', id));
+      
+      if (moderator) {
+        await this.logModeratorAction('delete_drawing', moderator, id, { reason });
+      }
+      
       return true;
     } catch (error) {
       console.error('Error eliminando dibujo:', error);
@@ -260,15 +294,143 @@ export class FirebaseManager {
   
   async checkAdminPassword(password) {
     try {
-      // Intentar crear documento en admin_auth con la contraseña
+      // Verificar contraseña de admin
       await addDoc(collection(this.db, 'admin_auth'), {
         domain: 'thisisfenix.github.io',
         adminPassword: password,
         timestamp: Date.now()
       });
+      return { role: 'admin', permissions: ['all'] };
+    } catch (error) {
+      // Intentar validar como moderador
+      try {
+        await addDoc(collection(this.db, 'moderator_auth'), {
+          domain: 'thisisfenix.github.io',
+          moderatorPassword: password,
+          timestamp: Date.now()
+        });
+        return { role: 'moderator_access', permissions: ['create_moderator'] };
+      } catch (authError) {
+        return false;
+      }
+    }
+  }
+  
+  async loginModerator(username, password) {
+    try {
+      // Intentar autenticar escribiendo a colección protegida
+      await addDoc(collection(this.db, 'moderator_login'), {
+        domain: 'thisisfenix.github.io',
+        username: username,
+        password: password,
+        timestamp: Date.now()
+      });
+      
+      // Si llegamos aquí, la autenticación fue exitosa
+      return {
+        role: 'moderator',
+        permissions: ['delete_drawings', 'manage_comments', 'manage_suggestions'],
+        name: username,
+        username: username,
+        id: 'mod_' + username
+      };
+    } catch (error) {
+      console.error('Error verificando moderador:', error);
+      return false;
+    }
+  }
+  
+  async addModerator(moderatorData) {
+    try {
+      // Verificar contraseña de moderador primero
+      if (moderatorData.moderatorPassword) {
+        await addDoc(collection(this.db, 'moderator_auth'), {
+          domain: 'thisisfenix.github.io',
+          moderatorPassword: moderatorData.moderatorPassword,
+          timestamp: Date.now()
+        });
+      }
+      
+      // Verificar que el username no exista
+      const q = query(collection(this.db, 'moderators'), where('username', '==', moderatorData.username));
+      const existing = await getDocs(q);
+      
+      if (!existing.empty) {
+        throw new Error('El nombre de usuario ya existe');
+      }
+      
+      const docRef = await addDoc(collection(this.db, 'moderators'), {
+        name: moderatorData.name,
+        username: moderatorData.username,
+        password: moderatorData.password,
+        permissions: moderatorData.permissions || [],
+        createdAt: Date.now(),
+        active: true,
+        domain: 'thisisfenix.github.io'
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error('Error añadiendo moderador:', error);
+      throw error;
+    }
+  }
+  
+  async getModerators() {
+    try {
+      const q = query(collection(this.db, 'moderators'), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const moderators = [];
+      
+      querySnapshot.forEach((doc) => {
+        moderators.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return moderators;
+    } catch (error) {
+      console.error('Error obteniendo moderadores:', error);
+      return [];
+    }
+  }
+  
+  async updateModerator(moderatorId, data) {
+    try {
+      await updateDoc(doc(this.db, 'moderators', moderatorId), {
+        ...data,
+        updatedAt: Date.now()
+      });
       return true;
     } catch (error) {
-      // Si falla, la contraseña es incorrecta
+      console.error('Error actualizando moderador:', error);
+      throw error;
+    }
+  }
+  
+  async deleteModerator(moderatorId) {
+    try {
+      await deleteDoc(doc(this.db, 'moderators', moderatorId));
+      return true;
+    } catch (error) {
+      console.error('Error eliminando moderador:', error);
+      throw error;
+    }
+  }
+  
+  async logModeratorAction(action, moderator, target, details = {}) {
+    try {
+      await addDoc(collection(this.db, 'moderation_logs'), {
+        moderator,
+        action,
+        target,
+        details,
+        timestamp: Date.now(),
+        domain: 'thisisfenix.github.io'
+      });
+      return true;
+    } catch (error) {
+      console.error('Error registrando acción de moderación:', error);
       return false;
     }
   }
@@ -303,6 +465,72 @@ export class FirebaseManager {
     } catch (error) {
       console.error('Error obteniendo todas las sugerencias:', error);
       return [];
+    }
+  }
+  
+  async deleteDrawing(drawingId, moderatorName, reason = '') {
+    try {
+      await deleteDoc(doc(this.db, 'dibujos', drawingId));
+      
+      await this.logModeratorAction(
+        'delete_drawing',
+        moderatorName,
+        drawingId,
+        { reason }
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Error eliminando dibujo:', error);
+      throw error;
+    }
+  }
+  
+  async reportDrawing(reportData) {
+    try {
+      const docRef = await addDoc(collection(this.db, 'reports'), {
+        ...reportData,
+        domain: 'thisisfenix.github.io',
+        status: 'pending',
+        timestamp: Date.now()
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error('Error enviando reporte:', error);
+      throw error;
+    }
+  }
+  
+  async getAllReports() {
+    try {
+      const q = query(collection(this.db, 'reports'), orderBy('timestamp', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const reports = [];
+      
+      querySnapshot.forEach((doc) => {
+        reports.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return reports;
+    } catch (error) {
+      console.error('Error obteniendo reportes:', error);
+      return [];
+    }
+  }
+  
+  async updateReportStatus(reportId, status) {
+    try {
+      await updateDoc(doc(this.db, 'reports', reportId), {
+        status: status,
+        updatedAt: Date.now()
+      });
+      return true;
+    } catch (error) {
+      console.error('Error actualizando reporte:', error);
+      throw error;
     }
   }
 }

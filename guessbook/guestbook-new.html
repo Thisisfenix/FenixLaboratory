@@ -393,6 +393,9 @@
       <button id="adminToggle" class="btn btn-outline-danger btn-sm ms-2" onclick="toggleAdminPanel()">
         🔐 Admin
       </button>
+      <button id="modToggle" class="btn btn-outline-warning btn-sm ms-2" onclick="toggleModPanel()">
+        🛡️ Mod
+      </button>
     </div>
     
     <!-- Panel de Administración -->
@@ -406,29 +409,202 @@
           <div class="modal-body">
             <div id="adminLogin" class="text-center">
               <div class="mb-3">
-                <label class="form-label text-light">Contraseña de Administrador</label>
-                <input type="password" id="adminPassword" class="form-control" placeholder="Ingresa la contraseña">
+                <label class="form-label text-light">Acceso al Panel</label>
+                <input type="password" id="adminPassword" class="form-control" placeholder="Contraseña de acceso">
+                <small class="text-muted">Admin: Contraseña especial | Moderador: Contraseña especial</small>
               </div>
               <button onclick="loginAdmin()" class="btn btn-primary">🔓 Acceder</button>
             </div>
             
-            <div id="adminContent" style="display: none;">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="text-success mb-0">✅ Sesión de Administrador Activa</h6>
-                <button onclick="logoutAdmin()" class="btn btn-outline-danger btn-sm">🚪 Cerrar Sesión</button>
+            <div id="moderatorLogin" style="display: none;">
+              <div class="text-center mb-3">
+                <h6 class="text-success">🛡️ Acceso de Moderador</h6>
+                <p class="small text-muted">Inicia sesión con tu cuenta de moderador</p>
               </div>
-              
               <div class="row">
                 <div class="col-md-6">
-                  <h6 class="text-warning">📝 Gestión de Sugerencias</h6>
+                  <h6 class="text-primary">Iniciar Sesión</h6>
+                  <div class="mb-2">
+                    <input type="text" id="modLoginUsername" class="form-control form-control-sm" placeholder="Usuario">
+                  </div>
+                  <div class="mb-2">
+                    <input type="password" id="modLoginPassword" class="form-control form-control-sm" placeholder="Contraseña">
+                  </div>
+                  <button onclick="loginModerator()" class="btn btn-success btn-sm w-100">🔑 Entrar</button>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="text-warning">Crear Cuenta</h6>
+                  <div class="mb-2">
+                    <input type="password" id="modCreateAuth" class="form-control form-control-sm" placeholder="Contraseña de moderador">
+                    <small class="text-muted">Solicita la contraseña al administrador</small>
+                  </div>
+                  <div class="mb-2">
+                    <input type="text" id="modCreateName" class="form-control form-control-sm" placeholder="Nombre completo">
+                  </div>
+                  <div class="mb-2">
+                    <input type="text" id="modCreateUsername" class="form-control form-control-sm" placeholder="Usuario">
+                  </div>
+                  <div class="mb-2">
+                    <input type="password" id="modCreatePassword" class="form-control form-control-sm" placeholder="Tu contraseña">
+                  </div>
+                  <button onclick="createModerator()" class="btn btn-warning btn-sm w-100">➕ Crear</button>
+                </div>
+              </div>
+              <div class="text-center mt-3">
+                <button onclick="backToMainLogin()" class="btn btn-outline-secondary btn-sm">← Volver</button>
+              </div>
+            </div>
+            
+            <div id="adminContent" style="display: none;">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="text-success mb-0">✅ Sesión Activa</h6>
+                <div>
+                  <span id="userInfo" class="badge bg-info me-2">Usuario</span>
+                  <button onclick="logoutAdmin()" class="btn btn-outline-danger btn-sm">🚪 Cerrar Sesión</button>
+                </div>
+              </div>
+              
+              <!-- Tabs de navegación -->
+              <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="suggestions-tab" data-bs-toggle="tab" data-bs-target="#suggestions" type="button" role="tab">
+                    📝 Sugerencias
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="drawings-tab" data-bs-toggle="tab" data-bs-target="#drawings" type="button" role="tab">
+                    🗑️ Dibujos
+                  </button>
+                </li>
+                <li class="nav-item admin-only" role="presentation">
+                  <button class="nav-link" id="moderators-tab" data-bs-toggle="tab" data-bs-target="#moderators" type="button" role="tab">
+                    👥 Moderadores
+                  </button>
+                </li>
+              </ul>
+              
+              <!-- Contenido de tabs -->
+              <div class="tab-content" id="adminTabContent">
+                <!-- Tab de Sugerencias -->
+                <div class="tab-pane fade show active" id="suggestions" role="tabpanel">
                   <div id="adminSuggestions" style="max-height: 400px; overflow-y: auto;">
                     <div class="text-center text-muted">Cargando sugerencias...</div>
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <h6 class="text-danger">🗑️ Gestión de Dibujos</h6>
+                
+                <!-- Tab de Dibujos -->
+                <div class="tab-pane fade" id="drawings" role="tabpanel">
                   <div id="adminDrawings" style="max-height: 400px; overflow-y: auto;">
                     <div class="text-center text-muted">Cargando dibujos...</div>
+                  </div>
+                </div>
+                
+                <!-- Tab de Moderadores (solo admin) -->
+                <div class="tab-pane fade admin-only" id="moderators" role="tabpanel">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <h6 class="text-primary">➕ Gestionar Moderador</h6>
+                      <form id="addModeratorForm">
+                        <div class="mb-2">
+                          <input type="text" id="modName" class="form-control form-control-sm" placeholder="Nombre completo" maxlength="50">
+                        </div>
+                        <div class="mb-2">
+                          <input type="text" id="modUsername" class="form-control form-control-sm" placeholder="Usuario" maxlength="30">
+                        </div>
+                        <div class="mb-2">
+                          <input type="password" id="modPassword" class="form-control form-control-sm" placeholder="Contraseña" minlength="6">
+                        </div>
+                        <div class="mb-2">
+                          <label class="form-label small text-light">Permisos:</label>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="delete_drawings" id="perm1">
+                            <label class="form-check-label small" for="perm1">Eliminar dibujos</label>
+                          </div>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="manage_comments" id="perm2">
+                            <label class="form-check-label small" for="perm2">Gestionar comentarios</label>
+                          </div>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="manage_suggestions" id="perm3">
+                            <label class="form-check-label small" for="perm3">Gestionar sugerencias</label>
+                          </div>
+                        </div>
+                        <button type="button" onclick="addModerator()" class="btn btn-primary btn-sm w-100">➕ Añadir</button>
+                      </form>
+                    </div>
+                    <div class="col-md-6">
+                      <h6 class="text-warning">👥 Moderadores Actuales</h6>
+                      <div id="moderatorsList" style="max-height: 300px; overflow-y: auto;">
+                        <div class="text-center text-muted">Cargando moderadores...</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Panel de Moderador -->
+    <div id="modPanel" class="modal fade" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background: var(--bg-dark); border: 2px solid var(--primary);">
+          <div class="modal-header" style="border-bottom: 1px solid var(--primary);">
+            <h5 class="modal-title" style="color: var(--primary);">🛡️ Panel de Moderador</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+          </div>
+          <div class="modal-body">
+            <div id="modLogin">
+              <div class="mb-3">
+                <label class="form-label text-light">Usuario</label>
+                <input type="text" id="modPanelUsername" class="form-control" placeholder="Ingresa tu usuario">
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-light">Contraseña</label>
+                <input type="password" id="modPanelPassword" class="form-control" placeholder="Ingresa tu contraseña">
+              </div>
+              <div class="text-center">
+                <button onclick="loginMod()" class="btn btn-warning">🔑 Iniciar Sesión</button>
+              </div>
+            </div>
+            
+            <div id="modContent" style="display: none;">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="text-success mb-0">✅ Sesión Activa</h6>
+                <div>
+                  <span id="modUserInfo" class="badge bg-warning me-2">Moderador</span>
+                  <button onclick="logoutMod()" class="btn btn-outline-danger btn-sm">🚺 Salir</button>
+                </div>
+              </div>
+              
+              <ul class="nav nav-tabs mb-3">
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#mod-suggestions">📝 Sugerencias</button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod-drawings">🗑️ Dibujos</button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod-reports">⚠️ Reportes</button>
+                </li>
+              </ul>
+              
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="mod-suggestions">
+                  <div id="modSuggestions" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center text-muted">Cargando...</div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="mod-drawings">
+                  <div id="modDrawings" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center text-muted">Cargando...</div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="mod-reports">
+                  <div id="modReports" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center text-muted">Cargando...</div>
                   </div>
                 </div>
               </div>
@@ -626,6 +802,11 @@
                 <button id="bucketBtn" class="btn btn-neon btn-sm">🪣 Relleno</button>
                 <button id="textBtn" class="btn btn-neon btn-sm">🅰️ Texto</button>
                 <button id="stickerMoveBtn" class="btn btn-neon btn-sm">✋ Mover</button>
+              </div>
+              <div class="btn-group-custom mt-2">
+                <button id="undoBtn" class="btn btn-outline-warning btn-sm">↶ Deshacer</button>
+                <button id="redoBtn" class="btn btn-outline-info btn-sm">↷ Rehacer</button>
+                <button id="clearBtn" class="btn btn-outline-danger btn-sm">🗑️ Limpiar</button>
               </div>
             </div>
             
@@ -827,16 +1008,11 @@
             
             <!-- Acciones -->
             <div class="control-section">
-              <label class="form-label text-light small">⚡ Acciones</label>
-              <div class="d-flex gap-1 flex-wrap">
-                <button id="undoBtn" class="btn btn-outline-warning btn-sm">↶ Deshacer</button>
-                <button id="redoBtn" class="btn btn-outline-info btn-sm">↷ Rehacer</button>
-                <button id="clearBtn" class="btn btn-outline-danger btn-sm">🗑️ Limpiar</button>
-                <button id="saveBtn" class="btn btn-primary btn-sm w-100 mt-2">
-                  <span id="saveText">🚀 Guardar</span>
-                  <span id="saveLoader" style="display: none;">⏳ Guardando...</span>
-                </button>
-              </div>
+              <label class="form-label text-light small">⚡ Guardar</label>
+              <button id="saveBtn" class="btn btn-primary btn-sm w-100">
+                <span id="saveText">🚀 Guardar</span>
+                <span id="saveLoader" style="display: none;">⏳ Guardando...</span>
+              </button>
             </div>
           </div>
         </div>
@@ -2373,8 +2549,191 @@
       }
     });
     
-    // Variables globales para admin
+    // Variables globales para admin y moderadores
     let isAdminLoggedIn = false;
+    window.currentUser = null;
+    
+    // Verificar permisos de usuario
+    window.hasPermission = function(permission) {
+      if (!window.currentUser) return false;
+      if (window.currentUser.role === 'admin') return true;
+      return window.currentUser.permissions?.includes(permission) || false;
+    };
+    
+    // Actualizar UI según permisos
+    window.updateUIForUser = function() {
+      const user = window.currentUser;
+      if (!user) return;
+      
+      // Mostrar/ocultar elementos según permisos
+      const adminOnlyElements = document.querySelectorAll('.admin-only');
+      adminOnlyElements.forEach(el => {
+        el.style.display = user.role === 'admin' ? 'block' : 'none';
+      });
+      
+      // Actualizar botones de acción
+      if (window.galleryManager) {
+        window.galleryManager.updateDeleteButtons();
+      }
+      
+      // Mostrar nombre de usuario
+      const userInfo = document.getElementById('userInfo');
+      if (userInfo) {
+        userInfo.textContent = user.role === 'admin' ? 'Admin' : `Moderador: ${user.name}`;
+      }
+    };
+    
+    // Funciones para gestión de moderadores
+    window.loadModerators = async function() {
+      try {
+        const moderators = await app.firebase.getModerators();
+        const container = document.getElementById('moderatorsList');
+        
+        if (!container) return;
+        
+        if (!moderators || moderators.length === 0) {
+          container.innerHTML = '<div class="text-muted text-center">No hay moderadores</div>';
+          return;
+        }
+        
+        container.innerHTML = moderators.map(mod => `
+          <div class="card mb-2" style="background: var(--bg-light); border: 1px solid var(--primary);">
+            <div class="card-body p-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong style="color: var(--primary);">${mod.name}</strong>
+                  <div class="small text-info">@${mod.username || 'sin_usuario'}</div>
+                  <div class="small text-muted">
+                    Permisos: ${mod.permissions?.join(', ') || 'Ninguno'}
+                  </div>
+                  <div class="small text-muted">
+                    Creado: ${new Date(mod.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-${mod.active ? 'success' : 'secondary'} btn-sm" 
+                          onclick="toggleModerator('${mod.id}', ${!mod.active})">
+                    ${mod.active ? '✅' : '❌'}
+                  </button>
+                  <button class="btn btn-danger btn-sm" 
+                          onclick="deleteModerator('${mod.id}', '${mod.name}')">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error loading moderators:', error);
+      }
+    };
+    
+    window.addModerator = async function() {
+      const name = document.getElementById('modName').value.trim();
+      const username = document.getElementById('modUsername').value.trim();
+      const password = document.getElementById('modPassword').value.trim();
+      
+      if (!name || !username || !password) {
+        app.ui.showNotification('❌ Completa todos los campos', 'error');
+        return;
+      }
+      
+      if (password.length < 6) {
+        app.ui.showNotification('❌ La contraseña debe tener al menos 6 caracteres', 'error');
+        return;
+      }
+      
+      const permissions = [];
+      document.querySelectorAll('#addModeratorForm input[type="checkbox"]:checked').forEach(cb => {
+        permissions.push(cb.value);
+      });
+      
+      if (permissions.length === 0) {
+        app.ui.showNotification('❌ Selecciona al menos un permiso', 'error');
+        return;
+      }
+      
+      try {
+        await app.firebase.addModerator({ name, username, password, permissions });
+        app.ui.showNotification('✅ Moderador añadido', 'success');
+        document.getElementById('modName').value = '';
+        document.getElementById('modUsername').value = '';
+        document.getElementById('modPassword').value = '';
+        document.querySelectorAll('#addModeratorForm input[type="checkbox"]').forEach(cb => cb.checked = false);
+        loadModerators();
+      } catch (error) {
+        if (error.message.includes('ya existe')) {
+          app.ui.showNotification('❌ El nombre de usuario ya existe', 'error');
+        } else {
+          app.ui.showNotification('❌ Error añadiendo moderador', 'error');
+        }
+      }
+    };
+    
+    window.toggleModerator = async function(moderatorId, active) {
+      try {
+        await app.firebase.updateModerator(moderatorId, { active });
+        app.ui.showNotification(`✅ Moderador ${active ? 'activado' : 'desactivado'}`, 'success');
+        loadModerators();
+      } catch (error) {
+        app.ui.showNotification('❌ Error actualizando moderador', 'error');
+      }
+    };
+    
+    window.deleteModerator = async function(moderatorId, name) {
+      if (!confirm(`¿Eliminar moderador ${name}?\n\nEsta acción no se puede deshacer.`)) return;
+      
+      try {
+        await app.firebase.deleteModerator(moderatorId);
+        
+        // Registrar acción si hay usuario logueado
+        if (window.currentUser) {
+          await app.firebase.logModeratorAction(
+            'delete_moderator',
+            window.currentUser.name || 'Admin',
+            name
+          );
+        }
+        
+        app.ui.showNotification('✅ Moderador eliminado', 'success');
+        loadModerators();
+      } catch (error) {
+        app.ui.showNotification('❌ Error eliminando moderador', 'error');
+      }
+    };
+    
+    // Función para eliminar dibujos (moderadores)
+    window.deleteDrawing = async function(drawingId, author) {
+      if (!hasPermission('delete_drawings')) {
+        app.ui.showNotification('❌ No tienes permisos para eliminar dibujos', 'error');
+        return;
+      }
+      
+      const reason = prompt(`¿Eliminar dibujo de ${author}?\n\nRazón (opcional):`);
+      if (reason === null) return; // Usuario canceló
+      
+      try {
+        const moderatorName = window.currentUser?.name || 'Moderador';
+        await app.firebase.deleteDrawing(drawingId, moderatorName, reason);
+        
+        app.ui.showNotification('✅ Dibujo eliminado', 'success');
+        
+        // Actualizar galeria
+        if (window.galleryManager) {
+          await window.galleryManager.loadGallery();
+        }
+        
+        // Cerrar modal si está abierto
+        const modal = document.querySelector('.image-modal');
+        if (modal) modal.remove();
+        
+      } catch (error) {
+        console.error('Error eliminando dibujo:', error);
+        app.ui.showNotification('❌ Error eliminando dibujo', 'error');
+      }
+    };
     
     // Variable global para cambios sin guardar
     window.hasUnsavedChanges = false;
@@ -2439,6 +2798,257 @@
       modal.show();
     };
     
+    window.toggleModPanel = function() {
+      const modal = new bootstrap.Modal(document.getElementById('modPanel'));
+      modal.show();
+    };
+    
+    window.loginMod = async function() {
+      const username = document.getElementById('modPanelUsername').value.trim();
+      const password = document.getElementById('modPanelPassword').value.trim();
+      
+      if (!username || !password) {
+        alert('Por favor completa todos los campos');
+        return;
+      }
+      
+      try {
+        const authResult = await app.firebase.loginModerator(username, password);
+        if (authResult) {
+          window.currentUser = authResult;
+          
+          document.getElementById('modLogin').style.display = 'none';
+          document.getElementById('modContent').style.display = 'block';
+          
+          document.getElementById('modToggle').innerHTML = `🛡️ ${authResult.name}`;
+          document.getElementById('modToggle').classList.remove('btn-outline-warning');
+          document.getElementById('modToggle').classList.add('btn-success');
+          
+          document.getElementById('modUserInfo').textContent = authResult.name;
+          
+          loadModSuggestions();
+          loadModDrawings();
+          loadModReports();
+          
+          alert(`Bienvenido ${authResult.name}`);
+        } else {
+          alert('Usuario o contraseña incorrectos');
+        }
+      } catch (error) {
+        alert('Error iniciando sesión');
+      }
+    };
+    
+    window.logoutMod = function() {
+      window.currentUser = null;
+      document.getElementById('modLogin').style.display = 'block';
+      document.getElementById('modContent').style.display = 'none';
+      document.getElementById('modPanelUsername').value = '';
+      document.getElementById('modPanelPassword').value = '';
+      document.getElementById('modToggle').innerHTML = '🛡️ Mod';
+      document.getElementById('modToggle').classList.remove('btn-success');
+      document.getElementById('modToggle').classList.add('btn-outline-warning');
+      
+      app.ui.showNotification('🚺 Sesión cerrada', 'info');
+    };
+    
+    window.loadModSuggestions = async function() {
+      try {
+        const suggestions = await app.firebase.getAllSuggestions();
+        const container = document.getElementById('modSuggestions');
+        
+        if (!container) return;
+        
+        if (!suggestions || suggestions.length === 0) {
+          container.innerHTML = '<div class="text-muted text-center">No hay sugerencias</div>';
+          return;
+        }
+        
+        container.innerHTML = suggestions.map(s => `
+          <div class="card mb-3" style="background: var(--bg-light); border: 1px solid var(--primary);">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between mb-2">
+                <div>
+                  <strong style="color: var(--primary);">${app.getSuggestionIcon(s.tipo)} ${s.autor || 'Anónimo'}</strong>
+                  <span class="badge bg-secondary ms-2" style="font-size: 0.7em;">${app.getSuggestionTypeText(s.tipo)}</span>
+                  ${app.getSuggestionStatusBadge(s.status)}
+                </div>
+                <small class="text-muted">${app.formatDate(s.timestamp)}</small>
+              </div>
+              <p class="text-light mb-2">${s.texto || 'Sin texto'}</p>
+              ${s.imagen ? `<img src="${s.imagen}" class="img-fluid mb-2" style="max-height: 150px; border-radius: 4px;">` : ''}
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-warning" onclick="updateSuggestionStatus('${s.id}', 'pendiente')">⏳ Pendiente</button>
+                <button class="btn btn-info" onclick="updateSuggestionStatus('${s.id}', 'proceso')">🔄 En Proceso</button>
+                <button class="btn btn-success" onclick="updateSuggestionStatus('${s.id}', 'aprobado')">✅ Aprobar</button>
+                <button class="btn btn-danger" onclick="updateSuggestionStatus('${s.id}', 'rechazado')">❌ Rechazar</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error loading mod suggestions:', error);
+        const container = document.getElementById('modSuggestions');
+        if (container) {
+          container.innerHTML = '<div class="text-danger text-center">Error cargando sugerencias</div>';
+        }
+      }
+    };
+    
+    window.loadModDrawings = async function() {
+      try {
+        const drawings = await app.firebase.getAllDrawings();
+        const container = document.getElementById('modDrawings');
+        
+        if (!container) return;
+        
+        if (!drawings || drawings.length === 0) {
+          container.innerHTML = '<div class="text-muted text-center">No hay dibujos</div>';
+          return;
+        }
+        
+        container.innerHTML = drawings.slice(0, 20).map(d => `
+          <div class="card mb-2" style="background: var(--bg-light); border: 1px solid var(--primary);">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center">
+                <img src="${d.data.backgroundGif || d.data.imagenData}" style="width: 60px; height: 60px; object-fit: contain; background: white; border-radius: 4px; margin-right: 10px;">
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between">
+                    <strong style="color: var(--primary); font-size: 0.9em;">${d.data.autor}</strong>
+                    <small class="text-muted">${new Date(d.data.timestamp).toLocaleDateString()}</small>
+                  </div>
+                  <div class="text-light small">${d.data.categoria}</div>
+                  <div class="text-muted small">❤️ ${d.data.likes || 0} | 💬 ${d.data.comments?.length || 0}</div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="deleteDrawingMod('${d.id}', '${d.data.autor}')" title="Eliminar dibujo">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error loading mod drawings:', error);
+        const container = document.getElementById('modDrawings');
+        if (container) {
+          container.innerHTML = '<div class="text-danger text-center">Error cargando dibujos</div>';
+        }
+      }
+    };
+    
+    window.reportDrawing = async function(drawingId, author) {
+      const reason = prompt(`Reportar dibujo de ${author}\n\nRazón del reporte:`);
+      if (!reason || !reason.trim()) return;
+      
+      try {
+        await app.firebase.reportDrawing({
+          drawingId: drawingId,
+          drawingAuthor: author,
+          reportedBy: 'Usuario anónimo',
+          reason: reason.trim(),
+          type: 'inappropriate_content'
+        });
+        
+        app.ui.showNotification('✅ Reporte enviado a moderadores', 'success');
+      } catch (error) {
+        app.ui.showNotification('❌ Error enviando reporte', 'error');
+      }
+    };
+    
+    window.loadModReports = async function() {
+      try {
+        const reports = await app.firebase.getAllReports();
+        const container = document.getElementById('modReports');
+        
+        if (!container) return;
+        
+        if (!reports || reports.length === 0) {
+          container.innerHTML = '<div class="text-muted text-center">No hay reportes</div>';
+          return;
+        }
+        
+        container.innerHTML = reports.map(r => `
+          <div class="card mb-3" style="background: var(--bg-light); border: 1px solid ${r.status === 'pending' ? '#ffc107' : r.status === 'resolved' ? '#28a745' : '#dc3545'};">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between mb-2">
+                <div>
+                  <strong style="color: var(--primary);">⚠️ ${r.drawingAuthor}</strong>
+                  <span class="badge ${r.status === 'pending' ? 'bg-warning' : r.status === 'resolved' ? 'bg-success' : 'bg-danger'} ms-2" style="font-size: 0.7em;">
+                    ${r.status === 'pending' ? '⏳ Pendiente' : r.status === 'resolved' ? '✅ Resuelto' : '❌ Rechazado'}
+                  </span>
+                </div>
+                <small class="text-muted">${app.formatDate(r.timestamp)}</small>
+              </div>
+              <p class="text-light mb-2"><strong>Razón:</strong> ${r.reason}</p>
+              <p class="text-muted small mb-2">Reportado por: ${r.reportedBy}</p>
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-warning" onclick="updateReportStatus('${r.id}', 'pending')">⏳ Pendiente</button>
+                <button class="btn btn-success" onclick="updateReportStatus('${r.id}', 'resolved')">✅ Resolver</button>
+                <button class="btn btn-danger" onclick="updateReportStatus('${r.id}', 'rejected')">❌ Rechazar</button>
+                <button class="btn btn-info" onclick="viewReportedDrawing('${r.drawingId}')">👁️ Ver</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error loading reports:', error);
+        const container = document.getElementById('modReports');
+        if (container) {
+          container.innerHTML = '<div class="text-danger text-center">Error cargando reportes</div>';
+        }
+      }
+    };
+    
+    window.updateReportStatus = async function(reportId, status) {
+      try {
+        await app.firebase.updateReportStatus(reportId, status);
+        app.ui.showNotification(`✅ Reporte ${status === 'resolved' ? 'resuelto' : status === 'rejected' ? 'rechazado' : 'marcado como pendiente'}`, 'success');
+        loadModReports();
+      } catch (error) {
+        app.ui.showNotification('❌ Error actualizando reporte', 'error');
+      }
+    };
+    
+    window.viewReportedDrawing = async function(drawingId) {
+      try {
+        const drawing = await app.firebase.getDrawing(drawingId);
+        if (drawing) {
+          viewImage(drawing.data.imagenData, drawingId);
+        } else {
+          app.ui.showNotification('❌ Dibujo no encontrado (posiblemente eliminado)', 'error');
+        }
+      } catch (error) {
+        app.ui.showNotification('❌ Error cargando dibujo', 'error');
+      }
+    };
+    
+    window.deleteDrawingMod = async function(drawingId, author) {
+      if (!window.currentUser || window.currentUser.role !== 'moderator') {
+        app.ui.showNotification('❌ Acceso denegado', 'error');
+        return;
+      }
+      
+      if (!window.currentUser.permissions.includes('delete_drawings')) {
+        app.ui.showNotification('❌ Sin permisos para eliminar dibujos', 'error');
+        return;
+      }
+      
+      const reason = prompt(`¿Eliminar dibujo de ${author}?\n\nRazón (opcional):`) || '';
+      if (reason === null) return;
+      
+      try {
+        await app.firebase.deleteDrawing(drawingId, window.currentUser.name, reason);
+        app.ui.showNotification('✅ Dibujo eliminado', 'success');
+        loadModDrawings();
+        app.gallery.loadGallery();
+      } catch (error) {
+        app.ui.showNotification('❌ Error eliminando dibujo', 'error');
+      }
+    };
+    
     window.loginAdmin = async function() {
       const password = document.getElementById('adminPassword').value;
       if (!password) {
@@ -2447,16 +3057,31 @@
       }
       
       try {
-        const isValid = await app.firebase.checkAdminPassword(password);
-        if (isValid) {
+        const authResult = await app.firebase.checkAdminPassword(password);
+        if (authResult && authResult.role) {
+          if (authResult.role === 'moderator_access') {
+            // Mostrar panel de moderador
+            document.getElementById('adminLogin').style.display = 'none';
+            document.getElementById('moderatorLogin').style.display = 'block';
+            app.ui.showNotification('✅ Acceso de moderador habilitado', 'success');
+            return;
+          }
+          
+          window.currentUser = authResult;
           isAdminLoggedIn = true;
+          
           document.getElementById('adminLogin').style.display = 'none';
           document.getElementById('adminContent').style.display = 'block';
+          
           document.getElementById('adminToggle').innerHTML = '🔓 Admin';
           document.getElementById('adminToggle').classList.remove('btn-outline-danger');
           document.getElementById('adminToggle').classList.add('btn-success');
+          
+          updateUIForUser();
+          loadModerators();
           app.loadAdminSuggestions();
           app.loadAdminDrawings();
+          
           app.ui.showNotification('✅ Acceso de administrador concedido', 'success');
         } else {
           app.ui.showNotification('❌ Contraseña incorrecta', 'error');
@@ -2466,20 +3091,120 @@
       }
     };
     
+    window.loginModerator = async function() {
+      const username = document.getElementById('modLoginUsername').value.trim();
+      const password = document.getElementById('modLoginPassword').value.trim();
+      
+      if (!username || !password) {
+        app.ui.showNotification('❌ Completa todos los campos', 'error');
+        return;
+      }
+      
+      try {
+        const authResult = await app.firebase.loginModerator(username, password);
+        if (authResult) {
+          window.currentUser = authResult;
+          isAdminLoggedIn = true;
+          
+          document.getElementById('moderatorLogin').style.display = 'none';
+          document.getElementById('adminContent').style.display = 'block';
+          
+          document.getElementById('adminToggle').innerHTML = `🛡️ ${authResult.name}`;
+          document.getElementById('adminToggle').classList.remove('btn-outline-danger');
+          document.getElementById('adminToggle').classList.add('btn-success');
+          
+          updateUIForUser();
+          app.loadAdminSuggestions();
+          app.loadAdminDrawings();
+          
+          app.ui.showNotification(`✅ Bienvenido ${authResult.name}`, 'success');
+        } else {
+          app.ui.showNotification('❌ Usuario o contraseña incorrectos', 'error');
+        }
+      } catch (error) {
+        app.ui.showNotification('❌ Error iniciando sesión', 'error');
+      }
+    };
+    
+    window.createModerator = async function() {
+      const authPassword = document.getElementById('modCreateAuth').value.trim();
+      const name = document.getElementById('modCreateName').value.trim();
+      const username = document.getElementById('modCreateUsername').value.trim();
+      const password = document.getElementById('modCreatePassword').value.trim();
+      
+      if (!authPassword || !name || !username || !password) {
+        app.ui.showNotification('❌ Completa todos los campos', 'error');
+        return;
+      }
+      
+      if (password.length < 6) {
+        app.ui.showNotification('❌ La contraseña debe tener al menos 6 caracteres', 'error');
+        return;
+      }
+      
+      try {
+        await app.firebase.addModerator({
+          moderatorPassword: authPassword,
+          name,
+          username,
+          password,
+          permissions: ['delete_drawings', 'manage_comments']
+        });
+        
+        app.ui.showNotification('✅ Cuenta de moderador creada', 'success');
+        
+        // Limpiar campos
+        document.getElementById('modCreateAuth').value = '';
+        document.getElementById('modCreateName').value = '';
+        document.getElementById('modCreateUsername').value = '';
+        document.getElementById('modCreatePassword').value = '';
+        
+        // Auto-login
+        document.getElementById('modLoginUsername').value = username;
+        document.getElementById('modLoginPassword').value = password;
+        
+      } catch (error) {
+        if (error.message.includes('ya existe')) {
+          app.ui.showNotification('❌ El nombre de usuario ya existe', 'error');
+        } else if (error.code === 'permission-denied') {
+          app.ui.showNotification('❌ Contraseña de moderador incorrecta', 'error');
+        } else {
+          app.ui.showNotification('❌ Error creando cuenta', 'error');
+        }
+      }
+    };
+    
+    window.backToMainLogin = function() {
+      document.getElementById('moderatorLogin').style.display = 'none';
+      document.getElementById('adminLogin').style.display = 'block';
+      document.getElementById('adminPassword').value = '';
+    };
+    
     window.logoutAdmin = function() {
       isAdminLoggedIn = false;
+      window.currentUser = null;
       document.getElementById('adminLogin').style.display = 'block';
       document.getElementById('adminContent').style.display = 'none';
       document.getElementById('adminPassword').value = '';
       document.getElementById('adminToggle').innerHTML = '🔐 Admin';
       document.getElementById('adminToggle').classList.remove('btn-success');
       document.getElementById('adminToggle').classList.add('btn-outline-danger');
-      app.ui.showNotification('🚪 Sesión de administrador cerrada', 'info');
+      
+      // Actualizar UI para usuario no logueado
+      updateUIForUser();
+      
+      app.ui.showNotification('🚪 Sesión cerrada', 'info');
     };
     
     window.updateSuggestionStatus = async function(suggestionId, status) {
-      if (!isAdminLoggedIn) {
+      if (!isAdminLoggedIn || !window.currentUser) {
         app.ui.showNotification('❌ Acceso denegado', 'error');
+        return;
+      }
+      
+      // Verificar permisos
+      if (window.currentUser.role === 'moderator' && !window.currentUser.permissions.includes('manage_suggestions')) {
+        app.ui.showNotification('❌ Sin permisos para gestionar sugerencias', 'error');
         return;
       }
       
@@ -2494,17 +3219,22 @@
     };
     
     window.deleteDrawing = async function(drawingId, author) {
-      if (!isAdminLoggedIn) {
+      if (!isAdminLoggedIn || !window.currentUser) {
         app.ui.showNotification('❌ Acceso denegado', 'error');
         return;
       }
       
-      if (!confirm(`¿Eliminar dibujo de ${author}? Esta acción no se puede deshacer.`)) {
+      // Verificar permisos
+      if (window.currentUser.role === 'moderator' && !window.currentUser.permissions.includes('delete_drawings')) {
+        app.ui.showNotification('❌ Sin permisos para eliminar dibujos', 'error');
         return;
       }
       
+      const reason = prompt(`¿Eliminar dibujo de ${author}?\n\nRazón (opcional):`) || '';
+      if (reason === null) return;
+      
       try {
-        await app.firebase.deleteDrawing(drawingId);
+        await app.firebase.deleteDrawing(drawingId, window.currentUser.id, reason);
         app.ui.showNotification('✅ Dibujo eliminado', 'success');
         app.loadAdminDrawings();
         app.gallery.loadGallery();

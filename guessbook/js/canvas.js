@@ -105,9 +105,16 @@ export class CanvasManager {
     // Preparar canvas para edición de la capa actual
     this.prepareCurrentLayerForEditing();
     
-    if (this.currentTool === 'brush' || this.currentTool === 'eraser') {
+    if (this.currentTool === 'brush') {
       this.ctx.beginPath();
       this.ctx.moveTo(coords.x, coords.y);
+    } else if (this.currentTool === 'eraser') {
+      // Inicializar borrado en la capa actual
+      if (this.layers[this.currentLayer] && this.layers[this.currentLayer].canvas) {
+        const layerCtx = this.layers[this.currentLayer].canvas.getContext('2d');
+        layerCtx.beginPath();
+        layerCtx.moveTo(coords.x, coords.y);
+      }
     } else if (this.currentTool === 'text') {
       const text = prompt('Escribe tu texto:');
       if (text) {
@@ -140,13 +147,9 @@ export class CanvasManager {
     if (this.currentTool === 'brush') {
       this.drawBrush(coords);
     } else if (this.currentTool === 'eraser') {
-      // Configurar borrador para que solo borre en la capa actual
-      this.ctx.globalCompositeOperation = 'destination-out';
-      this.ctx.globalAlpha = this.currentOpacity;
-      this.ctx.lineTo(coords.x, coords.y);
-      this.ctx.stroke();
-      // Restaurar configuración normal después del borrado
-      this.ctx.globalCompositeOperation = 'source-over';
+      // El borrador debe trabajar directamente en la capa actual
+      // Crear canvas temporal para el borrado aislado
+      this.eraseOnCurrentLayer(coords);
     } else if (this.currentTool === 'spray') {
       this.drawSpray(coords.x, coords.y);
     } else if (this.currentTool === 'bucket') {
@@ -156,13 +159,43 @@ export class CanvasManager {
     }
   }
   
+  eraseOnCurrentLayer(coords) {
+    // Trabajar directamente en la capa actual, no en el canvas principal
+    if (!this.layers[this.currentLayer] || !this.layers[this.currentLayer].canvas) return;
+    
+    const layerCtx = this.layers[this.currentLayer].canvas.getContext('2d');
+    
+    // Configurar borrador en la capa
+    layerCtx.globalCompositeOperation = 'destination-out';
+    layerCtx.globalAlpha = this.currentOpacity;
+    layerCtx.lineWidth = this.getBrushSize();
+    layerCtx.lineCap = 'round';
+    layerCtx.lineJoin = 'round';
+    
+    // Borrar en la capa
+    layerCtx.lineTo(coords.x, coords.y);
+    layerCtx.stroke();
+    
+    // Restaurar configuración de la capa
+    layerCtx.globalCompositeOperation = 'source-over';
+    layerCtx.globalAlpha = 1;
+    
+    // Actualizar canvas principal inmediatamente
+    this.renderAllLayersImmediate();
+  }
+  
+  renderAllLayersImmediate() {
+    // Usar el método seguro que no modifica contenido
+    this.renderLayersOnly();
+  }
+  
   setupBrush() {
-    // Solo configurar si no es borrador
+    // Configurar para todas las herramientas excepto borrador
     if (this.currentTool !== 'eraser') {
       this.ctx.globalCompositeOperation = 'source-over';
       this.ctx.globalAlpha = this.currentOpacity;
+      this.ctx.strokeStyle = this.getEffectColor();
     }
-    this.ctx.strokeStyle = this.getEffectColor();
     this.ctx.lineWidth = this.getBrushSize();
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
@@ -219,9 +252,13 @@ export class CanvasManager {
       }
       this.isDrawing = false;
       
-      // Guardar el contenido actual en la capa activa y renderizar todas
-      this.saveCurrentLayerContent();
-      this.renderAllLayers();
+      // Para herramientas que no sean borrador, guardar contenido
+      if (this.currentTool !== 'eraser') {
+        this.saveCurrentLayerContent();
+        this.renderAllLayers();
+      }
+      // El borrador ya actualiza en tiempo real
+      
       this.saveState();
     }
   }
@@ -373,19 +410,15 @@ export class CanvasManager {
   restoreState() {
     const img = new Image();
     img.onload = () => {
-      // Guardar configuración actual
-      const currentComposite = this.ctx.globalCompositeOperation;
-      const currentAlpha = this.ctx.globalAlpha;
-      
-      // Limpiar y restaurar
+      // Limpiar y restaurar con configuración segura
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.ctx.globalCompositeOperation = 'source-over';
       this.ctx.globalAlpha = 1;
       this.ctx.drawImage(img, 0, 0);
       
-      // Restaurar configuración previa si era diferente
-      this.ctx.globalCompositeOperation = currentComposite;
-      this.ctx.globalAlpha = currentAlpha;
+      // Asegurar configuración por defecto después de restaurar
+      this.ctx.globalCompositeOperation = 'source-over';
+      this.ctx.globalAlpha = 1;
     };
     img.src = this.history[this.historyStep];
   }
@@ -805,14 +838,13 @@ export class CanvasManager {
   
   toggleLayerVisibility(layerIndex) {
     if (this.layers[layerIndex]) {
-      // Guardar contenido de la capa actual de forma segura
-      this.saveCurrentLayerContentSafely();
+      // NO guardar contenido aquí para evitar pérdida de datos
       
       this.layers[layerIndex].visible = !this.layers[layerIndex].visible;
       this.updateLayersList();
       
-      // Siempre renderizar todas las capas superpuestas
-      this.renderAllLayers();
+      // Solo renderizar sin modificar contenido de capas
+      this.renderLayersOnly();
       
       this.saveState();
     }
@@ -821,7 +853,8 @@ export class CanvasManager {
   setLayerOpacity(layerIndex, opacity) {
     if (this.layers[layerIndex]) {
       this.layers[layerIndex].opacity = Math.max(0, Math.min(1, opacity));
-      this.renderAllLayers();
+      // Solo renderizar sin modificar contenido de capas
+      this.renderLayersOnly();
       this.saveState();
     }
   }
@@ -847,15 +880,33 @@ export class CanvasManager {
   }
   
   saveCurrentLayerContent() {
-    if (this.layers[this.currentLayer] && this.layers[this.currentLayer].canvas) {
-      const layerCtx = this.layers[this.currentLayer].canvas.getContext('2d');
-      layerCtx.clearRect(0, 0, this.layers[this.currentLayer].canvas.width, this.layers[this.currentLayer].canvas.height);
-      layerCtx.globalAlpha = 1;
-      layerCtx.globalCompositeOperation = 'source-over';
-      
-      // Extraer solo el contenido de la capa actual del canvas combinado
-      this.extractCurrentLayerFromCanvas(layerCtx);
-    }
+    if (!this.layers[this.currentLayer] || !this.layers[this.currentLayer].canvas) return;
+    
+    const layerCtx = this.layers[this.currentLayer].canvas.getContext('2d');
+    
+    // Crear canvas temporal para extraer solo la capa actual
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = this.canvas.width;
+    tempCanvas.height = this.canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Copiar contenido actual del canvas principal
+    tempCtx.drawImage(this.canvas, 0, 0);
+    
+    // Restar todas las otras capas visibles para obtener solo la capa actual
+    this.layers.forEach((layer, index) => {
+      if (index !== this.currentLayer && layer.visible && layer.canvas) {
+        tempCtx.globalCompositeOperation = 'destination-out';
+        tempCtx.globalAlpha = layer.opacity;
+        tempCtx.drawImage(layer.canvas, 0, 0);
+      }
+    });
+    
+    // Limpiar la capa y guardar el contenido extraído
+    layerCtx.clearRect(0, 0, this.layers[this.currentLayer].canvas.width, this.layers[this.currentLayer].canvas.height);
+    layerCtx.globalAlpha = 1;
+    layerCtx.globalCompositeOperation = 'source-over';
+    layerCtx.drawImage(tempCanvas, 0, 0);
   }
   
   extractCurrentLayerFromCanvas(layerCtx) {
@@ -882,21 +933,37 @@ export class CanvasManager {
   }
   
   prepareCurrentLayerForEditing() {
-    // Limpiar canvas y mostrar solo la capa actual para edición
+    // Limpiar canvas principal
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
+    // Renderizar todas las capas de fondo (no editables)
+    this.layers.forEach((layer, index) => {
+      if (layer.visible && layer.canvas && index !== this.currentLayer) {
+        this.ctx.globalAlpha = layer.opacity;
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.ctx.drawImage(layer.canvas, 0, 0);
+      }
+    });
+    
+    // Renderizar la capa actual encima (editable)
     if (this.layers[this.currentLayer] && this.layers[this.currentLayer].canvas) {
-      this.ctx.globalAlpha = 1;
+      this.ctx.globalAlpha = this.layers[this.currentLayer].opacity;
       this.ctx.globalCompositeOperation = 'source-over';
       this.ctx.drawImage(this.layers[this.currentLayer].canvas, 0, 0);
     }
+    
+    // Restaurar configuración para edición
+    this.ctx.globalAlpha = 1;
+    this.ctx.globalCompositeOperation = 'source-over';
   }
   
   switchToLayer(layerIndex) {
     if (layerIndex < 0 || layerIndex >= this.layers.length || layerIndex === this.currentLayer) return;
     
-    // Guardar contenido de la capa actual de forma segura
-    this.saveCurrentLayerContentSafely();
+    // Guardar contenido de la capa actual SOLO si hay cambios
+    if (this.isDrawing || this.hasUnsavedChanges) {
+      this.saveCurrentLayerContentSafely();
+    }
     
     // Cambiar a la nueva capa
     this.currentLayer = layerIndex;
@@ -910,15 +977,26 @@ export class CanvasManager {
   saveCurrentLayerContentSafely() {
     if (!this.layers[this.currentLayer] || !this.layers[this.currentLayer].canvas) return;
     
-    // Crear backup del contenido actual
-    const backup = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    // Solo guardar si realmente hay contenido nuevo
+    const currentData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    const layerCtx = this.layers[this.currentLayer].canvas.getContext('2d');
+    const layerData = layerCtx.getImageData(0, 0, this.canvas.width, this.canvas.height);
     
-    try {
-      this.saveCurrentLayerContent();
-    } catch (error) {
-      console.warn('Error guardando capa, restaurando backup:', error);
-      // Restaurar backup si hay error
-      this.ctx.putImageData(backup, 0, 0);
+    // Comparar si hay diferencias significativas
+    let hasChanges = false;
+    for (let i = 0; i < currentData.data.length; i += 4) {
+      if (Math.abs(currentData.data[i] - layerData.data[i]) > 5) {
+        hasChanges = true;
+        break;
+      }
+    }
+    
+    if (hasChanges) {
+      try {
+        this.saveCurrentLayerContent();
+      } catch (error) {
+        console.warn('Error guardando capa:', error);
+      }
     }
   }
   
@@ -926,6 +1004,11 @@ export class CanvasManager {
     // Guardar contenido de la capa actual de forma segura
     this.saveCurrentLayerContentSafely();
     
+    // Renderizar todas las capas
+    this.renderLayersOnly();
+  }
+  
+  renderLayersOnly() {
     // Limpiar canvas principal
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     

@@ -154,7 +154,10 @@ export class GalleryManager {
           </div>
           <div class="card-body d-flex flex-column" style="padding: 15px;">
             <h6 class="card-title" style="color: var(--primary); margin-bottom: 10px; font-weight: 600;">${drawing.data.titulo}</h6>
-            <p class="card-text" style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 15px;">Por: <strong style="color: var(--text-primary);">${drawing.data.autor}</strong></p>
+            <p class="card-text" style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 15px;">
+              Por: <strong style="color: var(--text-primary);">${drawing.data.autor}</strong>
+              ${this.getUserRoleBadge(drawing.data.userRole)}
+            </p>
             <div class="mt-auto d-flex justify-content-between align-items-center">
               <div class="d-flex gap-2">
                 <button class="btn btn-sm like-btn ${isLiked ? 'liked' : ''}" data-id="${drawing.id}" style="background: ${isLiked ? 'var(--primary)' : 'transparent'}; color: ${isLiked ? 'white' : 'var(--primary)'}; border: 2px solid var(--primary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;">
@@ -164,7 +167,15 @@ export class GalleryManager {
                   💬 ${comments.length}
                 </button>
               </div>
-              <small style="color: var(--text-secondary); font-size: 0.75em;">${new Date(drawing.data.timestamp).toLocaleDateString()}</small>
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm" onclick="event.stopPropagation(); reportDrawing('${drawing.id}', '${drawing.data.autor}')" style="background: transparent; color: #ffc107; border: 2px solid #ffc107; border-radius: 25px; padding: 4px 8px; transition: all 0.3s ease; font-size: 0.7em;" title="Reportar dibujo">
+                  ⚠️
+                </button>
+                <button class="btn btn-sm delete-drawing-btn" onclick="event.stopPropagation(); deleteDrawing('${drawing.id}', '${drawing.data.autor}')" style="background: transparent; color: #dc3545; border: 2px solid #dc3545; border-radius: 25px; padding: 4px 8px; transition: all 0.3s ease; font-size: 0.7em; display: none;" title="Eliminar dibujo">
+                  🗑️
+                </button>
+                <small style="color: var(--text-secondary); font-size: 0.75em;">${new Date(drawing.data.timestamp).toLocaleDateString()}</small>
+              </div>
             </div>
           </div>
         </div>
@@ -173,6 +184,9 @@ export class GalleryManager {
   }
 
   setupLikeButtons() {
+    // Mostrar/ocultar botones de eliminar según permisos
+    this.updateDeleteButtons();
+    
     document.querySelectorAll('.like-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -357,6 +371,26 @@ export class GalleryManager {
     }
   }
 
+  getUserRoleBadge(userRole) {
+    if (!userRole) return '';
+    
+    const badges = {
+      'admin': '<span class="badge ms-1" style="background: linear-gradient(45deg, #ff6b35, #ff8c42); color: white; font-size: 0.6em; padding: 2px 6px;">👑 ADMIN</span>',
+      'moderator': '<span class="badge ms-1" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; font-size: 0.6em; padding: 2px 6px;">🛡️ MOD</span>'
+    };
+    
+    return badges[userRole] || '';
+  }
+  
+  updateDeleteButtons() {
+    const deleteButtons = document.querySelectorAll('.delete-drawing-btn');
+    const hasPermission = window.hasPermission && window.hasPermission('delete_drawings');
+    
+    deleteButtons.forEach(btn => {
+      btn.style.display = hasPermission ? 'inline-block' : 'none';
+    });
+  }
+  
   showError(message) {
     const gallery = document.getElementById('gallery');
     if (gallery) {
