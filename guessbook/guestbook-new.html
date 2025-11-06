@@ -565,6 +565,9 @@
   
   <!-- Barra de herramientas flotante para móvil -->
   <div class="mobile-toolbar">
+    <button class="btn btn-secondary" onclick="window.location.href='../index.html'">
+      🏠 Lab
+    </button>
     <button class="btn btn-primary" onclick="scrollToCanvas()">
       🎨 Dibujar
     </button>
@@ -573,9 +576,6 @@
     </button>
     <button class="btn btn-success" onclick="document.getElementById('saveBtn').click()">
       💾 Guardar
-    </button>
-    <button class="btn btn-warning" onclick="toggleMobileMenu()">
-      ⚙️ Menú
     </button>
   </div>
   
@@ -588,10 +588,10 @@
         🚀 v2.0.9
       </button>
       <button id="adminToggle" class="btn btn-outline-danger btn-sm ms-2" onclick="toggleAdminPanel()">
-        🔐 Admin
+        🔐 Admin <span id="adminReportCount" class="badge bg-danger" style="display: none;">0</span>
       </button>
       <button id="modToggle" class="btn btn-outline-warning btn-sm ms-2" onclick="toggleModPanel()">
-        🛡️ Mod
+        🛡️ Mod <span id="modReportCount" class="badge bg-warning text-dark" style="display: none;">0</span>
       </button>
     </div>
     
@@ -673,6 +673,11 @@
                     🗑️ Dibujos
                   </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#admin-reports" type="button" role="tab">
+                    ⚠️ Reportes
+                  </button>
+                </li>
                 <li class="nav-item admin-only" role="presentation">
                   <button class="nav-link" id="moderators-tab" data-bs-toggle="tab" data-bs-target="#moderators" type="button" role="tab">
                     👥 Moderadores
@@ -693,6 +698,13 @@
                 <div class="tab-pane fade" id="drawings" role="tabpanel">
                   <div id="adminDrawings" style="max-height: 400px; overflow-y: auto;">
                     <div class="text-center text-muted">Cargando dibujos...</div>
+                  </div>
+                </div>
+                
+                <!-- Tab de Reportes -->
+                <div class="tab-pane fade" id="admin-reports" role="tabpanel">
+                  <div id="adminReports" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center text-muted">Cargando reportes...</div>
                   </div>
                 </div>
                 
@@ -1329,6 +1341,7 @@
     import { UIManager } from './js/ui.js';
     import { ProfileManager } from './js/profiles.js';
     import { MobileOptimizer } from './js/mobile-optimizer.js';
+    import { SoundSystem } from './js/sound-system.js';
     
     class GuestbookApp {
       constructor() {
@@ -1338,6 +1351,7 @@
         this.ui = new UIManager();
         this.profiles = new ProfileManager(this.firebase);
         this.mobileOptimizer = new MobileOptimizer();
+        this.soundSystem = new SoundSystem();
         
         // Hacer disponible globalmente
         window.guestbookApp = this;
@@ -1599,6 +1613,9 @@
         
         // Configurar mejoras móviles
         this.setupMobileEnhancements();
+        
+        // Iniciar verificación periódica de reportes
+        this.startReportCounterUpdates();
       }
       
       setupGifCanvas() {
@@ -2355,7 +2372,7 @@
             return;
           }
           
-          container.innerHTML = suggestions.slice(0, 5).map(s => `
+          container.innerHTML = suggestions.map(s => `
             <div class="mb-2 p-2" style="background: rgba(255,255,255,0.1); border-radius: 6px; border-left: 3px solid var(--primary);">
               <div class="d-flex justify-content-between mb-1">
                 <span class="text-warning small">${this.getSuggestionIcon(s.tipo)} <strong>${s.autor || 'Anónimo'}</strong></span>
@@ -2473,6 +2490,168 @@
             container.innerHTML = '<div class="text-danger text-center">Error cargando dibujos</div>';
           }
         }
+      }
+      
+      async loadAdminReports() {
+        try {
+          const reports = await this.firebase.getAllReports();
+          const container = document.getElementById('adminReports');
+          
+          if (!container) return;
+          
+          // Actualizar contador de reportes pendientes
+          const pendingReports = reports ? reports.filter(r => r.status === 'pending').length : 0;
+          this.updateReportCounters(pendingReports);
+          
+          if (!reports || reports.length === 0) {
+            container.innerHTML = `
+              <div class="text-center py-4">
+                <div style="color: var(--text-secondary); font-size: 1.1em;">
+                  <i class="fas fa-shield-alt" style="font-size: 2em; margin-bottom: 15px; opacity: 0.5;"></i>
+                  <p>No hay reportes</p>
+                  <small>Los reportes de usuarios aparecerán aquí</small>
+                </div>
+              </div>
+            `;
+            return;
+          }
+          
+          // Ordenar reportes: pendientes primero, luego por fecha
+          const sortedReports = reports.sort((a, b) => {
+            if (a.status === 'pending' && b.status !== 'pending') return -1;
+            if (b.status === 'pending' && a.status !== 'pending') return 1;
+            return b.timestamp - a.timestamp;
+          });
+          
+          const getTypeIcon = (type) => {
+            const icons = {
+              'inappropriate_content': '🚫',
+              'spam': '📧',
+              'harassment': '😠',
+              'copyright': '©️',
+              'violence': '⚔️',
+              'other': '❓'
+            };
+            return icons[type] || '⚠️';
+          };
+          
+          const getTypeText = (type) => {
+            const types = {
+              'inappropriate_content': 'Contenido inapropiado',
+              'spam': 'Spam',
+              'harassment': 'Acoso o bullying',
+              'copyright': 'Violación de derechos de autor',
+              'violence': 'Violencia o contenido perturbador',
+              'other': 'Otro'
+            };
+            return types[type] || 'No especificado';
+          };
+          
+          container.innerHTML = sortedReports.map(r => `
+            <div class="card mb-3" style="background: var(--bg-light); border: 2px solid ${r.status === 'pending' ? '#ffc107' : r.status === 'resolved' ? '#28a745' : '#dc3545'}; ${r.status === 'pending' ? 'box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);' : ''}">
+              <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <strong style="color: var(--primary); font-size: 1em;">${getTypeIcon(r.type)} Reporte contra: ${r.drawingAuthor}</strong>
+                      <span class="badge ${r.status === 'pending' ? 'bg-warning text-dark' : r.status === 'resolved' ? 'bg-success' : 'bg-danger'}" style="font-size: 0.75em;">
+                        ${r.status === 'pending' ? '⏳ Pendiente' : r.status === 'resolved' ? '✅ Resuelto' : '❌ Rechazado'}
+                      </span>
+                    </div>
+                    <div class="mb-2">
+                      <span class="badge bg-secondary me-2" style="font-size: 0.7em;">${getTypeText(r.type)}</span>
+                      <small class="text-muted">Reportado ${this.formatDate(r.timestamp)}</small>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <p class="text-light mb-2" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border-left: 3px solid var(--primary); font-size: 0.9em; line-height: 1.4;">
+                    <strong>Razón:</strong> ${r.reason}
+                  </p>
+                </div>
+                
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <small class="text-muted d-block"><strong>Reportado por:</strong> ${r.reportedBy}</small>
+                    ${r.reviewedBy ? `<small class="text-muted d-block"><strong>Revisado por:</strong> ${r.reviewedBy}</small>` : ''}
+                  </div>
+                  <div class="col-md-6 text-md-end">
+                    ${r.reviewedAt ? `<small class="text-muted d-block">Revisado: ${this.formatDate(r.reviewedAt)}</small>` : ''}
+                    <small class="text-muted d-block">ID: ${r.id.substring(0, 8)}...</small>
+                  </div>
+                </div>
+                
+                <div class="d-flex gap-2 flex-wrap">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn ${r.status === 'pending' ? 'btn-warning' : 'btn-outline-warning'}" onclick="updateReportStatus('${r.id}', 'pending')" ${r.status === 'pending' ? 'disabled' : ''}>
+                      ⏳ Pendiente
+                    </button>
+                    <button class="btn ${r.status === 'resolved' ? 'btn-success' : 'btn-outline-success'}" onclick="updateReportStatus('${r.id}', 'resolved')" ${r.status === 'resolved' ? 'disabled' : ''}>
+                      ✅ Resolver
+                    </button>
+                    <button class="btn ${r.status === 'rejected' ? 'btn-danger' : 'btn-outline-danger'}" onclick="updateReportStatus('${r.id}', 'rejected')" ${r.status === 'rejected' ? 'disabled' : ''}>
+                      ❌ Rechazar
+                    </button>
+                  </div>
+                  <button class="btn btn-info btn-sm" onclick="viewReportedDrawing('${r.drawingId}')" title="Ver el dibujo reportado">
+                    👁️ Ver Dibujo
+                  </button>
+                  ${window.hasPermission && window.hasPermission('delete_drawings') ? `
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteDrawingFromReport('${r.drawingId}', '${r.drawingAuthor}', '${r.id}')" title="Eliminar dibujo reportado">
+                      🗑️ Eliminar
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `).join('');
+          
+        } catch (error) {
+          console.error('Error loading admin reports:', error);
+          const container = document.getElementById('adminReports');
+          if (container) {
+            container.innerHTML = '<div class="text-danger text-center py-4"><i class="fas fa-exclamation-triangle mb-2"></i><br>Error cargando reportes</div>';
+          }
+        }
+      }
+      
+      updateReportCounters(pendingCount) {
+        const adminCounter = document.getElementById('adminReportCount');
+        const modCounter = document.getElementById('modReportCount');
+        
+        if (adminCounter) {
+          if (pendingCount > 0) {
+            adminCounter.textContent = pendingCount;
+            adminCounter.style.display = 'inline';
+            adminCounter.style.animation = 'pulse 2s infinite';
+          } else {
+            adminCounter.style.display = 'none';
+          }
+        }
+        
+        if (modCounter) {
+          if (pendingCount > 0) {
+            modCounter.textContent = pendingCount;
+            modCounter.style.display = 'inline';
+            modCounter.style.animation = 'pulse 2s infinite';
+          } else {
+            modCounter.style.display = 'none';
+          }
+        }
+      }
+      
+      startReportCounterUpdates() {
+        // Verificar reportes pendientes cada 60 segundos
+        setInterval(async () => {
+          try {
+            const reports = await this.firebase.getAllReports();
+            const pendingCount = reports ? reports.filter(r => r.status === 'pending').length : 0;
+            this.updateReportCounters(pendingCount);
+          } catch (error) {
+            // Silenciar errores de verificación periódica
+          }
+        }, 60000);
       }
       
       getSuggestionIcon(type) {
@@ -3150,6 +3329,18 @@
           loadModDrawings();
           loadModReports();
           
+          // Cargar reportes también en el panel principal
+          if (window.guestbookApp && window.guestbookApp.loadAdminReports) {
+            window.guestbookApp.loadAdminReports();
+          }
+          
+          // Actualizar reportes en ambos paneles
+          setTimeout(() => {
+            if (window.guestbookApp && window.guestbookApp.loadAdminReports) {
+              window.guestbookApp.loadAdminReports();
+            }
+          }, 1000);
+          
           alert(`Bienvenido ${authResult.name}`);
         } else {
           alert('Usuario o contraseña incorrectos');
@@ -3259,21 +3450,100 @@
     };
     
     window.reportDrawing = async function(drawingId, author) {
-      const reason = prompt(`Reportar dibujo de ${author}\n\nRazón del reporte:`);
-      if (!reason || !reason.trim()) return;
+      // Crear modal personalizado para el reporte
+      const reportModal = document.createElement('div');
+      reportModal.className = 'modal fade';
+      reportModal.innerHTML = `
+        <div class="modal-dialog">
+          <div class="modal-content" style="background: var(--bg-dark); border: 2px solid var(--primary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--primary);">
+              <h5 class="modal-title" style="color: var(--primary);">⚠️ Reportar Dibujo</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <p class="text-light">Estás reportando el dibujo de: <strong style="color: var(--primary);">${author}</strong></p>
+                <p class="text-muted small">Los reportes son revisados por moderadores. Solo reporta contenido que viole las reglas de la comunidad.</p>
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-light">Tipo de reporte:</label>
+                <select id="reportType" class="form-select" style="background: var(--bg-light); border: 1px solid var(--primary); color: var(--text-primary);">
+                  <option value="inappropriate_content">🚫 Contenido inapropiado</option>
+                  <option value="spam">📧 Spam</option>
+                  <option value="harassment">😠 Acoso o bullying</option>
+                  <option value="copyright">©️ Violación de derechos de autor</option>
+                  <option value="violence">⚔️ Violencia o contenido perturbador</option>
+                  <option value="other">❓ Otro</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-light">Razón del reporte:</label>
+                <textarea id="reportReason" class="form-control" rows="3" placeholder="Describe por qué estás reportando este dibujo..." style="background: var(--bg-light); border: 1px solid var(--primary); color: var(--text-primary); resize: none;" maxlength="500"></textarea>
+                <small class="text-muted">Máximo 500 caracteres</small>
+              </div>
+              <div class="mb-3">
+                <label class="form-label text-light">Tu nombre (opcional):</label>
+                <input type="text" id="reporterName" class="form-control" placeholder="Anónimo" style="background: var(--bg-light); border: 1px solid var(--primary); color: var(--text-primary);" maxlength="50">
+                <small class="text-muted">Puedes reportar de forma anónima</small>
+              </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--primary);">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-danger" onclick="submitReport('${drawingId}', '${author}')">⚠️ Enviar Reporte</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(reportModal);
+      const bootstrapModal = new bootstrap.Modal(reportModal);
+      bootstrapModal.show();
+      
+      reportModal.addEventListener('hidden.bs.modal', () => {
+        reportModal.remove();
+      });
+    };
+    
+    window.submitReport = async function(drawingId, author) {
+      const type = document.getElementById('reportType').value;
+      const reason = document.getElementById('reportReason').value.trim();
+      const reporterName = document.getElementById('reporterName').value.trim() || 'Usuario anónimo';
+      
+      if (!reason) {
+        app.ui.showNotification('❌ Por favor describe la razón del reporte', 'error');
+        document.getElementById('reportReason').focus();
+        return;
+      }
+      
+      const submitBtn = document.querySelector('button[onclick*="submitReport"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '⏳ Enviando...';
+      submitBtn.disabled = true;
       
       try {
         await app.firebase.reportDrawing({
           drawingId: drawingId,
           drawingAuthor: author,
-          reportedBy: 'Usuario anónimo',
-          reason: reason.trim(),
-          type: 'inappropriate_content'
+          reportedBy: reporterName,
+          reason: reason,
+          type: type,
+          timestamp: Date.now()
         });
         
         app.ui.showNotification('✅ Reporte enviado a moderadores', 'success');
+        
+        // Cerrar modal
+        const modal = document.querySelector('.modal.show');
+        if (modal) {
+          const bootstrapModal = bootstrap.Modal.getInstance(modal);
+          if (bootstrapModal) bootstrapModal.hide();
+        }
+        
       } catch (error) {
+        console.error('Error enviando reporte:', error);
         app.ui.showNotification('❌ Error enviando reporte', 'error');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
       }
     };
     
@@ -3284,30 +3554,111 @@
         
         if (!container) return;
         
+        // Actualizar contador de reportes pendientes
+        const pendingReports = reports ? reports.filter(r => r.status === 'pending').length : 0;
+        if (app.updateReportCounters) {
+          app.updateReportCounters(pendingReports);
+        }
+        
         if (!reports || reports.length === 0) {
-          container.innerHTML = '<div class="text-muted text-center">No hay reportes</div>';
+          container.innerHTML = `
+            <div class="text-center py-4">
+              <div style="color: var(--text-secondary); font-size: 1.1em;">
+                <i class="fas fa-shield-alt" style="font-size: 2em; margin-bottom: 15px; opacity: 0.5;"></i>
+                <p>No hay reportes</p>
+                <small>Los reportes de usuarios aparecerán aquí</small>
+              </div>
+            </div>
+          `;
           return;
         }
         
-        container.innerHTML = reports.map(r => `
-          <div class="card mb-3" style="background: var(--bg-light); border: 1px solid ${r.status === 'pending' ? '#ffc107' : r.status === 'resolved' ? '#28a745' : '#dc3545'};">
+        // Ordenar reportes: pendientes primero, luego por fecha
+        const sortedReports = reports.sort((a, b) => {
+          if (a.status === 'pending' && b.status !== 'pending') return -1;
+          if (b.status === 'pending' && a.status !== 'pending') return 1;
+          return b.timestamp - a.timestamp;
+        });
+        
+        const getTypeIcon = (type) => {
+          const icons = {
+            'inappropriate_content': '🚫',
+            'spam': '📧',
+            'harassment': '😠',
+            'copyright': '©️',
+            'violence': '⚔️',
+            'other': '❓'
+          };
+          return icons[type] || '⚠️';
+        };
+        
+        const getTypeText = (type) => {
+          const types = {
+            'inappropriate_content': 'Contenido inapropiado',
+            'spam': 'Spam',
+            'harassment': 'Acoso o bullying',
+            'copyright': 'Violación de derechos de autor',
+            'violence': 'Violencia o contenido perturbador',
+            'other': 'Otro'
+          };
+          return types[type] || 'No especificado';
+        };
+        
+        container.innerHTML = sortedReports.map(r => `
+          <div class="card mb-3" style="background: var(--bg-light); border: 2px solid ${r.status === 'pending' ? '#ffc107' : r.status === 'resolved' ? '#28a745' : '#dc3545'}; ${r.status === 'pending' ? 'box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);' : ''}">
             <div class="card-body p-3">
-              <div class="d-flex justify-content-between mb-2">
-                <div>
-                  <strong style="color: var(--primary);">⚠️ ${r.drawingAuthor}</strong>
-                  <span class="badge ${r.status === 'pending' ? 'bg-warning' : r.status === 'resolved' ? 'bg-success' : 'bg-danger'} ms-2" style="font-size: 0.7em;">
-                    ${r.status === 'pending' ? '⏳ Pendiente' : r.status === 'resolved' ? '✅ Resuelto' : '❌ Rechazado'}
-                  </span>
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <strong style="color: var(--primary); font-size: 1em;">${getTypeIcon(r.type)} Reporte contra: ${r.drawingAuthor}</strong>
+                    <span class="badge ${r.status === 'pending' ? 'bg-warning text-dark' : r.status === 'resolved' ? 'bg-success' : 'bg-danger'}" style="font-size: 0.75em;">
+                      ${r.status === 'pending' ? '⏳ Pendiente' : r.status === 'resolved' ? '✅ Resuelto' : '❌ Rechazado'}
+                    </span>
+                  </div>
+                  <div class="mb-2">
+                    <span class="badge bg-secondary me-2" style="font-size: 0.7em;">${getTypeText(r.type)}</span>
+                    <small class="text-muted">Reportado ${app.formatDate(r.timestamp)}</small>
+                  </div>
                 </div>
-                <small class="text-muted">${app.formatDate(r.timestamp)}</small>
               </div>
-              <p class="text-light mb-2"><strong>Razón:</strong> ${r.reason}</p>
-              <p class="text-muted small mb-2">Reportado por: ${r.reportedBy}</p>
-              <div class="btn-group btn-group-sm">
-                <button class="btn btn-warning" onclick="updateReportStatus('${r.id}', 'pending')">⏳ Pendiente</button>
-                <button class="btn btn-success" onclick="updateReportStatus('${r.id}', 'resolved')">✅ Resolver</button>
-                <button class="btn btn-danger" onclick="updateReportStatus('${r.id}', 'rejected')">❌ Rechazar</button>
-                <button class="btn btn-info" onclick="viewReportedDrawing('${r.drawingId}')">👁️ Ver</button>
+              
+              <div class="mb-3">
+                <p class="text-light mb-2" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border-left: 3px solid var(--primary); font-size: 0.9em; line-height: 1.4;">
+                  <strong>Razón:</strong> ${r.reason}
+                </p>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <small class="text-muted d-block"><strong>Reportado por:</strong> ${r.reportedBy}</small>
+                  ${r.reviewedBy ? `<small class="text-muted d-block"><strong>Revisado por:</strong> ${r.reviewedBy}</small>` : ''}
+                </div>
+                <div class="col-md-6 text-md-end">
+                  ${r.reviewedAt ? `<small class="text-muted d-block">Revisado: ${app.formatDate(r.reviewedAt)}</small>` : ''}
+                  <small class="text-muted d-block">ID: ${r.id.substring(0, 8)}...</small>
+                </div>
+              </div>
+              
+              <div class="d-flex gap-2 flex-wrap">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button class="btn ${r.status === 'pending' ? 'btn-warning' : 'btn-outline-warning'}" onclick="updateReportStatus('${r.id}', 'pending')" ${r.status === 'pending' ? 'disabled' : ''}>
+                    ⏳ Pendiente
+                  </button>
+                  <button class="btn ${r.status === 'resolved' ? 'btn-success' : 'btn-outline-success'}" onclick="updateReportStatus('${r.id}', 'resolved')" ${r.status === 'resolved' ? 'disabled' : ''}>
+                    ✅ Resolver
+                  </button>
+                  <button class="btn ${r.status === 'rejected' ? 'btn-danger' : 'btn-outline-danger'}" onclick="updateReportStatus('${r.id}', 'rejected')" ${r.status === 'rejected' ? 'disabled' : ''}>
+                    ❌ Rechazar
+                  </button>
+                </div>
+                <button class="btn btn-info btn-sm" onclick="viewReportedDrawing('${r.drawingId}')" title="Ver el dibujo reportado">
+                  👁️ Ver Dibujo
+                </button>
+                ${window.currentUser && window.currentUser.permissions && window.currentUser.permissions.includes('delete_drawings') ? `
+                  <button class="btn btn-outline-danger btn-sm" onclick="deleteDrawingFromReport('${r.drawingId}', '${r.drawingAuthor}', '${r.id}')" title="Eliminar dibujo reportado">
+                    🗑️ Eliminar
+                  </button>
+                ` : ''}
               </div>
             </div>
           </div>
@@ -3317,17 +3668,29 @@
         console.error('Error loading reports:', error);
         const container = document.getElementById('modReports');
         if (container) {
-          container.innerHTML = '<div class="text-danger text-center">Error cargando reportes</div>';
+          container.innerHTML = '<div class="text-danger text-center py-4"><i class="fas fa-exclamation-triangle mb-2"></i><br>Error cargando reportes</div>';
         }
       }
     };
     
     window.updateReportStatus = async function(reportId, status) {
       try {
-        await app.firebase.updateReportStatus(reportId, status);
-        app.ui.showNotification(`✅ Reporte ${status === 'resolved' ? 'resuelto' : status === 'rejected' ? 'rechazado' : 'marcado como pendiente'}`, 'success');
-        loadModReports();
+        const reviewerName = window.currentUser ? (window.currentUser.name || window.currentUser.username || 'Moderador') : 'Admin';
+        await app.firebase.updateReportStatus(reportId, status, reviewerName);
+        
+        const statusText = {
+          'pending': 'marcado como pendiente',
+          'resolved': 'resuelto',
+          'rejected': 'rechazado'
+        };
+        
+        app.ui.showNotification(`✅ Reporte ${statusText[status] || 'actualizado'}`, 'success');
+        
+        // Actualizar ambos paneles
+        if (window.loadModReports) loadModReports();
+        if (app.loadAdminReports) app.loadAdminReports();
       } catch (error) {
+        console.error('Error actualizando reporte:', error);
         app.ui.showNotification('❌ Error actualizando reporte', 'error');
       }
     };
@@ -3336,7 +3699,36 @@
       try {
         const drawing = await app.firebase.getDrawing(drawingId);
         if (drawing) {
-          viewImage(drawing.data.imagenData, drawingId);
+          // Usar la función viewImage del gallery manager
+          if (window.guestbookApp && window.guestbookApp.gallery && window.guestbookApp.gallery.viewImage) {
+            window.guestbookApp.gallery.viewImage(drawing.data.backgroundGif || drawing.data.imagenData, drawingId);
+          } else {
+            // Fallback simple
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content" style="background: var(--bg-dark); border: 2px solid var(--primary);">
+                  <div class="modal-header">
+                    <h5 class="modal-title" style="color: var(--primary);">Dibujo Reportado - ${drawing.data.autor}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+                  </div>
+                  <div class="modal-body text-center">
+                    <img src="${drawing.data.backgroundGif || drawing.data.imagenData}" class="img-fluid" style="max-height: 400px; background: white; border-radius: 8px;">
+                    <div class="mt-3">
+                      <p class="text-light">Autor: <strong>${drawing.data.autor}</strong></p>
+                      <p class="text-light">Categoría: <strong>${drawing.data.categoria}</strong></p>
+                      <p class="text-light">Fecha: <strong>${new Date(drawing.data.timestamp).toLocaleDateString()}</strong></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            document.body.appendChild(modal);
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+            modal.addEventListener('hidden.bs.modal', () => modal.remove());
+          }
         } else {
           app.ui.showNotification('❌ Dibujo no encontrado (posiblemente eliminado)', 'error');
         }
@@ -3360,7 +3752,8 @@
       if (reason === null) return;
       
       try {
-        await app.firebase.deleteDrawing(drawingId, window.currentUser.name, reason);
+        const moderatorName = window.currentUser ? (window.currentUser.name || window.currentUser.username || 'Moderador') : 'Moderador';
+        await app.firebase.deleteDrawing(drawingId, moderatorName, reason);
         app.ui.showNotification('✅ Dibujo eliminado', 'success');
         loadModDrawings();
         app.gallery.loadGallery();
@@ -3401,6 +3794,7 @@
           loadModerators();
           app.loadAdminSuggestions();
           app.loadAdminDrawings();
+          app.loadAdminReports();
           
           app.ui.showNotification('✅ Acceso de administrador concedido', 'success');
         } else {
@@ -3436,6 +3830,7 @@
           updateUIForUser();
           app.loadAdminSuggestions();
           app.loadAdminDrawings();
+          app.loadAdminReports();
           
           app.ui.showNotification(`✅ Bienvenido ${authResult.name}`, 'success');
         } else {
@@ -3554,11 +3949,50 @@
       if (reason === null) return;
       
       try {
-        await app.firebase.deleteDrawing(drawingId, window.currentUser.id, reason);
+        const moderatorName = window.currentUser ? (window.currentUser.name || window.currentUser.username || 'Admin') : 'Admin';
+        await app.firebase.deleteDrawing(drawingId, moderatorName, reason);
         app.ui.showNotification('✅ Dibujo eliminado', 'success');
         app.loadAdminDrawings();
         app.gallery.loadGallery();
       } catch (error) {
+        app.ui.showNotification('❌ Error eliminando dibujo', 'error');
+      }
+    };
+    
+    // Función para eliminar dibujo desde un reporte
+    window.deleteDrawingFromReport = async function(drawingId, author, reportId) {
+      if (!window.hasPermission || !window.hasPermission('delete_drawings')) {
+        app.ui.showNotification('❌ Sin permisos para eliminar dibujos', 'error');
+        return;
+      }
+      
+      const confirmDelete = confirm(
+        `¿Eliminar dibujo reportado?\n\n` +
+        `Autor: ${author}\n` +
+        `Esta acción eliminará el dibujo y marcará el reporte como resuelto.\n\n` +
+        `¿Continuar?`
+      );
+      
+      if (!confirmDelete) return;
+      
+      try {
+        const moderatorName = window.currentUser ? (window.currentUser.name || window.currentUser.username) : 'Admin';
+        
+        // Eliminar dibujo
+        await app.firebase.deleteDrawing(drawingId, moderatorName, 'Eliminado por reporte de usuario');
+        
+        // Marcar reporte como resuelto
+        await app.firebase.updateReportStatus(reportId, 'resolved', moderatorName);
+        
+        app.ui.showNotification('✅ Dibujo eliminado y reporte resuelto', 'success');
+        
+        // Actualizar vistas
+        if (app.loadAdminReports) app.loadAdminReports();
+        if (app.loadAdminDrawings) app.loadAdminDrawings();
+        if (app.gallery && app.gallery.loadGallery) app.gallery.loadGallery();
+        
+      } catch (error) {
+        console.error('Error eliminando dibujo desde reporte:', error);
         app.ui.showNotification('❌ Error eliminando dibujo', 'error');
       }
     };

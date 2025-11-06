@@ -82,7 +82,7 @@ export class FirebaseManager {
     try {
       await deleteDoc(doc(this.db, 'dibujos', id));
       
-      if (moderator) {
+      if (moderator && typeof moderator === 'string') {
         await this.logModeratorAction('delete_drawing', moderator, id, { reason });
       }
       
@@ -377,7 +377,7 @@ export class FirebaseManager {
   
   async getModerators() {
     try {
-      const q = query(collection(this.db, 'moderators'), orderBy('createdAt', 'desc'));
+      const q = query(collection(this.db, 'moderators'), orderBy('createdAt', 'desc'), limit(50));
       const querySnapshot = await getDocs(q);
       const moderators = [];
       
@@ -420,11 +420,17 @@ export class FirebaseManager {
   
   async logModeratorAction(action, moderator, target, details = {}) {
     try {
+      // Validar que moderator no sea undefined
+      if (!moderator || typeof moderator !== 'string') {
+        console.warn('Moderator inválido para log:', moderator);
+        moderator = 'Sistema';
+      }
+      
       await addDoc(collection(this.db, 'moderation_logs'), {
-        moderator,
-        action,
-        target,
-        details,
+        moderator: String(moderator),
+        action: String(action),
+        target: String(target),
+        details: details || {},
         timestamp: Date.now(),
         domain: 'thisisfenix.github.io'
       });
@@ -488,12 +494,21 @@ export class FirebaseManager {
   
   async reportDrawing(reportData) {
     try {
+      // Validar datos del reporte
+      if (!reportData.drawingId || !reportData.reason) {
+        throw new Error('Datos del reporte incompletos');
+      }
+      
       const docRef = await addDoc(collection(this.db, 'reports'), {
         ...reportData,
         domain: 'thisisfenix.github.io',
         status: 'pending',
-        timestamp: Date.now()
+        timestamp: reportData.timestamp || Date.now(),
+        reviewedBy: null,
+        reviewedAt: null
       });
+      
+      console.log('Reporte enviado con ID:', docRef.id);
       return docRef.id;
     } catch (error) {
       console.error('Error enviando reporte:', error);
@@ -503,7 +518,7 @@ export class FirebaseManager {
   
   async getAllReports() {
     try {
-      const q = query(collection(this.db, 'reports'), orderBy('timestamp', 'desc'));
+      const q = query(collection(this.db, 'reports'), orderBy('timestamp', 'desc'), limit(100));
       const querySnapshot = await getDocs(q);
       const reports = [];
       
@@ -521,12 +536,30 @@ export class FirebaseManager {
     }
   }
   
-  async updateReportStatus(reportId, status) {
+  async updateReportStatus(reportId, status, reviewerName = null) {
     try {
-      await updateDoc(doc(this.db, 'reports', reportId), {
+      const updateData = {
         status: status,
         updatedAt: Date.now()
-      });
+      };
+      
+      if (reviewerName) {
+        updateData.reviewedBy = reviewerName;
+        updateData.reviewedAt = Date.now();
+      }
+      
+      await updateDoc(doc(this.db, 'reports', reportId), updateData);
+      
+      // Log de la acción de moderación
+      if (reviewerName) {
+        await this.logModeratorAction(
+          'update_report_status',
+          reviewerName,
+          reportId,
+          { newStatus: status }
+        );
+      }
+      
       return true;
     } catch (error) {
       console.error('Error actualizando reporte:', error);
