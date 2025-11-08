@@ -34,11 +34,12 @@ export class SoundSystem {
   }
   
   loadSounds() {
-    // Cargar archivo de audio
+    // Cargar archivos de audio
     this.sounds = {
       normal: this.createAudioFile('./damn.mp3'),
       warning: this.createAudioFile('./damn.mp3', 1.5), 
-      explosion: this.createAudioFile('./explosion.mp3')
+      explosion: this.createAudioFile('./explosion.mp3'),
+      special: this.createAudioFile('./yo-somebody-get-the-door.mp3')
     };
   }
   
@@ -135,18 +136,31 @@ export class SoundSystem {
     this.clickCount++;
     this.lastClickTime = now;
     
+    // 50% probabilidad de sonido especial en clicks normales
+    const useSpecialSound = Math.random() < 0.5;
+    
     if (this.clickCount <= 5) {
-      // Clicks normales
-      this.playSound('normal');
-      this.animateButton('normal');
+      // Clicks normales con posibilidad de sonido especial
+      if (useSpecialSound) {
+        this.playSound('special');
+        this.animateButton('special');
+      } else {
+        this.playSound('normal');
+        this.animateButton('normal');
+      }
     } else if (this.clickCount <= 15) {
-      // Primera advertencia
+      // Primera advertencia con 50% probabilidad de sonido especial
       if (this.warningCount === 0) {
         this.showWarning('⚠️ ¡Cuidado! No hagas spam o algo malo pasará...');
         this.warningCount = 1;
       }
-      this.playSound('warning');
-      this.animateButton('warning');
+      if (useSpecialSound) {
+        this.playCustomSpecialWarning('./yo-somebody-get-the-door.mp3', 1.5, 0.2);
+        this.animateButton('special');
+      } else {
+        this.playSound('warning');
+        this.animateButton('warning');
+      }
     } else if (this.clickCount <= 25) {
       // Segunda advertencia con más velocidad y distorsión
       if (this.warningCount === 1) {
@@ -155,8 +169,16 @@ export class SoundSystem {
       }
       // Calcular intensidad basada en proximidad a la explosión (clicks 15-25)
       const intensity = (this.clickCount - 15) / 10; // 0 a 1
-      this.playCustomWarning(2.0 + intensity * 1.5, intensity * 0.8); // Velocidad 2.0-3.5x, distorsión 0-0.8
-      this.animateButton('warning');
+      const playbackRate = 2.0 + intensity * 1.5; // Velocidad 2.0-3.5x
+      const distortion = intensity * 0.8; // distorsión 0-0.8
+      
+      if (useSpecialSound) {
+        this.playCustomSpecialWarning('./yo-somebody-get-the-door.mp3', playbackRate, distortion);
+        this.animateButton('special');
+      } else {
+        this.playCustomWarning(playbackRate, distortion);
+        this.animateButton('warning');
+      }
     } else {
       // Tercera advertencia y explosión
       if (this.warningCount === 2) {
@@ -185,6 +207,15 @@ export class SoundSystem {
     }
   }
   
+  playCustomSpecialWarning(src, playbackRate, distortion) {
+    try {
+      const customAudio = this.createAudioFile(src, playbackRate, distortion);
+      customAudio.play();
+    } catch (e) {
+      console.log('Audio not available');
+    }
+  }
+  
   animateButton(type) {
     const btn = document.getElementById('sound-button');
     if (!btn) return;
@@ -192,6 +223,10 @@ export class SoundSystem {
     if (type === 'normal') {
       btn.style.transform = 'scale(1.2)';
       btn.style.filter = 'brightness(1.2)';
+    } else if (type === 'special') {
+      btn.style.transform = 'scale(1.3)';
+      btn.style.filter = 'brightness(1.4) hue-rotate(120deg) saturate(1.5)';
+      btn.style.animation = 'specialPulse 0.6s ease-in-out';
     } else if (type === 'warning') {
       btn.style.transform = 'scale(1.3)';
       btn.style.filter = 'brightness(1.5) hue-rotate(45deg)';
@@ -202,7 +237,7 @@ export class SoundSystem {
       btn.style.transform = 'scale(1)';
       btn.style.filter = 'brightness(1)';
       btn.style.animation = '';
-    }, 300);
+    }, type === 'special' ? 600 : 300);
   }
   
   showWarning(message) {
@@ -417,6 +452,13 @@ style.textContent = `
     0% { transform: scale(0) rotate(360deg); opacity: 0; }
     50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  
+  @keyframes specialPulse {
+    0%, 100% { transform: scale(1.3); filter: brightness(1.4) hue-rotate(120deg) saturate(1.5); }
+    25% { transform: scale(1.4); filter: brightness(1.6) hue-rotate(140deg) saturate(2); }
+    50% { transform: scale(1.5); filter: brightness(1.8) hue-rotate(160deg) saturate(2.5); }
+    75% { transform: scale(1.4); filter: brightness(1.6) hue-rotate(140deg) saturate(2); }
   }
 `;
 document.head.appendChild(style);
