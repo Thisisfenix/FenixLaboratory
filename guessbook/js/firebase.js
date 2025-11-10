@@ -430,7 +430,7 @@ export class FirebaseManager {
         moderator: String(moderator),
         action: String(action),
         target: String(target),
-        details: details || {},
+        reason: details.reason || '',
         timestamp: Date.now(),
         domain: 'thisisfenix.github.io'
       });
@@ -438,6 +438,26 @@ export class FirebaseManager {
     } catch (error) {
       console.error('Error registrando acción de moderación:', error);
       return false;
+    }
+  }
+  
+  async getModerationLogs() {
+    try {
+      const q = query(collection(this.db, 'moderation_logs'), orderBy('timestamp', 'desc'), limit(50));
+      const querySnapshot = await getDocs(q);
+      const logs = [];
+      
+      querySnapshot.forEach((doc) => {
+        logs.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return logs;
+    } catch (error) {
+      console.error('Error obteniendo logs de moderación:', error);
+      return [];
     }
   }
   
@@ -564,6 +584,36 @@ export class FirebaseManager {
     } catch (error) {
       console.error('Error actualizando reporte:', error);
       throw error;
+    }
+  }
+  
+  async saveUserProfile(profileData) {
+    try {
+      const docRef = doc(this.db, 'user_profiles', profileData.username.toLowerCase());
+      await setDoc(docRef, {
+        ...profileData,
+        domain: 'thisisfenix.github.io',
+        updatedAt: Date.now()
+      }, { merge: true });
+      return true;
+    } catch (error) {
+      console.error('Error guardando perfil de usuario:', error);
+      throw error;
+    }
+  }
+  
+  async getUserProfile(username) {
+    try {
+      const docRef = doc(this.db, 'user_profiles', username.toLowerCase());
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        return docSnap.data();
+      }
+      return null;
+    } catch (error) {
+      console.error('Error obteniendo perfil de usuario:', error);
+      return null;
     }
   }
 }

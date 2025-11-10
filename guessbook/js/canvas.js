@@ -1,7 +1,7 @@
 export class CanvasManager {
   constructor() {
     this.canvas = document.getElementById('drawCanvas');
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
     this.isDrawing = false;
     this.currentColor = '#000000';
     this.currentSize = 3;
@@ -21,6 +21,7 @@ export class CanvasManager {
     this.appliedFilters = [];
     this.layers = [];
     this.currentLayer = 0;
+    this.layerMode = false; // Modo simple por defecto
     this.initializeLayers();
     this.originalImageData = null;
     
@@ -99,22 +100,12 @@ export class CanvasManager {
     this.isDrawing = true;
     const coords = this.getCoordinates(e);
     
-    // Asegurar que la capa actual existe
-    this.ensureCurrentLayerExists();
-    
-    // Preparar canvas para edición de la capa actual
-    this.prepareCurrentLayerForEditing();
-    
     if (this.currentTool === 'brush') {
       this.ctx.beginPath();
       this.ctx.moveTo(coords.x, coords.y);
     } else if (this.currentTool === 'eraser') {
-      // Inicializar borrado en la capa actual
-      if (this.layers[this.currentLayer] && this.layers[this.currentLayer].canvas) {
-        const layerCtx = this.layers[this.currentLayer].canvas.getContext('2d');
-        layerCtx.beginPath();
-        layerCtx.moveTo(coords.x, coords.y);
-      }
+      this.ctx.beginPath();
+      this.ctx.moveTo(coords.x, coords.y);
     } else if (this.currentTool === 'text') {
       const text = prompt('Escribe tu texto:');
       if (text) {
@@ -133,7 +124,6 @@ export class CanvasManager {
       this.shapeStartX = coords.x;
       this.shapeStartY = coords.y;
     } else if (this.currentTool === 'select') {
-      // Selection tool placeholder
       console.log('Selection tool activated');
     }
   }
@@ -145,11 +135,19 @@ export class CanvasManager {
     this.setupBrush();
     
     if (this.currentTool === 'brush') {
-      this.drawBrush(coords);
+      this.ctx.lineTo(coords.x, coords.y);
+      this.ctx.stroke();
+      
+      if (this.symmetryEnabled) {
+        const centerX = this.canvas.width / 2;
+        const mirrorX = centerX + (centerX - coords.x);
+        this.ctx.lineTo(mirrorX, coords.y);
+        this.ctx.stroke();
+      }
+      this.strokeCount++;
     } else if (this.currentTool === 'eraser') {
-      // El borrador debe trabajar directamente en la capa actual
-      // Crear canvas temporal para el borrado aislado
-      this.eraseOnCurrentLayer(coords);
+      this.ctx.lineTo(coords.x, coords.y);
+      this.ctx.stroke();
     } else if (this.currentTool === 'spray') {
       this.drawSpray(coords.x, coords.y);
     } else if (this.currentTool === 'bucket') {
@@ -159,73 +157,58 @@ export class CanvasManager {
     }
   }
   
-  eraseOnCurrentLayer(coords) {
-    // Trabajar directamente en la capa actual, no en el canvas principal
-    if (!this.layers[this.currentLayer] || !this.layers[this.currentLayer].canvas) return;
-    
-    const layerCtx = this.layers[this.currentLayer].canvas.getContext('2d');
-    
-    // Configurar borrador en la capa
-    layerCtx.globalCompositeOperation = 'destination-out';
-    layerCtx.globalAlpha = this.currentOpacity;
-    layerCtx.lineWidth = this.getBrushSize();
-    layerCtx.lineCap = 'round';
-    layerCtx.lineJoin = 'round';
-    
-    // Borrar en la capa
-    layerCtx.lineTo(coords.x, coords.y);
-    layerCtx.stroke();
-    
-    // Restaurar configuración de la capa
-    layerCtx.globalCompositeOperation = 'source-over';
-    layerCtx.globalAlpha = 1;
-    
-    // Actualizar canvas principal inmediatamente
-    this.renderAllLayersImmediate();
-  }
+
   
   renderAllLayersImmediate() {
     // Usar el método seguro que no modifica contenido
     this.renderLayersOnly();
   }
   
-  setupBrush() {
+  setupBrush(ctx = this.ctx) {
     // Configurar para todas las herramientas excepto borrador
     if (this.currentTool !== 'eraser') {
-      this.ctx.globalCompositeOperation = 'source-over';
-      this.ctx.globalAlpha = this.currentOpacity;
-      this.ctx.strokeStyle = this.getEffectColor();
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = this.currentOpacity;
+      ctx.strokeStyle = this.getEffectColor(ctx);
+    } else {
+      // Configuración específica para borrador
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.globalAlpha = 1;
     }
-    this.ctx.lineWidth = this.getBrushSize();
-    this.ctx.lineCap = 'round';
-    this.ctx.lineJoin = 'round';
+    ctx.lineWidth = this.getBrushSize();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
   }
   
-  drawBrush(coords) {
+  drawBrush(coords, ctx = this.ctx) {
+    // Aplicar efectos
     if (this.currentEffect === 'neon') {
-      this.ctx.shadowColor = this.currentColor;
-      this.ctx.shadowBlur = 10;
+      ctx.shadowColor = this.currentColor;
+      ctx.shadowBlur = 10;
     } else if (this.currentEffect === 'watercolor') {
-      this.ctx.globalAlpha = 0.3;
+      ctx.globalAlpha = 0.3;
     }
     
-    this.ctx.lineTo(coords.x, coords.y);
-    this.ctx.stroke();
+    // Dibujar línea principal
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
     
+    // Simetría si está habilitada
     if (this.symmetryEnabled) {
       const centerX = this.canvas.width / 2;
       const mirrorX = centerX + (centerX - coords.x);
-      this.ctx.lineTo(mirrorX, coords.y);
-      this.ctx.stroke();
+      ctx.lineTo(mirrorX, coords.y);
+      ctx.stroke();
     }
     
-    this.ctx.shadowBlur = 0;
+    // Limpiar efectos
+    ctx.shadowBlur = 0;
     this.strokeCount++;
   }
   
-  getEffectColor() {
+  getEffectColor(ctx = this.ctx) {
     if (this.currentEffect === 'gradient') {
-      const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, 0);
+      const gradient = ctx.createLinearGradient(0, 0, this.canvas.width, 0);
       gradient.addColorStop(0, this.currentColor);
       gradient.addColorStop(1, '#ffffff');
       return gradient;
@@ -252,42 +235,44 @@ export class CanvasManager {
       }
       this.isDrawing = false;
       
-      // Para herramientas que no sean borrador, guardar contenido
-      if (this.currentTool !== 'eraser') {
-        this.saveCurrentLayerContent();
-        this.renderAllLayers();
+      // Restaurar configuración por defecto
+      this.ctx.globalCompositeOperation = 'source-over';
+      this.ctx.globalAlpha = 1;
+      
+      // En modo capas, guardar el trazo en la capa actual
+      if (this.layerMode) {
+        this.saveDrawingToCurrentLayer();
       }
-      // El borrador ya actualiza en tiempo real
       
       this.saveState();
     }
   }
   
-  drawShape(startX, startY, endX, endY) {
-    this.ctx.strokeStyle = this.currentColor;
-    this.ctx.lineWidth = this.currentSize;
-    this.ctx.globalCompositeOperation = 'source-over';
+  drawShape(startX, startY, endX, endY, ctx = this.ctx) {
+    ctx.strokeStyle = this.currentColor;
+    ctx.lineWidth = this.currentSize;
+    ctx.globalCompositeOperation = 'source-over';
     
     if (this.currentTool === 'circle') {
       const radius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-      this.ctx.beginPath();
-      this.ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
-      this.ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+      ctx.stroke();
     } else if (this.currentTool === 'line') {
-      this.ctx.beginPath();
-      this.ctx.moveTo(startX, startY);
-      this.ctx.lineTo(endX, endY);
-      this.ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
     }
   }
   
-  drawSpray(x, y) {
-    this.ctx.globalCompositeOperation = 'source-over';
-    this.ctx.fillStyle = this.currentColor;
+  drawSpray(x, y, ctx = this.ctx) {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = this.currentColor;
     for (let i = 0; i < 20; i++) {
       const offsetX = (Math.random() - 0.5) * 20;
       const offsetY = (Math.random() - 0.5) * 20;
-      this.ctx.fillRect(x + offsetX, y + offsetY, 1, 1);
+      ctx.fillRect(x + offsetX, y + offsetY, 1, 1);
     }
   }
   
@@ -386,14 +371,29 @@ export class CanvasManager {
   }
   
   saveState() {
+    // Solo guardar estado en modo simple
+    if (this.layerMode) return;
+    
     this.historyStep++;
     if (this.historyStep < this.history.length) {
       this.history.length = this.historyStep;
     }
+    
     this.history.push(this.canvas.toDataURL());
+    
+    if (this.history.length > 50) {
+      this.history.shift();
+      this.historyStep--;
+    }
   }
   
   undo() {
+    if (this.layerMode) {
+      if (window.guestbookApp?.ui?.showNotification) {
+        window.guestbookApp.ui.showNotification('⚠️ Deshacer no disponible en modo capas. Usa el borrador.', 'info');
+      }
+      return;
+    }
     if (this.historyStep > 0) {
       this.historyStep--;
       this.restoreState();
@@ -401,6 +401,12 @@ export class CanvasManager {
   }
   
   redo() {
+    if (this.layerMode) {
+      if (window.guestbookApp?.ui?.showNotification) {
+        window.guestbookApp.ui.showNotification('⚠️ Rehacer no disponible en modo capas. Usa el borrador.', 'info');
+      }
+      return;
+    }
     if (this.historyStep < this.history.length - 1) {
       this.historyStep++;
       this.restoreState();
@@ -408,19 +414,16 @@ export class CanvasManager {
   }
   
   restoreState() {
+    const state = this.history[this.historyStep];
+    
     const img = new Image();
     img.onload = () => {
-      // Limpiar y restaurar con configuración segura
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.ctx.globalCompositeOperation = 'source-over';
       this.ctx.globalAlpha = 1;
       this.ctx.drawImage(img, 0, 0);
-      
-      // Asegurar configuración por defecto después de restaurar
-      this.ctx.globalCompositeOperation = 'source-over';
-      this.ctx.globalAlpha = 1;
     };
-    img.src = this.history[this.historyStep];
+    img.src = state;
   }
   
   clear() {
@@ -700,9 +703,48 @@ export class CanvasManager {
   }
   
   // Layer functionality
+  toggleLayerMode() {
+    this.layerMode = !this.layerMode;
+    
+    if (this.layerMode) {
+      // Activar modo capas
+      this.history = []; // Limpiar historial
+      this.historyStep = -1;
+      if (window.guestbookApp?.ui?.showNotification) {
+        window.guestbookApp.ui.showNotification('🎨 Modo Capas activado. Deshacer/Rehacer deshabilitado.', 'info');
+      }
+    } else {
+      // Activar modo simple
+      this.saveState(); // Guardar estado actual
+      if (window.guestbookApp?.ui?.showNotification) {
+        window.guestbookApp.ui.showNotification('✏️ Modo Simple activado. Deshacer/Rehacer habilitado.', 'success');
+      }
+    }
+    
+    this.updateModeUI();
+  }
+  
+  updateModeUI() {
+    const layerControls = document.getElementById('layerControls');
+    const modeToggle = document.getElementById('layerModeToggle');
+    
+    if (layerControls) {
+      layerControls.style.display = this.layerMode ? 'block' : 'none';
+    }
+    
+    if (modeToggle) {
+      modeToggle.textContent = this.layerMode ? '✏️ Modo Simple' : '🎨 Modo Capas';
+      modeToggle.title = this.layerMode ? 'Cambiar a modo simple (con deshacer/rehacer)' : 'Cambiar a modo capas (sin deshacer/rehacer)';
+    }
+  }
+  
   addLayer() {
-    // Guardar contenido de la capa actual
-    this.saveCurrentLayerContent();
+    if (!this.layerMode) {
+      if (window.guestbookApp?.ui?.showNotification) {
+        window.guestbookApp.ui.showNotification('⚠️ Activa el modo capas primero', 'warning');
+      }
+      return;
+    }
     
     const newLayer = {
       id: this.layers.length,
@@ -716,12 +758,24 @@ export class CanvasManager {
     this.layers.push(newLayer);
     this.currentLayer = newLayer.id;
     
-    // Limpiar canvas principal para la nueva capa
+    // Limpiar canvas para la nueva capa
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Renderizar capas anteriores como referencia
+    for (let i = 0; i < this.currentLayer; i++) {
+      if (this.layers[i] && this.layers[i].visible && this.layers[i].canvas) {
+        this.ctx.globalAlpha = this.layers[i].opacity * 0.5; // Más transparente como referencia
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.ctx.drawImage(this.layers[i].canvas, 0, 0);
+      }
+    }
+    
+    // Restaurar configuración
+    this.ctx.globalAlpha = 1;
+    this.ctx.globalCompositeOperation = 'source-over';
     
     this.updateLayersList();
     
-    // Mostrar notificación
     if (window.guestbookApp?.ui?.showNotification) {
       window.guestbookApp.ui.showNotification(`✨ Capa ${this.layers.length} creada`, 'success');
     }
@@ -763,67 +817,72 @@ export class CanvasManager {
         cursor: pointer; transition: all 0.2s ease;
       `;
       
-      layerItem.innerHTML = `
-        <button class="visibility-btn" data-layer="${index}" style="
-          background: ${layer.visible ? '#28a745' : '#dc3545'};
-          color: white; border: none; border-radius: 4px;
-          width: 24px; height: 24px; font-size: 12px;
-          cursor: pointer; transition: all 0.2s ease;
-        ">
-          ${layer.visible ? '👁️' : '🙈'}
-        </button>
-        <span style="flex: 1; color: var(--text-primary); font-size: 0.8em;">🎨 Capa ${index + 1}</span>
-        <input type="range" class="opacity-slider" data-layer="${index}" min="0" max="100" value="${layer.opacity * 100}" 
-               style="width: 60px; accent-color: var(--primary);" title="Opacidad: ${Math.round(layer.opacity * 100)}%">
-        <span style="color: var(--text-secondary); font-size: 0.7em; min-width: 30px;">${Math.round(layer.opacity * 100)}%</span>
+      // Crear botón de visibilidad
+      const visibilityBtn = document.createElement('button');
+      visibilityBtn.className = 'visibility-btn';
+      visibilityBtn.dataset.layer = index;
+      visibilityBtn.style.cssText = `
+        background: ${layer.visible ? '#28a745' : '#dc3545'};
+        color: white; border: none; border-radius: 4px;
+        width: 24px; height: 24px; font-size: 12px;
+        cursor: pointer; transition: all 0.2s ease;
       `;
+      visibilityBtn.textContent = layer.visible ? '👁️' : '🙈';
+      visibilityBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleLayerVisibility(index);
+      });
+      
+      // Crear span del nombre
+      const nameSpan = document.createElement('span');
+      nameSpan.style.cssText = 'flex: 1; color: var(--text-primary); font-size: 0.8em;';
+      nameSpan.textContent = `🎨 Capa ${index + 1}`;
+      
+      // Crear slider de opacidad
+      const opacitySlider = document.createElement('input');
+      opacitySlider.type = 'range';
+      opacitySlider.className = 'opacity-slider';
+      opacitySlider.dataset.layer = index;
+      opacitySlider.min = '0';
+      opacitySlider.max = '100';
+      opacitySlider.value = layer.opacity * 100;
+      opacitySlider.style.cssText = 'width: 60px; accent-color: var(--primary);';
+      opacitySlider.title = `Opacidad: ${Math.round(layer.opacity * 100)}%`;
+      opacitySlider.addEventListener('input', (e) => {
+        const opacity = parseFloat(e.target.value) / 100;
+        this.setLayerOpacity(index, opacity);
+        percentSpan.textContent = `${Math.round(opacity * 100)}%`;
+        opacitySlider.title = `Opacidad: ${Math.round(opacity * 100)}%`;
+      });
+      
+      // Crear span del porcentaje
+      const percentSpan = document.createElement('span');
+      percentSpan.style.cssText = 'color: var(--text-secondary); font-size: 0.7em; min-width: 30px;';
+      percentSpan.textContent = `${Math.round(layer.opacity * 100)}%`;
+      
+      // Agregar elementos al item
+      layerItem.appendChild(visibilityBtn);
+      layerItem.appendChild(nameSpan);
+      layerItem.appendChild(opacitySlider);
+      layerItem.appendChild(percentSpan);
       
       // Event listener para seleccionar capa
       layerItem.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('visibility-btn') && !e.target.classList.contains('opacity-slider')) {
+        if (e.target === layerItem || e.target === nameSpan) {
           this.switchToLayer(index);
         }
       });
       
       layersList.appendChild(layerItem);
     });
-    
-    // Event listeners para botones de visibilidad
-    document.querySelectorAll('.visibility-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const layerIndex = parseInt(btn.dataset.layer);
-        this.toggleLayerVisibility(layerIndex);
-      });
-    });
-    
-    // Event listeners para sliders de opacidad
-    document.querySelectorAll('.opacity-slider').forEach(slider => {
-      slider.addEventListener('input', (e) => {
-        const layerIndex = parseInt(slider.dataset.layer);
-        const opacity = parseFloat(e.target.value) / 100;
-        this.setLayerOpacity(layerIndex, opacity);
-        
-        // Actualizar el texto del porcentaje
-        const percentText = slider.nextElementSibling;
-        if (percentText) {
-          percentText.textContent = `${Math.round(opacity * 100)}%`;
-        }
-        
-        // Actualizar tooltip
-        slider.title = `Opacidad: ${Math.round(opacity * 100)}%`;
-      });
-    });
   }
   
   renderLayers() {
-    // NO guardar contenido aquí para evitar bucles
-    
     // Limpiar canvas principal
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
     // Renderizar todas las capas visibles en orden
-    this.layers.forEach(layer => {
+    this.layers.forEach((layer, index) => {
       if (layer.visible && layer.canvas) {
         this.ctx.globalAlpha = layer.opacity;
         this.ctx.globalCompositeOperation = 'source-over';
@@ -838,24 +897,24 @@ export class CanvasManager {
   
   toggleLayerVisibility(layerIndex) {
     if (this.layers[layerIndex]) {
-      // NO guardar contenido aquí para evitar pérdida de datos
+      // Siempre guardar contenido actual antes de cambiar visibilidad
+      if (this.layerMode && this.layers[this.currentLayer]) {
+        this.saveCurrentDrawingToLayer();
+      }
       
       this.layers[layerIndex].visible = !this.layers[layerIndex].visible;
       this.updateLayersList();
       
-      // Solo renderizar sin modificar contenido de capas
-      this.renderLayersOnly();
-      
-      this.saveState();
+      // Renderizar todas las capas
+      this.renderLayers();
     }
   }
   
   setLayerOpacity(layerIndex, opacity) {
     if (this.layers[layerIndex]) {
       this.layers[layerIndex].opacity = Math.max(0, Math.min(1, opacity));
-      // Solo renderizar sin modificar contenido de capas
-      this.renderLayersOnly();
-      this.saveState();
+      // Renderizar todas las capas sin guardar contenido
+      this.renderLayers();
     }
   }
   
@@ -958,18 +1017,13 @@ export class CanvasManager {
   }
   
   switchToLayer(layerIndex) {
-    if (layerIndex < 0 || layerIndex >= this.layers.length || layerIndex === this.currentLayer) return;
-    
-    // Guardar contenido de la capa actual SOLO si hay cambios
-    if (this.isDrawing || this.hasUnsavedChanges) {
-      this.saveCurrentLayerContentSafely();
-    }
+    if (!this.layerMode || layerIndex < 0 || layerIndex >= this.layers.length || layerIndex === this.currentLayer) return;
     
     // Cambiar a la nueva capa
     this.currentLayer = layerIndex;
     
-    // Preparar la nueva capa para edición
-    this.prepareCurrentLayerForEditing();
+    // Renderizar todas las capas visibles
+    this.renderLayers();
     
     this.updateLayersList();
   }
@@ -1008,11 +1062,21 @@ export class CanvasManager {
     this.renderLayersOnly();
   }
   
-  renderLayersOnly() {
+  renderAllVisibleLayers() {
+    if (!this.layersEnabled || this.layers.length <= 1) return;
+    
+    // Guardar contenido actual en la capa activa antes de renderizar
+    if (this.layers[this.currentLayer]) {
+      const currentLayerCanvas = this.layers[this.currentLayer].canvas;
+      const layerCtx = currentLayerCanvas.getContext('2d');
+      layerCtx.clearRect(0, 0, currentLayerCanvas.width, currentLayerCanvas.height);
+      layerCtx.drawImage(this.canvas, 0, 0);
+    }
+    
     // Limpiar canvas principal
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Renderizar todas las capas visibles superpuestas
+    // Renderizar todas las capas visibles en orden
     this.layers.forEach(layer => {
       if (layer.visible && layer.canvas) {
         this.ctx.globalAlpha = layer.opacity;
@@ -1026,9 +1090,93 @@ export class CanvasManager {
     this.ctx.globalCompositeOperation = 'source-over';
   }
   
+  renderLayersOnly() {
+    this.renderAllVisibleLayers();
+  }
+  
   showCurrentLayerForEditing() {
     // Mostrar todas las capas pero permitir edición solo en la actual
     this.renderAllLayers();
+  }
+  
+  saveCurrentDrawingToLayer() {
+    if (!this.layers[this.currentLayer]) return;
+    
+    const currentLayerCanvas = this.layers[this.currentLayer].canvas;
+    const layerCtx = currentLayerCanvas.getContext('2d');
+    
+    // Crear canvas temporal con todas las capas anteriores
+    const backgroundCanvas = document.createElement('canvas');
+    backgroundCanvas.width = this.canvas.width;
+    backgroundCanvas.height = this.canvas.height;
+    const bgCtx = backgroundCanvas.getContext('2d');
+    
+    // Renderizar todas las capas anteriores a la actual
+    for (let i = 0; i < this.currentLayer; i++) {
+      if (this.layers[i] && this.layers[i].visible && this.layers[i].canvas) {
+        bgCtx.globalAlpha = this.layers[i].opacity;
+        bgCtx.globalCompositeOperation = 'source-over';
+        bgCtx.drawImage(this.layers[i].canvas, 0, 0);
+      }
+    }
+    
+    // Añadir el contenido existente de la capa actual
+    bgCtx.globalAlpha = 1;
+    bgCtx.globalCompositeOperation = 'source-over';
+    bgCtx.drawImage(currentLayerCanvas, 0, 0);
+    
+    // Crear canvas temporal para extraer solo el nuevo contenido
+    const newContentCanvas = document.createElement('canvas');
+    newContentCanvas.width = this.canvas.width;
+    newContentCanvas.height = this.canvas.height;
+    const newCtx = newContentCanvas.getContext('2d');
+    
+    // Copiar canvas actual
+    newCtx.drawImage(this.canvas, 0, 0);
+    
+    // Restar el fondo (capas anteriores + contenido previo de capa actual)
+    newCtx.globalCompositeOperation = 'destination-out';
+    newCtx.drawImage(backgroundCanvas, 0, 0);
+    
+    // Añadir solo el nuevo contenido a la capa actual
+    layerCtx.globalCompositeOperation = 'source-over';
+    layerCtx.globalAlpha = 1;
+    layerCtx.drawImage(newContentCanvas, 0, 0);
+  }
+  
+  prepareCanvasForDrawing() {
+    if (!this.layers[this.currentLayer]) return;
+    
+    // Guardar cualquier cambio pendiente en la capa actual antes de preparar
+    this.saveDrawingToCurrentLayer();
+    
+    // Limpiar canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Renderizar todas las capas visibles
+    this.layers.forEach(layer => {
+      if (layer.visible && layer.canvas) {
+        this.ctx.globalAlpha = layer.opacity;
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.ctx.drawImage(layer.canvas, 0, 0);
+      }
+    });
+    
+    // Restaurar configuración
+    this.ctx.globalAlpha = 1;
+    this.ctx.globalCompositeOperation = 'source-over';
+  }
+  
+  saveDrawingToCurrentLayer() {
+    if (!this.layers[this.currentLayer]) return;
+    
+    // Simplemente copiar todo el canvas actual a la capa
+    // Esto preserva tanto el dibujo como el borrado
+    const layerCtx = this.layers[this.currentLayer].canvas.getContext('2d');
+    layerCtx.clearRect(0, 0, this.layers[this.currentLayer].canvas.width, this.layers[this.currentLayer].canvas.height);
+    layerCtx.globalCompositeOperation = 'source-over';
+    layerCtx.globalAlpha = 1;
+    layerCtx.drawImage(this.canvas, 0, 0);
   }
   
   exportImage() {

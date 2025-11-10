@@ -30,6 +30,13 @@ export class GalleryManager {
       this.applyFilter();
       this.displayGallery();
       this.displayRankings();
+      
+      // Sincronizar perfiles después de mostrar la galería
+      setTimeout(() => {
+        if (window.guestbookApp && window.guestbookApp.profiles) {
+          window.guestbookApp.profiles.syncCardsAfterLoad();
+        }
+      }, 500);
     } catch (error) {
       console.error('Error loading gallery:', error);
       this.showError('Error cargando la galería');
@@ -105,6 +112,12 @@ export class GalleryManager {
     const rankClass = rank ? `top-drawing rank-${rank}` : '';
     const rankBadge = rank ? `<div class="rank-badge rank-${rank}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}</div>` : '';
     
+    // Obtener avatar del perfil
+    const profileAvatar = drawing.data.profileAvatar || '👤';
+    const profilePicture = drawing.data.profilePicture;
+    const isLoggedUser = drawing.data.isLoggedUser || false;
+    const userProfile = drawing.data.userProfile;
+    
     // Detectar si tiene contenido animado o stickers GIF
     const hasBackgroundGif = drawing.data.backgroundGif && drawing.data.backgroundGif !== '';
     const hasGifStickers = drawing.data.gifStickers && Array.isArray(drawing.data.gifStickers) && drawing.data.gifStickers.length > 0;
@@ -138,7 +151,7 @@ export class GalleryManager {
     
     return `
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-        <div class="card h-100 ${rankClass}" data-id="${drawing.id}" style="background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%); border: 2px solid var(--primary); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative;">
+        <div class="card drawing-card h-100 ${rankClass}" data-id="${drawing.id}" style="background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%); border: 2px solid var(--primary); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative;">
           ${rankBadge}
           <div style="position: relative; overflow: hidden; cursor: pointer; transition: transform 0.3s ease;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${drawing.id}', ${isAnimated}, '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'").replace(/"/g, '&quot;') : ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;').replace(/'/g, "\\'") : 'null'})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
             ${imageContent}
@@ -154,10 +167,19 @@ export class GalleryManager {
           </div>
           <div class="card-body d-flex flex-column" style="padding: 15px;">
             <h6 class="card-title" style="color: var(--primary); margin-bottom: 10px; font-weight: 600;">${drawing.data.titulo}</h6>
-            <p class="card-text" style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 15px;">
-              Por: <strong style="color: var(--text-primary);">${drawing.data.autor}</strong>
-              ${this.getUserRoleBadge(drawing.data.userRole)}
-            </p>
+            <div class="d-flex align-items-center mb-3" style="gap: 10px;">
+              <div class="author-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 0.9em; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden; ${isLoggedUser ? 'border: 2px solid #28a745;' : ''}">
+                ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : `<span>${profileAvatar || '👤'}</span>`}
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="author-name" style="color: var(--text-primary); font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 5px;">
+                  ${drawing.data.autor}
+                  ${isLoggedUser ? '<span style="color: #28a745; font-size: 0.7em;" title="Usuario registrado">✓</span>' : ''}
+                  ${this.getUserRoleBadge(drawing.data.userRole)}
+                </div>
+                ${userProfile ? `<small style="color: var(--text-secondary); font-size: 0.75em;">Miembro desde ${new Date(userProfile.joinDate).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })}</small>` : ''}
+              </div>
+            </div>
             <div class="mt-auto d-flex justify-content-between align-items-center">
               <div class="d-flex gap-2">
                 <button class="btn btn-sm like-btn ${isLiked ? 'liked' : ''}" data-id="${drawing.id}" style="background: ${isLiked ? 'var(--primary)' : 'transparent'}; color: ${isLiked ? 'white' : 'var(--primary)'}; border: 2px solid var(--primary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;">
@@ -561,15 +583,54 @@ export class GalleryManager {
 
 // Funciones globales
 // Función para generar avatar con PNG o emoji
-function generateAvatar(author, profilePicture) {
+async function generateAvatar(author, profilePicture, profileAvatar = null) {
+  // Intentar cargar datos actualizados de Firebase si no se proporcionan
+  if (!profilePicture && !profileAvatar && window.guestbookApp && window.guestbookApp.firebase) {
+    try {
+      const userProfile = await window.guestbookApp.firebase.getUserProfile(author);
+      if (userProfile) {
+        profilePicture = userProfile.avatarImage;
+        profileAvatar = userProfile.avatar;
+      }
+    } catch (error) {
+      // Silenciar error y usar fallback
+    }
+  }
+  
+  // Prioridad: 1. Imagen de perfil, 2. Avatar emoji del perfil, 3. Avatar generado
   if (profilePicture) {
     return `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
   }
   
-  // Lista de emojis para avatares
-  const avatarEmojis = ['🎨', '🖌️', '🎭', '🌟', '🎪', '🎨', '🦄', '🌈', '⭐', '🎯', '🎲', '🎮', '🎸', '🎺', '🎻', '🎤', '🎧', '🎬', '📸', '🎨'];
+  if (profileAvatar && profileAvatar !== '👤') {
+    return `<span style="font-size: 1.2em;">${profileAvatar}</span>`;
+  }
+  
+  // Lista de emojis para avatares (fallback)
+  const avatarEmojis = ['🎨', '🖌️', '🎭', '🌟', '🎪', '🦄', '🌈', '⭐', '🎯', '🎲', '🎮', '🎸', '🎺', '🎻', '🎤', '🎧', '🎬', '📸'];
   
   // Generar emoji basado en el nombre del autor
+  let hash = 0;
+  for (let i = 0; i < author.length; i++) {
+    hash = author.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const emojiIndex = Math.abs(hash) % avatarEmojis.length;
+  
+  return `<span style="font-size: 1.2em;">${avatarEmojis[emojiIndex]}</span>`;
+}
+
+// Versión síncrona para compatibilidad
+function generateAvatarSync(author, profilePicture, profileAvatar = null) {
+  if (profilePicture) {
+    return `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+  }
+  
+  if (profileAvatar && profileAvatar !== '👤') {
+    return `<span style="font-size: 1.2em;">${profileAvatar}</span>`;
+  }
+  
+  const avatarEmojis = ['🎨', '🖌️', '🎭', '🌟', '🎪', '🦄', '🌈', '⭐', '🎯', '🎲', '🎮', '🎸', '🎺', '🎻', '🎤', '🎧', '🎬', '📸'];
+  
   let hash = 0;
   for (let i = 0; i < author.length; i++) {
     hash = author.charCodeAt(i) + ((hash << 5) - hash);
@@ -633,14 +694,14 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
     display: flex; ${isMobile ? 'flex-direction: column;' : ''}
     max-width: ${isMobile ? '100%' : '90vw'}; max-height: ${isMobile ? '100%' : '90vh'};
     background: var(--bg-light); border-radius: ${isMobile ? '0' : '15px'}; overflow: hidden;
-    border: 2px solid var(--primary); width: 100%; height: ${isMobile ? '100%' : 'auto'};
+    border: 2px solid var(--primary); width: 100%; height: ${isMobile ? '100vh' : 'auto'};
     ${isMobile ? 'margin: 0;' : ''}
   `;
   
   const imageSection = document.createElement('div');
   imageSection.style.cssText = `
-    ${isMobile ? 'flex: 0 0 45%;' : 'flex: 1;'}
-    padding: ${isMobile ? '15px' : '20px'}; text-align: center;
+    ${isMobile ? 'flex: 0 0 35vh;' : 'flex: 1;'}
+    padding: ${isMobile ? '10px' : '20px'}; text-align: center;
     display: flex; flex-direction: column; justify-content: center;
     background: white; position: relative;
     ${isMobile ? 'min-height: 0; overflow: hidden;' : ''}
@@ -649,7 +710,7 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   const commentsSection = document.createElement('div');
   commentsSection.style.cssText = `
     ${isMobile ? 'flex: 1; min-height: 0;' : 'width: 400px; min-width: 400px;'}
-    padding: ${isMobile ? '15px' : '20px'};
+    padding: ${isMobile ? '10px' : '20px'};
     ${isMobile ? 'border-top: 2px solid var(--primary);' : 'border-left: 2px solid var(--primary);'}
     overflow-y: auto; background: var(--bg-dark);
     display: flex; flex-direction: column;
@@ -667,7 +728,7 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   
   // Crear contenido de imagen optimizado para móvil
   let imageContent = '';
-  const maxImageHeight = isMobile ? (isSmallMobile ? '25vh' : '30vh') : '70vh';
+  const maxImageHeight = isMobile ? (isSmallMobile ? '20vh' : '25vh') : '70vh';
   
   if (hasBackgroundGif || hasGifStickers) {
     const containerStyle = `position: relative; max-width: 100%; max-height: ${maxImageHeight}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; display: inline-block; ${isMobile ? 'width: 100%;' : 'aspect-ratio: 3/2;'}`;
@@ -688,59 +749,108 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
     <div style="flex: 1; display: flex; align-items: center; justify-content: center; ${isMobile ? 'min-height: 0;' : ''}">
       ${imageContent}
     </div>
-    <div style="margin-top: ${isMobile ? '10px' : '20px'}; display: flex; gap: ${isMobile ? '8px' : '12px'}; justify-content: center; flex-wrap: wrap;">
-      <button onclick="this.closest('.image-modal').remove()" class="btn btn-secondary" style="${isMobile ? 'min-height: 44px; font-size: 16px; padding: 0.5rem 1rem;' : ''}">
+    <div style="margin-top: ${isMobile ? '5px' : '20px'}; display: flex; gap: ${isMobile ? '5px' : '12px'}; justify-content: center; flex-wrap: wrap;">
+      <button onclick="this.closest('.image-modal').remove()" class="btn btn-secondary btn-sm" style="${isMobile ? 'min-height: 36px; font-size: 14px; padding: 0.4rem 0.8rem;' : ''}">
         ${isMobile ? '✖️' : '✖️ Cerrar'}
       </button>
-      <button onclick="downloadImage('${imageData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', 'dibujo')" class="btn btn-primary" style="${isMobile ? 'min-height: 44px; font-size: 16px; padding: 0.5rem 1rem;' : ''}">
+      <button onclick="downloadImage('${imageData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', 'dibujo')" class="btn btn-primary btn-sm" style="${isMobile ? 'min-height: 36px; font-size: 14px; padding: 0.4rem 0.8rem;' : ''}">
         ${isMobile ? '💾' : '💾 Descargar'}
       </button>
     </div>
   `;
   
+  // Obtener avatar actualizado del perfil
+  let modalAvatar = '👤';
+  let modalAvatarType = 'emoji';
+  
+  // Intentar obtener datos actualizados del perfil
+  if (window.guestbookApp && window.guestbookApp.profiles) {
+    const profiles = window.guestbookApp.profiles;
+    const userProfile = profiles.users.get(drawingData?.autor?.toLowerCase());
+    if (userProfile) {
+      modalAvatar = userProfile.avatar || '👤';
+      modalAvatarType = userProfile.avatarType || 'emoji';
+      if (modalAvatarType === 'image' && userProfile.avatarImage) {
+        drawingData.profilePicture = userProfile.avatarImage;
+      }
+    }
+  }
+  
   // Crear sección de perfil del usuario (compacta y clickeable)
   const userProfileHTML = drawingData ? `
-    <div style="border-bottom: 1px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px;">
-      <div onclick="showUserProfile('${drawingData.autor}', '${drawingData.profilePicture || ''}', '${drawingData.timestamp}', ${drawingData.likes || 0}, ${drawingData.comments?.length || 0}, '${drawingData.categoria}')" style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; padding: 5px; border-radius: 8px; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-        <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 1em; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden;">
-          ${generateAvatar(drawingData.autor || 'Anónimo', drawingData.profilePicture)}
+    <div style="border-bottom: 1px solid var(--primary); padding-bottom: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '10px' : '15px'};">
+      <div onclick="showUserProfile('${drawingData.autor}', '${drawingData.profilePicture || ''}', '${drawingData.timestamp}', ${drawingData.likes || 0}, ${drawingData.comments?.length || 0}, '${drawingData.categoria}')" style="display: flex; align-items: center; gap: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '5px' : '8px'}; cursor: pointer; padding: ${isMobile ? '3px' : '5px'}; border-radius: 6px; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+        <div style="width: ${isMobile ? '32px' : '40px'}; height: ${isMobile ? '32px' : '40px'}; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: ${isMobile ? '0.8em' : '1em'}; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden;">
+          ${modalAvatarType === 'image' && drawingData.profilePicture ? `<img src="${drawingData.profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : `<span>${modalAvatar}</span>`}
         </div>
         <div style="flex: 1; min-width: 0;">
-          <h6 style="color: var(--primary); margin: 0; font-weight: 600; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${drawingData.autor || 'Anónimo'} <span style="font-size: 0.7em; opacity: 0.7;">ℹ️</span></h6>
-          <small style="color: var(--text-secondary); font-size: 0.75em;">${new Date(drawingData.timestamp).toLocaleDateString('es-ES')}</small>
+          <h6 style="color: var(--primary); margin: 0; font-weight: 600; font-size: ${isMobile ? '0.85em' : '0.95em'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${drawingData.autor || 'Anónimo'} ${isMobile ? '' : '<span style="font-size: 0.7em; opacity: 0.7;">ℹ️</span>'}</h6>
+          <small style="color: var(--text-secondary); font-size: ${isMobile ? '0.7em' : '0.75em'};">${new Date(drawingData.timestamp).toLocaleDateString('es-ES')}</small>
         </div>
-        <div style="display: flex; gap: 8px; font-size: 0.75em; color: var(--text-secondary);">
+        <div style="display: flex; gap: ${isMobile ? '6px' : '8px'}; font-size: ${isMobile ? '0.7em' : '0.75em'}; color: var(--text-secondary);">
           <span>❤️ ${drawingData.likes || 0}</span>
           <span>💬 ${drawingData.comments?.length || 0}</span>
         </div>
       </div>
     </div>
-    <div style="text-align: center; margin-bottom: 15px;">
-      <h6 style="color: var(--primary); margin: 0; font-weight: 600; font-size: 0.9em;">💬 Comentarios</h6>
+    <div style="text-align: center; margin-bottom: ${isMobile ? '8px' : '15px'};">
+      <h6 style="color: var(--primary); margin: 0; font-weight: 600; font-size: ${isMobile ? '0.8em' : '0.9em'};">💬 Comentarios</h6>
     </div>
   ` : `
-    <div style="border-bottom: 1px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; text-align: center;">
-      <h6 style="color: var(--primary); margin: 0; font-weight: 600; font-size: 0.9em;">💬 Comentarios</h6>
+    <div style="border-bottom: 1px solid var(--primary); padding-bottom: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '10px' : '15px'}; text-align: center;">
+      <h6 style="color: var(--primary); margin: 0; font-weight: 600; font-size: ${isMobile ? '0.8em' : '0.9em'};">💬 Comentarios</h6>
     </div>
   `;
   
-  commentsSection.innerHTML = `
-    ${userProfileHTML}
-    <div id="commentsContainer" class="comments-container" style="flex: 1; overflow-y: auto; margin-bottom: 20px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent;">
-      <div style="text-align: center; color: var(--text-secondary); padding: 40px;">
-        <div class="spinner-border" style="color: var(--primary);"></div>
-        <p class="mt-3 mb-0">Cargando comentarios...</p>
+  if (isMobile) {
+    // Layout horizontal para móviles: comentarios izquierda, formulario derecha
+    commentsSection.innerHTML = `
+      ${userProfileHTML}
+      <div style="display: flex; gap: 10px; flex: 1; min-height: 0;">
+        <div style="flex: 1; display: flex; flex-direction: column;">
+          <div style="text-align: center; margin-bottom: 8px;">
+            <small style="color: var(--primary); font-weight: 600; font-size: 0.75em;">💬 Comentarios</small>
+          </div>
+          <div id="commentsContainer" class="comments-container" style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; min-height: 0;">
+            <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
+              <div class="spinner-border" style="color: var(--primary); width: 1.5rem; height: 1.5rem;" role="status"></div>
+              <p class="mt-2 mb-0" style="font-size: 0.9em;">Cargando comentarios...</p>
+            </div>
+          </div>
+        </div>
+        <div style="width: 45%; display: flex; flex-direction: column; border-left: 2px solid var(--primary); padding-left: 10px;">
+          <div style="text-align: center; margin-bottom: 8px;">
+            <small style="color: var(--primary); font-weight: 600; font-size: 0.75em;">✍️ Comentar</small>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <input type="text" id="commentAuthor" placeholder="Tu nombre" class="form-control" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 14px; min-height: 36px; padding: 0.5rem;" maxlength="50">
+            <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="3" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 14px; flex: 1; padding: 0.5rem;" maxlength="500"></textarea>
+            <small style="color: var(--text-secondary); font-size: 0.7em; text-align: center;">Máx 500 chars</small>
+            <button onclick="addComment('${drawingId}')" class="btn btn-primary" style="padding: 0.5rem; font-weight: 600; border-radius: 6px; min-height: 36px; font-size: 14px; margin-top: auto;">💭 Enviar</button>
+          </div>
+        </div>
       </div>
-    </div>
-    <div style="border-top: 2px solid var(--primary); padding-top: ${isMobile ? '15px' : '20px'}; margin-top: auto;">
-      <div class="mb-3">
-        <input type="text" id="commentAuthor" placeholder="Tu nombre (opcional)" class="form-control mb-2" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 16px; min-height: ${isMobile ? '44px' : 'auto'}; padding: ${isMobile ? '0.75rem' : '0.5rem'};" maxlength="50">
-        <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="${isMobile ? '2' : '3'}" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 16px; min-height: ${isMobile ? '80px' : 'auto'}; padding: ${isMobile ? '0.75rem' : '0.5rem'};" maxlength="500"></textarea>
-        <small style="color: var(--text-secondary); font-size: 0.8em;">Máximo 500 caracteres</small>
+    `;
+  } else {
+    // Layout vertical para desktop
+    commentsSection.innerHTML = `
+      ${userProfileHTML}
+      <div id="commentsContainer" class="comments-container" style="flex: 1; overflow-y: auto; margin-bottom: 20px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; min-height: 0;">
+        <div style="text-align: center; color: var(--text-secondary); padding: 40px;">
+          <div class="spinner-border" style="color: var(--primary);" role="status"></div>
+          <p class="mt-3 mb-0" style="font-size: 1em;">Cargando comentarios...</p>
+        </div>
       </div>
-      <button onclick="addComment('${drawingId}')" class="btn btn-primary w-100" style="padding: ${isMobile ? '0.75rem' : '12px'}; font-weight: 600; border-radius: 8px; min-height: ${isMobile ? '44px' : 'auto'}; font-size: ${isMobile ? '16px' : '14px'};">💭 Comentar</button>
-    </div>
-  `;
+      <div style="border-top: 2px solid var(--primary); padding-top: 20px; margin-top: auto; flex-shrink: 0;">
+        <div class="mb-2">
+          <input type="text" id="commentAuthor" placeholder="Tu nombre (opcional)" class="form-control mb-2" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 16px; padding: 0.5rem;" maxlength="50">
+          <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="3" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 16px; padding: 0.5rem;" maxlength="500"></textarea>
+          <small style="color: var(--text-secondary); font-size: 0.8em;">Máximo 500 caracteres</small>
+        </div>
+        <button onclick="addComment('${drawingId}')" class="btn btn-primary w-100" style="padding: 12px; font-weight: 600; border-radius: 8px; font-size: 14px;">💭 Comentar</button>
+      </div>
+    `;
+  }
   
   container.appendChild(imageSection);
   container.appendChild(commentsSection);
@@ -759,9 +869,45 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
 };
 
 // Función para mostrar perfil de usuario
-window.showUserProfile = function(author, profilePicture, timestamp, likes, comments, category) {
+window.showUserProfile = async function(author, profilePicture, timestamp, likes, comments, category) {
   const existingProfileModal = document.querySelector('.profile-modal');
   if (existingProfileModal) existingProfileModal.remove();
+  
+  // Cargar datos actualizados del perfil desde Firebase
+  let userProfile = null;
+  let joinDate = timestamp;
+  let avatar = null;
+  let avatarType = 'emoji';
+  
+  try {
+    if (window.guestbookApp && window.guestbookApp.firebase) {
+      userProfile = await window.guestbookApp.firebase.getUserProfile(author);
+      if (userProfile) {
+        joinDate = userProfile.joinDate || timestamp;
+        avatar = userProfile.avatarImage || userProfile.avatar;
+        avatarType = userProfile.avatarType || 'emoji';
+        profilePicture = userProfile.avatarImage || profilePicture;
+      }
+    }
+  } catch (error) {
+    console.warn('Error cargando perfil desde Firebase:', error);
+  }
+  
+  // Formatear fecha correctamente
+  const formatJoinDate = (timestamp) => {
+    if (!timestamp || isNaN(timestamp)) {
+      return 'hace poco';
+    }
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        return 'hace poco';
+      }
+      return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
+    } catch (error) {
+      return 'hace poco';
+    }
+  };
   
   const profileModal = document.createElement('div');
   profileModal.className = 'profile-modal';
@@ -778,15 +924,20 @@ window.showUserProfile = function(author, profilePicture, timestamp, likes, comm
     text-align: center; position: relative;
   `;
   
+  // Generar avatar actualizado
+  const avatarHTML = (avatarType === 'image' && profilePicture) ? 
+    `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
+    `<span style="font-size: 2em;">${avatar || '👤'}</span>`;
+  
   profileCard.innerHTML = `
     <button onclick="this.closest('.profile-modal').remove()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer;">&times;</button>
     
     <div style="margin-bottom: 20px;">
       <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 2em; color: white; font-weight: bold; margin: 0 auto 15px; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-        ${generateAvatar(author, profilePicture)}
+        ${avatarHTML}
       </div>
       <h4 style="color: var(--primary); margin: 0 0 5px; font-weight: 600;">${author}</h4>
-      <small style="color: var(--text-secondary);">Miembro desde ${new Date(timestamp).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}</small>
+      <small style="color: var(--text-secondary);">Miembro desde ${formatJoinDate(joinDate)}</small>
     </div>
     
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
@@ -838,11 +989,12 @@ async function loadComments(drawingId) {
     console.log('Comentarios encontrados:', allComments.length);
     
     if (allComments.length === 0) {
+      const isMobile = window.innerWidth <= 768;
       container.innerHTML = `
-        <div style="text-align: center; color: var(--text-secondary); padding: 40px;">
-          <i class="fas fa-comments" style="font-size: 2em; margin-bottom: 15px; opacity: 0.5;"></i>
-          <p>No hay comentarios aún</p>
-          <p style="font-size: 0.9em;">¡Sé el primero en comentar!</p>
+        <div style="text-align: center; color: var(--text-secondary); padding: ${isMobile ? '15px 5px' : '40px'};">
+          <i class="fas fa-comments" style="font-size: ${isMobile ? '1.2em' : '2em'}; margin-bottom: ${isMobile ? '8px' : '15px'}; opacity: 0.5;"></i>
+          <p style="font-size: ${isMobile ? '0.8em' : '1em'}; margin: ${isMobile ? '0 0 5px 0' : '0 0 10px 0'};">No hay comentarios</p>
+          <p style="font-size: ${isMobile ? '0.7em' : '0.9em'}; margin: 0;">¡Sé el primero!</p>
         </div>
       `;
       return;
@@ -851,24 +1003,30 @@ async function loadComments(drawingId) {
     // Ordenar comentarios por timestamp
     const sortedComments = allComments.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     
+    const isMobile = window.innerWidth <= 768;
     container.innerHTML = sortedComments.map(comment => {
       const author = comment.autor || comment.author || 'Anónimo';
       const text = comment.texto || comment.text || '';
       const timestamp = comment.timestamp || Date.now();
       const profilePicture = comment.profilePicture;
+      const profileAvatar = comment.profileAvatar;
+      const isLoggedUser = comment.isLoggedUser || false;
       
       return `
-        <div class="comment-item" style="background: var(--bg-light); border-radius: 8px; padding: 10px; margin-bottom: 10px; border-left: 3px solid var(--primary); transition: all 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; gap: 8px;">
-            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 0.7em; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden;">
-              ${generateAvatar(author, profilePicture)}
+        <div class="comment-item" style="background: var(--bg-light); border-radius: ${isMobile ? '6px' : '8px'}; padding: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '8px' : '10px'}; border-left: 3px solid ${isLoggedUser ? '#28a745' : 'var(--primary)'}; transition: all 0.2s ease;">
+          <div style="display: flex; align-items: flex-start; gap: ${isMobile ? '6px' : '8px'};">
+            <div style="width: ${isMobile ? '28px' : '32px'}; height: ${isMobile ? '28px' : '32px'}; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: ${isMobile ? '0.6em' : '0.7em'}; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden; ${isLoggedUser ? 'border: 2px solid #28a745;' : ''}">
+              ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : `<span>${profileAvatar || '👤'}</span>`}
             </div>
             <div style="flex: 1; min-width: 0;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <strong style="color: var(--primary); font-size: 0.85em;">${author}</strong>
-                <small style="color: var(--text-secondary); font-size: 0.75em;">${formatCommentDate(timestamp)}</small>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${isMobile ? '3px' : '4px'};">
+                <div style="display: flex; align-items: center; gap: 3px;">
+                  <strong style="color: var(--primary); font-size: ${isMobile ? '0.8em' : '0.85em'};">${author}</strong>
+                  ${isLoggedUser ? '<span style="color: #28a745; font-size: 0.65em;" title="Usuario registrado">✓</span>' : ''}
+                </div>
+                <small style="color: var(--text-secondary); font-size: ${isMobile ? '0.7em' : '0.75em'};">${formatCommentDate(timestamp)}</small>
               </div>
-              <p style="color: var(--text-primary); margin: 0; line-height: 1.3; word-wrap: break-word; font-size: 0.85em;">${text}</p>
+              <p style="color: var(--text-primary); margin: 0; line-height: ${isMobile ? '1.2' : '1.3'}; word-wrap: break-word; font-size: ${isMobile ? '0.8em' : '0.85em'};">${text}</p>
             </div>
           </div>
         </div>
@@ -879,7 +1037,8 @@ async function loadComments(drawingId) {
     console.error('Error loading comments:', error);
     const container = document.getElementById('commentsContainer');
     if (container) {
-      container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">Error cargando comentarios</p>';
+      const isMobile = window.innerWidth <= 768;
+      container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: ${isMobile ? '15px' : '20px'}; font-size: ${isMobile ? '0.9em' : '1em'};">Error cargando comentarios</p>`;
     }
   }
 }
@@ -900,7 +1059,25 @@ function formatCommentDate(timestamp) {
 window.addComment = async function(drawingId) {
   const authorInput = document.getElementById('commentAuthor');
   const textarea = document.getElementById('newComment');
-  const author = authorInput?.value.trim() || 'Anónimo';
+  
+  // Usar datos del perfil si está logueado
+  let author = authorInput?.value.trim() || 'Anónimo';
+  let profilePicture = null;
+  let profileAvatar = null;
+  
+  if (window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn()) {
+    const profile = window.guestbookApp.profiles.currentProfile;
+    author = profile.username || author;
+    if (profile.avatarType === 'image' && profile.avatarImage) {
+      profilePicture = profile.avatarImage;
+    } else if (profile.avatarType === 'emoji' && profile.avatar) {
+      profileAvatar = profile.avatar;
+    }
+  } else {
+    // Fallback al sistema anterior
+    profilePicture = localStorage.getItem('user-profile-picture');
+  }
+  
   const comment = textarea?.value.trim();
   
   console.log('Intentando agregar comentario:', { drawingId, author, comment });
@@ -956,7 +1133,9 @@ window.addComment = async function(drawingId) {
       autor: author,
       texto: comment,
       timestamp: Date.now(),
-      profilePicture: localStorage.getItem('user-profile-picture') || null
+      profilePicture: profilePicture,
+      profileAvatar: profileAvatar,
+      isLoggedUser: window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn()
     };
     
     console.log('Enviando comentario:', commentData);

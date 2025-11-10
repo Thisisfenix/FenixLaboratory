@@ -1331,12 +1331,13 @@
             <div class="control-section">
               <div class="mb-2">
                 <label class="form-label text-light small">👤 Autor</label>
-                <input type="text" id="authorName" placeholder="Tu nombre" class="form-control form-control-sm">
-              </div>
-              <div class="mb-2">
-                <label class="form-label text-light small">📷 Foto de Perfil</label>
-                <input type="file" id="profilePicture" accept="image/*" class="form-control form-control-sm">
-                <small class="text-muted">Opcional: Sube tu foto de perfil</small>
+                <div class="input-group">
+                  <input type="text" id="authorName" placeholder="Tu nombre" class="form-control form-control-sm">
+                  <button id="useProfileName" class="btn btn-outline-info btn-sm" type="button" title="Usar nombre del perfil">
+                    👤
+                  </button>
+                </div>
+                <small class="text-muted">Haz clic en el círculo de perfil (esquina superior izquierda) para registrarte o iniciar sesión</small>
               </div>
               <div class="mb-2">
                 <label class="form-label text-light small">📂 Categoría</label>
@@ -1348,7 +1349,6 @@
                   <option value="Otro">✨ Otro</option>
                 </select>
               </div>
-              <button id="useProfileName" class="btn btn-outline-info btn-sm w-100">👤 Usar perfil</button>
             </div>
           
             <!-- Herramientas principales -->
@@ -1407,11 +1407,16 @@
             <div class="control-section">
               <label class="form-label text-light small">🎆 Capas</label>
               <div class="d-flex gap-1 mb-2">
-                <button id="addLayerBtn" class="btn btn-outline-success btn-sm flex-fill">➕ Nueva</button>
-                <button id="deleteLayerBtn" class="btn btn-outline-danger btn-sm flex-fill">➖ Eliminar</button>
+                <button id="layerModeToggle" class="btn btn-outline-primary btn-sm flex-fill" title="Cambiar entre modo simple (con deshacer/rehacer) y modo capas (sin deshacer/rehacer)">🎨 Modo Capas</button>
               </div>
-              <div id="layersList" style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 4px;">
-                <!-- Las capas se generarán dinámicamente -->
+              <div id="layerControls" style="display: none;">
+                <div class="d-flex gap-1 mb-2">
+                  <button id="addLayerBtn" class="btn btn-outline-success btn-sm flex-fill">➕ Nueva</button>
+                  <button id="deleteLayerBtn" class="btn btn-outline-danger btn-sm flex-fill">➖ Eliminar</button>
+                </div>
+                <div id="layersList" style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 4px;">
+                  <!-- Las capas se generarán dinámicamente -->
+                </div>
               </div>
             </div>
             
@@ -1712,10 +1717,18 @@
           await this.gallery.init();
           await this.loadRecentSuggestions();
           
+          // Cargar nombre del perfil si está logueado
+          this.loadInitialProfileData();
+          
           // Actualizar rankings después de cargar la galería
           setTimeout(() => {
             if (this.gallery.allDrawings && this.gallery.allDrawings.length > 0) {
               this.gallery.updateRankingsSection();
+              
+              // Actualizar estadísticas del perfil con todos los dibujos
+              if (this.profiles && this.profiles.isLoggedIn()) {
+                this.profiles.updateStats(this.gallery.allDrawings);
+              }
             }
           }, 1000);
           
@@ -1727,6 +1740,16 @@
           }
         } catch (error) {
           console.error('❌ Error inicializando:', error);
+        }
+      }
+      
+      loadInitialProfileData() {
+        // Cargar nombre del perfil si está logueado
+        if (this.profiles && this.profiles.isLoggedIn()) {
+          const authorInput = document.getElementById('authorName');
+          if (authorInput && !authorInput.value) {
+            authorInput.value = this.profiles.currentProfile.username;
+          }
         }
       }
       
@@ -1787,22 +1810,11 @@
         // Cargar color guardado del usuario
         this.loadUserColor();
         
-        // Configurar validación de foto de perfil
-        document.getElementById('profilePicture')?.addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            if (file.size > 1024 * 1024) {
-              this.ui.showNotification('🚫 Imagen muy grande. Máximo 1MB.', 'error');
-              e.target.value = '';
-              return;
-            }
-            if (!file.type.startsWith('image/')) {
-              this.ui.showNotification('🚫 Solo se permiten imágenes.', 'error');
-              e.target.value = '';
-              return;
-            }
-            this.ui.showNotification('✅ Foto de perfil cargada', 'success');
-          }
+        // El manejo de fotos de perfil ahora se hace en ProfileManager
+        
+        // Toggle de modo capas
+        document.getElementById('layerModeToggle')?.addEventListener('click', () => {
+          this.canvas.toggleLayerMode();
         });
         
         // Controles de capas
@@ -2096,17 +2108,17 @@
             this.ui.showNotification('🗂️ Imagen comprimida para Firebase', 'info');
           }
           
-          // Procesar foto de perfil si se subió
+          // Obtener datos del perfil si está logueado
           let profilePicture = null;
-          const profileFile = document.getElementById('profilePicture').files[0];
-          if (profileFile) {
-            profilePicture = await this.processProfilePicture(profileFile);
-            // Guardar en localStorage para uso futuro
-            localStorage.setItem('user-profile-picture', profilePicture);
-            localStorage.setItem('user-profile-name', author);
-          } else {
-            // Usar foto guardada si existe
-            profilePicture = localStorage.getItem('user-profile-picture');
+          let profileAvatar = null;
+          
+          if (this.profiles && this.profiles.isLoggedIn()) {
+            const profile = this.profiles.currentProfile;
+            if (profile.avatarType === 'image' && profile.avatarImage) {
+              profilePicture = profile.avatarImage;
+            } else if (profile.avatarType === 'emoji' && profile.avatar) {
+              profileAvatar = profile.avatar;
+            }
           }
           
           const drawingData = {
@@ -2122,7 +2134,14 @@
             filters: this.canvas.getAppliedFilters(),
             isAnimated: frameCount > 1,
             strokes: this.canvas.getStrokeCount ? this.canvas.getStrokeCount() : 0,
-            profilePicture: profilePicture
+            profilePicture: profilePicture,
+            profileAvatar: profileAvatar,
+            isLoggedUser: this.profiles ? this.profiles.isLoggedIn() : false,
+            userProfile: this.profiles && this.profiles.isLoggedIn() ? {
+              username: this.profiles.currentProfile.username,
+              joinDate: this.profiles.currentProfile.joinDate,
+              totalDrawings: this.profiles.currentProfile.totalDrawings
+            } : null
           };
           
           // Si es GIF animado, guardar en backgroundGif
@@ -2165,9 +2184,19 @@
           await this.firebase.saveDrawing(drawingData);
           
           this.canvas.clear();
-          document.getElementById('authorName').value = '';
+          
+          // Solo limpiar el nombre si no está logueado
+          if (!this.profiles || !this.profiles.isLoggedIn()) {
+            document.getElementById('authorName').value = '';
+          }
+          
           document.getElementById('categorySelect').value = 'Arte';
-          document.getElementById('profilePicture').value = '';
+          
+          // Actualizar estadísticas del perfil si está logueado
+          if (this.profiles && this.profiles.isLoggedIn()) {
+            this.profiles.currentProfile.totalDrawings = (this.profiles.currentProfile.totalDrawings || 0) + 1;
+            this.profiles.saveProfile();
+          }
           
           // Limpiar fondos y stickers GIF
           this.hideVisualGifBackground();
@@ -3056,76 +3085,28 @@
           this.canvas.setColor(savedColor);
         }
         
-        // Cargar datos de perfil guardados
-        this.loadUserProfile();
+        // El sistema de perfiles ahora se maneja en ProfileManager
       }
       
       loadUserProfile() {
-        const savedName = localStorage.getItem('user-profile-name');
-        const savedPicture = localStorage.getItem('user-profile-picture');
-        
-        if (savedName) {
-          const authorInput = document.getElementById('authorName');
-          if (authorInput && !authorInput.value) {
-            authorInput.value = savedName;
-          }
-        }
-        
-        // Configurar botón "Usar perfil"
+        // Configurar botón "Usar perfil" para el nuevo sistema
         const useProfileBtn = document.getElementById('useProfileName');
         if (useProfileBtn) {
           useProfileBtn.addEventListener('click', () => {
-            if (savedName) {
-              document.getElementById('authorName').value = savedName;
-              this.ui.showNotification('✅ Perfil cargado', 'success');
+            if (this.profiles && this.profiles.isLoggedIn()) {
+              document.getElementById('authorName').value = this.profiles.currentProfile.username;
+              this.ui.showNotification('✅ Nombre de perfil aplicado', 'success');
             } else {
-              this.ui.showNotification('❌ No hay perfil guardado', 'error');
+              this.ui.showNotification('⚠️ Inicia sesión primero', 'warning');
+              if (this.profiles) {
+                this.profiles.showProfileModal();
+              }
             }
           });
         }
       }
       
-      async processProfilePicture(file) {
-        return new Promise((resolve, reject) => {
-          if (file.size > 1024 * 1024) { // 1MB máximo
-            reject(new Error('Imagen muy grande. Máximo 1MB.'));
-            return;
-          }
-          
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-              const canvas = document.createElement('canvas');
-              const ctx = canvas.getContext('2d');
-              
-              // Redimensionar a 150x150 máximo
-              const maxSize = 150;
-              let { width, height } = img;
-              
-              if (width > maxSize || height > maxSize) {
-                if (width > height) {
-                  height = (height * maxSize) / width;
-                  width = maxSize;
-                } else {
-                  width = (width * maxSize) / height;
-                  height = maxSize;
-                }
-              }
-              
-              canvas.width = width;
-              canvas.height = height;
-              ctx.drawImage(img, 0, 0, width, height);
-              
-              resolve(canvas.toDataURL('image/jpeg', 0.8));
-            };
-            img.onerror = () => reject(new Error('Error procesando imagen'));
-            img.src = e.target.result;
-          };
-          reader.onerror = () => reject(new Error('Error leyendo archivo'));
-          reader.readAsDataURL(file);
-        });
-      }
+      // La función processProfilePicture ya no es necesaria - se maneja en ProfileManager
       
       // Función para comprimir GIFs manteniendo animación
       async compressGifForFirebase(gifDataUrl) {
@@ -3363,15 +3344,32 @@
     
     // Prevenir errores de extensiones del navegador
     window.addEventListener('error', function(e) {
-      if (e.message && e.message.includes('message channel closed')) {
+      const errorMessages = [
+        'message channel closed',
+        'Extension context invalidated',
+        'The message port closed before a response was received',
+        'A listener indicated an asynchronous response by returning true'
+      ];
+      
+      if (e.message && errorMessages.some(msg => e.message.toLowerCase().includes(msg.toLowerCase()))) {
         e.preventDefault();
+        e.stopPropagation();
         return true;
       }
     });
     
     window.addEventListener('unhandledrejection', function(e) {
-      if (e.reason && e.reason.message && e.reason.message.includes('message channel closed')) {
+      const errorMessages = [
+        'message channel closed',
+        'Extension context invalidated',
+        'The message port closed before a response was received',
+        'A listener indicated an asynchronous response by returning true'
+      ];
+      
+      const errorText = e.reason?.message || e.reason?.toString() || '';
+      if (errorText && errorMessages.some(msg => errorText.toLowerCase().includes(msg.toLowerCase()))) {
         e.preventDefault();
+        e.stopPropagation();
         return true;
       }
     });
