@@ -579,25 +579,38 @@ export class GalleryManager {
     this.currentPage = 1;
     this.displayGallery();
   }
+  
+  getUserDrawings(username, allDrawings) {
+    return allDrawings.filter(d => d.data.autor.toLowerCase() === username.toLowerCase())
+      .sort((a, b) => b.data.timestamp - a.data.timestamp);
+  }
 }
 
 // Funciones globales
 // Función para generar avatar con PNG o emoji
 async function generateAvatar(author, profilePicture, profileAvatar = null) {
-  // Intentar cargar datos actualizados de Firebase si no se proporcionan
-  if (!profilePicture && !profileAvatar && window.guestbookApp && window.guestbookApp.firebase) {
+  // Siempre consultar Firebase directamente para datos actualizados
+  if (window.guestbookApp && window.guestbookApp.firebase) {
     try {
-      const userProfile = await window.guestbookApp.firebase.getUserProfile(author);
-      if (userProfile) {
-        profilePicture = userProfile.avatarImage;
-        profileAvatar = userProfile.avatar;
+      const firebaseProfile = await window.guestbookApp.firebase.getUserProfile(author);
+      if (firebaseProfile) {
+        // Prioridad: 1. avatarImage, 2. avatarType=text, 3. emoji fallback
+        if (firebaseProfile.avatarImage) {
+          return `<img src="${firebaseProfile.avatarImage}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+        }
+        if (firebaseProfile.avatarType === 'text' && firebaseProfile.avatar) {
+          return `<span style="font-size: 1.2em;">${firebaseProfile.avatar}</span>`;
+        }
+        if (firebaseProfile.avatar && firebaseProfile.avatar !== '👤') {
+          return `<span style="font-size: 1.2em;">${firebaseProfile.avatar}</span>`;
+        }
       }
     } catch (error) {
-      // Silenciar error y usar fallback
+      console.warn('Error cargando perfil desde Firebase:', error);
     }
   }
   
-  // Prioridad: 1. Imagen de perfil, 2. Avatar emoji del perfil, 3. Avatar generado
+  // Fallback a datos locales si Firebase falla
   if (profilePicture) {
     return `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
   }
@@ -606,7 +619,7 @@ async function generateAvatar(author, profilePicture, profileAvatar = null) {
     return `<span style="font-size: 1.2em;">${profileAvatar}</span>`;
   }
   
-  // Lista de emojis para avatares (fallback)
+  // Lista de emojis para avatares (fallback final)
   const avatarEmojis = ['🎨', '🖌️', '🎭', '🌟', '🎪', '🦄', '🌈', '⭐', '🎯', '🎲', '🎮', '🎸', '🎺', '🎻', '🎤', '🎧', '🎬', '📸'];
   
   // Generar emoji basado en el nombre del autor
@@ -623,6 +636,14 @@ async function generateAvatar(author, profilePicture, profileAvatar = null) {
 function generateAvatarSync(author, profilePicture, profileAvatar = null) {
   if (profilePicture) {
     return `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+  }
+  
+  // Verificar si es avatarType text con contenido
+  if (window.guestbookApp && window.guestbookApp.profiles) {
+    const userProfile = window.guestbookApp.profiles.users.get(author.toLowerCase());
+    if (userProfile && userProfile.avatarType === 'text' && userProfile.avatar) {
+      return `<span style="font-size: 1.2em;">${userProfile.avatar}</span>`;
+    }
   }
   
   if (profileAvatar && profileAvatar !== '👤') {
@@ -759,20 +780,23 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
     </div>
   `;
   
-  // Obtener avatar actualizado del perfil
+  // Obtener avatar actualizado del perfil desde Firebase
   let modalAvatar = '👤';
   let modalAvatarType = 'emoji';
   
-  // Intentar obtener datos actualizados del perfil
-  if (window.guestbookApp && window.guestbookApp.profiles) {
-    const profiles = window.guestbookApp.profiles;
-    const userProfile = profiles.users.get(drawingData?.autor?.toLowerCase());
-    if (userProfile) {
-      modalAvatar = userProfile.avatar || '👤';
-      modalAvatarType = userProfile.avatarType || 'emoji';
-      if (modalAvatarType === 'image' && userProfile.avatarImage) {
-        drawingData.profilePicture = userProfile.avatarImage;
+  // Consultar Firebase directamente para datos actualizados
+  if (window.guestbookApp && window.guestbookApp.firebase && drawingData?.autor) {
+    try {
+      const firebaseProfile = await window.guestbookApp.firebase.getUserProfile(drawingData.autor);
+      if (firebaseProfile) {
+        modalAvatar = firebaseProfile.avatar || '👤';
+        modalAvatarType = firebaseProfile.avatarType || 'emoji';
+        if (firebaseProfile.avatarImage) {
+          drawingData.profilePicture = firebaseProfile.avatarImage;
+        }
       }
+    } catch (error) {
+      console.warn('Error cargando perfil desde Firebase:', error);
     }
   }
   
@@ -781,7 +805,7 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
     <div style="border-bottom: 1px solid var(--primary); padding-bottom: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '10px' : '15px'};">
       <div onclick="showUserProfile('${drawingData.autor}', '${drawingData.profilePicture || ''}', '${drawingData.timestamp}', ${drawingData.likes || 0}, ${drawingData.comments?.length || 0}, '${drawingData.categoria}')" style="display: flex; align-items: center; gap: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '5px' : '8px'}; cursor: pointer; padding: ${isMobile ? '3px' : '5px'}; border-radius: 6px; transition: background 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
         <div style="width: ${isMobile ? '32px' : '40px'}; height: ${isMobile ? '32px' : '40px'}; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: ${isMobile ? '0.8em' : '1em'}; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden;">
-          ${modalAvatarType === 'image' && drawingData.profilePicture ? `<img src="${drawingData.profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : `<span>${modalAvatar}</span>`}
+          ${drawingData.profilePicture ? `<img src="${drawingData.profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : (modalAvatarType === 'text' && modalAvatar && modalAvatar !== '👤') ? `<span style="font-weight: bold;">${modalAvatar}</span>` : `<span>${modalAvatar}</span>`}
         </div>
         <div style="flex: 1; min-width: 0;">
           <h6 style="color: var(--primary); margin: 0; font-weight: 600; font-size: ${isMobile ? '0.85em' : '0.95em'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${drawingData.autor || 'Anónimo'} ${isMobile ? '' : '<span style="font-size: 0.7em; opacity: 0.7;">ℹ️</span>'}</h6>
@@ -802,6 +826,10 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
     </div>
   `;
   
+  // Verificar si el usuario está logueado para adaptar la interfaz
+  const isLoggedIn = window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn();
+  const currentUser = isLoggedIn ? window.guestbookApp.profiles.currentProfile : null;
+  
   if (isMobile) {
     // Layout horizontal para móviles: comentarios izquierda, formulario derecha
     commentsSection.innerHTML = `
@@ -821,9 +849,10 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
         <div style="width: 45%; display: flex; flex-direction: column; border-left: 2px solid var(--primary); padding-left: 10px;">
           <div style="text-align: center; margin-bottom: 8px;">
             <small style="color: var(--primary); font-weight: 600; font-size: 0.75em;">✍️ Comentar</small>
+            ${isLoggedIn ? `<div style="font-size: 0.65em; color: var(--text-secondary); margin-top: 2px;">👤 ${currentUser.username}</div>` : ''}
           </div>
           <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-            <input type="text" id="commentAuthor" placeholder="Tu nombre" class="form-control" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 14px; min-height: 36px; padding: 0.5rem;" maxlength="50">
+            ${!isLoggedIn ? `<input type="text" id="commentAuthor" placeholder="Tu nombre" class="form-control" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 14px; min-height: 36px; padding: 0.5rem;" maxlength="50">` : ''}
             <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="3" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 14px; flex: 1; padding: 0.5rem;" maxlength="500"></textarea>
             <small style="color: var(--text-secondary); font-size: 0.7em; text-align: center;">Máx 500 chars</small>
             <button onclick="addComment('${drawingId}')" class="btn btn-primary" style="padding: 0.5rem; font-weight: 600; border-radius: 6px; min-height: 36px; font-size: 14px; margin-top: auto;">💭 Enviar</button>
@@ -842,8 +871,13 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
         </div>
       </div>
       <div style="border-top: 2px solid var(--primary); padding-top: 20px; margin-top: auto; flex-shrink: 0;">
+        ${isLoggedIn ? `
+          <div style="text-align: center; margin-bottom: 15px; padding: 8px; background: var(--bg-dark); border-radius: 8px; border: 1px solid var(--primary);">
+            <small style="color: var(--primary); font-weight: 600;">👤 Comentando como: ${currentUser.username}</small>
+          </div>
+        ` : ''}
         <div class="mb-2">
-          <input type="text" id="commentAuthor" placeholder="Tu nombre (opcional)" class="form-control mb-2" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 16px; padding: 0.5rem;" maxlength="50">
+          ${!isLoggedIn ? `<input type="text" id="commentAuthor" placeholder="Tu nombre (opcional)" class="form-control mb-2" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 16px; padding: 0.5rem;" maxlength="50">` : ''}
           <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="3" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 16px; padding: 0.5rem;" maxlength="500"></textarea>
           <small style="color: var(--text-secondary); font-size: 0.8em;">Máximo 500 caracteres</small>
         </div>
@@ -868,6 +902,31 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   });
 };
 
+// Función para obtener tags de usuario desde Firebase
+window.getUserTagsForProfile = async function(username) {
+  try {
+    if (window.guestbookApp && window.guestbookApp.firebase) {
+      const userProfile = await window.guestbookApp.firebase.getUserProfile(username);
+      if (userProfile && userProfile.userTags && userProfile.userTags.length > 0) {
+        return userProfile.userTags.map(tag => {
+          const tagStyles = {
+            'OWNER': 'background: linear-gradient(45deg, #FFD700, #FFA500); color: #000;',
+            'ADMIN': 'background: linear-gradient(45deg, #dc3545, #c82333); color: white;',
+            'MOD': 'background: linear-gradient(45deg, #28a745, #20c997); color: white;',
+            'VIP': 'background: linear-gradient(45deg, #6f42c1, #e83e8c); color: white;'
+          };
+          const style = tagStyles[tag] || 'background: #6c757d; color: white;';
+          const emoji = tag === 'OWNER' ? '👑' : tag === 'ADMIN' ? '🛡️' : tag === 'MOD' ? '🛡️' : '⭐';
+          return `<span style="${style} padding: 2px 6px; border-radius: 10px; font-size: 0.6em; margin-left: 8px; font-weight: bold;">${emoji} ${tag}</span>`;
+        }).join('');
+      }
+    }
+  } catch (error) {
+    console.warn('Error cargando tags:', error);
+  }
+  return '';
+};
+
 // Función para mostrar perfil de usuario
 window.showUserProfile = async function(author, profilePicture, timestamp, likes, comments, category) {
   const existingProfileModal = document.querySelector('.profile-modal');
@@ -878,15 +937,22 @@ window.showUserProfile = async function(author, profilePicture, timestamp, likes
   let joinDate = timestamp;
   let avatar = null;
   let avatarType = 'emoji';
+  let bannerImage = null;
+  let userTags = [];
   
   try {
     if (window.guestbookApp && window.guestbookApp.firebase) {
       userProfile = await window.guestbookApp.firebase.getUserProfile(author);
       if (userProfile) {
         joinDate = userProfile.joinDate || timestamp;
-        avatar = userProfile.avatarImage || userProfile.avatar;
+        avatar = userProfile.avatar;
         avatarType = userProfile.avatarType || 'emoji';
-        profilePicture = userProfile.avatarImage || profilePicture;
+        bannerImage = userProfile.bannerImage;
+        userTags = userProfile.userTags || [];
+        // Priorizar avatarImage sobre avatar
+        if (userProfile.avatarImage) {
+          profilePicture = userProfile.avatarImage;
+        }
       }
     }
   } catch (error) {
@@ -920,47 +986,119 @@ window.showUserProfile = async function(author, profilePicture, timestamp, likes
   const profileCard = document.createElement('div');
   profileCard.style.cssText = `
     background: var(--bg-light); border: 2px solid var(--primary);
-    border-radius: 15px; padding: 30px; max-width: 400px; width: 100%;
-    text-align: center; position: relative;
+    border-radius: 15px; padding: 20px; max-width: 500px; width: 90vw;
+    max-height: 85vh; overflow-y: auto; text-align: center; position: relative;
+    scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
   `;
   
-  // Generar avatar actualizado
-  const avatarHTML = (avatarType === 'image' && profilePicture) ? 
+  // Generar avatar actualizado - Prioridad: 1. avatarImage, 2. avatarType=text, 3. emoji fallback
+  const avatarHTML = profilePicture ? 
     `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
+    (avatarType === 'text' && avatar) ?
+    `<span style="font-size: 1.5em; font-weight: bold;">${avatar}</span>` :
     `<span style="font-size: 2em;">${avatar || '👤'}</span>`;
   
+  // Verificar si es el usuario actual y obtener estado de seguimiento
+  const isCurrentUser = window.guestbookApp && window.guestbookApp.profiles && 
+    window.guestbookApp.profiles.currentProfile.username === author;
+  const isFollowing = !isCurrentUser && window.guestbookApp && window.guestbookApp.profiles && 
+    window.guestbookApp.profiles.isFollowing(author);
+  
+  // Recargar datos actualizados del usuario para obtener contadores correctos
+  let followersCount = 0;
+  let followingCount = 0;
+  try {
+    await window.guestbookApp.profiles.loadUsers();
+    const updatedProfile = window.guestbookApp.profiles.users.get(author.toLowerCase());
+    if (updatedProfile) {
+      followersCount = updatedProfile.followers?.length || 0;
+      followingCount = updatedProfile.following?.length || 0;
+      userProfile = updatedProfile;
+    }
+  } catch (error) {
+    followersCount = userProfile?.followers?.length || 0;
+    followingCount = userProfile?.following?.length || 0;
+  }
+  
+  // Obtener dibujos del usuario
+  const userDrawings = window.galleryManager ? 
+    window.galleryManager.getUserDrawings(author, window.galleryManager.allDrawings) : [];
+  
   profileCard.innerHTML = `
-    <button onclick="this.closest('.profile-modal').remove()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer;">&times;</button>
+    <button onclick="this.closest('.profile-modal').remove()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; z-index: 10;">&times;</button>
     
-    <div style="margin-bottom: 20px;">
-      <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 2em; color: white; font-weight: bold; margin: 0 auto 15px; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+    <div style="margin-bottom: 20px; position: relative;">
+      <!-- Banner -->
+      <div style="width: 100%; height: 120px; border-radius: 15px 15px 0 0; background: ${bannerImage ? `url(${bannerImage}) center/cover` : 'linear-gradient(135deg, var(--primary), var(--secondary))'}; position: relative; margin-bottom: 40px; overflow: hidden;">
+        ${!bannerImage ? '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2em; opacity: 0.3;">🎨</div>' : ''}
+      </div>
+      
+      <!-- Avatar -->
+      <div style="width: 80px; height: 80px; border-radius: 50%; background: ${avatarType === 'image' && profilePicture ? 'transparent' : 'linear-gradient(135deg, var(--primary), var(--secondary))'}; display: flex; align-items: center; justify-content: center; font-size: 2em; color: white; font-weight: bold; margin: -60px auto 15px; position: relative; z-index: 2; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 4px solid var(--bg-light);">
         ${avatarHTML}
       </div>
-      <h4 style="color: var(--primary); margin: 0 0 5px; font-weight: 600;">${author}</h4>
+      
+      <h4 style="color: var(--primary); margin: 0 0 5px; font-weight: 600;">
+        ${author}
+        ${Array.isArray(userTags) && userTags.length > 0 ? userTags.map(tag => {
+          const tagStyles = {
+            'OWNER': 'background: linear-gradient(45deg, #FFD700, #FFA500); color: #000;',
+            'ADMIN': 'background: linear-gradient(45deg, #dc3545, #c82333); color: white;',
+            'MOD': 'background: linear-gradient(45deg, #28a745, #20c997); color: white;',
+            'VIP': 'background: linear-gradient(45deg, #6f42c1, #e83e8c); color: white;'
+          };
+          const style = tagStyles[tag] || 'background: #6c757d; color: white;';
+          const emoji = tag === 'OWNER' ? '👑' : tag === 'ADMIN' ? '🛡️' : tag === 'MOD' ? '🛡️' : '⭐';
+          return `<span style="${style} padding: 2px 6px; border-radius: 10px; font-size: 0.6em; margin-left: 8px; font-weight: bold;">${emoji} ${tag}</span>`;
+        }).join('') : ''}
+      </h4>
       <small style="color: var(--text-secondary);">Miembro desde ${formatJoinDate(joinDate)}</small>
+      ${!isCurrentUser && window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn() ? `
+        <div style="margin-top: 10px;">
+          <button onclick="toggleFollow('${author}')" id="followBtn" style="padding: 8px 16px; background: ${isFollowing ? '#dc3545' : 'var(--primary)'}; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em; transition: all 0.3s ease;">
+            ${isFollowing ? '👥 Dejar de seguir' : '➕ Seguir'}
+          </button>
+        </div>
+      ` : ''}
     </div>
     
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
-      <div style="background: var(--bg-dark); padding: 15px; border-radius: 10px; border: 1px solid var(--primary);">
-        <div style="color: var(--primary); font-weight: bold; font-size: 1.2em;">${likes}</div>
-        <div style="color: var(--text-secondary); font-size: 0.8em;">❤️ Likes</div>
-      </div>
-      <div style="background: var(--bg-dark); padding: 15px; border-radius: 10px; border: 1px solid var(--primary);">
-        <div style="color: var(--primary); font-weight: bold; font-size: 1.2em;">${comments}</div>
-        <div style="color: var(--text-secondary); font-size: 0.8em;">💬 Comentarios</div>
-      </div>
-      <div style="background: var(--bg-dark); padding: 15px; border-radius: 10px; border: 1px solid var(--primary);">
-        <div style="color: var(--primary); font-weight: bold; font-size: 0.9em;">${category}</div>
-        <div style="color: var(--text-secondary); font-size: 0.8em;">🎨 Categoría</div>
-      </div>
-    </div>
+
     
-    <div style="background: var(--bg-dark); padding: 15px; border-radius: 10px; border: 1px solid var(--primary);">
-      <div style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 10px;">🎨 Perfil del Artista</div>
-      <div style="color: var(--text-primary); font-size: 0.85em; line-height: 1.4;">
-        ${author} es un artista creativo que forma parte de la comunidad FenixLaboratory. 
-        ${likes > 0 ? `Sus obras han recibido ${likes} likes` : 'Está comenzando su journey artístico'} 
-        ${comments > 0 ? `y ha generado ${comments} comentarios de la comunidad.` : 'y está explorando nuevas formas de expresión.'}
+    ${userDrawings.length > 0 ? `
+      <div style="margin-bottom: 20px;">
+        <h5 style="color: var(--primary); margin: 0 0 10px 0; font-size: 0.9em;">🎨 Sus Dibujos (${userDrawings.length})</h5>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 200px; overflow-y: auto;">
+          ${userDrawings.slice(0, 9).map(drawing => `
+            <div onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${drawing.id}', false, '', null)" style="aspect-ratio: 1; background-image: url('${drawing.data.imagenData}'); background-size: cover; background-position: center; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s ease;" onmouseover="this.style.border='2px solid var(--primary)'" onmouseout="this.style.border='2px solid transparent'" title="${drawing.data.titulo}"></div>
+          `).join('')}
+        </div>
+        ${userDrawings.length > 9 ? `<small style="color: var(--text-secondary); display: block; text-align: center; margin-top: 8px;">Y ${userDrawings.length - 9} más...</small>` : ''}
+      </div>
+    ` : ''}
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+      <!-- Bio Section (Left) -->
+      <div>
+        <h5 style="color: var(--primary); margin: 0 0 10px 0; font-size: 0.9em;">🎨 Perfil del Artista</h5>
+        <div style="padding: 15px; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--primary); height: fit-content;">
+          <p style="color: var(--text-primary); margin: 0 0 10px 0; font-weight: bold; font-size: 0.9em;">${author}</p>
+          <p style="color: var(--text-secondary); margin: 0; line-height: 1.4; font-size: 0.85em;">
+            ${userProfile?.bio || `${author} es un artista creativo que forma parte de la comunidad FenixLaboratory. ${likes > 0 ? `Sus obras han recibido ${likes} likes` : 'Está comenzando su journey artístico'} ${comments > 0 ? `y ha generado ${comments} comentarios de la comunidad.` : 'y está explorando nuevas formas de expresión.'}`}
+          </p>
+        </div>
+      </div>
+      
+      <!-- Stats Section (Right) -->
+      <div>
+        <h5 style="color: var(--primary); margin: 0 0 10px 0; font-size: 0.9em;">📊 Estadísticas</h5>
+        <div style="padding: 15px; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--primary);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+            <div style="padding: 8px; background: rgba(255, 107, 53, 0.1); border-radius: 6px;"><span style="color: var(--text-secondary); font-size: 0.7em;">🎨 Dibujos:</span><br><strong style="color: var(--primary); font-size: 1em;">${userDrawings.length}</strong></div>
+            <div style="padding: 8px; background: rgba(255, 107, 53, 0.1); border-radius: 6px;"><span style="color: var(--text-secondary); font-size: 0.7em;">❤️ Likes:</span><br><strong style="color: var(--primary); font-size: 1em;">${likes}</strong></div>
+            <div style="padding: 8px; background: rgba(255, 107, 53, 0.1); border-radius: 6px;"><span style="color: var(--text-secondary); font-size: 0.7em;">👥 Seguidores:</span><br><strong style="color: var(--primary); font-size: 1em;" data-followers="true">${followersCount}</strong></div>
+            <div style="padding: 8px; background: rgba(255, 107, 53, 0.1); border-radius: 6px;"><span style="color: var(--text-secondary); font-size: 0.7em;">➕ Siguiendo:</span><br><strong style="color: var(--primary); font-size: 1em;">${followingCount}</strong></div>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -1016,7 +1154,7 @@ async function loadComments(drawingId) {
         <div class="comment-item" style="background: var(--bg-light); border-radius: ${isMobile ? '6px' : '8px'}; padding: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '8px' : '10px'}; border-left: 3px solid ${isLoggedUser ? '#28a745' : 'var(--primary)'}; transition: all 0.2s ease;">
           <div style="display: flex; align-items: flex-start; gap: ${isMobile ? '6px' : '8px'};">
             <div style="width: ${isMobile ? '28px' : '32px'}; height: ${isMobile ? '28px' : '32px'}; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: ${isMobile ? '0.6em' : '0.7em'}; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden; ${isLoggedUser ? 'border: 2px solid #28a745;' : ''}">
-              ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : `<span>${profileAvatar || '👤'}</span>`}
+              ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : (profileAvatar && profileAvatar !== '👤') ? `<span>${profileAvatar}</span>` : `<span>👤</span>`}
             </div>
             <div style="flex: 1; min-width: 0;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${isMobile ? '3px' : '4px'};">
@@ -1060,22 +1198,48 @@ window.addComment = async function(drawingId) {
   const authorInput = document.getElementById('commentAuthor');
   const textarea = document.getElementById('newComment');
   
-  // Usar datos del perfil si está logueado
-  let author = authorInput?.value.trim() || 'Anónimo';
+  let author = 'Anónimo';
   let profilePicture = null;
   let profileAvatar = null;
+  let isLoggedUser = false;
   
+  // Si está logueado, usar datos del perfil
   if (window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn()) {
     const profile = window.guestbookApp.profiles.currentProfile;
-    author = profile.username || author;
-    if (profile.avatarType === 'image' && profile.avatarImage) {
+    author = profile.username;
+    isLoggedUser = true;
+    
+    // Prioridad: 1. avatarImage, 2. avatarType=text, 3. emoji fallback
+    if (profile.avatarImage) {
       profilePicture = profile.avatarImage;
-    } else if (profile.avatarType === 'emoji' && profile.avatar) {
+    } else if (profile.avatarType === 'text' && profile.avatar) {
+      profileAvatar = profile.avatar;
+    } else if (profile.avatar) {
       profileAvatar = profile.avatar;
     }
+    
+    // Ocultar campo de nombre si está logueado
+    if (authorInput) {
+      authorInput.style.display = 'none';
+    }
   } else {
-    // Fallback al sistema anterior
-    profilePicture = localStorage.getItem('user-profile-picture');
+    // Usuario no logueado - validar nombre
+    const inputName = authorInput?.value.trim();
+    if (inputName) {
+      // Verificar que no use un nombre de usuario existente
+      try {
+        const existingUser = await window.guestbookApp.firebase.getUserProfile(inputName);
+        if (existingUser) {
+          alert(`❌ El nombre "${inputName}" pertenece a un usuario registrado. Usa otro nombre o inicia sesión.`);
+          authorInput.style.borderColor = '#dc3545';
+          authorInput.focus();
+          return;
+        }
+      } catch (error) {
+        // Si no existe, está bien usarlo
+      }
+      author = inputName;
+    }
   }
   
   const comment = textarea?.value.trim();
@@ -1135,7 +1299,7 @@ window.addComment = async function(drawingId) {
       timestamp: Date.now(),
       profilePicture: profilePicture,
       profileAvatar: profileAvatar,
-      isLoggedUser: window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn()
+      isLoggedUser: isLoggedUser
     };
     
     console.log('Enviando comentario:', commentData);
@@ -1233,6 +1397,50 @@ window.addComment = async function(drawingId) {
 // Hacer galleryManager disponible globalmente
 window.galleryManager = null;
 
+// Función para alternar seguimiento de usuarios
+window.toggleFollow = async function(username) {
+  if (!window.guestbookApp || !window.guestbookApp.profiles || !window.guestbookApp.profiles.isLoggedIn()) {
+    alert('⚠️ Debes iniciar sesión para seguir usuarios');
+    return;
+  }
+  
+  const profiles = window.guestbookApp.profiles;
+  const btn = document.getElementById('followBtn');
+  const isFollowing = profiles.isFollowing(username);
+  
+  try {
+    if (isFollowing) {
+      await profiles.unfollowUser(username);
+      btn.innerHTML = '➕ Seguir';
+      btn.style.background = 'var(--primary)';
+      alert(`✅ Dejaste de seguir a ${username}`);
+    } else {
+      await profiles.followUser(username);
+      btn.innerHTML = '👥 Dejar de seguir';
+      btn.style.background = '#dc3545';
+      alert(`✅ Ahora sigues a ${username}`);
+    }
+    
+    // Recargar datos actualizados para mostrar contadores correctos
+    await profiles.loadUsers();
+    
+    // Actualizar contador de seguidores en tiempo real
+    const followersCountElement = document.querySelector('.profile-modal strong[data-followers="true"]');
+    if (followersCountElement) {
+      const updatedUser = profiles.users.get(username.toLowerCase());
+      const newFollowersCount = updatedUser?.followers?.length || 0;
+      followersCountElement.textContent = newFollowersCount;
+      console.log(`Contador actualizado a: ${newFollowersCount}`);
+    } else {
+      console.warn('No se encontró el elemento contador de seguidores');
+    }
+    
+  } catch (error) {
+    console.error('Error al cambiar seguimiento:', error);
+    alert('❌ Error al actualizar seguimiento');
+  }
+};
+
 // Función de debug para verificar datos de stickers
 window.debugGifStickers = function(drawingId) {
   if (!window.galleryManager) {
@@ -1319,6 +1527,29 @@ if (!document.getElementById('gallery-animations')) {
     }
     
     .comments-container::-webkit-scrollbar-thumb:hover {
+      background: var(--secondary);
+    }
+    
+    /* Estilos para modales de perfil */
+    .profile-content::-webkit-scrollbar,
+    .profile-modal div[style*="overflow-y: auto"]::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .profile-content::-webkit-scrollbar-track,
+    .profile-modal div[style*="overflow-y: auto"]::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+      border-radius: 4px;
+    }
+    
+    .profile-content::-webkit-scrollbar-thumb,
+    .profile-modal div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+    
+    .profile-content::-webkit-scrollbar-thumb:hover,
+    .profile-modal div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb:hover {
       background: var(--secondary);
     }
   `;

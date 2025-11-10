@@ -31,11 +31,6 @@ export class FirebaseManager {
   
   async saveDrawing(drawingData) {
     try {
-      // Solo verificar rol para usuarios específicos conocidos
-      if (drawingData.autor === 'ThisIsFenix' || drawingData.autor === 'Admin') {
-        drawingData.userRole = 'admin';
-      }
-      
       await addDoc(collection(this.db, 'dibujos'), drawingData);
       return true;
     } catch (error) {
@@ -46,11 +41,6 @@ export class FirebaseManager {
   
   async getUserRole(username) {
     try {
-      // Verificar si es admin (hardcoded)
-      if (username === 'ThisIsFenix' || username === 'Admin') {
-        return 'admin';
-      }
-      
       // Solo verificar moderadores si estamos autenticados
       if (window.currentUser && window.currentUser.role) {
         const q = query(collection(this.db, 'moderators'), where('username', '==', username), where('active', '==', true));
@@ -591,7 +581,18 @@ export class FirebaseManager {
     try {
       const docRef = doc(this.db, 'user_profiles', profileData.username.toLowerCase());
       await setDoc(docRef, {
-        ...profileData,
+        username: profileData.username,
+        avatar: profileData.avatar,
+        avatarType: profileData.avatarType,
+        avatarImage: profileData.avatarImage,
+        bannerImage: profileData.bannerImage,
+        bio: profileData.bio,
+        favoriteCategory: profileData.favoriteCategory,
+        totalDrawings: profileData.totalDrawings,
+        totalLikes: profileData.totalLikes,
+        achievements: profileData.achievements,
+        lastLogin: profileData.lastLogin,
+        userTags: profileData.userTags || [],
         domain: 'thisisfenix.github.io',
         updatedAt: Date.now()
       }, { merge: true });
@@ -614,6 +615,94 @@ export class FirebaseManager {
     } catch (error) {
       console.error('Error obteniendo perfil de usuario:', error);
       return null;
+    }
+  }
+  
+  async saveAllUsers(usersArray) {
+    try {
+      const docRef = doc(this.db, 'system_data', 'registered_users');
+      await setDoc(docRef, {
+        users: usersArray,
+        domain: 'thisisfenix.github.io',
+        updatedAt: Date.now(),
+        totalUsers: usersArray.length
+      });
+      console.log(`✅ ${usersArray.length} usuarios guardados en Firebase`);
+      return true;
+    } catch (error) {
+      console.error('Error guardando usuarios en Firebase:', error);
+      throw error;
+    }
+  }
+  
+  async getAllUsers() {
+    try {
+      const docRef = doc(this.db, 'system_data', 'registered_users');
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        console.log(`✅ ${data.users?.length || 0} usuarios cargados desde Firebase`);
+        return data.users || [];
+      }
+      console.log('📄 No hay usuarios en Firebase aún');
+      return [];
+    } catch (error) {
+      console.error('Error cargando usuarios desde Firebase:', error);
+      throw error;
+    }
+  }
+  
+  async saveUserCredentials(username, passwordHash, userData) {
+    try {
+      const docRef = doc(this.db, 'user_credentials', username.toLowerCase());
+      await setDoc(docRef, {
+        username: userData.username,
+        passwordHash: passwordHash,
+        email: userData.email || '',
+        joinDate: userData.joinDate || Date.now(),
+        domain: 'thisisfenix.github.io',
+        createdAt: Date.now()
+      });
+      return true;
+    } catch (error) {
+      console.error('Error guardando credenciales:', error);
+      throw error;
+    }
+  }
+  
+  async getUserCredentials(username) {
+    try {
+      const docRef = doc(this.db, 'user_credentials', username.toLowerCase());
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        return docSnap.data();
+      }
+      return null;
+    } catch (error) {
+      console.error('Error obteniendo credenciales:', error);
+      return null;
+    }
+  }
+  
+  async getAllComments() {
+    try {
+      const q = query(collection(this.db, 'comments'), orderBy('timestamp', 'desc'), limit(1000));
+      const querySnapshot = await getDocs(q);
+      const comments = [];
+      
+      querySnapshot.forEach((doc) => {
+        comments.push({
+          id: doc.id,
+          data: doc.data()
+        });
+      });
+      
+      return comments;
+    } catch (error) {
+      console.error('Error obteniendo todos los comentarios:', error);
+      return [];
     }
   }
 }
