@@ -148,6 +148,7 @@ export class VipStore {
     this.setupGlobalFunctions();
     this.addFrameAnimations();
     this.checkVipExpiry();
+    this.initPointsSystem();
   }
   
   setupGlobalFunctions() {
@@ -161,6 +162,8 @@ export class VipStore {
     window.purchaseVipTag = (tagKey) => this.purchaseVipTag(tagKey);
     window.applyProfileTheme = (username, userProfile) => this.applyProfileTheme(username, userProfile);
     window.applyUserThemeToModal = (modalElement, userTheme, isVip) => this.applyUserThemeToModal(modalElement, userTheme, isVip);
+    window.awardPoints = (amount, reason) => this.awardPoints(amount, reason);
+    window.checkDailyBonus = () => this.checkDailyBonus();
   }
   
   addFrameAnimations() {
@@ -230,6 +233,11 @@ export class VipStore {
             <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
           </div>
           <div class="modal-body">
+            <div class="text-center mb-3">
+              <h5 style="color: var(--primary);">Tus Puntos: <span class="badge bg-primary" data-points-display>${this.getUserPoints()}</span></h5>
+              <small class="text-muted">Gana puntos dibujando (+10), comentando (+5) y dando likes (+2)</small>
+            </div>
+            
             <ul class="nav nav-tabs mb-3" role="tablist">
               <li class="nav-item" role="presentation">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#free-content" type="button" role="tab">
@@ -251,6 +259,11 @@ export class VipStore {
                   🛒 Comprar VIP
                 </button>
               </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#points-history" type="button" role="tab">
+                  📊 Historial
+                </button>
+              </li>
             </ul>
             
             <div class="tab-content">
@@ -269,7 +282,7 @@ export class VipStore {
               
               <div class="tab-pane fade" id="market-content" role="tabpanel">
                 <div class="text-center mb-3">
-                  <h5 style="color: var(--primary);">Tus Puntos: <span class="badge bg-primary">${this.getUserPoints()}</span></h5>
+                  <h5 style="color: var(--primary);">Tus Puntos: <span class="badge bg-primary" data-points-display>${this.getUserPoints()}</span></h5>
                 </div>
                 <div class="row">
                   <div class="col-md-6">
@@ -306,11 +319,18 @@ export class VipStore {
               <div class="tab-pane fade" id="vip-store" role="tabpanel">
                 <div class="text-center mb-4">
                   <h4 style="color: var(--primary);">🛒 Comprar Acceso VIP</h4>
-                  <h5 style="color: var(--primary);">Tus Puntos: <span class="badge bg-primary">${this.getUserPoints()}</span></h5>
+                  <h5 style="color: var(--primary);">Tus Puntos: <span class="badge bg-primary" data-points-display>${this.getUserPoints()}</span></h5>
                 </div>
                 <div class="row justify-content-center">
                   ${this.renderVipTagsStore()}
                 </div>
+              </div>
+              
+              <div class="tab-pane fade" id="points-history" role="tabpanel">
+                <div class="text-center mb-3">
+                  <h4 style="color: var(--primary);">📊 Historial de Puntos</h4>
+                </div>
+                ${this.renderPointsHistory()}
               </div>
             </div>
           </div>
@@ -542,6 +562,176 @@ export class VipStore {
     return parseInt(localStorage.getItem('guestbook-user-points') || '0');
   }
   
+  initPointsSystem() {
+    this.checkDailyBonus();
+    this.setupActivityListeners();
+  }
+  
+  setupActivityListeners() {
+    // Escuchar cuando se guarda un dibujo
+    if (window.guestbookApp && window.guestbookApp.firebase) {
+      const originalSaveDrawing = window.guestbookApp.firebase.saveDrawing.bind(window.guestbookApp.firebase);
+      window.guestbookApp.firebase.saveDrawing = async (drawingData) => {
+        const result = await originalSaveDrawing(drawingData);
+        if (result) {
+          this.awardPoints(10, 'Dibujo creado');
+        }
+        return result;
+      };
+      
+      // Escuchar cuando se agrega un comentario
+      const originalAddComment = window.guestbookApp.firebase.addComment.bind(window.guestbookApp.firebase);
+      window.guestbookApp.firebase.addComment = async (drawingId, commentData) => {
+        const result = await originalAddComment(drawingId, commentData);
+        if (result) {
+          this.awardPoints(5, 'Comentario agregado');
+        }
+        return result;
+      };
+      
+      // Escuchar cuando se da like
+      const originalToggleLike = window.guestbookApp.firebase.toggleLike.bind(window.guestbookApp.firebase);
+      window.guestbookApp.firebase.toggleLike = async (drawingId, isLiked) => {
+        const result = await originalToggleLike(drawingId, isLiked);
+        if (result && isLiked) {
+          this.awardPoints(2, 'Like dado');
+        }
+        return result;
+      };
+    }
+  }
+  
+  awardPoints(amount, reason = '') {
+    const currentPoints = this.getUserPoints();
+    const newPoints = currentPoints + amount;
+    localStorage.setItem('guestbook-user-points', newPoints.toString());
+    
+    // Agregar al historial
+    this.addToPointsHistory(amount, reason, 'earned');
+    
+    if (window.guestbookApp && window.guestbookApp.ui) {
+      window.guestbookApp.ui.showNotification(`+${amount} puntos: ${reason}`, 'success');
+    }
+    
+    // Actualizar display de puntos si está visible
+    this.updatePointsDisplay();
+    
+    return newPoints;
+  }
+  
+  updatePointsDisplay() {
+    const pointsElements = document.querySelectorAll('[data-points-display]');
+    pointsElements.forEach(el => {
+      el.textContent = this.getUserPoints();
+    });
+  }
+  
+  checkDailyBonus() {
+    const today = new Date().toDateString();
+    const lastBonus = localStorage.getItem('guestbook-last-daily-bonus');
+    
+    if (lastBonus !== today) {
+      const bonusAmount = 25;
+      this.awardPoints(bonusAmount, 'Bonificación diaria');
+      localStorage.setItem('guestbook-last-daily-bonus', today);
+      
+      if (window.guestbookApp && window.guestbookApp.ui) {
+        setTimeout(() => {
+          window.guestbookApp.ui.showNotification('🎁 ¡Bonificación diaria recibida!', 'info');
+        }, 1000);
+      }
+    }
+  }
+  
+  getPointsHistory() {
+    return JSON.parse(localStorage.getItem('guestbook-points-history') || '[]');
+  }
+  
+  addToPointsHistory(amount, reason, type = 'earned') {
+    const history = this.getPointsHistory();
+    history.unshift({
+      amount,
+      reason,
+      type,
+      timestamp: Date.now(),
+      date: new Date().toLocaleDateString()
+    });
+    
+    // Mantener solo los últimos 50 registros
+    if (history.length > 50) {
+      history.splice(50);
+    }
+    
+    localStorage.setItem('guestbook-points-history', JSON.stringify(history));
+  }
+  
+  renderPointsHistory() {
+    const history = this.getPointsHistory();
+    
+    if (history.length === 0) {
+      return `
+        <div class="text-center text-muted">
+          <div style="font-size: 3em; margin-bottom: 15px;">📊</div>
+          <p>No hay actividad aún</p>
+          <small>Empieza a dibujar para ganar puntos</small>
+        </div>
+      `;
+    }
+    
+    const totalEarned = history.filter(h => h.type === 'earned').reduce((sum, h) => sum + h.amount, 0);
+    const totalSpent = history.filter(h => h.type === 'spent').reduce((sum, h) => sum + h.amount, 0);
+    
+    return `
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <div class="card" style="background: var(--bg-light); border: 1px solid #28a745;">
+            <div class="card-body text-center">
+              <h6 style="color: #28a745;">💰 Total Ganado</h6>
+              <h4 style="color: #28a745;">${totalEarned}</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card" style="background: var(--bg-light); border: 1px solid #dc3545;">
+            <div class="card-body text-center">
+              <h6 style="color: #dc3545;">💸 Total Gastado</h6>
+              <h4 style="color: #dc3545;">${totalSpent}</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card" style="background: var(--bg-light); border: 1px solid var(--primary);">
+            <div class="card-body text-center">
+              <h6 style="color: var(--primary);">💎 Balance Actual</h6>
+              <h4 style="color: var(--primary);">${this.getUserPoints()}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card" style="background: var(--bg-light); border: 1px solid var(--primary); max-height: 400px; overflow-y: auto;">
+        <div class="card-header" style="background: var(--primary)11; border-bottom: 1px solid var(--primary);">
+          <h6 style="color: var(--primary); margin: 0;">📋 Actividad Reciente</h6>
+        </div>
+        <div class="card-body p-2">
+          ${history.map(entry => `
+            <div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background: var(--bg-dark); border-radius: 6px; border-left: 3px solid ${entry.type === 'earned' ? '#28a745' : '#dc3545'};">
+              <div>
+                <div style="color: ${entry.type === 'earned' ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                  ${entry.type === 'earned' ? '+' : '-'}${entry.amount} pts
+                </div>
+                <small class="text-muted">${entry.reason}</small>
+              </div>
+              <div class="text-end">
+                <small class="text-muted">${entry.date}</small>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
   hasPoints(amount) {
     return this.getUserPoints() >= amount;
   }
@@ -553,9 +743,15 @@ export class VipStore {
     const newPoints = currentPoints - amount;
     localStorage.setItem('guestbook-user-points', newPoints.toString());
     
+    // Agregar al historial
+    this.addToPointsHistory(amount, reason, 'spent');
+    
     if (window.guestbookApp && window.guestbookApp.ui) {
       window.guestbookApp.ui.showNotification(`-${amount} puntos: ${reason}`, 'info');
     }
+    
+    // Actualizar display
+    this.updatePointsDisplay();
     
     return true;
   }
