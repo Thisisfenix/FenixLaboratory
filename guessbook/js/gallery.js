@@ -1168,6 +1168,28 @@ window.showUserProfile = async function(author, profilePicture, timestamp, likes
   profileModal.appendChild(profileCard);
   document.body.appendChild(profileModal);
   
+  // Aplicar tema del usuario al modal
+  if (window.applyUserThemeToModal) {
+    // Verificar si es el usuario actual logueado
+    const currentUser = window.guestbookApp?.profiles?.currentProfile;
+    let userTheme = 'default';
+    
+    if (currentUser && currentUser.username === author) {
+      // Es el usuario actual - usar su tema activo
+      userTheme = localStorage.getItem('guestbook-theme') || userProfile?.selectedTheme || 'default';
+    } else {
+      // Es otro usuario - usar su tema guardado
+      userTheme = userProfile?.selectedTheme || 'default';
+    }
+    
+    const isVip = userProfile ? (userTags.includes('VIP') || userTags.includes('OWNER') || userTags.includes('ADMIN')) : false;
+    
+    // Aplicar tema después de un pequeño delay para asegurar que el DOM esté listo
+    setTimeout(() => {
+      window.applyUserThemeToModal(profileModal, userTheme, isVip);
+    }, 50);
+  }
+  
   profileModal.addEventListener('click', (e) => {
     if (e.target === profileModal) profileModal.remove();
   });

@@ -357,10 +357,16 @@ export class ProfileManager {
         circle.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
       }
       
+      // Aplicar marco de avatar si existe
+      if (this.currentProfile.avatarFrame && window.guestbookApp && window.guestbookApp.vipStore) {
+        window.guestbookApp.vipStore.updateProfileCircleFrame(this.currentProfile.avatarFrame);
+      }
+      
       console.log('🔄 Perfil actualizado:', {
         avatarType: this.currentProfile.avatarType,
         hasImage: !!this.currentProfile.avatarImage,
-        username: this.currentProfile.username
+        username: this.currentProfile.username,
+        avatarFrame: this.currentProfile.avatarFrame
       });
     }
   }
@@ -518,6 +524,15 @@ export class ProfileManager {
           <input type="text" id="avatarTextInput" placeholder="Máx 3 caracteres" maxlength="3" value="${this.currentProfile.avatarType === 'text' ? this.currentProfile.avatar : ''}" style="width: 100%; padding: 8px; border: 1px solid var(--primary); background: var(--bg-dark); color: var(--text-primary); border-radius: 5px; margin-bottom: 10px; text-align: center; font-weight: bold; text-transform: uppercase;">
           <small style="color: var(--text-secondary); display: block;">Iniciales, símbolos o texto corto</small>
         </div>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="color: var(--text-primary); display: block; margin-bottom: 5px;">🖼️ Marco de Avatar</label>
+        <div style="margin-bottom: 10px;">
+          <button id="noFrameBtn" style="padding: 6px 12px; margin-right: 10px; background: ${!this.currentProfile.avatarFrame || this.currentProfile.avatarFrame === 'none' ? 'var(--primary)' : 'var(--bg-dark)'}; color: white; border: 1px solid var(--primary); border-radius: 5px; cursor: pointer; font-size: 0.8em;" onclick="applyAvatarFrame('none')">Sin Marco</button>
+          <button style="padding: 6px 12px; background: var(--bg-dark); color: white; border: 1px solid var(--primary); border-radius: 5px; cursor: pointer; font-size: 0.8em;" onclick="showVipStore()">Ver Marcos VIP 💎</button>
+        </div>
+        <small style="color: var(--text-secondary); display: block;">Los marcos VIP requieren el tag VIP y se compran con puntos</small>
       </div>
       
       <div style="margin-bottom: 20px;">
@@ -701,6 +716,12 @@ export class ProfileManager {
       document.getElementById('avatarTextInput').addEventListener('input', (e) => {
         this.currentProfile.avatar = e.target.value.toUpperCase();
         this.currentProfile.avatarType = 'text';
+      });
+      
+      // Marco de avatar
+      document.getElementById('noFrameBtn').addEventListener('click', () => {
+        this.currentProfile.avatarFrame = 'none';
+        document.getElementById('noFrameBtn').style.background = 'var(--primary)';
       });
       
       document.getElementById('favoriteCategory').addEventListener('change', (e) => {
