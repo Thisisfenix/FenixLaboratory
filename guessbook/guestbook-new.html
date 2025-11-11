@@ -610,6 +610,9 @@
       <button id="updatesToggle" class="btn btn-outline-info btn-sm ms-2" onclick="toggleUpdatesPanel()">
         🚀 v2.0.9
       </button>
+      <button id="vipStoreToggle" class="btn btn-outline-purple btn-sm ms-2" onclick="showVipStore()" style="border-color: #8b5cf6; color: #8b5cf6;">
+        💎 VIP Store
+      </button>
       <button id="adminToggle" class="btn btn-outline-danger btn-sm ms-2" onclick="toggleAdminPanel()">
         🔐 Admin <span id="adminReportCount" class="badge bg-danger" style="display: none;">0</span>
       </button>
@@ -714,6 +717,11 @@
                 <li class="nav-item" role="presentation">
                   <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button" role="tab">
                     📋 Logs
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">
+                    💬 Comentarios
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -886,6 +894,24 @@
                   </div>
                 </div>
                 
+                <!-- Tab de Comentarios -->
+                <div class="tab-pane fade" id="comments" role="tabpanel">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-primary mb-0">💬 Gestión de Comentarios</h6>
+                    <div>
+                      <select id="commentFilter" class="form-select form-select-sm" style="width: 200px;">
+                        <option value="all">Todos los comentarios</option>
+                        <option value="recent">Más recientes</option>
+                        <option value="reported">Reportados</option>
+                        <option value="replies">Solo respuestas</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div id="adminComments" style="max-height: 500px; overflow-y: auto;">
+                    <div class="text-center text-muted">Cargando comentarios...</div>
+                  </div>
+                </div>
+                
                 <!-- Tab de Configuración -->
                 <div class="tab-pane fade" id="config" role="tabpanel">
                   <div class="row">
@@ -964,39 +990,46 @@
                 <div class="tab-pane fade admin-only" id="moderators" role="tabpanel">
                   <div class="row">
                     <div class="col-md-6">
-                      <h6 class="text-primary">➕ Gestionar Moderador</h6>
-                      <form id="addModeratorForm">
-                        <div class="mb-2">
-                          <input type="text" id="modName" class="form-control form-control-sm" placeholder="Nombre completo" maxlength="50">
+                      <h6 class="text-primary">🏷️ Gestión de Tags</h6>
+                      <div class="mb-3">
+                        <label class="form-label small text-light">Buscar usuario registrado:</label>
+                        <input type="text" id="searchUserForTags" class="form-control form-control-sm" placeholder="Nombre de usuario..." onkeyup="searchUsersForTags()">
+                      </div>
+                      <div id="userTagSearchResults" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+                        <div class="text-center text-muted small">Escribe para buscar usuarios</div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label small text-light">Usuario seleccionado:</label>
+                        <input type="text" id="selectedUserForTags" class="form-control form-control-sm" readonly placeholder="Selecciona un usuario">
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label small text-light">Asignar Tag:</label>
+                        <div class="btn-group-vertical w-100" role="group">
+                          <button type="button" onclick="assignTag('OWNER')" class="btn btn-outline-danger btn-sm" disabled id="assignOwnerBtn">👑 OWNER</button>
+                          <button type="button" onclick="assignTag('ADMIN')" class="btn btn-outline-warning btn-sm" disabled id="assignAdminBtn">🔐 ADMIN</button>
+                          <button type="button" onclick="assignTag('MOD')" class="btn btn-outline-success btn-sm" disabled id="assignModBtn">🛡️ MOD</button>
+                          <button type="button" onclick="assignTag('VIP')" class="btn btn-outline-info btn-sm" disabled id="assignVipBtn">💎 VIP</button>
                         </div>
-                        <div class="mb-2">
-                          <input type="text" id="modUsername" class="form-control form-control-sm" placeholder="Usuario" maxlength="30">
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label small text-light">Acción Especial:</label>
+                        <button type="button" onclick="assignSelfOwner()" class="btn btn-danger btn-sm w-100">👑 Asignarme OWNER</button>
+                        <small class="text-muted">Solo para el creador del guestbook</small>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label small text-light">Quitar Tag:</label>
+                        <div class="btn-group-vertical w-100" role="group">
+                          <button type="button" onclick="removeTag('OWNER')" class="btn btn-outline-secondary btn-sm" disabled id="removeOwnerBtn">❌ Quitar OWNER</button>
+                          <button type="button" onclick="removeTag('ADMIN')" class="btn btn-outline-secondary btn-sm" disabled id="removeAdminBtn">❌ Quitar ADMIN</button>
+                          <button type="button" onclick="removeTag('MOD')" class="btn btn-outline-secondary btn-sm" disabled id="removeModBtn">❌ Quitar MOD</button>
+                          <button type="button" onclick="removeTag('VIP')" class="btn btn-outline-secondary btn-sm" disabled id="removeVipBtn">❌ Quitar VIP</button>
                         </div>
-                        <div class="mb-2">
-                          <input type="password" id="modPassword" class="form-control form-control-sm" placeholder="Contraseña" minlength="6">
-                        </div>
-                        <div class="mb-2">
-                          <label class="form-label small text-light">Permisos:</label>
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="delete_drawings" id="perm1">
-                            <label class="form-check-label small" for="perm1">Eliminar dibujos</label>
-                          </div>
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="manage_comments" id="perm2">
-                            <label class="form-check-label small" for="perm2">Gestionar comentarios</label>
-                          </div>
-                          <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="manage_suggestions" id="perm3">
-                            <label class="form-check-label small" for="perm3">Gestionar sugerencias</label>
-                          </div>
-                        </div>
-                        <button type="button" onclick="addModerator()" class="btn btn-primary btn-sm w-100">➕ Añadir</button>
-                      </form>
+                      </div>
                     </div>
                     <div class="col-md-6">
-                      <h6 class="text-warning">👥 Moderadores Actuales</h6>
-                      <div id="moderatorsList" style="max-height: 300px; overflow-y: auto;">
-                        <div class="text-center text-muted">Cargando moderadores...</div>
+                      <h6 class="text-warning">👥 Usuarios con Tags</h6>
+                      <div id="taggedUsersList" style="max-height: 400px; overflow-y: auto;">
+                        <div class="text-center text-muted">Cargando usuarios...</div>
                       </div>
                     </div>
                   </div>
@@ -1019,15 +1052,13 @@
           <div class="modal-body">
             <div id="modLogin">
               <div class="mb-3">
-                <label class="form-label text-light">Usuario</label>
-                <input type="text" id="modPanelUsername" class="form-control" placeholder="Ingresa tu usuario">
-              </div>
-              <div class="mb-3">
-                <label class="form-label text-light">Contraseña</label>
-                <input type="password" id="modPanelPassword" class="form-control" placeholder="Ingresa tu contraseña">
+                <h6 class="text-light">🛡️ Panel de Moderador</h6>
+                <p class="text-muted small">Inicia sesión con tu perfil de usuario que tenga tag MOD</p>
+                <label class="form-label text-light">Usuario con permisos MOD</label>
+                <input type="text" id="modPanelUsername" class="form-control" placeholder="Tu nombre de usuario">
               </div>
               <div class="text-center">
-                <button onclick="loginMod()" class="btn btn-warning">🔑 Iniciar Sesión</button>
+                <button onclick="loginMod()" class="btn btn-warning">🔑 Verificar Permisos</button>
               </div>
             </div>
             
@@ -1049,6 +1080,9 @@
                 </li>
                 <li class="nav-item">
                   <button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod-reports">⚠️ Reportes</button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod-comments">💬 Comentarios</button>
                 </li>
                 <li class="nav-item">
                   <button class="nav-link" data-bs-toggle="tab" data-bs-target="#mod-stats">📊 Estadísticas</button>
@@ -1074,6 +1108,19 @@
                 </div>
                 <div class="tab-pane fade" id="mod-reports">
                   <div id="modReports" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center text-muted">Cargando...</div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="mod-comments">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-primary mb-0">💬 Comentarios</h6>
+                    <select id="modCommentFilter" class="form-select form-select-sm" style="width: 150px;">
+                      <option value="all">Todos</option>
+                      <option value="recent">Recientes</option>
+                      <option value="replies">Respuestas</option>
+                    </select>
+                  </div>
+                  <div id="modComments" style="max-height: 400px; overflow-y: auto;">
                     <div class="text-center text-muted">Cargando...</div>
                   </div>
                 </div>
@@ -1696,6 +1743,7 @@
     import { ProfileManager } from './js/profiles.js';
     import { MobileOptimizer } from './js/mobile-optimizer.js';
     import { SoundSystem } from './js/sound-system.js';
+    import { AutoModerationSystem } from './js/auto-moderation.js';
     
     class GuestbookApp {
       constructor() {
@@ -1706,6 +1754,7 @@
         this.profiles = new ProfileManager(this.firebase);
         this.mobileOptimizer = new MobileOptimizer();
         this.soundSystem = new SoundSystem();
+        this.autoModeration = new AutoModerationSystem(this.firebase);
         
         // Hacer disponible globalmente
         window.guestbookApp = this;
@@ -2098,6 +2147,20 @@
           let imageData = await this.canvas.getImageData();
           const author = document.getElementById('authorName').value || 'Anónimo';
           const category = document.getElementById('categorySelect').value;
+          
+          // Auto-moderación
+          const tempDrawingData = { autor: author, imagenData: imageData };
+          const recentDrawings = this.gallery.allDrawings || [];
+          const moderationResult = await this.autoModeration.analyzeDrawing(tempDrawingData, recentDrawings);
+          
+          if (moderationResult.action === 'block') {
+            this.ui.showNotification('🚫 ' + moderationResult.issues.join(', '), 'error');
+            return;
+          }
+          
+          if (moderationResult.action === 'flag') {
+            this.ui.showNotification('⚠️ Contenido marcado para revisión', 'warning');
+          }
           
           // Comprimir imagen si es muy grande
           const imageSize = imageData.length;
@@ -3408,41 +3471,55 @@
       }
     };
     
-    // Funciones para gestión de moderadores
-    window.loadModerators = async function() {
+    // Funciones para gestión de tags
+    window.loadTaggedUsers = async function() {
       try {
-        const moderators = await app.firebase.getModerators();
-        const container = document.getElementById('moderatorsList');
-        
-        if (!container) return;
-        
-        if (!moderators || moderators.length === 0) {
-          container.innerHTML = '<div class="text-muted text-center">No hay moderadores</div>';
+        if (!window.guestbookApp || !window.guestbookApp.profiles) {
+          document.getElementById('taggedUsersList').innerHTML = '<div class="text-danger text-center">Sistema de perfiles no disponible</div>';
           return;
         }
         
-        container.innerHTML = moderators.map(mod => `
+        await window.guestbookApp.profiles.loadUsers();
+        const allUsers = Array.from(window.guestbookApp.profiles.users.values());
+        const taggedUsers = allUsers.filter(user => user.userTags && user.userTags.length > 0);
+        
+        const container = document.getElementById('taggedUsersList');
+        if (!container) return;
+        
+        if (taggedUsers.length === 0) {
+          container.innerHTML = '<div class="text-muted text-center">No hay usuarios con tags asignados</div>';
+          return;
+        }
+        
+        const getTagBadge = (tag) => {
+          const badges = {
+            'OWNER': '<span class="badge bg-danger">👑 OWNER</span>',
+            'ADMIN': '<span class="badge bg-warning text-dark">🔐 ADMIN</span>',
+            'MOD': '<span class="badge bg-success">🛡️ MOD</span>',
+            'VIP': '<span class="badge bg-info">💎 VIP</span>'
+          };
+          return badges[tag] || `<span class="badge bg-secondary">${tag}</span>`;
+        };
+        
+        container.innerHTML = taggedUsers.map(user => `
           <div class="card mb-2" style="background: var(--bg-light); border: 1px solid var(--primary);">
             <div class="card-body p-2">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <strong style="color: var(--primary);">${mod.name}</strong>
-                  <div class="small text-info">@${mod.username || 'sin_usuario'}</div>
-                  <div class="small text-muted">
-                    Permisos: ${mod.permissions?.join(', ') || 'Ninguno'}
+                  <strong style="color: var(--primary);">${user.username}</strong>
+                  <div class="mb-1">
+                    ${Array.isArray(user.userTags) ? user.userTags.map(tag => getTagBadge(tag)).join(' ') : ''}
                   </div>
                   <div class="small text-muted">
-                    Creado: ${new Date(mod.createdAt).toLocaleDateString()}
+                    Miembro desde: ${new Date(user.joinDate).toLocaleDateString()}
+                  </div>
+                  <div class="small text-info">
+                    Dibujos: ${user.totalDrawings || 0}
                   </div>
                 </div>
                 <div class="d-flex gap-1">
-                  <button class="btn btn-${mod.active ? 'success' : 'secondary'} btn-sm" 
-                          onclick="toggleModerator('${mod.id}', ${!mod.active})">
-                    ${mod.active ? '✅' : '❌'}
-                  </button>
-                  <button class="btn btn-danger btn-sm" 
-                          onclick="deleteModerator('${mod.id}', '${mod.name}')">
-                    🗑️
+                  <button class="btn btn-outline-primary btn-sm" onclick="selectUserForTagManagement('${user.username}')" title="Gestionar tags">
+                    ⚙️ Editar
                   </button>
                 </div>
               </div>
@@ -3451,82 +3528,325 @@
         `).join('');
         
       } catch (error) {
-        console.error('Error loading moderators:', error);
+        console.error('Error loading tagged users:', error);
+        const container = document.getElementById('taggedUsersList');
+        if (container) {
+          container.innerHTML = '<div class="text-danger text-center">Error cargando usuarios</div>';
+        }
       }
     };
     
-    window.addModerator = async function() {
-      const name = document.getElementById('modName').value.trim();
-      const username = document.getElementById('modUsername').value.trim();
-      const password = document.getElementById('modPassword').value.trim();
+    window.searchUsersForTags = async function() {
+      const searchTerm = document.getElementById('searchUserForTags').value.trim().toLowerCase();
+      const resultsContainer = document.getElementById('userTagSearchResults');
       
-      if (!name || !username || !password) {
-        app.ui.showNotification('❌ Completa todos los campos', 'error');
+      if (searchTerm.length < 2) {
+        resultsContainer.innerHTML = '<div class="text-center text-muted small">Escribe al menos 2 caracteres</div>';
         return;
       }
       
-      if (password.length < 6) {
-        app.ui.showNotification('❌ La contraseña debe tener al menos 6 caracteres', 'error');
-        return;
+      try {
+        if (!window.guestbookApp || !window.guestbookApp.profiles) {
+          resultsContainer.innerHTML = '<div class="text-danger small">Sistema no disponible</div>';
+          return;
+        }
+        
+        await window.guestbookApp.profiles.loadUsers();
+        const allUsers = Array.from(window.guestbookApp.profiles.users.values());
+        
+        const matchingUsers = allUsers.filter(user => 
+          user.username.toLowerCase().includes(searchTerm)
+        ).slice(0, 5);
+        
+        if (matchingUsers.length === 0) {
+          resultsContainer.innerHTML = '<div class="text-center text-muted small">No se encontraron usuarios</div>';
+          return;
+        }
+        
+        const getTagBadge = (tag) => {
+          const badges = {
+            'OWNER': '<span class="badge bg-danger" style="font-size: 0.6em;">👑</span>',
+            'ADMIN': '<span class="badge bg-warning text-dark" style="font-size: 0.6em;">🔐</span>',
+            'MOD': '<span class="badge bg-success" style="font-size: 0.6em;">🛡️</span>',
+            'VIP': '<span class="badge bg-info" style="font-size: 0.6em;">💎</span>'
+          };
+          return badges[tag] || `<span class="badge bg-secondary" style="font-size: 0.6em;">${tag}</span>`;
+        };
+        
+        resultsContainer.innerHTML = matchingUsers.map(user => `
+          <div class="card mb-1" style="background: var(--bg-dark); border: 1px solid var(--text-secondary); cursor: pointer;" onclick="selectUserForTagManagement('${user.username}')">
+            <div class="card-body p-2">
+              <div class="d-flex align-items-center">
+                <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 0.7em; color: white; margin-right: 8px;">
+                  ${user.avatarImage ? `<img src="${user.avatarImage}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : (user.avatar || '👤')}
+                </div>
+                <div class="flex-grow-1">
+                  <strong class="text-light" style="font-size: 0.85em;">${user.username}</strong>
+                  <div class="text-muted" style="font-size: 0.7em;">Dibujos: ${user.totalDrawings || 0}</div>
+                  ${user.userTags && Array.isArray(user.userTags) && user.userTags.length > 0 ? `<div class="mt-1">${user.userTags.map(tag => getTagBadge(tag)).join(' ')}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+      } catch (error) {
+        console.error('Error searching users:', error);
+        resultsContainer.innerHTML = '<div class="text-danger small">Error en la búsqueda</div>';
       }
+    };
+    
+    window.selectUserForTagManagement = async function(username) {
+      document.getElementById('selectedUserForTags').value = username;
+      document.getElementById('userTagSearchResults').innerHTML = `
+        <div class="text-center text-success small">✅ Usuario seleccionado: <strong>${username}</strong></div>
+      `;
       
-      const permissions = [];
-      document.querySelectorAll('#addModeratorForm input[type="checkbox"]:checked').forEach(cb => {
-        permissions.push(cb.value);
+      // Habilitar botones y mostrar tags actuales
+      const buttons = ['assignOwnerBtn', 'assignAdminBtn', 'assignModBtn', 'assignVipBtn', 'removeOwnerBtn', 'removeAdminBtn', 'removeModBtn', 'removeVipBtn'];
+      buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) btn.disabled = false;
       });
       
-      if (permissions.length === 0) {
-        app.ui.showNotification('❌ Selecciona al menos un permiso', 'error');
-        return;
+      // Obtener tags actuales del usuario
+      try {
+        if (window.guestbookApp && window.guestbookApp.profiles) {
+          await window.guestbookApp.profiles.loadUsers();
+          const user = window.guestbookApp.profiles.users.get(username.toLowerCase());
+          
+          if (user && user.userTags) {
+            // Actualizar estado de botones según tags actuales
+            const currentTags = user.userTags;
+            
+            // Deshabilitar botones de asignar si ya tiene el tag
+            document.getElementById('assignOwnerBtn').disabled = currentTags.includes('OWNER');
+            document.getElementById('assignAdminBtn').disabled = currentTags.includes('ADMIN');
+            document.getElementById('assignModBtn').disabled = currentTags.includes('MOD');
+            document.getElementById('assignVipBtn').disabled = currentTags.includes('VIP');
+            
+            // Deshabilitar botones de quitar si no tiene el tag
+            document.getElementById('removeOwnerBtn').disabled = !currentTags.includes('OWNER');
+            document.getElementById('removeAdminBtn').disabled = !currentTags.includes('ADMIN');
+            document.getElementById('removeModBtn').disabled = !currentTags.includes('MOD');
+            document.getElementById('removeVipBtn').disabled = !currentTags.includes('VIP');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user tags:', error);
       }
+    };
+    
+    window.assignTag = async function(tag) {
+      const username = document.getElementById('selectedUserForTags').value;
+      if (!username) return;
+      
+      const tagNames = {
+        'OWNER': 'Owner',
+        'ADMIN': 'Administrador', 
+        'MOD': 'Moderador',
+        'VIP': 'VIP'
+      };
+      
+      if (!confirm(`¿Asignar tag ${tagNames[tag]} a ${username}?`)) return;
       
       try {
-        await app.firebase.addModerator({ name, username, password, permissions });
-        app.ui.showNotification('✅ Moderador añadido', 'success');
-        document.getElementById('modName').value = '';
-        document.getElementById('modUsername').value = '';
-        document.getElementById('modPassword').value = '';
-        document.querySelectorAll('#addModeratorForm input[type="checkbox"]').forEach(cb => cb.checked = false);
-        loadModerators();
-      } catch (error) {
-        if (error.message.includes('ya existe')) {
-          app.ui.showNotification('❌ El nombre de usuario ya existe', 'error');
+        if (!window.guestbookApp || !window.guestbookApp.profiles) {
+          app.ui.showNotification('❌ Sistema de perfiles no disponible', 'error');
+          return;
+        }
+        
+        await window.guestbookApp.profiles.loadUsers();
+        const user = window.guestbookApp.profiles.users.get(username.toLowerCase());
+        
+        if (!user) {
+          app.ui.showNotification('❌ Usuario no encontrado', 'error');
+          return;
+        }
+        
+        // Agregar tag
+        const currentTags = Array.isArray(user.userTags) ? user.userTags : [];
+        if (!currentTags.includes(tag)) {
+          currentTags.push(tag);
+          
+          // Actualizar en Firebase
+          await window.guestbookApp.firebase.updateUserProfile(username, {
+            userTags: currentTags
+          });
+          
+          app.ui.showNotification(`✅ ${username} ahora tiene el tag ${tagNames[tag]}`, 'success');
+          
+          // Actualizar botones
+          selectUserForTagManagement(username);
+          
+          // Recargar lista
+          loadTaggedUsers();
         } else {
-          app.ui.showNotification('❌ Error añadiendo moderador', 'error');
+          app.ui.showNotification(`⚠️ El usuario ya tiene el tag ${tagNames[tag]}`, 'warning');
         }
-      }
-    };
-    
-    window.toggleModerator = async function(moderatorId, active) {
-      try {
-        await app.firebase.updateModerator(moderatorId, { active });
-        app.ui.showNotification(`✅ Moderador ${active ? 'activado' : 'desactivado'}`, 'success');
-        loadModerators();
+        
       } catch (error) {
-        app.ui.showNotification('❌ Error actualizando moderador', 'error');
+        console.error('Error assigning tag:', error);
+        app.ui.showNotification('❌ Error asignando tag', 'error');
       }
     };
     
-    window.deleteModerator = async function(moderatorId, name) {
-      if (!confirm(`¿Eliminar moderador ${name}?\n\nEsta acción no se puede deshacer.`)) return;
+    window.removeTag = async function(tag) {
+      const username = document.getElementById('selectedUserForTags').value;
+      if (!username) return;
+      
+      const tagNames = {
+        'OWNER': 'Owner',
+        'ADMIN': 'Administrador',
+        'MOD': 'Moderador', 
+        'VIP': 'VIP'
+      };
+      
+      if (!confirm(`¿Quitar tag ${tagNames[tag]} a ${username}?`)) return;
       
       try {
-        await app.firebase.deleteModerator(moderatorId);
-        
-        // Registrar acción si hay usuario logueado
-        if (window.currentUser) {
-          await app.firebase.logModeratorAction(
-            'delete_moderator',
-            window.currentUser.name || 'Admin',
-            name
-          );
+        if (!window.guestbookApp || !window.guestbookApp.profiles) {
+          app.ui.showNotification('❌ Sistema de perfiles no disponible', 'error');
+          return;
         }
         
-        app.ui.showNotification('✅ Moderador eliminado', 'success');
-        loadModerators();
+        await window.guestbookApp.profiles.loadUsers();
+        const user = window.guestbookApp.profiles.users.get(username.toLowerCase());
+        
+        if (!user) {
+          app.ui.showNotification('❌ Usuario no encontrado', 'error');
+          return;
+        }
+        
+        // Quitar tag
+        const currentTags = user.userTags || [];
+        const updatedTags = currentTags.filter(t => t !== tag);
+        
+        // Actualizar en Firebase
+        await window.guestbookApp.firebase.updateUserProfile(username, {
+          userTags: updatedTags
+        });
+        
+        app.ui.showNotification(`✅ Tag ${tagNames[tag]} quitado de ${username}`, 'success');
+        
+        // Actualizar botones
+        selectUserForTagManagement(username);
+        
+        // Recargar lista
+        loadTaggedUsers();
+        
       } catch (error) {
-        app.ui.showNotification('❌ Error eliminando moderador', 'error');
+        console.error('Error removing tag:', error);
+        app.ui.showNotification('❌ Error quitando tag', 'error');
       }
+    };
+    
+    // Función especial para auto-asignarse OWNER
+    window.assignSelfOwner = async function() {
+      try {
+        // Verificar si está logueado en el sistema de perfiles
+        if (!window.guestbookApp || !window.guestbookApp.profiles || !window.guestbookApp.profiles.isLoggedIn()) {
+          app.ui.showNotification('❌ Debes estar logueado en tu perfil primero', 'error');
+          return;
+        }
+        
+        const currentProfile = window.guestbookApp.profiles.currentProfile;
+        const username = currentProfile.username;
+        
+        // Verificar que sea el usuario correcto (thisisfenix)
+        if (username.toLowerCase() !== 'thisisfenix') {
+          app.ui.showNotification('❌ Solo el creador del guestbook puede usar esta función', 'error');
+          return;
+        }
+        
+        if (!confirm(`¿Asignarte el tag OWNER como ${username}?\n\nEsto te dará permisos completos de administrador.`)) return;
+        
+        // Obtener tags actuales
+        const currentTags = currentProfile.userTags || [];
+        
+        if (currentTags.includes('OWNER')) {
+          app.ui.showNotification('⚠️ Ya tienes el tag OWNER', 'warning');
+          return;
+        }
+        
+        // Agregar tag OWNER
+        currentTags.push('OWNER');
+        
+        // Agregar también ADMIN si no lo tiene
+        if (!currentTags.includes('ADMIN')) {
+          currentTags.push('ADMIN');
+        }
+        
+        // Actualizar en Firebase
+        await window.guestbookApp.firebase.updateUserProfile(username, {
+          userTags: currentTags
+        });
+        
+        // Actualizar perfil local
+        currentProfile.userTags = currentTags;
+        window.guestbookApp.profiles.saveProfile();
+        
+        app.ui.showNotification(`✅ ¡Bienvenido OWNER ${username}! Tienes permisos completos`, 'success');
+        app.ui.createConfetti();
+        
+        // Recargar lista
+        loadTaggedUsers();
+        
+        // Actualizar UI del perfil si está visible
+        if (window.guestbookApp.profiles.updateProfileDisplay) {
+          window.guestbookApp.profiles.updateProfileDisplay();
+        }
+        
+      } catch (error) {
+        console.error('Error assigning self owner:', error);
+        app.ui.showNotification('❌ Error asignándote OWNER', 'error');
+      }
+    };
+    
+
+    
+    // Función para mostrar información sobre la tienda VIP
+    window.showVipStore = function() {
+      const modal = document.createElement('div');
+      modal.className = 'modal fade';
+      modal.innerHTML = `
+        <div class="modal-dialog">
+          <div class="modal-content" style="background: var(--bg-dark); border: 2px solid var(--primary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--primary);">
+              <h5 class="modal-title" style="color: var(--primary);">💎 Tienda VIP - Coming Soon</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: invert(1);"></button>
+            </div>
+            <div class="modal-body text-center">
+              <div style="font-size: 4em; margin-bottom: 20px;">🚧</div>
+              <h4 style="color: var(--primary); margin-bottom: 20px;">Próximamente</h4>
+              <p class="text-light mb-3">La tienda VIP estará disponible próximamente donde podrás:</p>
+              <div class="text-start">
+                <div class="mb-2">✨ <strong>Comprar el tag VIP</strong> con puntos ganados</div>
+                <div class="mb-2">🎨 <strong>Herramientas exclusivas</strong> de dibujo</div>
+                <div class="mb-2">🌈 <strong>Colores especiales</strong> y efectos</div>
+                <div class="mb-2">👑 <strong>Avatares premium</strong> y marcos</div>
+                <div class="mb-2">🏆 <strong>Beneficios especiales</strong> en rankings</div>
+              </div>
+              <div class="mt-4 p-3" style="background: var(--bg-light); border-radius: 8px; border-left: 3px solid var(--primary);">
+                <small class="text-muted">
+                  <strong>Sistema de puntos:</strong> Gana puntos dibujando, recibiendo likes y participando en la comunidad.
+                </small>
+              </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--primary);">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">👍 Entendido</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      const bootstrapModal = new bootstrap.Modal(modal);
+      bootstrapModal.show();
+      
+      modal.addEventListener('hidden.bs.modal', () => {
+        modal.remove();
+      });
     };
     
     // Función para eliminar dibujos (moderadores)
@@ -3675,51 +3995,63 @@
     
     window.loginMod = async function() {
       const username = document.getElementById('modPanelUsername').value.trim();
-      const password = document.getElementById('modPanelPassword').value.trim();
       
-      if (!username || !password) {
-        alert('Por favor completa todos los campos');
+      if (!username) {
+        alert('Por favor ingresa tu nombre de usuario');
         return;
       }
       
       try {
-        const authResult = await app.firebase.loginModerator(username, password);
-        if (authResult) {
-          window.currentUser = authResult;
+        // Intentar login con el sistema de perfiles
+        if (window.guestbookApp && window.guestbookApp.profiles) {
+          const loginResult = await window.guestbookApp.profiles.loginUser(username, password);
           
-          document.getElementById('modLogin').style.display = 'none';
-          document.getElementById('modContent').style.display = 'block';
-          
-          document.getElementById('modToggle').innerHTML = `🛡️ ${authResult.name}`;
-          document.getElementById('modToggle').classList.remove('btn-outline-warning');
-          document.getElementById('modToggle').classList.add('btn-success');
-          
-          document.getElementById('modUserInfo').textContent = authResult.name;
-          
-          loadModSuggestions();
-          loadModDrawings();
-          loadModReports();
-          loadModStats();
-          loadModReportedUsers();
-          loadModConfig();
-          
-          // Cargar reportes también en el panel principal
-          if (window.guestbookApp && window.guestbookApp.loadAdminReports) {
-            window.guestbookApp.loadAdminReports();
-          }
-          
-          // Actualizar reportes en ambos paneles
-          setTimeout(() => {
-            if (window.guestbookApp && window.guestbookApp.loadAdminReports) {
-              window.guestbookApp.loadAdminReports();
+          if (loginResult.success) {
+            const userProfile = window.guestbookApp.profiles.currentProfile;
+            
+            // Verificar si tiene tag de MOD
+            if (userProfile.userTags && userProfile.userTags.includes('MOD')) {
+              window.currentUser = {
+                name: userProfile.username,
+                username: userProfile.username,
+                role: 'moderator',
+                permissions: ['delete_drawings', 'manage_comments', 'manage_suggestions']
+              };
+              
+              document.getElementById('modLogin').style.display = 'none';
+              document.getElementById('modContent').style.display = 'block';
+              
+              document.getElementById('modToggle').innerHTML = `🛡️ ${userProfile.username}`;
+              document.getElementById('modToggle').classList.remove('btn-outline-warning');
+              document.getElementById('modToggle').classList.add('btn-success');
+              
+              document.getElementById('modUserInfo').textContent = userProfile.username;
+              
+              loadModSuggestions();
+              loadModDrawings();
+              loadModReports();
+              loadModStats();
+              loadModReportedUsers();
+              loadModConfig();
+              loadModComments();
+              
+              if (window.guestbookApp && window.guestbookApp.loadAdminReports) {
+                window.guestbookApp.loadAdminReports();
+              }
+              
+              alert(`Bienvenido Moderador ${userProfile.username}`);
+            } else {
+              alert('❌ No tienes permisos de moderador');
+              window.guestbookApp.profiles.logoutUser();
             }
-          }, 1000);
-          
-          alert(`Bienvenido ${authResult.name}`);
+          } else {
+            alert('Usuario o contraseña incorrectos');
+          }
         } else {
-          alert('Usuario o contraseña incorrectos');
+          alert('❌ Sistema de perfiles no disponible');
         }
       } catch (error) {
+        console.error('Error login mod:', error);
         alert('Error iniciando sesión');
       }
     };
@@ -4144,7 +4476,7 @@
       }
       
       try {
-        const authResult = await app.firebase.checkAdminPassword(password);
+        const authResult = await app.firebase.checkAdminAccess();
         if (authResult && authResult.role) {
           if (authResult.role === 'moderator_access') {
             // Mostrar panel de moderador
@@ -4165,7 +4497,7 @@
           document.getElementById('adminToggle').classList.add('btn-success');
           
           updateUIForUser();
-          loadModerators();
+          loadTaggedUsers();
           app.loadAdminSuggestions();
           app.loadAdminDrawings();
           app.loadAdminReports();
@@ -4173,13 +4505,15 @@
           loadUsersList();
           loadActivityLogs();
           loadConfig();
+          loadAdminComments();
           
-          app.ui.showNotification('✅ Acceso de administrador concedido', 'success');
+          app.ui.showNotification('✅ Acceso de administrador', 'success');
         } else {
           app.ui.showNotification('❌ Contraseña incorrecta', 'error');
         }
       } catch (error) {
-        app.ui.showNotification('❌ Error verificando contraseña', 'error');
+        console.error('Error login admin:', error);
+        app.ui.showNotification('❌ Error de autenticación', 'error');
       }
     };
     
@@ -4813,6 +5147,200 @@
     
     window.saveModNotifications = function() {
       app.ui.showNotification('✅ Preferencias guardadas', 'success');
+    };
+    
+    // Funciones para gestión de comentarios
+    window.loadAdminComments = async function() {
+      try {
+        const drawings = await app.firebase.getAllDrawings();
+        const container = document.getElementById('adminComments');
+        const filter = document.getElementById('commentFilter')?.value || 'all';
+        
+        if (!container) return;
+        
+        let allComments = [];
+        drawings.forEach(drawing => {
+          const comments = drawing.data.comments || [];
+          comments.forEach(comment => {
+            allComments.push({
+              ...comment,
+              drawingId: drawing.id,
+              drawingTitle: drawing.data.titulo,
+              drawingAuthor: drawing.data.autor
+            });
+          });
+        });
+        
+        // Aplicar filtros
+        let filteredComments = allComments;
+        if (filter === 'recent') {
+          const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+          filteredComments = allComments.filter(c => c.timestamp > oneDayAgo);
+        } else if (filter === 'replies') {
+          filteredComments = allComments.filter(c => c.parentId);
+        }
+        
+        // Ordenar por más reciente
+        filteredComments.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        if (filteredComments.length === 0) {
+          container.innerHTML = '<div class="text-center text-muted">No hay comentarios</div>';
+          return;
+        }
+        
+        container.innerHTML = filteredComments.slice(0, 50).map(comment => `
+          <div class="card mb-2" style="background: var(--bg-light); border: 1px solid var(--primary);">
+            <div class="card-body p-2">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <strong style="color: var(--primary); font-size: 0.9em;">${comment.autor || 'Anónimo'}</strong>
+                  ${comment.parentId ? '<span class="badge bg-info ms-1" style="font-size: 0.6em;">💬 Respuesta</span>' : ''}
+                  ${comment.isLoggedUser ? '<span class="badge bg-success ms-1" style="font-size: 0.6em;">✓ Registrado</span>' : ''}
+                </div>
+                <small class="text-muted">${app.formatDate(comment.timestamp)}</small>
+              </div>
+              <div class="text-light small mb-2" style="line-height: 1.3;">${comment.texto || 'Sin texto'}</div>
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <small class="text-muted">En: <strong>${comment.drawingTitle}</strong> por ${comment.drawingAuthor}</small>
+                  ${comment.likes || comment.dislikes ? `<div class="mt-1"><span class="text-success">👍 ${comment.likes || 0}</span> <span class="text-danger">👎 ${comment.dislikes || 0}</span></div>` : ''}
+                </div>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-info" onclick="viewDrawingFromComment('${comment.drawingId}')" title="Ver dibujo">
+                    👁️
+                  </button>
+                  <button class="btn btn-outline-danger" onclick="deleteComment('${comment.drawingId}', '${comment.id || comment.timestamp}')" title="Eliminar comentario">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+        // Configurar filtro
+        const filterSelect = document.getElementById('commentFilter');
+        if (filterSelect) {
+          filterSelect.onchange = loadAdminComments;
+        }
+        
+      } catch (error) {
+        console.error('Error loading admin comments:', error);
+        const container = document.getElementById('adminComments');
+        if (container) {
+          container.innerHTML = '<div class="text-danger text-center">Error cargando comentarios</div>';
+        }
+      }
+    };
+    
+    window.loadModComments = async function() {
+      try {
+        const drawings = await app.firebase.getAllDrawings();
+        const container = document.getElementById('modComments');
+        const filter = document.getElementById('modCommentFilter')?.value || 'all';
+        
+        if (!container) return;
+        
+        let allComments = [];
+        drawings.forEach(drawing => {
+          const comments = drawing.data.comments || [];
+          comments.forEach(comment => {
+            allComments.push({
+              ...comment,
+              drawingId: drawing.id,
+              drawingTitle: drawing.data.titulo,
+              drawingAuthor: drawing.data.autor
+            });
+          });
+        });
+        
+        // Aplicar filtros
+        let filteredComments = allComments;
+        if (filter === 'recent') {
+          const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+          filteredComments = allComments.filter(c => c.timestamp > oneDayAgo);
+        } else if (filter === 'replies') {
+          filteredComments = allComments.filter(c => c.parentId);
+        }
+        
+        // Ordenar por más reciente
+        filteredComments.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        if (filteredComments.length === 0) {
+          container.innerHTML = '<div class="text-center text-muted">No hay comentarios</div>';
+          return;
+        }
+        
+        container.innerHTML = filteredComments.slice(0, 30).map(comment => `
+          <div class="card mb-2" style="background: var(--bg-light); border: 1px solid var(--primary);">
+            <div class="card-body p-2">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <strong style="color: var(--primary); font-size: 0.85em;">${comment.autor || 'Anónimo'}</strong>
+                  ${comment.parentId ? '<span class="badge bg-info ms-1" style="font-size: 0.6em;">💬</span>' : ''}
+                </div>
+                <small class="text-muted">${app.formatDate(comment.timestamp)}</small>
+              </div>
+              <div class="text-light small mb-2">${comment.texto || 'Sin texto'}</div>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">En: ${comment.drawingTitle}</small>
+                <button class="btn btn-outline-danger btn-sm" onclick="deleteComment('${comment.drawingId}', '${comment.id || comment.timestamp}')">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+        // Configurar filtro
+        const filterSelect = document.getElementById('modCommentFilter');
+        if (filterSelect) {
+          filterSelect.onchange = loadModComments;
+        }
+        
+      } catch (error) {
+        console.error('Error loading mod comments:', error);
+        const container = document.getElementById('modComments');
+        if (container) {
+          container.innerHTML = '<div class="text-danger text-center">Error cargando comentarios</div>';
+        }
+      }
+    };
+    
+    window.deleteComment = async function(drawingId, commentId) {
+      if (!confirm('¿Eliminar este comentario?')) return;
+      
+      try {
+        const drawing = await app.firebase.getDrawing(drawingId);
+        const comments = drawing?.data?.comments || [];
+        
+        // Filtrar comentario y sus respuestas
+        const filteredComments = comments.filter(c => {
+          const cId = c.id || c.timestamp;
+          return cId !== commentId && c.parentId !== commentId;
+        });
+        
+        await app.firebase.updateDrawing(drawingId, { comments: filteredComments });
+        
+        app.ui.showNotification('✅ Comentario eliminado', 'success');
+        
+        // Recargar listas
+        if (document.getElementById('adminComments')) loadAdminComments();
+        if (document.getElementById('modComments')) loadModComments();
+        
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+        app.ui.showNotification('❌ Error eliminando comentario', 'error');
+      }
+    };
+    
+    window.viewDrawingFromComment = function(drawingId) {
+      if (window.guestbookApp && window.guestbookApp.gallery) {
+        const drawing = window.guestbookApp.gallery.allDrawings.find(d => d.id === drawingId);
+        if (drawing) {
+          viewImage(drawing.data.imagenData, drawingId);
+        }
+      }
     };
   </script>
   

@@ -834,28 +834,37 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
     // Layout horizontal para móviles: comentarios izquierda, formulario derecha
     commentsSection.innerHTML = `
       ${userProfileHTML}
-      <div style="display: flex; gap: 10px; flex: 1; min-height: 0;">
-        <div style="flex: 1; display: flex; flex-direction: column;">
-          <div style="text-align: center; margin-bottom: 8px;">
-            <small style="color: var(--primary); font-weight: 600; font-size: 0.75em;">💬 Comentarios</small>
+      <div style="display: flex; gap: 8px; flex: 1; min-height: 0;">
+        <div style="width: 55%; display: flex; flex-direction: column;">
+          <div style="text-align: center; margin-bottom: 6px;">
+            <small style="color: var(--primary); font-weight: 600; font-size: 0.7em;">💬 Comentarios</small>
           </div>
           <div id="commentsContainer" class="comments-container" style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; min-height: 0;">
-            <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
-              <div class="spinner-border" style="color: var(--primary); width: 1.5rem; height: 1.5rem;" role="status"></div>
-              <p class="mt-2 mb-0" style="font-size: 0.9em;">Cargando comentarios...</p>
+            <div style="text-align: center; color: var(--text-secondary); padding: 15px;">
+              <div class="spinner-border" style="color: var(--primary); width: 1.2rem; height: 1.2rem;" role="status"></div>
+              <p class="mt-2 mb-0" style="font-size: 0.8em;">Cargando comentarios...</p>
             </div>
           </div>
         </div>
-        <div style="width: 45%; display: flex; flex-direction: column; border-left: 2px solid var(--primary); padding-left: 10px;">
-          <div style="text-align: center; margin-bottom: 8px;">
-            <small style="color: var(--primary); font-weight: 600; font-size: 0.75em;">✍️ Comentar</small>
-            ${isLoggedIn ? `<div style="font-size: 0.65em; color: var(--text-secondary); margin-top: 2px;">👤 ${currentUser.username}</div>` : ''}
+        <div style="width: 45%; display: flex; flex-direction: column; border-left: 2px solid var(--primary); padding-left: 8px;">
+          <div style="text-align: center; margin-bottom: 6px;">
+            <small style="color: var(--primary); font-weight: 600; font-size: 0.7em;">✍️ Comentar</small>
+            ${isLoggedIn ? `<div style="font-size: 0.6em; color: var(--text-secondary); margin-top: 1px;">👤 ${currentUser.username}</div>` : ''}
           </div>
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-            ${!isLoggedIn ? `<input type="text" id="commentAuthor" placeholder="Tu nombre" class="form-control" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 14px; min-height: 36px; padding: 0.5rem;" maxlength="50">` : ''}
-            <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="3" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 14px; flex: 1; padding: 0.5rem;" maxlength="500"></textarea>
-            <small style="color: var(--text-secondary); font-size: 0.7em; text-align: center;">Máx 500 chars</small>
-            <button onclick="addComment('${drawingId}')" class="btn btn-primary" style="padding: 0.5rem; font-weight: 600; border-radius: 6px; min-height: 36px; font-size: 14px; margin-top: auto;">💭 Enviar</button>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+            ${!isLoggedIn ? `<input type="text" id="commentAuthor" placeholder="Tu nombre" class="form-control" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 12px; min-height: 32px; padding: 0.4rem;" maxlength="50">` : ''}
+            <div style="display: flex; gap: 4px;">
+              <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="4" style="flex: 1; background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 12px; padding: 0.4rem;" maxlength="500"></textarea>
+              <div style="display: flex; flex-direction: column; gap: 3px;">
+                <input type="file" id="commentImage" accept="image/*" style="display: none;">
+                <button onclick="document.getElementById('commentImage').click()" style="background: var(--secondary); color: white; border: none; border-radius: 3px; padding: 4px; cursor: pointer; font-size: 0.6em; white-space: nowrap; min-width: 28px; min-height: 28px;" title="Adjuntar imagen">
+                  🖼️
+                </button>
+              </div>
+            </div>
+            <div id="commentImagePreview" style="display: none;"></div>
+            <small style="color: var(--text-secondary); font-size: 0.65em; text-align: center;">Máx 500 chars</small>
+            <button onclick="addComment('${drawingId}')" class="btn btn-primary" style="padding: 0.4rem; font-weight: 600; border-radius: 4px; min-height: 32px; font-size: 12px; margin-top: auto;">💭 Enviar</button>
           </div>
         </div>
       </div>
@@ -878,7 +887,16 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
         ` : ''}
         <div class="mb-2">
           ${!isLoggedIn ? `<input type="text" id="commentAuthor" placeholder="Tu nombre (opcional)" class="form-control mb-2" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 16px; padding: 0.5rem;" maxlength="50">` : ''}
-          <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="3" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 16px; padding: 0.5rem;" maxlength="500"></textarea>
+          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="3" style="flex: 1; background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 16px; padding: 0.5rem;" maxlength="500"></textarea>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <input type="file" id="commentImage" accept="image/*" style="display: none;">
+              <button onclick="document.getElementById('commentImage').click()" style="background: var(--secondary); color: white; border: none; border-radius: 6px; padding: 8px; cursor: pointer; font-size: 0.9em; white-space: nowrap;" title="Adjuntar imagen">
+                🖼️ Imagen
+              </button>
+            </div>
+          </div>
+          <div id="commentImagePreview" style="display: none; margin-bottom: 8px;"></div>
           <small style="color: var(--text-secondary); font-size: 0.8em;">Máximo 500 caracteres</small>
         </div>
         <button onclick="addComment('${drawingId}')" class="btn btn-primary w-100" style="padding: 12px; font-weight: 600; border-radius: 8px; font-size: 14px;">💭 Comentar</button>
@@ -889,12 +907,56 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   container.appendChild(imageSection);
   container.appendChild(commentsSection);
   modal.appendChild(container);
+  
+  // Almacenar drawingId en el modal para acceso global
+  modal.dataset.drawingId = drawingId;
+  
   document.body.appendChild(modal);
   
-  // Cargar comentarios
+  // Configurar preview de imagen para comentarios
   setTimeout(() => {
+    const imageInput = document.getElementById('commentImage');
+    const imagePreview = document.getElementById('commentImagePreview');
+    
+    if (imageInput && imagePreview) {
+      imageInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+          if (file.size > 500 * 1024) {
+            alert('🙅 Imagen muy grande. Máximo 500KB.');
+            imageInput.value = '';
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            imagePreview.style.display = 'block';
+            imagePreview.innerHTML = `
+              <div style="position: relative; display: inline-block; margin-bottom: 8px;">
+                <img src="${event.target.result}" style="max-width: 120px; max-height: 120px; border-radius: 6px; border: 1px solid var(--primary);">
+                <button onclick="removeCommentImage()" style="position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 0.8em;">×</button>
+              </div>
+            `;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+    
     console.log('Iniciando carga de comentarios para:', drawingId);
-    loadComments(drawingId);
+    loadComments(drawingId).then(() => {
+      // Actualizar colores de botones según localStorage
+      document.querySelectorAll('button[onclick*="reactToComment"]').forEach(btn => {
+        const onclick = btn.getAttribute('onclick');
+        const matches = onclick.match(/reactToComment\('([^']+)', '([^']+)', '([^']+)'/);
+        if (matches) {
+          const [, , commentId, reaction] = matches;
+          if (localStorage.getItem(`comment_${reaction}_${commentId}`) === 'true') {
+            btn.style.color = reaction === 'like' ? '#28a745' : '#dc3545';
+          }
+        }
+      });
+    });
   }, 100);
   
   modal.addEventListener('click', (e) => {
@@ -1115,15 +1177,11 @@ async function loadComments(drawingId) {
   try {
     console.log('Cargando comentarios para:', drawingId);
     
-    // Usar solo el sistema antiguo de comentarios
     const drawing = await window.guestbookApp.firebase.getDrawing(drawingId);
-    
     const container = document.getElementById('commentsContainer');
     if (!container) return;
     
-    // Solo comentarios del documento del dibujo
     const allComments = drawing?.data?.comments || [];
-    
     console.log('Comentarios encontrados:', allComments.length);
     
     if (allComments.length === 0) {
@@ -1138,37 +1196,24 @@ async function loadComments(drawingId) {
       return;
     }
     
-    // Ordenar comentarios por timestamp
-    const sortedComments = allComments.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    // Separar comentarios principales y respuestas
+    const mainComments = allComments.filter(c => !c.parentId);
+    const replies = allComments.filter(c => c.parentId);
+    
+    console.log('Comentarios principales:', mainComments.length);
+    console.log('Respuestas:', replies.length);
+    console.log('IDs de respuestas y sus parentIds:', replies.map(r => ({id: r.id, parentId: r.parentId})));
+    
+    // Ordenar comentarios principales por timestamp
+    const sortedComments = mainComments.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
     
     const isMobile = window.innerWidth <= 768;
     container.innerHTML = sortedComments.map(comment => {
-      const author = comment.autor || comment.author || 'Anónimo';
-      const text = comment.texto || comment.text || '';
-      const timestamp = comment.timestamp || Date.now();
-      const profilePicture = comment.profilePicture;
-      const profileAvatar = comment.profileAvatar;
-      const isLoggedUser = comment.isLoggedUser || false;
-      
-      return `
-        <div class="comment-item" style="background: var(--bg-light); border-radius: ${isMobile ? '6px' : '8px'}; padding: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '8px' : '10px'}; border-left: 3px solid ${isLoggedUser ? '#28a745' : 'var(--primary)'}; transition: all 0.2s ease;">
-          <div style="display: flex; align-items: flex-start; gap: ${isMobile ? '6px' : '8px'};">
-            <div style="width: ${isMobile ? '28px' : '32px'}; height: ${isMobile ? '28px' : '32px'}; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: ${isMobile ? '0.6em' : '0.7em'}; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden; ${isLoggedUser ? 'border: 2px solid #28a745;' : ''}">
-              ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : (profileAvatar && profileAvatar !== '👤') ? `<span>${profileAvatar}</span>` : `<span>👤</span>`}
-            </div>
-            <div style="flex: 1; min-width: 0;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${isMobile ? '3px' : '4px'};">
-                <div style="display: flex; align-items: center; gap: 3px;">
-                  <strong style="color: var(--primary); font-size: ${isMobile ? '0.8em' : '0.85em'};">${author}</strong>
-                  ${isLoggedUser ? '<span style="color: #28a745; font-size: 0.65em;" title="Usuario registrado">✓</span>' : ''}
-                </div>
-                <small style="color: var(--text-secondary); font-size: ${isMobile ? '0.7em' : '0.75em'};">${formatCommentDate(timestamp)}</small>
-              </div>
-              <p style="color: var(--text-primary); margin: 0; line-height: ${isMobile ? '1.2' : '1.3'}; word-wrap: break-word; font-size: ${isMobile ? '0.8em' : '0.85em'};">${text}</p>
-            </div>
-          </div>
-        </div>
-      `;
+      // Generar ID si no existe
+      const commentId = comment.id || `comment_${comment.timestamp || Date.now()}`;
+      const commentReplies = replies.filter(r => r.parentId === commentId).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+      console.log(`Comentario ${commentId} tiene ${commentReplies.length} respuestas`);
+      return renderComment({...comment, id: commentId}, commentReplies, drawingId, isMobile);
     }).join('');
     
   } catch (error) {
@@ -1179,6 +1224,105 @@ async function loadComments(drawingId) {
       container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: ${isMobile ? '15px' : '20px'}; font-size: ${isMobile ? '0.9em' : '1em'};">Error cargando comentarios</p>`;
     }
   }
+}
+
+function renderComment(comment, replies, drawingId, isMobile) {
+  const author = comment.autor || comment.author || 'Anónimo';
+  const text = processCommentText(comment.texto || comment.text || '');
+  const timestamp = comment.timestamp || Date.now();
+  const profilePicture = comment.profilePicture;
+  const profileAvatar = comment.profileAvatar;
+  const isLoggedUser = comment.isLoggedUser || false;
+  const commentId = comment.id; // Ya viene con ID asignado desde loadComments
+  const likes = comment.likes || 0;
+  const dislikes = comment.dislikes || 0;
+  const attachedImage = comment.attachedImage;
+  
+  console.log(`Renderizando comentario ${commentId} con ${replies.length} respuestas`);
+  
+  const repliesHtml = replies.length > 0 ? `
+    <div style="margin-left: ${isMobile ? '20px' : '30px'}; margin-top: 8px; border-left: 2px solid var(--primary); padding-left: ${isMobile ? '8px' : '12px'};">
+      ${replies.map(reply => renderReply(reply, isMobile)).join('')}
+    </div>
+  ` : '';
+  
+  return `
+    <div class="comment-item" data-comment-id="${commentId}" style="background: var(--bg-light); border-radius: ${isMobile ? '6px' : '8px'}; padding: ${isMobile ? '8px' : '10px'}; margin-bottom: ${isMobile ? '8px' : '10px'}; border-left: 3px solid ${isLoggedUser ? '#28a745' : 'var(--primary)'}; transition: all 0.2s ease;">
+      <div style="display: flex; align-items: flex-start; gap: ${isMobile ? '6px' : '8px'};">
+        <div style="width: ${isMobile ? '28px' : '32px'}; height: ${isMobile ? '28px' : '32px'}; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: ${isMobile ? '0.6em' : '0.7em'}; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden; ${isLoggedUser ? 'border: 2px solid #28a745;' : ''}">
+          ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : (profileAvatar && profileAvatar !== '👤') ? `<span>${profileAvatar}</span>` : `<span>👤</span>`}
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${isMobile ? '3px' : '4px'};">
+            <div style="display: flex; align-items: center; gap: 3px;">
+              <strong style="color: var(--primary); font-size: ${isMobile ? '0.8em' : '0.85em'};">${author}</strong>
+              ${isLoggedUser ? '<span style="color: #28a745; font-size: 0.65em;" title="Usuario registrado">✓</span>' : ''}
+            </div>
+            <small style="color: var(--text-secondary); font-size: ${isMobile ? '0.7em' : '0.75em'};">${formatCommentDate(timestamp)}</small>
+          </div>
+          <div style="color: var(--text-primary); margin: 0 0 8px 0; line-height: ${isMobile ? '1.2' : '1.3'}; word-wrap: break-word; font-size: ${isMobile ? '0.8em' : '0.85em'};">${text}</div>
+          ${attachedImage ? `<img src="${attachedImage}" style="max-width: 100%; max-height: 150px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;" onclick="viewAttachedImage('${attachedImage}')" loading="lazy">` : ''}
+          <div style="display: flex; align-items: center; gap: ${isMobile ? '8px' : '12px'}; font-size: ${isMobile ? '0.7em' : '0.75em'};">
+            <button onclick="reactToComment('${drawingId}', '${commentId}', 'like')" style="background: none; border: none; color: ${likes > 0 ? '#28a745' : 'var(--text-secondary)'}; cursor: pointer; display: flex; align-items: center; gap: 3px; padding: 2px 4px; border-radius: 3px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(40,167,69,0.1)'" onmouseout="this.style.background='none'">
+              👍 ${likes > 0 ? likes : ''}
+            </button>
+            <button onclick="reactToComment('${drawingId}', '${commentId}', 'dislike')" style="background: none; border: none; color: ${dislikes > 0 ? '#dc3545' : 'var(--text-secondary)'}; cursor: pointer; display: flex; align-items: center; gap: 3px; padding: 2px 4px; border-radius: 3px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(220,53,69,0.1)'" onmouseout="this.style.background='none'">
+              👎 ${dislikes > 0 ? dislikes : ''}
+            </button>
+            <button onclick="showReplyForm('${commentId}', '${author}')" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: ${isMobile ? '0.7em' : '0.75em'}; padding: 2px 4px; border-radius: 3px; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,107,53,0.1)'" onmouseout="this.style.background='none'">
+              💬 Responder
+            </button>
+            ${replies.length > 0 ? `<span style="color: var(--text-secondary); font-size: 0.7em;">${replies.length} respuesta${replies.length > 1 ? 's' : ''}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      ${repliesHtml}
+      <div id="replyForm_${commentId}" style="display: none; margin-top: 8px; margin-left: ${isMobile ? '20px' : '30px'};"></div>
+    </div>
+  `;
+}
+
+function renderReply(reply, isMobile) {
+  const author = reply.autor || reply.author || 'Anónimo';
+  const text = processCommentText(reply.texto || reply.text || '');
+  const timestamp = reply.timestamp || Date.now();
+  const profilePicture = reply.profilePicture;
+  const profileAvatar = reply.profileAvatar;
+  const isLoggedUser = reply.isLoggedUser || false;
+  const likes = reply.likes || 0;
+  const dislikes = reply.dislikes || 0;
+  const attachedImage = reply.attachedImage;
+  
+  return `
+    <div class="reply-item" style="background: var(--bg-dark); border-radius: 6px; padding: ${isMobile ? '6px' : '8px'}; margin-bottom: 6px; border-left: 2px solid var(--secondary);">
+      <div style="display: flex; align-items: flex-start; gap: ${isMobile ? '4px' : '6px'};">
+        <div style="width: ${isMobile ? '24px' : '28px'}; height: ${isMobile ? '24px' : '28px'}; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; font-size: ${isMobile ? '0.5em' : '0.6em'}; color: white; font-weight: bold; flex-shrink: 0; overflow: hidden;">
+          ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : (profileAvatar && profileAvatar !== '👤') ? `<span>${profileAvatar}</span>` : `<span>👤</span>`}
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <strong style="color: var(--secondary); font-size: ${isMobile ? '0.7em' : '0.8em'};">${author}</strong>
+            <small style="color: var(--text-secondary); font-size: ${isMobile ? '0.6em' : '0.7em'};">${formatCommentDate(timestamp)}</small>
+          </div>
+          <div style="color: var(--text-primary); margin: 0 0 6px 0; line-height: 1.2; word-wrap: break-word; font-size: ${isMobile ? '0.7em' : '0.8em'};">${text}</div>
+          ${attachedImage ? `<img src="${attachedImage}" style="max-width: 100%; max-height: 120px; border-radius: 4px; margin-bottom: 6px; cursor: pointer;" onclick="viewAttachedImage('${attachedImage}')" loading="lazy">` : ''}
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 0.65em;">
+            <button onclick="reactToComment('${reply.drawingId}', '${reply.id}', 'like', true)" style="background: none; border: none; color: ${likes > 0 ? '#28a745' : 'var(--text-secondary)'}; cursor: pointer; display: flex; align-items: center; gap: 2px; padding: 1px 3px; border-radius: 2px;">
+              👍 ${likes > 0 ? likes : ''}
+            </button>
+            <button onclick="reactToComment('${reply.drawingId}', '${reply.id}', 'dislike', true)" style="background: none; border: none; color: ${dislikes > 0 ? '#dc3545' : 'var(--text-secondary)'}; cursor: pointer; display: flex; align-items: center; gap: 2px; padding: 1px 3px; border-radius: 2px;">
+              👎 ${dislikes > 0 ? dislikes : ''}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function processCommentText(text) {
+  // Procesar menciones @usuario
+  return text.replace(/@(\w+)/g, '<span style="color: var(--primary); font-weight: bold; background: rgba(255,107,53,0.1); padding: 1px 4px; border-radius: 3px;">@$1</span>');
 }
 
 function formatCommentDate(timestamp) {
@@ -1293,13 +1437,34 @@ window.addComment = async function(drawingId) {
   btn.disabled = true;
   
   try {
+    // Manejar imagen adjunta
+    let attachedImage = null;
+    const imageInput = document.getElementById('commentImage');
+    if (imageInput?.files[0]) {
+      const file = imageInput.files[0];
+      if (file.size > 500 * 1024) {
+        alert('🙅 Imagen muy grande. Máximo 500KB.');
+        return;
+      }
+      
+      const reader = new FileReader();
+      attachedImage = await new Promise(resolve => {
+        reader.onload = e => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+    
     const commentData = {
+      id: `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       autor: author,
       texto: comment,
       timestamp: Date.now(),
       profilePicture: profilePicture,
       profileAvatar: profileAvatar,
-      isLoggedUser: isLoggedUser
+      isLoggedUser: isLoggedUser,
+      likes: 0,
+      dislikes: 0,
+      attachedImage: attachedImage
     };
     
     console.log('Enviando comentario:', commentData);
@@ -1329,6 +1494,14 @@ window.addComment = async function(drawingId) {
     // Limpiar campos
     if (authorInput) authorInput.value = '';
     if (textarea) textarea.value = '';
+    if (imageInput) {
+      imageInput.value = '';
+      const preview = document.getElementById('commentImagePreview');
+      if (preview) {
+        preview.style.display = 'none';
+        preview.innerHTML = '';
+      }
+    }
     
     // Actualizar datos locales inmediatamente
     if (window.galleryManager) {
@@ -1391,6 +1564,277 @@ window.addComment = async function(drawingId) {
     } else {
       alert('Error al enviar comentario. Inténtalo de nuevo.');
     }
+  }
+};
+
+// Funciones para sistema de comentarios mejorado
+window.reactToComment = async function(drawingId, commentId, reaction, isReply = false) {
+  try {
+    const storageKey = `comment_${reaction}_${commentId}`;
+    const hasReacted = localStorage.getItem(storageKey) === 'true';
+    
+    if (hasReacted) {
+      localStorage.removeItem(storageKey);
+    } else {
+      localStorage.setItem(storageKey, 'true');
+    }
+    
+    const drawing = await window.guestbookApp.firebase.getDrawing(drawingId);
+    const comments = drawing?.data?.comments || [];
+    
+    const commentIndex = comments.findIndex(c => (c.id || `comment_${c.timestamp}`) === commentId);
+    if (commentIndex === -1) return;
+    
+    const comment = comments[commentIndex];
+    if (!comment.likes) comment.likes = 0;
+    if (!comment.dislikes) comment.dislikes = 0;
+    
+    if (reaction === 'like') {
+      comment.likes = Math.max(0, hasReacted ? comment.likes - 1 : comment.likes + 1);
+    } else if (reaction === 'dislike') {
+      comment.dislikes = Math.max(0, hasReacted ? comment.dislikes - 1 : comment.dislikes + 1);
+    }
+    
+    await window.guestbookApp.firebase.updateDrawing(drawingId, { comments });
+    await loadComments(drawingId);
+    
+  } catch (error) {
+    console.error('Error reacting to comment:', error);
+  }
+};
+
+window.showReplyForm = function(parentCommentId, parentAuthor) {
+  // Ocultar otros formularios de respuesta
+  document.querySelectorAll('[id^="replyForm_"]').forEach(form => {
+    if (form.id !== `replyForm_${parentCommentId}`) {
+      form.style.display = 'none';
+      form.innerHTML = '';
+    }
+  });
+  
+  const replyForm = document.getElementById(`replyForm_${parentCommentId}`);
+  if (!replyForm) return;
+  
+  const isMobile = window.innerWidth <= 768;
+  const isLoggedIn = window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn();
+  
+  if (replyForm.style.display === 'none') {
+    replyForm.style.display = 'block';
+    replyForm.innerHTML = `
+      <div style="background: var(--bg-dark); border-radius: 6px; padding: ${isMobile ? '8px' : '10px'}; border: 1px solid var(--primary);">
+        <div style="margin-bottom: 8px; font-size: ${isMobile ? '0.7em' : '0.8em'}; color: var(--text-secondary);">
+          Respondiendo a <span style="color: var(--primary); font-weight: bold;">@${parentAuthor}</span>
+        </div>
+        ${!isLoggedIn ? `<input type="text" id="replyAuthor_${parentCommentId}" placeholder="Tu nombre" style="width: 100%; padding: 6px; margin-bottom: 8px; border: 1px solid var(--primary); background: var(--bg-light); color: var(--text-primary); border-radius: 4px; font-size: ${isMobile ? '14px' : '16px'};" maxlength="50">` : ''}
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+          <textarea id="replyText_${parentCommentId}" placeholder="@${parentAuthor} " style="flex: 1; padding: 6px; border: 1px solid var(--primary); background: var(--bg-light); color: var(--text-primary); border-radius: 4px; resize: none; font-size: ${isMobile ? '14px' : '16px'}; min-height: ${isMobile ? '60px' : '80px'};" maxlength="300"></textarea>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <input type="file" id="replyImage_${parentCommentId}" accept="image/*" style="display: none;">
+            <button onclick="document.getElementById('replyImage_${parentCommentId}').click()" style="background: var(--secondary); color: white; border: none; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.8em; white-space: nowrap;" title="Adjuntar imagen">
+              🖼️
+            </button>
+          </div>
+        </div>
+        <div id="replyImagePreview_${parentCommentId}" style="display: none; margin-bottom: 8px;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <small style="color: var(--text-secondary); font-size: 0.7em;">Máx 300 chars</small>
+          <div style="display: flex; gap: 6px;">
+            <button onclick="hideReplyForm('${parentCommentId}')" style="background: #6c757d; color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 0.8em;">
+              Cancelar
+            </button>
+            <button onclick="submitReply('${parentCommentId}')" style="background: var(--primary); color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 0.8em;">
+              💬 Responder
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Manejar preview de imagen
+    const imageInput = document.getElementById(`replyImage_${parentCommentId}`);
+    const imagePreview = document.getElementById(`replyImagePreview_${parentCommentId}`);
+    
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        if (file.size > 500 * 1024) {
+          alert('🙅 Imagen muy grande. Máximo 500KB.');
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          imagePreview.style.display = 'block';
+          imagePreview.innerHTML = `
+            <div style="position: relative; display: inline-block;">
+              <img src="${event.target.result}" style="max-width: 100px; max-height: 100px; border-radius: 4px; border: 1px solid var(--primary);">
+              <button onclick="removeReplyImage('${parentCommentId}')" style="position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 0.7em;">×</button>
+            </div>
+          `;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Focus en textarea
+    setTimeout(() => {
+      const textarea = document.getElementById(`replyText_${parentCommentId}`);
+      if (textarea) textarea.focus();
+    }, 100);
+  } else {
+    replyForm.style.display = 'none';
+    replyForm.innerHTML = '';
+  }
+};
+
+window.hideReplyForm = function(parentCommentId) {
+  const replyForm = document.getElementById(`replyForm_${parentCommentId}`);
+  if (replyForm) {
+    replyForm.style.display = 'none';
+    replyForm.innerHTML = '';
+  }
+};
+
+window.removeReplyImage = function(parentCommentId) {
+  const imageInput = document.getElementById(`replyImage_${parentCommentId}`);
+  const imagePreview = document.getElementById(`replyImagePreview_${parentCommentId}`);
+  
+  if (imageInput) imageInput.value = '';
+  if (imagePreview) {
+    imagePreview.style.display = 'none';
+    imagePreview.innerHTML = '';
+  }
+};
+
+window.submitReply = async function(parentCommentId) {
+  const modal = document.querySelector('.image-modal');
+  const drawingId = modal?.dataset?.drawingId;
+  
+  if (!drawingId) {
+    console.error('No se pudo obtener drawingId');
+    return;
+  }
+  
+  const textArea = document.getElementById(`replyText_${parentCommentId}`);
+  const authorInput = document.getElementById(`replyAuthor_${parentCommentId}`);
+  const imageInput = document.getElementById(`replyImage_${parentCommentId}`);
+  
+  let author = 'Anónimo';
+  let profilePicture = null;
+  let profileAvatar = null;
+  let isLoggedUser = false;
+  
+  // Manejar usuario logueado vs no logueado
+  if (window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn()) {
+    const profile = window.guestbookApp.profiles.currentProfile;
+    author = profile.username;
+    isLoggedUser = true;
+    
+    if (profile.avatarImage) {
+      profilePicture = profile.avatarImage;
+    } else if (profile.avatarType === 'text' && profile.avatar) {
+      profileAvatar = profile.avatar;
+    } else if (profile.avatar) {
+      profileAvatar = profile.avatar;
+    }
+  } else {
+    const inputName = authorInput?.value.trim();
+    if (inputName) {
+      // Verificar que no use un nombre de usuario existente
+      try {
+        const existingUser = await window.guestbookApp.firebase.getUserProfile(inputName);
+        if (existingUser) {
+          alert(`❌ El nombre "${inputName}" pertenece a un usuario registrado.`);
+          return;
+        }
+      } catch (error) {
+        // Si no existe, está bien usarlo
+      }
+      author = inputName;
+    }
+  }
+  
+  const replyText = textArea?.value.trim();
+  if (!replyText) {
+    textArea?.focus();
+    return;
+  }
+  
+  let attachedImage = null;
+  if (imageInput?.files[0]) {
+    const reader = new FileReader();
+    attachedImage = await new Promise(resolve => {
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(imageInput.files[0]);
+    });
+  }
+  
+  try {
+    const drawing = await window.guestbookApp.firebase.getDrawing(drawingId);
+    const comments = drawing?.data?.comments || [];
+    
+    const replyData = {
+      id: `reply_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      parentId: parentCommentId, // CRÍTICO: Este campo identifica que es una respuesta
+      autor: author,
+      texto: replyText,
+      timestamp: Date.now(),
+      profilePicture: profilePicture,
+      profileAvatar: profileAvatar,
+      isLoggedUser: isLoggedUser,
+      likes: 0,
+      dislikes: 0,
+      attachedImage: attachedImage,
+      drawingId: drawingId
+    };
+    
+    console.log('Guardando respuesta:', replyData);
+    
+    comments.push(replyData);
+    await window.guestbookApp.firebase.updateDrawing(drawingId, { comments });
+    
+    console.log('Respuesta guardada exitosamente');
+    
+    // Ocultar formulario y recargar comentarios
+    hideReplyForm(parentCommentId);
+    await loadComments(drawingId);
+    
+  } catch (error) {
+    console.error('Error submitting reply:', error);
+    alert('❌ Error al enviar respuesta');
+  }
+};
+
+window.viewAttachedImage = function(imageSrc) {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.9); z-index: 999999; display: flex;
+    align-items: center; justify-content: center; padding: 20px;
+  `;
+  
+  modal.innerHTML = `
+    <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+      <img src="${imageSrc}" style="max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+      <button onclick="this.closest('div').remove()" style="position: absolute; top: -10px; right: -10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 1.2em;">×</button>
+    </div>
+  `;
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+  
+  document.body.appendChild(modal);
+};
+
+window.removeCommentImage = function() {
+  const imageInput = document.getElementById('commentImage');
+  const imagePreview = document.getElementById('commentImagePreview');
+  
+  if (imageInput) imageInput.value = '';
+  if (imagePreview) {
+    imagePreview.style.display = 'none';
+    imagePreview.innerHTML = '';
   }
 };
 

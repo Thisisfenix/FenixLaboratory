@@ -422,8 +422,8 @@ export class ProfileManager {
           ${this.getAvatarContent()}
         </div>
         
-        <h3 style="color: var(--primary); margin: 0;">
-          ${this.currentProfile.username || 'Usuario Anónimo'}
+        <h3 style="color: var(--primary); margin: 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap;">
+          <span>${this.currentProfile.username || 'Usuario Anónimo'}</span>
           ${this.getUserRoleTag()}
         </h3>
         <p style="color: var(--text-secondary); margin: 5px 0 0 0; font-size: 0.9em;">
@@ -903,6 +903,15 @@ export class ProfileManager {
       lastLogin: Date.now(),
       sessionToken: this.generateSessionToken()
     };
+    
+    // Asignar tag de OWNER automáticamente a ThisIsFenix
+    if (this.currentProfile.username.toLowerCase() === 'thisisfenix') {
+      if (!this.currentProfile.userTags) this.currentProfile.userTags = [];
+      if (!this.currentProfile.userTags.includes('OWNER')) {
+        this.currentProfile.userTags.push('OWNER');
+        console.log('👑 Tag OWNER asignado a ThisIsFenix');
+      }
+    }
     
     await this.saveProfile();
     this.updateProfileCircle();

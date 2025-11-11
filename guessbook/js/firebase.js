@@ -4,6 +4,7 @@ import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc
 
 export class FirebaseManager {
   constructor() {
+    this.autoModeration = window.autoModeration;
     this.firebaseConfig = {
       apiKey: "AIzaSyCZk8rs_Vq9ZGgOEiP3_P6zUvZoM1QQOAM",
       authDomain: "fenix-guestbook.firebaseapp.com",
@@ -107,6 +108,22 @@ export class FirebaseManager {
   
   async addComment(drawingId, comment) {
     try {
+      // Auto-moderación antes de agregar
+      if (comment.texto && this.autoModeration) {
+        const modResult = await this.autoModeration.moderateContent(comment.texto, comment.autor || 'Anónimo', 'comment');
+        
+        if (modResult.blocked) {
+          throw new Error(`Comentario bloqueado: ${modResult.reasons.join(', ')}`);
+        }
+        
+        if (modResult.flagged) {
+          comment.flagged = true;
+          comment.flagReason = modResult.reasons.join(', ');
+        }
+        
+        comment.texto = this.autoModeration.filterContent(comment.texto);
+      }
+      
       const docRef = doc(this.db, 'dibujos', drawingId);
       const docSnap = await getDoc(docRef);
       
@@ -246,6 +263,22 @@ export class FirebaseManager {
     try {
       console.log('Agregando comentario a colección separada:', { drawingId, commentData });
       
+      // Auto-moderación antes de agregar
+      if (commentData.texto && this.autoModeration) {
+        const modResult = await this.autoModeration.moderateContent(commentData.texto, commentData.autor || 'Anónimo', 'comment');
+        
+        if (modResult.blocked) {
+          throw new Error(`Comentario bloqueado: ${modResult.reasons.join(', ')}`);
+        }
+        
+        if (modResult.flagged) {
+          commentData.flagged = true;
+          commentData.flagReason = modResult.reasons.join(', ');
+        }
+        
+        commentData.texto = this.autoModeration.filterContent(commentData.texto);
+      }
+      
       const comment = {
         ...commentData,
         drawingId: drawingId,
@@ -282,48 +315,40 @@ export class FirebaseManager {
     }
   }
   
-  async checkAdminPassword(password) {
+  async checkAdminAccess() {
     try {
-      // Verificar contraseña de admin
-      await addDoc(collection(this.db, 'admin_auth'), {
-        domain: 'thisisfenix.github.io',
-        adminPassword: password,
-        timestamp: Date.now()
-      });
-      return { role: 'admin', permissions: ['all'] };
-    } catch (error) {
-      // Intentar validar como moderador
-      try {
-        await addDoc(collection(this.db, 'moderator_auth'), {
-          domain: 'thisisfenix.github.io',
-          moderatorPassword: password,
-          timestamp: Date.now()
-        });
-        return { role: 'moderator_access', permissions: ['create_moderator'] };
-      } catch (authError) {
-        return false;
+      // Verificar dominio autorizado
+      const currentDomain = window.location.hostname;
+      const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
+      
+      if (authorizedDomains.includes(currentDomain)) {
+        return { role: 'admin', permissions: ['all'] };
       }
+      
+      return false;
+    } catch (error) {
+      console.error('Error verificando acceso:', error);
+      return false;
     }
   }
   
-  async loginModerator(username, password) {
+  async checkModeratorAccess(username) {
     try {
-      // Intentar autenticar escribiendo a colección protegida
-      await addDoc(collection(this.db, 'moderator_login'), {
-        domain: 'thisisfenix.github.io',
-        username: username,
-        password: password,
-        timestamp: Date.now()
-      });
+      // Verificar dominio autorizado
+      const currentDomain = window.location.hostname;
+      const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
       
-      // Si llegamos aquí, la autenticación fue exitosa
-      return {
-        role: 'moderator',
-        permissions: ['delete_drawings', 'manage_comments', 'manage_suggestions'],
-        name: username,
-        username: username,
-        id: 'mod_' + username
-      };
+      if (authorizedDomains.includes(currentDomain) && username) {
+        return {
+          role: 'moderator',
+          permissions: ['delete_drawings', 'manage_comments', 'manage_suggestions'],
+          name: username,
+          username: username,
+          id: 'mod_' + username
+        };
+      }
+      
+      return false;
     } catch (error) {
       console.error('Error verificando moderador:', error);
       return false;
@@ -332,13 +357,10 @@ export class FirebaseManager {
   
   async addModerator(moderatorData) {
     try {
-      // Verificar contraseña de moderador primero
-      if (moderatorData.moderatorPassword) {
-        await addDoc(collection(this.db, 'moderator_auth'), {
-          domain: 'thisisfenix.github.io',
-          moderatorPassword: moderatorData.moderatorPassword,
-          timestamp: Date.now()
-        });
+      // Verificar acceso de admin
+      const hasAccess = await this.checkAdminAccess();
+      if (!hasAccess) {
+        throw new Error('Sin permisos de administrador');
       }
       
       // Verificar que el username no exista
@@ -352,7 +374,6 @@ export class FirebaseManager {
       const docRef = await addDoc(collection(this.db, 'moderators'), {
         name: moderatorData.name,
         username: moderatorData.username,
-        password: moderatorData.password,
         permissions: moderatorData.permissions || [],
         createdAt: Date.now(),
         active: true,
@@ -703,6 +724,23 @@ export class FirebaseManager {
     } catch (error) {
       console.error('Error obteniendo todos los comentarios:', error);
       return [];
+    }
+  }
+  
+  async updateUserProfile(username, updateData) {
+    try {
+      const docRef = doc(this.db, 'user_profiles', username.toLowerCase());
+      await updateDoc(docRef, {
+        ...updateData,
+        domain: 'thisisfenix.github.io',
+        updatedAt: Date.now()
+      });
+      
+      console.log(`✅ Perfil de ${username} actualizado con:`, updateData);
+      return true;
+    } catch (error) {
+      console.error('Error actualizando perfil de usuario:', error);
+      throw error;
     }
   }
 }
