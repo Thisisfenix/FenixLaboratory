@@ -218,6 +218,133 @@ export class VipStore {
         0% { left: -100%; }
         100% { left: 100%; }
       }
+      
+      /* Estilos para editor de recorte de banner */
+      .crop-modal {
+        backdrop-filter: blur(5px);
+      }
+      
+      #cropSelector {
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      }
+      
+      #cropSelector::before {
+        content: '✂️ Arrastra para mover';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 0.8em;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        pointer-events: none;
+        white-space: nowrap;
+      }
+      
+      /* Estilos para editores estilo Discord */
+      #discordCropCanvas, #bannerCropCanvas {
+        transition: cursor 0.1s ease;
+      }
+      
+      #discordZoomSlider, #bannerZoomSlider {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        background: var(--bg-light);
+        border-radius: 2px;
+        outline: none;
+      }
+      
+      #discordZoomSlider::-webkit-slider-thumb, #bannerZoomSlider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: var(--primary);
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      
+      #discordZoomSlider::-moz-range-thumb, #bannerZoomSlider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background: var(--primary);
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+      }
+      
+      .resize-handle {
+        transition: all 0.2s ease;
+      }
+      
+      .resize-handle:hover {
+        background: #ff8c42 !important;
+        transform: scale(1.2);
+      }
+      
+      /* Scrollbars para paneles VIP en móviles */
+      @media (max-width: 768px) {
+        .modal-body {
+          max-height: 70vh !important;
+          overflow-y: auto !important;
+        }
+        
+        .tab-content {
+          max-height: 60vh !important;
+          overflow-y: auto !important;
+        }
+        
+        .modal-body::-webkit-scrollbar,
+        .tab-content::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .modal-body::-webkit-scrollbar-track,
+        .tab-content::-webkit-scrollbar-track {
+          background: var(--bg-light);
+          border-radius: 3px;
+        }
+        
+        .modal-body::-webkit-scrollbar-thumb,
+        .tab-content::-webkit-scrollbar-thumb {
+          background: var(--primary);
+          border-radius: 3px;
+        }
+        
+        .modal-dialog {
+          margin: 0.5rem !important;
+        }
+        
+        .modal-content {
+          max-height: 95vh !important;
+        }
+      }
+      
+      /* Colores de texto para paneles VIP */
+      .modal-content {
+        color: var(--text-primary) !important;
+      }
+      
+      .modal-body,
+      .tab-content,
+      .tab-pane {
+        color: var(--text-primary) !important;
+      }
+      
+      .modal-body p,
+      .modal-body div,
+      .modal-body span,
+      .tab-content p,
+      .tab-content div,
+      .tab-content span {
+        color: var(--text-primary) !important;
+      }
+      
+      .modal-body small {
+        color: var(--text-secondary) !important;
+      }
+
     `;
     document.head.appendChild(style);
   }
@@ -300,7 +427,7 @@ export class VipStore {
                 <div class="text-center mb-4">
                   <div style="font-size: 3em; margin-bottom: 15px;">👑</div>
                   <h4 style="color: var(--primary);">Contenido VIP</h4>
-                  <div class="alert ${this.hasVipAccess() ? 'alert-success' : 'alert-warning'}" role="alert">
+                  <div class="alert ${this.hasVipAccess() ? 'alert-success' : 'alert-warning'}" role="alert" style="color: var(--primary) !important;">
                     ${this.hasVipAccess() ? '✅ Tienes acceso VIP' : '⚠️ Necesitas VIP para acceder a este contenido'}
                   </div>
                 </div>

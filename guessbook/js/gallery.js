@@ -2018,6 +2018,23 @@ if (!document.getElementById('gallery-animations')) {
     .profile-modal div[style*="overflow-y: auto"]::-webkit-scrollbar-thumb:hover {
       background: var(--secondary);
     }
+    
+    /* Fix para avatares en móviles */
+    @media (max-width: 768px) {
+      .author-avatar {
+        min-width: 30px !important;
+        min-height: 30px !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .drawing-card .card-body {
+        padding: 0.75rem !important;
+      }
+      
+      .drawing-card .d-flex {
+        flex-wrap: nowrap !important;
+      }
+    }
   `;
   document.head.appendChild(style);
 }

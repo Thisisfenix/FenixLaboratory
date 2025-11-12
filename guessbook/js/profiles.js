@@ -632,6 +632,463 @@ export class ProfileManager {
     }
   }
   
+  addRemoveBannerButton(bannerUpload) {
+    if (!document.getElementById('removeBanner')) {
+      const removeBtn = document.createElement('button');
+      removeBtn.id = 'removeBanner';
+      removeBtn.innerHTML = '❌ Quitar Banner';
+      removeBtn.style.cssText = 'padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; margin-bottom: 15px; display: block;';
+      removeBtn.addEventListener('click', () => {
+        this.currentProfile.bannerImage = null;
+        this.updateProfileBanner();
+        removeBtn.remove();
+      });
+      bannerUpload.parentNode.insertBefore(removeBtn, bannerUpload.nextSibling.nextSibling);
+    }
+  }
+  
+  showBannerCropEditor(imageSrc, originalWidth, originalHeight) {
+    const cropModal = document.createElement('div');
+    cropModal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.9); z-index: 999999;
+      display: flex; align-items: center; justify-content: center;
+    `;
+    
+    cropModal.innerHTML = `
+      <div style="background: var(--bg-dark); border-radius: 8px; padding: 16px; width: 600px; border: 2px solid var(--primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="color: var(--primary); margin: 0; font-size: 20px; font-weight: 600;">Editar Banner</h3>
+          <button id="bannerCropClose" style="background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer;">×</button>
+        </div>
+        
+        <div style="position: relative; width: 560px; height: 300px; background: var(--bg-light); border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
+          <canvas id="bannerCropCanvas" width="560" height="300" style="cursor: grab;"></canvas>
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 150px; border: 2px solid var(--primary); pointer-events: none; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);"></div>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="color: var(--text-secondary); font-size: 16px;">⛲</span>
+          <input type="range" id="bannerZoomSlider" min="1" max="3" step="0.1" value="1" style="flex: 1;">
+        </div>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button id="bannerCropCancel" style="background: none; border: none; color: var(--text-secondary); padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancelar</button>
+          <button id="bannerCropApply" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Aplicar</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(cropModal);
+    this.setupBannerCropEditor(imageSrc);
+  }
+  
+  setupBannerCropEditor(imageSrc) {
+    const canvas = document.getElementById('bannerCropCanvas');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('bannerZoomSlider');
+    
+    const img = new Image();
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+    let lastX, lastY;
+    
+    img.onload = () => {
+      const minScale = 400 / Math.min(img.width, img.height);
+      scale = Math.max(minScale, 0.5);
+      
+      offsetX = (canvas.width - img.width * scale) / 2;
+      offsetY = (canvas.height - img.height * scale) / 2;
+      
+      slider.min = minScale;
+      slider.max = minScale * 3;
+      slider.value = scale;
+      this.drawBannerCrop(ctx, img, scale, offsetX, offsetY);
+    };
+    
+    img.src = imageSrc;
+    
+    slider.addEventListener('input', (e) => {
+      scale = parseFloat(e.target.value);
+      this.drawBannerCrop(ctx, img, scale, offsetX, offsetY);
+    });
+    
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastX = e.offsetX;
+      lastY = e.offsetY;
+      canvas.style.cursor = 'grabbing';
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      offsetX += e.offsetX - lastX;
+      offsetY += e.offsetY - lastY;
+      lastX = e.offsetX;
+      lastY = e.offsetY;
+      this.drawBannerCrop(ctx, img, scale, offsetX, offsetY);
+    });
+    
+    canvas.addEventListener('mouseup', () => {
+      isDragging = false;
+      canvas.style.cursor = 'grab';
+    });
+    
+    const modal = document.querySelector('.crop-modal') || document.body.lastElementChild;
+    
+    document.getElementById('bannerCropClose').onclick = () => modal.remove();
+    document.getElementById('bannerCropCancel').onclick = () => modal.remove();
+    document.getElementById('bannerCropApply').onclick = () => {
+      const croppedImage = this.extractBannerCrop(canvas, img, scale, offsetX, offsetY);
+      if (croppedImage) {
+        this.currentProfile.bannerImage = croppedImage;
+        this.updateProfileBanner();
+        this.addRemoveBannerButton(document.getElementById('bannerImageUpload'));
+        modal.remove();
+      }
+    };
+  }
+  
+  addResizeHandles(selector, imageRect) {
+    const handles = ['nw', 'ne', 'sw', 'se'];
+    
+    handles.forEach(handle => {
+      const handleEl = document.createElement('div');
+      handleEl.className = `resize-handle resize-${handle}`;
+      handleEl.style.cssText = `
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--primary);
+        border: 1px solid white;
+        cursor: ${handle}-resize;
+      `;
+      
+      // Posicionar handles
+      switch(handle) {
+        case 'nw': handleEl.style.cssText += 'top: -5px; left: -5px;'; break;
+        case 'ne': handleEl.style.cssText += 'top: -5px; right: -5px;'; break;
+        case 'sw': handleEl.style.cssText += 'bottom: -5px; left: -5px;'; break;
+        case 'se': handleEl.style.cssText += 'bottom: -5px; right: -5px;'; break;
+      }
+      
+      selector.appendChild(handleEl);
+      
+      // Event listeners para redimensionar
+      let isResizing = false;
+      let startWidth, startHeight, startX, startY;
+      
+      handleEl.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startWidth = selector.offsetWidth;
+        startHeight = selector.offsetHeight;
+        startX = e.clientX;
+        startY = e.clientY;
+        e.stopPropagation();
+        e.preventDefault();
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        
+        if (handle.includes('e')) newWidth += deltaX;
+        if (handle.includes('w')) newWidth -= deltaX;
+        if (handle.includes('s')) newHeight += deltaY;
+        if (handle.includes('n')) newHeight -= deltaY;
+        
+        // Limites mínimos y máximos
+        newWidth = Math.max(100, Math.min(newWidth, imageRect.width));
+        newHeight = Math.max(50, Math.min(newHeight, imageRect.height));
+        
+        selector.style.width = newWidth + 'px';
+        selector.style.height = newHeight + 'px';
+        
+        // Ajustar posición si es necesario
+        if (handle.includes('w')) {
+          const newLeft = parseInt(selector.style.left) - (newWidth - startWidth);
+          selector.style.left = Math.max(0, newLeft) + 'px';
+        }
+        if (handle.includes('n')) {
+          const newTop = parseInt(selector.style.top) - (newHeight - startHeight);
+          selector.style.top = Math.max(0, newTop) + 'px';
+        }
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isResizing = false;
+      });
+    });
+  }
+  
+  resetCropSelector() {
+    const image = document.getElementById('cropImage');
+    const selector = document.getElementById('cropSelector');
+    
+    if (!image || !selector) return;
+    
+    const rect = image.getBoundingClientRect();
+    const selectorWidth = Math.min(rect.width * 0.8, 400);
+    const selectorHeight = selectorWidth * (3/8);
+    
+    selector.style.width = selectorWidth + 'px';
+    selector.style.height = selectorHeight + 'px';
+    selector.style.left = ((rect.width - selectorWidth) / 2) + 'px';
+    selector.style.top = ((rect.height - selectorHeight) / 2) + 'px';
+  }
+  
+  showCropPreview() {
+    const croppedImage = this.applyCropSelection(true);
+    if (croppedImage) {
+      const preview = document.createElement('div');
+      preview.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999999;
+        background: var(--bg-dark);
+        border: 2px solid var(--primary);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+      `;
+      
+      preview.innerHTML = `
+        <h4 style="color: var(--primary); margin: 0 0 10px 0;">👁️ Vista Previa</h4>
+        <div style="width: 300px; height: 112px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; background: url(${croppedImage}) center/cover;"></div>
+        <button onclick="this.parentElement.remove()" style="padding: 6px 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">Cerrar</button>
+      `;
+      
+      document.body.appendChild(preview);
+      
+      setTimeout(() => {
+        preview.remove();
+      }, 3000);
+    }
+  }
+  
+  applyCropSelection(previewOnly = false) {
+    const image = document.getElementById('cropImage');
+    const selector = document.getElementById('cropSelector');
+    
+    if (!image || !selector) return null;
+    
+    // Crear canvas para recortar
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Obtener dimensiones y posición del selector
+    const imageRect = image.getBoundingClientRect();
+    const selectorRect = {
+      left: parseInt(selector.style.left),
+      top: parseInt(selector.style.top),
+      width: selector.offsetWidth,
+      height: selector.offsetHeight
+    };
+    
+    // Calcular proporciones para la imagen original
+    const scaleX = image.naturalWidth / imageRect.width;
+    const scaleY = image.naturalHeight / imageRect.height;
+    
+    const cropX = selectorRect.left * scaleX;
+    const cropY = selectorRect.top * scaleY;
+    const cropWidth = selectorRect.width * scaleX;
+    const cropHeight = selectorRect.height * scaleY;
+    
+    // Configurar canvas
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+    
+    // Dibujar imagen recortada
+    ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+    
+    return canvas.toDataURL('image/jpeg', 0.9);
+  }
+  
+  showAvatarCropEditor(imageSrc, originalWidth, originalHeight) {
+    const cropModal = document.createElement('div');
+    cropModal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.9); z-index: 999999;
+      display: flex; align-items: center; justify-content: center;
+    `;
+    
+    cropModal.innerHTML = `
+      <div style="background: var(--bg-dark); border-radius: 8px; padding: 16px; width: 440px; border: 2px solid var(--primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="color: var(--primary); margin: 0; font-size: 20px; font-weight: 600;">Editar Avatar</h3>
+          <button id="discordCropClose" style="background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer;">×</button>
+        </div>
+        
+        <div style="position: relative; width: 400px; height: 400px; background: var(--bg-light); border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
+          <canvas id="discordCropCanvas" width="400" height="400" style="cursor: grab;"></canvas>
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border: 4px solid var(--primary); border-radius: 50%; pointer-events: none; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);"></div>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <span style="color: var(--text-secondary); font-size: 16px;">⛲</span>
+          <input type="range" id="discordZoomSlider" min="1" max="3" step="0.1" value="1" style="flex: 1;">
+        </div>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button id="discordCropCancel" style="background: none; border: none; color: var(--text-secondary); padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancelar</button>
+          <button id="discordCropApply" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Aplicar</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(cropModal);
+    this.setupDiscordCropEditor(imageSrc);
+  }
+  
+  setupDiscordCropEditor(imageSrc) {
+    const canvas = document.getElementById('discordCropCanvas');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('discordZoomSlider');
+    
+    const img = new Image();
+    let scale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+    let lastX, lastY;
+    
+    img.onload = () => {
+      const minScale = 200 / Math.min(img.width, img.height);
+      scale = Math.max(minScale, 0.5);
+      
+      offsetX = (canvas.width - img.width * scale) / 2;
+      offsetY = (canvas.height - img.height * scale) / 2;
+      
+      slider.min = minScale;
+      slider.max = minScale * 3;
+      slider.value = scale;
+      this.drawDiscordCrop(ctx, img, scale, offsetX, offsetY);
+    };
+    
+    img.src = imageSrc;
+    
+    slider.addEventListener('input', (e) => {
+      scale = parseFloat(e.target.value);
+      this.drawDiscordCrop(ctx, img, scale, offsetX, offsetY);
+    });
+    
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastX = e.offsetX;
+      lastY = e.offsetY;
+      canvas.style.cursor = 'grabbing';
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      offsetX += e.offsetX - lastX;
+      offsetY += e.offsetY - lastY;
+      lastX = e.offsetX;
+      lastY = e.offsetY;
+      this.drawDiscordCrop(ctx, img, scale, offsetX, offsetY);
+    });
+    
+    canvas.addEventListener('mouseup', () => {
+      isDragging = false;
+      canvas.style.cursor = 'grab';
+    });
+    
+    const modal = document.querySelector('.crop-modal') || document.body.lastElementChild;
+    
+    document.getElementById('discordCropClose').onclick = () => modal.remove();
+    document.getElementById('discordCropCancel').onclick = () => modal.remove();
+    document.getElementById('discordCropApply').onclick = () => {
+      const croppedImage = this.extractDiscordCrop(canvas, img, scale, offsetX, offsetY);
+      if (croppedImage) {
+        this.currentProfile.avatarImage = croppedImage;
+        this.currentProfile.avatarType = 'image';
+        this.updateProfileAvatar();
+        modal.remove();
+      }
+    };
+  }
+  
+  drawDiscordCrop(ctx, img, scale, offsetX, offsetY) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+  }
+  
+  drawBannerCrop(ctx, img, scale, offsetX, offsetY) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.drawImage(img, offsetX, offsetY, img.width * scale, img.height * scale);
+  }
+  
+  extractBannerCrop(canvas, img, scale, offsetX, offsetY) {
+    const cropCanvas = document.createElement('canvas');
+    const cropCtx = cropCanvas.getContext('2d');
+    
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const cropWidth = 400;
+    const cropHeight = 150;
+    
+    cropCanvas.width = cropWidth;
+    cropCanvas.height = cropHeight;
+    
+    const sourceX = (centerX - offsetX - cropWidth/2) / scale;
+    const sourceY = (centerY - offsetY - cropHeight/2) / scale;
+    const sourceWidth = cropWidth / scale;
+    const sourceHeight = cropHeight / scale;
+    
+    cropCtx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, cropWidth, cropHeight);
+    
+    return cropCanvas.toDataURL('image/jpeg', 0.9);
+  }
+  
+  extractDiscordCrop(canvas, img, scale, offsetX, offsetY) {
+    const cropCanvas = document.createElement('canvas');
+    const cropCtx = cropCanvas.getContext('2d');
+    
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 100;
+    
+    cropCanvas.width = 200;
+    cropCanvas.height = 200;
+    
+    const sourceX = (centerX - offsetX - radius) / scale;
+    const sourceY = (centerY - offsetY - radius) / scale;
+    const sourceSize = (radius * 2) / scale;
+    
+    cropCtx.beginPath();
+    cropCtx.arc(100, 100, 100, 0, Math.PI * 2);
+    cropCtx.clip();
+    
+    cropCtx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, 200, 200);
+    
+    return cropCanvas.toDataURL('image/jpeg', 0.9);
+  }
+  
+
+  
+
+  
+  updateProfileAvatar() {
+    const avatar = document.getElementById('profileAvatar');
+    if (avatar) {
+      avatar.innerHTML = this.getAvatarContent();
+      if (this.currentProfile.avatarImage) {
+        avatar.style.background = 'transparent';
+      } else {
+        avatar.style.background = 'linear-gradient(45deg, var(--primary), #ff8c42)';
+      }
+    }
+  }
+  
   setupModalEvents(modal) {
     // Tabs de autenticación
     const loginTab = document.getElementById('loginTab');
@@ -706,8 +1163,19 @@ export class ProfileManager {
           
           const reader = new FileReader();
           reader.onload = (event) => {
-            this.currentProfile.avatarImage = event.target.result;
-            this.currentProfile.avatarType = 'image';
+            const img = new Image();
+            img.onload = () => {
+              // Si la imagen no es cuadrada o es muy grande, mostrar editor de recorte
+              if (img.width !== img.height || img.width > 200 || img.height > 200) {
+                this.showAvatarCropEditor(event.target.result, img.width, img.height);
+              } else {
+                // Imagen pequeña y cuadrada, usar directamente
+                this.currentProfile.avatarImage = event.target.result;
+                this.currentProfile.avatarType = 'image';
+                this.updateProfileAvatar();
+              }
+            };
+            img.src = event.target.result;
           };
           reader.readAsDataURL(file);
         }
@@ -745,21 +1213,19 @@ export class ProfileManager {
             
             const reader = new FileReader();
             reader.onload = (event) => {
-              this.currentProfile.bannerImage = event.target.result;
-              this.updateProfileBanner();
-              // Añadir botón de quitar si no existe
-              if (!document.getElementById('removeBanner')) {
-                const removeBtn = document.createElement('button');
-                removeBtn.id = 'removeBanner';
-                removeBtn.innerHTML = '❌ Quitar Banner';
-                removeBtn.style.cssText = 'padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; margin-bottom: 15px; display: block;';
-                removeBtn.addEventListener('click', () => {
-                  this.currentProfile.bannerImage = null;
+              const img = new Image();
+              img.onload = () => {
+                // Si la imagen es muy grande, mostrar editor de recorte
+                if (img.width > 800 || img.height > 300) {
+                  this.showBannerCropEditor(event.target.result, img.width, img.height);
+                } else {
+                  // Imagen pequeña, usar directamente
+                  this.currentProfile.bannerImage = event.target.result;
                   this.updateProfileBanner();
-                  removeBtn.remove();
-                });
-                bannerUpload.parentNode.insertBefore(removeBtn, bannerUpload.nextSibling.nextSibling);
-              }
+                  this.addRemoveBannerButton(bannerUpload);
+                }
+              };
+              img.src = event.target.result;
             };
             reader.readAsDataURL(file);
           }

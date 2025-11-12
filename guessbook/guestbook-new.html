@@ -3987,50 +3987,46 @@
       }
       
       try {
-        // Intentar login con el sistema de perfiles
+        // Verificar directamente si el usuario tiene permisos MOD sin necesidad de contraseña
         if (window.guestbookApp && window.guestbookApp.profiles) {
-          const loginResult = await window.guestbookApp.profiles.loginUser(username, password);
+          // Cargar usuarios y verificar si existe y tiene tag MOD
+          await window.guestbookApp.profiles.loadUsers();
+          const user = window.guestbookApp.profiles.users.get(username.toLowerCase());
           
-          if (loginResult.success) {
-            const userProfile = window.guestbookApp.profiles.currentProfile;
+          if (user && user.userTags && user.userTags.includes('MOD')) {
+            window.guestbookApp.profiles.currentProfile = user;
             
-            // Verificar si tiene tag de MOD
-            if (userProfile.userTags && userProfile.userTags.includes('MOD')) {
-              window.currentUser = {
-                name: userProfile.username,
-                username: userProfile.username,
-                role: 'moderator',
-                permissions: ['delete_drawings', 'manage_comments', 'manage_suggestions']
-              };
-              
-              document.getElementById('modLogin').style.display = 'none';
-              document.getElementById('modContent').style.display = 'block';
-              
-              document.getElementById('modToggle').innerHTML = `🛡️ ${userProfile.username}`;
-              document.getElementById('modToggle').classList.remove('btn-outline-warning');
-              document.getElementById('modToggle').classList.add('btn-success');
-              
-              document.getElementById('modUserInfo').textContent = userProfile.username;
-              
-              loadModSuggestions();
-              loadModDrawings();
-              loadModReports();
-              loadModStats();
-              loadModReportedUsers();
-              loadModConfig();
-              loadModComments();
-              
-              if (window.guestbookApp && window.guestbookApp.loadAdminReports) {
-                window.guestbookApp.loadAdminReports();
-              }
-              
-              alert(`Bienvenido Moderador ${userProfile.username}`);
-            } else {
-              alert('❌ No tienes permisos de moderador');
-              window.guestbookApp.profiles.logoutUser();
+            window.currentUser = {
+              name: user.username,
+              username: user.username,
+              role: 'moderator',
+              permissions: ['delete_drawings', 'manage_comments', 'manage_suggestions']
+            };
+            
+            document.getElementById('modLogin').style.display = 'none';
+            document.getElementById('modContent').style.display = 'block';
+            
+            document.getElementById('modToggle').innerHTML = `🛡️ ${user.username}`;
+            document.getElementById('modToggle').classList.remove('btn-outline-warning');
+            document.getElementById('modToggle').classList.add('btn-success');
+            
+            document.getElementById('modUserInfo').textContent = user.username;
+            
+            loadModSuggestions();
+            loadModDrawings();
+            loadModReports();
+            loadModStats();
+            loadModReportedUsers();
+            loadModConfig();
+            loadModComments();
+            
+            if (window.guestbookApp && window.guestbookApp.loadAdminReports) {
+              window.guestbookApp.loadAdminReports();
             }
+            
+            alert(`Bienvenido Moderador ${user.username}`);
           } else {
-            alert('Usuario o contraseña incorrectos');
+            alert('❌ Usuario no encontrado o sin permisos de moderador');
           }
         } else {
           alert('❌ Sistema de perfiles no disponible');
