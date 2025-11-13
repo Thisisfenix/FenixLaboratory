@@ -1,6 +1,6 @@
 // Firebase y base de datos
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc, doc, getDoc, deleteDoc, where, getDocs, setDoc, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc, doc, getDoc, deleteDoc, where, getDocs, setDoc, limit, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 export class FirebaseManager {
   constructor() {
@@ -741,6 +741,230 @@ export class FirebaseManager {
     } catch (error) {
       console.error('Error actualizando perfil de usuario:', error);
       throw error;
+    }
+  }
+  
+  // Sistema de amistades
+  async saveFriendRequest(requestData) {
+    try {
+      // Verificar dominio autorizado
+      const currentDomain = window.location.hostname;
+      const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
+      
+      if (!authorizedDomains.includes(currentDomain)) {
+        throw new Error('Dominio no autorizado');
+      }
+      
+      await addDoc(collection(this.db, 'friend_requests'), {
+        ...requestData,
+        domain: 'thisisfenix.github.io'
+      });
+      return true;
+    } catch (error) {
+      console.error('Error enviando solicitud de amistad:', error);
+      throw error;
+    }
+  }
+  
+  async createFriendship(user1, user2) {
+    try {
+      // Verificar dominio autorizado
+      const currentDomain = window.location.hostname;
+      const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
+      
+      if (!authorizedDomains.includes(currentDomain)) {
+        throw new Error('Dominio no autorizado');
+      }
+      
+      const friendshipData = {
+        users: [user1.toLowerCase(), user2.toLowerCase()],
+        user1: user1,
+        user2: user2,
+        timestamp: Date.now(),
+        domain: 'thisisfenix.github.io'
+      };
+      
+      await addDoc(collection(this.db, 'friendships'), friendshipData);
+      return true;
+    } catch (error) {
+      console.error('Error creando amistad:', error);
+      throw error;
+    }
+  }
+  
+  async updateFriendRequestStatus(from, to, status) {
+    try {
+      const q = query(
+        collection(this.db, 'friend_requests'),
+        where('from', '==', from),
+        where('to', '==', to),
+        where('status', '==', 'pending')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (docSnap) => {
+        await updateDoc(doc(this.db, 'friend_requests', docSnap.id), {
+          status: status,
+          updatedAt: Date.now()
+        });
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error actualizando solicitud:', error);
+      throw error;
+    }
+  }
+  
+  async removeFriendship(user1, user2) {
+    try {
+      const q = query(
+        collection(this.db, 'friendships'),
+        where('users', 'array-contains', user1.toLowerCase())
+      );
+      
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (docSnap) => {
+        const data = docSnap.data();
+        if (data.users.includes(user2.toLowerCase())) {
+          await deleteDoc(doc(this.db, 'friendships', docSnap.id));
+        }
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error eliminando amistad:', error);
+      throw error;
+    }
+  }
+  
+  async getUserFriends(username) {
+    try {
+      // Verificar dominio autorizado
+      const currentDomain = window.location.hostname;
+      const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
+      
+      if (!authorizedDomains.includes(currentDomain)) {
+        console.warn('Dominio no autorizado para amistades');
+        return [];
+      }
+      
+      const q = query(
+        collection(this.db, 'friendships'),
+        where('users', 'array-contains', username.toLowerCase())
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const friends = [];
+      
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
+        const friendUsername = data.users.find(u => u !== username.toLowerCase());
+        
+        if (friendUsername) {
+          const profile = await this.getUserProfile(friendUsername);
+          friends.push({
+            username: profile?.username || friendUsername,
+            avatar: profile?.avatar || '👤',
+            friendsSince: data.timestamp
+          });
+        }
+      }
+      
+      return friends;
+    } catch (error) {
+      console.error('Error obteniendo amigos:', error);
+      return [];
+    }
+  }
+  
+  async getPendingFriendRequests(username) {
+    try {
+      // Verificar dominio autorizado
+      const currentDomain = window.location.hostname;
+      const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
+      
+      if (!authorizedDomains.includes(currentDomain)) {
+        console.warn('Dominio no autorizado para solicitudes');
+        return [];
+      }
+      
+      const q = query(
+        collection(this.db, 'friend_requests'),
+        where('to', '==', username),
+        where('status', '==', 'pending')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const requests = [];
+      
+      querySnapshot.forEach((doc) => {
+        requests.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      return requests;
+    } catch (error) {
+      console.error('Error obteniendo solicitudes:', error);
+      return [];
+    }
+  }
+  
+  async getFriendshipStatus(user1, user2) {
+    try {
+      // Verificar dominio autorizado
+      const currentDomain = window.location.hostname;
+      const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
+      
+      if (!authorizedDomains.includes(currentDomain)) {
+        console.warn('Dominio no autorizado para verificar amistad');
+        return 'none';
+      }
+      
+      // Verificar si son amigos
+      const friendshipQuery = query(
+        collection(this.db, 'friendships'),
+        where('users', 'array-contains', user1.toLowerCase())
+      );
+      
+      const friendshipSnapshot = await getDocs(friendshipQuery);
+      for (const doc of friendshipSnapshot.docs) {
+        if (doc.data().users.includes(user2.toLowerCase())) {
+          return 'friends';
+        }
+      }
+      
+      // Verificar solicitudes pendientes
+      const sentQuery = query(
+        collection(this.db, 'friend_requests'),
+        where('from', '==', user1),
+        where('to', '==', user2),
+        where('status', '==', 'pending')
+      );
+      
+      const sentSnapshot = await getDocs(sentQuery);
+      if (!sentSnapshot.empty) {
+        return 'pending_sent';
+      }
+      
+      const receivedQuery = query(
+        collection(this.db, 'friend_requests'),
+        where('from', '==', user2),
+        where('to', '==', user1),
+        where('status', '==', 'pending')
+      );
+      
+      const receivedSnapshot = await getDocs(receivedQuery);
+      if (!receivedSnapshot.empty) {
+        return 'pending_received';
+      }
+      
+      return 'none';
+    } catch (error) {
+      console.error('Error verificando estado de amistad:', error);
+      return 'none';
     }
   }
 }

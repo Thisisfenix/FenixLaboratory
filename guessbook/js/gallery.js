@@ -35,6 +35,8 @@ export class GalleryManager {
       setTimeout(() => {
         if (window.guestbookApp && window.guestbookApp.profiles) {
           window.guestbookApp.profiles.syncCardsAfterLoad();
+          // Recargar avatares que fallaron
+          this.reloadFailedAvatars();
         }
       }, 500);
     } catch (error) {
@@ -82,9 +84,14 @@ export class GalleryManager {
         .sort((a, b) => (b.data.likes || 0) - (a.data.likes || 0))
         .slice(0, 3);
       
-      // Remover top 3 de pageDrawings si están presentes
+      // Remover top 3 de TODOS los filteredDrawings para evitar duplicados
       const topIds = topDrawings.map(d => d.id);
-      pageDrawings = pageDrawings.filter(d => !topIds.includes(d.id));
+      this.filteredDrawings = this.filteredDrawings.filter(d => !topIds.includes(d.id));
+      
+      // Recalcular pageDrawings después del filtrado
+      const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+      const endIndex = startIndex + this.itemsPerPage;
+      pageDrawings = this.filteredDrawings.slice(startIndex, endIndex);
     }
 
     let galleryHTML = '';
@@ -112,11 +119,24 @@ export class GalleryManager {
     const rankClass = rank ? `top-drawing rank-${rank}` : '';
     const rankBadge = rank ? `<div class="rank-badge rank-${rank}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉'}</div>` : '';
     
-    // Obtener avatar del perfil
-    const profileAvatar = drawing.data.profileAvatar || '👤';
-    const profilePicture = drawing.data.profilePicture;
+    // Obtener avatar del perfil con fallback
+    let profileAvatar = drawing.data.profileAvatar || '👤';
+    let profilePicture = drawing.data.profilePicture;
     const isLoggedUser = drawing.data.isLoggedUser || false;
     const userProfile = drawing.data.userProfile;
+    
+    // Verificar y actualizar avatar desde Firebase si es necesario
+    if (window.guestbookApp && window.guestbookApp.profiles && drawing.data.autor) {
+      const cachedProfile = window.guestbookApp.profiles.users.get(drawing.data.autor.toLowerCase());
+      if (cachedProfile) {
+        if (cachedProfile.avatarImage && cachedProfile.avatarImage !== profilePicture) {
+          profilePicture = cachedProfile.avatarImage;
+        }
+        if (cachedProfile.avatar && cachedProfile.avatar !== profileAvatar) {
+          profileAvatar = cachedProfile.avatar;
+        }
+      }
+    }
     
     // Detectar si tiene contenido animado o stickers GIF
     const hasBackgroundGif = drawing.data.backgroundGif && drawing.data.backgroundGif !== '';
@@ -169,7 +189,7 @@ export class GalleryManager {
             <h6 class="card-title" style="color: var(--primary); margin-bottom: 10px; font-weight: 600;">${drawing.data.titulo}</h6>
             <div class="d-flex align-items-center mb-3" style="gap: 10px;">
               <div class="author-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 0.9em; color: white; font-weight: bold; flex-shrink: 0; position: relative; overflow: hidden; ${isLoggedUser ? 'border: 2px solid #28a745;' : ''}">
-                ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : `<span>${profileAvatar || '👤'}</span>`}
+                ${profilePicture ? `<img src="${profilePicture}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.parentNode.innerHTML='<span>${profileAvatar || '👤'}</span>'">` : `<span>${profileAvatar || '👤'}</span>`}
               </div>
               <div style="flex: 1; min-width: 0;">
                 <div class="author-name" style="color: var(--text-primary); font-weight: 600; font-size: 0.9em; display: flex; align-items: center; gap: 5px;">
@@ -315,11 +335,13 @@ export class GalleryManager {
     
     if (!topArtists || !topLiked || !topActive || this.allDrawings.length === 0) return;
     
-    // Top artistas por cantidad de dibujos
+    // Top artistas por cantidad de dibujos (excluyendo anónimos)
     const artistCounts = {};
     this.allDrawings.forEach(drawing => {
       const author = drawing.data.autor || 'Anónimo';
-      artistCounts[author] = (artistCounts[author] || 0) + 1;
+      if (author !== 'Anónimo') {
+        artistCounts[author] = (artistCounts[author] || 0) + 1;
+      }
     });
     
     const topArtistsList = Object.entries(artistCounts)
@@ -334,9 +356,9 @@ export class GalleryManager {
       </div>`;
     }).join('') || '<div class="text-muted">Sin datos</div>';
     
-    // Top más populares por likes
+    // Top más populares por likes (excluyendo anónimos)
     const topLikedList = [...this.allDrawings]
-      .filter(drawing => (drawing.data.likes || 0) > 0)
+      .filter(drawing => (drawing.data.likes || 0) > 0 && drawing.data.autor !== 'Anónimo')
       .sort((a, b) => (b.data.likes || 0) - (a.data.likes || 0))
       .slice(0, 3);
     
@@ -348,17 +370,28 @@ export class GalleryManager {
       </div>`;
     }).join('') || '<div class="text-muted">Sin datos</div>';
     
-    // Top más activos (por comentarios)
-    const activeList = [...this.allDrawings]
-      .filter(drawing => (drawing.data.comments?.length || 0) > 0)
-      .sort((a, b) => (b.data.comments?.length || 0) - (a.data.comments?.length || 0))
+    // Top más activos (por comentarios escritos) - Agrupado por autor (excluyendo anónimos)
+    const authorComments = {};
+    this.allDrawings.forEach(drawing => {
+      const comments = drawing.data.comments || [];
+      comments.forEach(comment => {
+        const commentAuthor = comment.autor || comment.author || 'Anónimo';
+        if (commentAuthor !== 'Anónimo') {
+          authorComments[commentAuthor] = (authorComments[commentAuthor] || 0) + 1;
+        }
+      });
+    });
+    
+    const activeList = Object.entries(authorComments)
+      .filter(([author, comments]) => comments > 0)
+      .sort(([,a], [,b]) => b - a)
       .slice(0, 3);
     
-    topActive.innerHTML = activeList.map((drawing, index) => {
+    topActive.innerHTML = activeList.map(([author, comments], index) => {
       const medals = ['🥇', '🥈', '🥉'];
       return `<div class="d-flex justify-content-between mb-1">
-        <span>${medals[index]} ${drawing.data.autor}</span>
-        <span>💬 ${drawing.data.comments?.length || 0}</span>
+        <span>${medals[index]} ${author}</span>
+        <span>💬 ${comments}</span>
       </div>`;
     }).join('') || '<div class="text-muted">Sin datos</div>';
   }
@@ -583,6 +616,43 @@ export class GalleryManager {
   getUserDrawings(username, allDrawings) {
     return allDrawings.filter(d => d.data.autor.toLowerCase() === username.toLowerCase())
       .sort((a, b) => b.data.timestamp - a.data.timestamp);
+  }
+  
+  reloadFailedAvatars() {
+    // Buscar imágenes de avatar que no se cargaron
+    const failedImages = document.querySelectorAll('.author-avatar img[style*="display: none"]');
+    
+    failedImages.forEach(async (img) => {
+      const card = img.closest('[data-id]');
+      if (!card) return;
+      
+      const drawingId = card.dataset.id;
+      const drawing = this.allDrawings.find(d => d.id === drawingId);
+      if (!drawing) return;
+      
+      // Intentar obtener avatar actualizado desde Firebase
+      try {
+        if (window.guestbookApp && window.guestbookApp.firebase) {
+          const userProfile = await window.guestbookApp.firebase.getUserProfile(drawing.data.autor);
+          if (userProfile && userProfile.avatarImage) {
+            // Crear nueva imagen con la URL actualizada
+            const newImg = document.createElement('img');
+            newImg.src = userProfile.avatarImage;
+            newImg.style.cssText = 'width: 100%; height: 100%; border-radius: 50%; object-fit: cover;';
+            newImg.onerror = function() {
+              this.style.display = 'none';
+              this.parentNode.innerHTML = `<span>${userProfile.avatar || '👤'}</span>`;
+            };
+            
+            // Reemplazar imagen fallida
+            img.parentNode.innerHTML = '';
+            img.parentNode.appendChild(newImg);
+          }
+        }
+      } catch (error) {
+        console.warn('Error recargando avatar:', error);
+      }
+    });
   }
 }
 
@@ -1116,10 +1186,11 @@ window.showUserProfile = async function(author, profilePicture, timestamp, likes
       </h4>
       <small style="color: var(--text-secondary);">Miembro desde ${formatJoinDate(joinDate)}</small>
       ${!isCurrentUser && window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn() ? `
-        <div style="margin-top: 10px;">
+        <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
           <button onclick="toggleFollow('${author}')" id="followBtn" style="padding: 8px 16px; background: ${isFollowing ? '#dc3545' : 'var(--primary)'}; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em; transition: all 0.3s ease;">
             ${isFollowing ? '👥 Dejar de seguir' : '➕ Seguir'}
           </button>
+          <div id="friendButtonContainer"></div>
         </div>
       ` : ''}
     </div>
@@ -1188,6 +1259,14 @@ window.showUserProfile = async function(author, profilePicture, timestamp, likes
     setTimeout(() => {
       window.applyUserThemeToModal(profileModal, userTheme, isVip);
     }, 50);
+  }
+  
+  // Agregar botón de amigos si el usuario está logueado
+  if (!isCurrentUser && window.guestbookApp && window.guestbookApp.profiles && window.guestbookApp.profiles.isLoggedIn()) {
+    const friendButtonContainer = profileCard.querySelector('#friendButtonContainer');
+    if (friendButtonContainer && window.friendsSystem) {
+      window.friendsSystem.addFriendButtonToProfile(author, friendButtonContainer);
+    }
   }
   
   profileModal.addEventListener('click', (e) => {

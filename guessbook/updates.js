@@ -1,7 +1,7 @@
-// Sistema de updates para Guestbook v1.0.3 - Sistema de Perfiles
+// Sistema de updates para Guestbook - Soporte JSON
 class GuestbookUpdates {
   constructor() {
-    this.readmeUrl = 'README.md';
+    this.updatesUrl = './updates.json';
     this.init();
   }
 
@@ -10,7 +10,6 @@ class GuestbookUpdates {
   }
 
   createUpdatesButton() {
-    // Crear botón de updates
     const updatesBtn = document.createElement('button');
     updatesBtn.innerHTML = '📋 Ver Información';
     updatesBtn.className = 'btn btn-outline-info btn-sm';
@@ -30,127 +29,134 @@ class GuestbookUpdates {
       transition: all 0.3s ease;
     `;
 
-    updatesBtn.addEventListener('mouseenter', () => {
-      updatesBtn.style.background = 'var(--primary)';
-      updatesBtn.style.color = 'var(--bg-dark)';
-      updatesBtn.style.transform = 'scale(1.05)';
-    });
-
-    updatesBtn.addEventListener('mouseleave', () => {
-      updatesBtn.style.background = 'rgba(45, 45, 45, 0.9)';
-      updatesBtn.style.color = 'var(--primary)';
-      updatesBtn.style.transform = 'scale(1)';
-    });
-
     updatesBtn.addEventListener('click', () => this.showUpdatesModal());
     document.body.appendChild(updatesBtn);
   }
 
-  async loadReadme() {
+  async loadUpdates() {
     try {
-      const response = await fetch(this.readmeUrl);
-      if (!response.ok) throw new Error('No se pudo cargar el README');
-      const markdown = await response.text();
-      return this.parseMarkdown(markdown);
+      const response = await fetch(this.updatesUrl);
+      if (!response.ok) throw new Error('No se pudo cargar updates.json');
+      const data = await response.json();
+      return this.renderUpdates(data);
     } catch (error) {
-      console.error('Error cargando README:', error);
+      console.error('Error cargando updates:', error);
       return this.getFallbackContent();
     }
   }
 
-  parseMarkdown(markdown) {
-    // Parser básico de Markdown a HTML
-    let html = markdown
-      // Headers
-      .replace(/^### (.*$)/gim, '<h5 style="color: var(--primary); margin: 20px 0 10px 0;">$1</h5>')
-      .replace(/^## (.*$)/gim, '<h4 style="color: var(--primary); margin: 25px 0 15px 0;">$1</h4>')
-      .replace(/^# (.*$)/gim, '<h3 style="color: var(--primary); margin: 30px 0 20px 0; text-align: center;">$1</h3>')
+  renderUpdates(data) {
+    const currentVersion = data.info_version_actual;
+    const updates = data.updates.slice(0, 3);
+    
+    let html = `
+      <h3 style="color: var(--primary); text-align: center; margin-bottom: 20px;">
+        🎨 ${data.proyecto} v${data.version}
+      </h3>
       
-      // Bold
-      .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary);">$1</strong>')
+      <div style="background: var(--bg-dark); padding: 20px; border-radius: 10px; border: 2px solid var(--primary); margin-bottom: 30px;">
+        <h4 style="color: var(--primary); text-align: center; margin-bottom: 15px;">
+          🆕 Versión Actual: ${currentVersion.numero} (${currentVersion.fecha})
+        </h4>
+        <div style="color: var(--text-primary); margin-bottom: 15px;">
+          <strong>Tipo:</strong> ${currentVersion.tipo} | <strong>Estado:</strong> ${currentVersion.estado}
+        </div>
+        <ul style="color: var(--text-primary); margin: 0; padding-left: 20px;">
+    `;
+    
+    currentVersion.cambios_principales.forEach(cambio => {
+      html += `<li>${cambio}</li>`;
+    });
+    
+    html += `
+        </ul>
+      </div>
       
-      // Code blocks
-      .replace(/`([^`]+)`/g, '<code style="background: var(--bg-dark); padding: 2px 6px; border-radius: 4px; color: var(--primary);">$1</code>')
+      <h4 style="color: var(--primary); margin-bottom: 20px;">📋 Historial de Versiones</h4>
+    `;
+    
+    updates.forEach(update => {
+      const typeColors = {
+        'major': '#ff6b6b',
+        'minor': '#4ecdc4', 
+        'fix': '#45b7d1',
+        'new': '#96ceb4',
+        'release': '#feca57'
+      };
       
-      // Lists
-      .replace(/^- (.*$)/gim, '<li style="margin: 5px 0; color: var(--text-primary);">$1</li>')
-      .replace(/^(\d+)\. (.*$)/gim, '<li style="margin: 5px 0; color: var(--text-primary);">$2</li>')
+      html += `
+        <div style="background: var(--bg-dark); border-left: 4px solid ${typeColors[update.type] || '#666'}; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h5 style="color: var(--primary); margin: 0;">${update.title}</h5>
+            <span style="background: ${typeColors[update.type] || '#666'}; color: white; padding: 4px 12px; border-radius: 15px; font-size: 12px; text-transform: uppercase;">
+              ${update.type}
+            </span>
+          </div>
+          <div style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
+            📅 ${update.date} | v${update.version}
+          </div>
+      `;
       
-      // Links
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color: var(--primary); text-decoration: none;" target="_blank">$1</a>')
+      if (update.features && update.features.length > 0) {
+        html += `
+          <div style="margin-bottom: 15px;">
+            <strong style="color: var(--primary);">✨ Nuevas características:</strong>
+            <ul style="margin: 8px 0; padding-left: 20px; color: var(--text-primary);">
+        `;
+        update.features.slice(0, 5).forEach(feature => {
+          html += `<li style="margin: 4px 0;">${feature}</li>`;
+        });
+        html += `</ul></div>`;
+      }
       
-      // Line breaks
-      .replace(/\n\n/g, '<br><br>')
-      .replace(/\n/g, '<br>');
-
-    // Wrap lists
-    html = html.replace(/((<li[^>]*>.*?<\/li>\s*)+)/gs, '<ul style="margin: 10px 0; padding-left: 20px;">$1</ul>');
-
+      if (update.fixes && update.fixes.length > 0) {
+        html += `
+          <div>
+            <strong style="color: var(--primary);">🔧 Correcciones:</strong>
+            <ul style="margin: 8px 0; padding-left: 20px; color: var(--text-primary);">
+        `;
+        update.fixes.slice(0, 3).forEach(fix => {
+          html += `<li style="margin: 4px 0;">${fix}</li>`;
+        });
+        html += `</ul></div>`;
+      }
+      
+      html += `</div>`;
+    });
+    
+    html += `
+      <div style="background: var(--bg-dark); padding: 20px; border-radius: 10px; border: 1px solid var(--primary); margin-top: 30px;">
+        <h4 style="color: var(--primary); text-align: center; margin-bottom: 15px;">📊 Estadísticas del Proyecto</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; color: var(--text-primary);">
+          <div><strong>Versiones totales:</strong> ${data.estadisticas_proyecto.total_versiones}</div>
+          <div><strong>Tiempo desarrollo:</strong> ${data.estadisticas_proyecto.tiempo_desarrollo}</div>
+          <div><strong>Líneas de código:</strong> ${data.estadisticas_proyecto.lineas_codigo_aprox}</div>
+          <div><strong>Archivos principales:</strong> ${data.estadisticas_proyecto.archivos_principales}</div>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 30px; padding: 20px; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--primary);">
+        <p style="color: var(--text-secondary); margin: 0;">
+          <strong style="color: var(--primary);">👨💻 ${data.autor}</strong><br>
+          ${data.lastUpdate} - <a href="${data.repositorio}" target="_blank" style="color: var(--primary);">GitHub</a><br>
+          <small>${data.notas_desarrollador.mensaje}</small>
+        </p>
+      </div>
+    `;
+    
     return html;
   }
 
   getFallbackContent() {
     return `
-      <h3 style="color: var(--primary); text-align: center;">🎨 Guestbook de Dibujos v1.0.3</h3>
-      <p style="color: var(--text-primary); text-align: center; margin-bottom: 30px;">
-        <strong>Sistema de Perfiles y Comunidad Artística</strong>
-      </p>
-      
-      <div style="background: var(--bg-dark); padding: 20px; border-radius: 10px; border: 2px solid var(--primary); margin-bottom: 30px;">
-        <h4 style="color: var(--primary); text-align: center; margin-bottom: 15px;">🆕 Novedades v1.0.3</h4>
-        <ul style="color: var(--text-primary); margin: 0; padding-left: 20px;">
-          <li>👤 <strong>Sistema de Perfiles Completo</strong>: Avatares personalizados, estadísticas</li>
-          <li>🏆 <strong>Logros y Achievements</strong>: Desbloquea insignias por actividad</li>
-          <li>👥 <strong>Sistema de Seguimiento</strong>: Sigue a tus artistas favoritos</li>
-          <li>📊 <strong>Estadísticas Avanzadas</strong>: Tracking completo de actividad</li>
-          <li>🎨 <strong>Galería Personal</strong>: Ve todos tus dibujos en un lugar</li>
-          <li>📱 <strong>Avatares Emoji e Imagen</strong>: Personalización total</li>
+      <h3 style="color: var(--primary); text-align: center;">🎨 Guestbook de Dibujos v3.2.1</h3>
+      <div style="background: var(--bg-dark); padding: 20px; border-radius: 10px; margin: 20px 0;">
+        <h4 style="color: var(--primary);">🆕 Novedades v3.2.1</h4>
+        <ul style="color: var(--text-primary);">
+          <li>Sistema de Amistades Completo</li>
+          <li>Corrección de Errores JavaScript</li>
+          <li>Seguridad mejorada</li>
         </ul>
-      </div>
-      
-      <h4 style="color: var(--primary);">✨ Características Principales</h4>
-      <ul style="color: var(--text-primary); margin: 15px 0; padding-left: 20px;">
-        <li>🖌️ <strong>50+ herramientas de dibujo</strong>: Pincel, Spray, Formas, Efectos avanzados</li>
-        <li>🎨 <strong>Personalización completa</strong>: Colores, tamaños, 5 temas dinámicos</li>
-        <li>🖼️ <strong>Contenido multimedia</strong>: PNG, GIF animados, stickers</li>
-        <li>📱 <strong>Optimizado para móvil</strong>: Touch events, responsive, pantalla completa</li>
-        <li>🌐 <strong>Sistema social avanzado</strong>: Likes, comentarios, rankings múltiples</li>
-        <li>📄 <strong>Galería interactiva</strong>: Paginación, filtros, búsqueda, fijados</li>
-        <li>🛡️ <strong>Seguridad robusta</strong>: Moderación IA, cooldown, validaciones</li>
-        <li>✨ <strong>Efectos visuales</strong>: Sparkles, confetti, animaciones CSS</li>
-      </ul>
-      
-      <h4 style="color: var(--primary);">👤 Sistema de Perfiles</h4>
-      <ul style="color: var(--text-primary); margin: 15px 0; padding-left: 20px;">
-        <li>🎭 <strong>Avatares personalizados</strong>: 12 emojis + subida de imagen</li>
-        <li>📈 <strong>Estadísticas detalladas</strong>: Dibujos, likes, comentarios</li>
-        <li>🏆 <strong>Sistema de logros</strong>: 6+ achievements desbloqueables</li>
-        <li>👥 <strong>Red social</strong>: Seguir artistas, ver perfiles</li>
-        <li>🎨 <strong>Galería personal</strong>: Todos tus dibujos organizados</li>
-        <li>💾 <strong>Persistencia</strong>: Datos guardados en localStorage + Firebase</li>
-      </ul>
-      
-      <h4 style="color: var(--primary);">🚀 Tecnologías</h4>
-      <p style="color: var(--text-primary);">
-        HTML5 Canvas, JavaScript ES6+, Bootstrap 5.3.3, Firebase Firestore v10.7.1, CSS Grid/Flexbox
-      </p>
-      
-      <h4 style="color: var(--primary);">📊 Estadísticas v1.0.3</h4>
-      <ul style="color: var(--text-primary); margin: 15px 0; padding-left: 20px;">
-        <li>~2,500 líneas de JavaScript</li>
-        <li>50+ herramientas y funciones</li>
-        <li>5 temas visuales dinámicos</li>
-        <li>Sistema completo de perfiles</li>
-        <li>20+ atajos de teclado</li>
-        <li>Soporte completo para móvil</li>
-      </ul>
-      
-      <div style="text-align: center; margin-top: 30px; padding: 20px; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--primary);">
-        <p style="color: var(--text-secondary); margin: 0;">
-          <strong style="color: var(--primary);">👨💻 Desarrollado por ThisIsFenix</strong><br>
-          Diciembre 2024 - Parte del ecosistema FenixLaboratory v2.0.7<br>
-          <small>Sistema de Perfiles y Comunidad Artística</small>
-        </p>
       </div>
     `;
   }
@@ -158,108 +164,62 @@ class GuestbookUpdates {
   async showUpdatesModal() {
     const modal = document.createElement('div');
     modal.style.cssText = `
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      background: rgba(0,0,0,0.95) !important;
-      z-index: 99999 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      backdrop-filter: blur(5px) !important;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.9);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     `;
 
     const container = document.createElement('div');
     container.style.cssText = `
-      max-width: 90vw !important;
-      max-height: 90vh !important;
-      background: var(--bg-light) !important;
-      border-radius: 20px !important;
-      padding: 30px !important;
-      overflow-y: auto !important;
-      border: 2px solid var(--primary) !important;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5) !important;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: var(--bg-light);
+      border-radius: 15px;
+      padding: 30px;
+      overflow-y: auto;
+      position: relative;
+      border: 2px solid var(--primary);
     `;
 
     const closeBtn = document.createElement('div');
     closeBtn.innerHTML = '✕';
     closeBtn.style.cssText = `
-      position: absolute !important;
-      top: 20px !important;
-      right: 30px !important;
-      color: white !important;
-      font-size: 30px !important;
-      cursor: pointer !important;
-      background: rgba(0,0,0,0.7) !important;
-      border-radius: 50% !important;
-      width: 50px !important;
-      height: 50px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      z-index: 100000 !important;
-      transition: all 0.3s ease !important;
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      cursor: pointer;
+      font-size: 24px;
+      color: var(--primary);
     `;
+    closeBtn.onclick = () => modal.remove();
 
-    closeBtn.addEventListener('mouseenter', () => {
-      closeBtn.style.background = 'var(--primary) !important';
-      closeBtn.style.transform = 'scale(1.1) !important';
-    });
-
-    closeBtn.addEventListener('mouseleave', () => {
-      closeBtn.style.background = 'rgba(0,0,0,0.7) !important';
-      closeBtn.style.transform = 'scale(1) !important';
-    });
-
-    // Loading
-    container.innerHTML = `
-      <div style="text-align: center; padding: 40px;">
-        <div class="spinner-border" style="color: var(--primary);" role="status">
-          <span class="visually-hidden">Cargando información...</span>
-        </div>
-        <p style="color: var(--text-primary); margin-top: 15px;">Cargando información del proyecto...</p>
-      </div>
-    `;
-
-    modal.appendChild(container);
-    modal.appendChild(closeBtn);
-    document.body.appendChild(modal);
-
-    // Load content
-    const content = await this.loadReadme();
+    const content = await this.loadUpdates();
     container.innerHTML = content;
-
-    // Events
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal || e.target === closeBtn) {
-        modal.remove();
-      }
-    });
-
-    document.addEventListener('keydown', function escHandler(e) {
-      if (e.key === 'Escape') {
-        modal.remove();
-        document.removeEventListener('keydown', escHandler);
-      }
-    });
-
-    // Smooth scroll to top
-    container.scrollTop = 0;
+    container.appendChild(closeBtn);
+    
+    modal.appendChild(container);
+    document.body.appendChild(modal);
+    
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.remove();
+    };
   }
 }
 
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-  new GuestbookUpdates();
-});
-
-// También inicializar si el DOM ya está listo
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    new GuestbookUpdates();
-  });
-} else {
-  new GuestbookUpdates();
+function toggleUpdatesPanel() {
+  if (!window.guestbookUpdates) {
+    window.guestbookUpdates = new GuestbookUpdates();
+  }
+  window.guestbookUpdates.showUpdatesModal();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.guestbookUpdates = new GuestbookUpdates();
+});

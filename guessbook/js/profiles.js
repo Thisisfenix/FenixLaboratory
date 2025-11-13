@@ -594,6 +594,7 @@ export class ProfileManager {
           <button id="loginBtn" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">🔑 Iniciar Sesión</button>
           <button id="registerBtn" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer;">🎆 Registrarse</button>
         ` : `
+          ${this.isSystemAvailable() ? '<button id="friendsBtn" style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 8px; cursor: pointer;">👥 Amigos</button>' : ''}
           <button id="saveProfile" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">💾 Actualizar Perfil</button>
           <button id="logoutProfile" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer;">🚪 Cerrar Sesión</button>
           <button id="deleteAccount" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em;">🗑️ Eliminar Cuenta</button>
@@ -1304,6 +1305,16 @@ export class ProfileManager {
       });
     }
     
+    const friendsBtn = document.getElementById('friendsBtn');
+    if (friendsBtn) {
+      friendsBtn.addEventListener('click', () => {
+        modal.remove();
+        if (window.friendsSystem) {
+          window.friendsSystem.showFriendsModal();
+        }
+      });
+    }
+    
     document.getElementById('closeProfile').addEventListener('click', () => {
       modal.remove();
     });
@@ -1707,5 +1718,11 @@ export class ProfileManager {
     } catch (error) {
       return 'hace poco';
     }
+  }
+  
+  isSystemAvailable() {
+    const currentDomain = window.location.hostname;
+    const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
+    return authorizedDomains.includes(currentDomain);
   }
 }

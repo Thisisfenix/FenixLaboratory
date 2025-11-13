@@ -1,0 +1,199 @@
+{
+  "proyecto": "Guestbook de Dibujos",
+  "version": "3.2.1",
+  "lastUpdate": "2024-11-13",
+  "autor": "ThisIsFenix",
+  "repositorio": "https://github.com/thisisfenix/FenixLaboratory/tree/main/guessbook",
+  "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/guessbook/",
+  
+  "info_version_actual": {
+    "numero": "3.2.1",
+    "fecha": "2024-11-13",
+    "tipo": "major",
+    "estado": "estable",
+    "cambios_principales": [
+      "Sistema completo de amistades con solicitudes y gestión",
+      "Validación de perfiles para envío de solicitudes",
+      "Reglas de Firebase actualizadas para sistema social",
+      "Prevención de errores de permisos con verificación de dominio",
+      "Modal de amigos con pestañas para gestión completa"
+    ]
+  },
+  
+  "updates": [
+    {
+      "version": "3.2.1",
+      "date": "2024-11-13",
+      "title": "👥 Sistema de Amistades Completo",
+      "type": "major",
+      "features": [
+        "👥 Sistema completo de amistades con solicitudes bidireccionales",
+        "📩 Modal de gestión con pestañas: Amigos, Solicitudes, Agregar",
+        "✅ Aceptar/rechazar solicitudes de amistad",
+        "❌ Eliminar amigos con confirmación",
+        "🔍 Validación de perfiles antes de enviar solicitudes",
+        "🛡️ Reglas de Firebase para colecciones de amistades",
+        "🌐 Verificación de dominio autorizado en todas las operaciones",
+        "👤 Botones de amistad en perfiles de usuarios",
+        "📊 Estados de amistad: ninguno, amigos, solicitud enviada/recibida",
+        "💾 Persistencia en Firebase con colecciones friend_requests y friendships"
+      ],
+      "fixes": [
+        "🔧 Prevención de errores de permisos Firebase con verificación previa",
+        "🛡️ Validación exists() en Firebase Rules para usuarios con perfil",
+        "⚡ Manejo graceful de errores sin mostrar mensajes al usuario",
+        "🔒 Autorización de dominio en todos los métodos del sistema",
+        "📱 Ocultación automática de funciones cuando no están disponibles",
+        "🎯 Verificación de perfil objetivo antes de enviar solicitud",
+        "✨ Interfaz responsive para modal de amigos",
+        "🔄 Actualización automática de datos tras acciones"
+      ],
+      "firebase_improvements": [
+        "🔥 Reglas actualizadas para friend_requests y friendships",
+        "📋 Colección pending_requests para mejor organización",
+        "🛡️ Validación de campos requeridos en todas las operaciones",
+        "🌐 Verificación de dominio en reglas de seguridad",
+        "⚡ Optimización de consultas con índices apropiados",
+        "🔒 Seguridad mejorada con validación de usuarios existentes"
+      ]
+    },
+    {
+      "version": "3.2.0",
+      "date": "2024-11-12",
+      "title": "🔧 Corrección de Errores JavaScript",
+      "type": "fix",
+      "features": [
+        "🔧 Corrección de ReferenceError en función loginMod",
+        "✅ Eliminación de variable password no definida",
+        "🛠️ Reestructuración de lógica de autenticación MOD",
+        "🔒 Verificación directa por tags de usuario en lugar de contraseña",
+        "📝 Sintaxis corregida en bloques if-else anidados"
+      ],
+      "fixes": [
+        "❌ Error 'password is not defined' resuelto completamente",
+        "🔧 Sintaxis 'unexpected token catch' corregida",
+        "⚡ Función loginMod optimizada sin dependencias externas",
+        "🛡️ Validación mejorada de permisos de moderador",
+        "📱 Compatibilidad mejorada entre navegadores"
+      ]
+    },
+    {
+      "version": "3.1.8",
+      "date": "2024-11-10",
+      "title": "🎨 Guestbook Completo + Reorganización",
+      "type": "major",
+      "features": [
+        "🖌️ Herramientas de dibujo: Pincel, Spray, Formas, Texto, Borrador",
+        "📦 Selección de área con copiar/pegar funcional",
+        "🎨 Paleta de colores + color personalizado",
+        "📱 3 tamaños de canvas: Pequeño, Mediano, Grande",
+        "😂 Emojis como stickers clickeables",
+        "🖼️ Subir PNG como fondo o sticker",
+        "🌫️ Filtros: Blur, Pixel, Vintage",
+        "🔍 Zoom y herramientas de navegación",
+        "↶ Deshacer/Rehacer con historial completo",
+        "❤️ Sistema de likes (1 por persona) con localStorage",
+        "💬 Comentarios en tiempo real con Firebase",
+        "🏆 Top 3 ranking de dibujos más populares",
+        "🔍 Búsqueda por autor y filtros por categoría",
+        "📄 Paginación (12 dibujos por página)",
+        "💾 Exportar en PNG, JPG y SVG",
+        "📤 Compartir dibujos con Web Share API",
+        "⏰ Cooldown de 10 minutos anti-spam",
+        "🎭 Adaptación automática a temas del index.html",
+        "✨ Animaciones: Sparkles al dibujar, confetti al guardar",
+        "📱 Optimizado para móvil con touch events"
+      ],
+      "fixes": [
+        "🔧 Formas geométricas limitadas dentro del canvas",
+        "🛡️ Filtro de moderación básica para comentarios",
+        "📱 Prevención de salida accidental con trabajo sin guardar",
+        "🔄 Corrección de error de share múltiple simultáneo",
+        "🎯 Colocación mejorada de stickers sin dibujar",
+        "⚡ Paginación eficiente para grandes cantidades de dibujos",
+        "🔐 API keys protegidas con variables de entorno",
+        "📊 Filtros de búsqueda funcionando con paginación",
+        "🎨 Sincronización de temas entre páginas",
+        "📱 Touch events mejorados para dispositivos móviles"
+      ]
+    },
+    {
+      "version": "3.0.0",
+      "date": "2024-11-02",
+      "title": "🚀 Lanzamiento del Guestbook",
+      "type": "release",
+      "features": [
+        "🎨 Canvas de dibujo con herramientas básicas",
+        "💾 Guardado en Firebase Firestore",
+        "📱 Diseño responsive",
+        "🎨 Sistema de temas heredado del proyecto principal",
+        "💬 Sistema básico de comentarios"
+      ]
+    }
+  ],
+  
+  "roadmap": [
+    {
+      "version": "3.3.0",
+      "title": "🎮 Funciones Sociales Avanzadas",
+      "features": [
+        "👤 Perfiles de usuario expandidos",
+        "🏆 Sistema de logros para artistas",
+        "📊 Estadísticas detalladas por usuario",
+        "🎨 Galería personal por usuario",
+        "🔔 Notificaciones de actividad"
+      ],
+      "status": "planned"
+    },
+    {
+      "version": "3.4.0",
+      "title": "🖌️ Herramientas Avanzadas de Dibujo",
+      "features": [
+        "🎨 Más pinceles y efectos",
+        "📐 Herramientas de perspectiva",
+        "🖼️ Sistema de capas mejorado",
+        "🎭 Máscaras y selecciones avanzadas",
+        "🎬 Animaciones y GIFs"
+      ],
+      "status": "planned"
+    }
+  ],
+  
+  "estadisticas_proyecto": {
+    "total_versiones": 4,
+    "versiones_major": 2,
+    "versiones_fix": 1,
+    "versiones_release": 1,
+    "tiempo_desarrollo": "2 meses",
+    "lineas_codigo_aprox": "2500+",
+    "archivos_principales": 8
+  },
+  
+  "tecnologias_usadas": {
+    "frontend": ["HTML5 Canvas", "CSS3", "JavaScript ES6+"],
+    "frameworks": ["Bootstrap 5.3.3"],
+    "backend": ["Firebase Firestore v9"],
+    "apis_externas": ["Firebase SDK", "Web Share API"],
+    "hosting": "GitHub Pages",
+    "herramientas": ["Canvas API", "Touch Events", "File API"]
+  },
+  
+  "proximas_actualizaciones": {
+    "v3.3": {
+      "fecha_estimada": "2024-12-15",
+      "prioridad": "alta",
+      "enfoque": "Funciones sociales y perfiles expandidos"
+    },
+    "v3.4": {
+      "fecha_estimada": "2025-01-15",
+      "prioridad": "media",
+      "enfoque": "Herramientas de dibujo profesionales"
+    }
+  },
+  
+  "notas_desarrollador": {
+    "mensaje": "Lo que empezó como un guestbook simple se convirtió en una plataforma de arte colaborativa.",
+    "agradecimientos": "A todos los artistas que han dejado su huella en el canvas.",
+    "objetivo": "Crear un espacio donde cualquiera pueda expresar su creatividad sin barreras."
+  }
+}
