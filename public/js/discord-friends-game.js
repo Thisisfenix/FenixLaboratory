@@ -576,7 +576,7 @@ class DiscordFriendsGame {
         }
         
         this.countdownActive = true;
-        this.lobbyCountdown = 10; // Reducir a 10 segundos para testing
+        this.lobbyCountdown = 60;
         
         console.log('⏰ Starting countdown...');
         
@@ -713,27 +713,16 @@ class DiscordFriendsGame {
             this.forceLandscape();
         }
         
-        // Handle orientation and resize changes
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                this.handleViewportChange();
-            }, 300); // Longer delay for orientation change
-        });
-        
+        // Simple resize handling
         window.addEventListener('resize', () => {
             this.handleViewportChange();
         });
         
-        // Handle viewport changes on mobile browsers
-        if (this.isMobile()) {
-            let resizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    this.handleViewportChange();
-                }, 100);
-            });
-        }
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                this.handleViewportChange();
+            }, 500);
+        });
         
         // Supabase handles disconnection automatically
     }
@@ -2240,9 +2229,11 @@ class DiscordFriendsGame {
     }
     
     isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-               window.innerWidth <= 1024 || 
-               'ontouchstart' in window;
+        const isTouchDevice = 'ontouchstart' in window;
+        const isSmallScreen = Math.min(screen.width, screen.height) <= 1024;
+        const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        return isTouchDevice || isSmallScreen || isMobileUA;
     }
 
     drawHitboxes() {
@@ -3440,18 +3431,9 @@ class DiscordFriendsGame {
     }
 
     handleViewportChange() {
-        // Resize canvas to new viewport
-        this.resizeCanvas();
-        
-        // Update camera position
-        this.updateCamera();
-        
-        // Reposition mobile controls if needed
-        if (this.isMobile()) {
-            this.repositionMobileControls();
-        }
-        
-        console.log('Viewport changed:', window.innerWidth, 'x', window.innerHeight);
+        setTimeout(() => {
+            this.resizeCanvas();
+        }, 100);
     }
     
     repositionMobileControls() {
@@ -3566,38 +3548,28 @@ class DiscordFriendsGame {
     }
 
     resizeCanvas() {
-        if (this.canvas) {
-            const dpr = window.devicePixelRatio || 1;
-            
-            // Get actual viewport dimensions
+        if (this.canvas && this.ctx) {
+            // Detectar tamaño real del dispositivo
+            const screenWidth = screen.width;
+            const screenHeight = screen.height;
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
             
-            // Set canvas to fill viewport
-            this.canvas.style.width = viewportWidth + 'px';
-            this.canvas.style.height = viewportHeight + 'px';
+            // Usar el tamaño más apropiado
+            const width = Math.min(screenWidth, viewportWidth);
+            const height = Math.min(screenHeight, viewportHeight);
             
-            // Set actual canvas size with device pixel ratio
-            this.canvas.width = viewportWidth * dpr;
-            this.canvas.height = viewportHeight * dpr;
+            this.canvas.width = width;
+            this.canvas.height = height;
+            this.canvas.style.width = width + 'px';
+            this.canvas.style.height = height + 'px';
             
-            // Scale context to match device pixel ratio
-            if (this.ctx) {
-                this.ctx.scale(dpr, dpr);
-                
-                // Store logical dimensions
-                this.canvas.cssWidth = viewportWidth;
-                this.canvas.cssHeight = viewportHeight;
-                
-                // Ensure proper rendering
-                this.ctx.imageSmoothingEnabled = false;
-                this.ctx.webkitImageSmoothingEnabled = false;
-                this.ctx.mozImageSmoothingEnabled = false;
-                this.ctx.msImageSmoothingEnabled = false;
-            }
+            // Store dimensions
+            this.canvas.cssWidth = width;
+            this.canvas.cssHeight = height;
             
-            // Update camera bounds for new dimensions
-            this.updateCameraBounds();
+            console.log('Canvas resized to:', width, 'x', height);
+            this.updateCamera();
         }
     }
     
