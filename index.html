@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FenixLaboratory - Donde subo mis experimentos raros 🔬</title>
+  <title>🔬 FenixLaboratory - Donde subo mis experimentos raros</title>
   <meta name="description"
     content="Mi rinconcito donde pongo todos mis proyectos random de GitHub. Con logros, temas chéveres y cosas que hago cuando me aburro. Nada fancy, solo diversión." />
   <meta name="keywords"
@@ -60,6 +60,34 @@
       flex-direction: column;
       line-height: 1.6;
       scroll-behavior: smooth;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    
+    /* Scrollbar personalizado para PC */
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+      border-radius: 6px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--primary), var(--secondary));
+      border-radius: 6px;
+      border: 2px solid var(--bg-dark);
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, var(--secondary), var(--primary));
+    }
+    
+    /* Firefox scrollbar */
+    html {
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) var(--bg-dark);
     }
     .navbar {
       background-color: rgba(10, 10, 18, 0.9);
@@ -1957,7 +1985,7 @@
     <!-- Hero -->
     <section class="hero">
     <div class="container">
-      <h1 id="typewriter"></h1>
+      <h1 id="typewriter">THISISFENIX LABORATORY</h1>
       <p>Donde subo mis experimentos raros y proyectos random</p>
       <a href="#proyectos" class="btn btn-neon" onclick="safeScrollIntoView('proyectos'); return false;"><i class="bi bi-arrow-down me-2"></i>Ver Proyectos</a>
     </div>
