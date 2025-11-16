@@ -649,6 +649,22 @@
         document.getElementById('mobileRefresh').addEventListener('click', function() {
             location.reload(true);
         });
+        
+        // Audio context unlock for mobile
+        let audioUnlocked = false;
+        function unlockAudio() {
+            if (!audioUnlocked) {
+                const audio = new Audio();
+                audio.play().then(() => {
+                    audioUnlocked = true;
+                }).catch(() => {});
+            }
+        }
+        
+        // Unlock audio on any user interaction
+        ['touchstart', 'touchend', 'mousedown', 'keydown'].forEach(event => {
+            document.addEventListener(event, unlockAudio, { once: true });
+        });
     </script>
 </body>
 </html>

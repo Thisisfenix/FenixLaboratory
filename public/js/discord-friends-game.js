@@ -1071,8 +1071,20 @@ class DiscordFriendsGame {
         // Solo verificar si hay jugadores
         if (Object.keys(this.players).length === 0) return;
         
+        // Debug logs para LMS
+        if (totalActiveSurvivors.length <= 2 && !this.lmsActivated) {
+            console.log('🔍 LMS Check:', {
+                totalActiveSurvivors: totalActiveSurvivors.length,
+                aliveSurvivors: aliveSurvivors.length,
+                aliveKillers: aliveKillers.length,
+                lmsActivated: this.lmsActivated,
+                survivors: totalActiveSurvivors.map(p => `${p.name}(${p.character}) - alive:${p.alive} downed:${p.downed}`)
+            });
+        }
+        
         // Activar LMS cuando quede 1 survivor (contando downed como potencialmente vivos)
         if (totalActiveSurvivors.length === 1 && aliveKillers.length >= 1 && !this.lmsActivated) {
+            console.log('🚀 LMS CONDITIONS MET! Activating...');
             this.activateLMS();
         }
         
@@ -1097,10 +1109,13 @@ class DiscordFriendsGame {
     }
 
     activateLMS() {
+        console.log('🔥 ACTIVATING LAST MAN STANDING!');
         this.lastManStanding = true;
         this.lmsActivated = true;
         
         const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && !p.spectating);
+        console.log('Last survivor found:', lastSurvivor ? lastSurvivor.name : 'None');
+        
         if (lastSurvivor) {
             // Si está downed, revivir para LMS
             if (lastSurvivor.downed) {
@@ -1108,6 +1123,7 @@ class DiscordFriendsGame {
                 lastSurvivor.downed = false;
                 lastSurvivor.beingRevived = false;
                 lastSurvivor.reviveProgress = 0;
+                console.log('Revived downed survivor for LMS:', lastSurvivor.name);
             }
             
             // Curación completa para iA777 en LMS
@@ -1115,9 +1131,12 @@ class DiscordFriendsGame {
                 lastSurvivor.health = lastSurvivor.maxHealth;
                 lastSurvivor.lmsFullHeal = true;
                 lastSurvivor.lmsResistance = true; // 25% menos daño
+                console.log('iA777 LMS bonuses applied: Full heal + resistance');
             } else {
+                const oldHealth = lastSurvivor.health;
                 lastSurvivor.health = Math.min(160, lastSurvivor.health + 60);
                 lastSurvivor.maxHealth = 160;
+                console.log(`LMS health boost: ${oldHealth} -> ${lastSurvivor.health}`);
             }
             lastSurvivor.lmsBonus = true;
             lastSurvivor.lastLife = true;
@@ -1132,7 +1151,7 @@ class DiscordFriendsGame {
         // Reproducir música de LMS
         this.playLMSMusic();
         
-        console.log('🔥 LAST MAN STANDING ACTIVATED!');
+        console.log('🔥 LAST MAN STANDING ACTIVATED! Timer:', this.gameTimer);
     }
 
     endGame(winCondition) {
@@ -1789,7 +1808,7 @@ class DiscordFriendsGame {
                     this.gameTimer = Math.max(0, totalTime - elapsed);
                     
                     // Mostrar anillo de escape a los 80 segundos (1:20)
-                    if (this.gameTimer === 80 && !this.escapeRing) {
+                    if (this.gameTimer === 80 && !this.escapeRing && !this.lastManStanding) {
                         this.showEscapeRing();
                     }
                 }
@@ -3038,7 +3057,7 @@ class DiscordFriendsGame {
         if (player.role === 'survivor' && player.character === 'gissel') {
             if (!this.gisselIcon) {
                 this.gisselIcon = new Image();
-                this.gisselIcon.src = 'public/assets/icons/GisselInactiveIcon.png';
+                this.gisselIcon.src = 'assets/icons/GisselInactiveIcon.png';
             }
             
             if (this.isImageValid(this.gisselIcon)) {
@@ -3047,11 +3066,11 @@ class DiscordFriendsGame {
         } else if (player.role === 'survivor' && player.character === 'luna') {
             let iconSrc;
             if (!player.alive) {
-                iconSrc = 'public/assets/icons/LunaDeadIcon.png';
+                iconSrc = 'assets/icons/LunaDeadIcon.png';
             } else if (player.health <= 50) {
-                iconSrc = 'public/assets/icons/LunaDangerIcon.png';
+                iconSrc = 'assets/icons/LunaDangerIcon.png';
             } else {
-                iconSrc = 'public/assets/icons/LunaNormalIcon.png';
+                iconSrc = 'assets/icons/LunaNormalIcon.png';
             }
             
             if (!this.lunaIcons) {
@@ -3540,7 +3559,7 @@ class DiscordFriendsGame {
 
     playLMSMusic() {
         try {
-            this.lmsMusic = new Audio('public/assets/Abellmsposibble_.mp3');
+            this.lmsMusic = new Audio('assets/IA777LMS.mp3');
             this.lmsMusic.volume = 0.6;
             this.lmsMusic.loop = false;
             this.lmsMusicStartTime = Date.now();
@@ -3720,7 +3739,7 @@ class DiscordFriendsGame {
         // Cargar imagen de Meowl
         if (!this.meowlImage) {
             this.meowlImage = new Image();
-            this.meowlImage.src = 'public/assets/Meowl.png';
+            this.meowlImage.src = 'assets/Meowl.png';
         }
         
         console.log('🌟 Escape ring appeared!');
