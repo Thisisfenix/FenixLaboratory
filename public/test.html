@@ -1,0 +1,3181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Place - Deadly Pursuit</title>
+    <link rel="icon" type="image/x-icon" href="assets/deadlypursuir.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: url('assets/loading-screen.png') center/contain no-repeat;
+            background-size: cover;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+            overflow: hidden;
+        }
+        #loadingScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loadingText {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        /* Mejoras estéticas del menú */
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        #lobby {
+            background: linear-gradient(135deg, rgba(26,26,46,0.95), rgba(22,33,62,0.95));
+            backdrop-filter: blur(10px);
+            min-height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        #lobby h1 {
+            text-align: center;
+            color: #fff;
+            font-size: 2.2rem;
+            margin: 10px 0 20px 0;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .character-selection {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+        
+        .character-selection h2 {
+            text-align: center;
+            color: #fff;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        
+        .characters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            max-width: 100%;
+        }
+        
+        .character {
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            width: 200px;
+            min-height: 240px;
+            flex-shrink: 0;
+        }
+        
+        .character::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .character:hover::before {
+            left: 100%;
+        }
+        
+        .character:hover {
+            transform: translateY(-3px) scale(1.01);
+            border-color: #ffd700;
+            box-shadow: 0 8px 25px rgba(255,215,0,0.3);
+        }
+        
+        .character.selected {
+            border-color: #ffd700;
+            background: linear-gradient(145deg, rgba(255,215,0,0.2), rgba(255,107,107,0.1));
+            box-shadow: 0 0 30px rgba(255,215,0,0.5);
+            transform: scale(1.05);
+        }
+        
+        .character h3 {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin: 8px 0;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .character p {
+            color: #fff;
+            margin: 3px 0;
+            font-size: 0.75rem;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+        
+        .character-sprite {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .map-selection, .bot-controls {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .map-selection h3 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .maps {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .map-btn {
+            padding: 12px 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            backdrop-filter: blur(5px);
+        }
+        
+        .map-btn:hover {
+            border-color: #ffd700;
+            background: rgba(255,215,0,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .map-btn.active {
+            border-color: #ffd700;
+            background: linear-gradient(45deg, rgba(255,215,0,0.3), rgba(255,107,107,0.2));
+            box-shadow: 0 5px 15px rgba(255,215,0,0.3);
+        }
+        
+        .bot-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .bot-controls button {
+            padding: 10px 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .bot-controls button:hover {
+            border-color: #4ecdc4;
+            background: rgba(78,205,196,0.2);
+            transform: translateY(-2px);
+        }
+        
+        #botCount {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .player-info {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        #playerName {
+            padding: 12px 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 20px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            width: 250px;
+            max-width: 90%;
+        }
+        
+        #playerName::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        #playerName:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
+        }
+        
+        #joinBtn {
+            padding: 12px 30px;
+            border: 2px solid #ffd700;
+            background: linear-gradient(45deg, rgba(255,215,0,0.8), rgba(255,107,107,0.6));
+            color: #fff;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.3);
+            margin: 0 5px;
+        }
+        
+        #joinBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,215,0,0.5);
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #lobby {
+                padding: 5px;
+            }
+            
+            #lobby h1 {
+                font-size: 1.8rem;
+                margin: 5px 0 10px 0;
+            }
+            
+            .character-selection h2 {
+                font-size: 1.2rem;
+                margin-bottom: 10px;
+            }
+            
+            .character {
+                width: 160px;
+                min-height: 200px;
+                padding: 8px;
+            }
+            
+            .character h3 {
+                font-size: 1rem;
+            }
+            
+            .character p {
+                font-size: 0.7rem;
+            }
+            
+            .character-sprite {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+            }
+            
+            .characters {
+                gap: 8px;
+            }
+            
+            .map-selection, .bot-controls {
+                padding: 10px;
+                margin: 8px 0;
+            }
+            
+            .map-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            
+            #playerName {
+                width: 200px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            #joinBtn {
+                padding: 10px 25px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .characters {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .character {
+                width: 180px;
+            }
+            
+            .maps {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .bot-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingScreen" style="display: none;">
+        <div id="loadingText">Cargando...</div>
+    </div>
+    <div id="gameContainer">
+        <div id="lobby" class="screen active">
+            <h1>🎮 DEADLY PURSUIT 🎮</h1>
+            <div class="character-selection">
+                <h2>Selecciona tu personaje</h2>
+                <div class="characters">
+                    <div class="character" data-character="meowl" data-role="survivor">
+                        <div class="character-sprite meowl">🦉</div>
+                        <h3>Meowl</h3>
+                        <p>Gato Búho - Survivor</p>
+                        <p>Habilidades:</p>
+                        <p>• Q: Vuelo nocturno (5s, CD: 12s)</p>
+                        <p>• E: Dodge Roll (Restaura esquive, CD: 6s)</p>
+                        <p>• R: Grito Nocturno (Stun 2s, CD: 20s)</p>
+                        <p>• Culpa (Pasiva LMS): -20% velocidad</p>
+                    </div>
+                    <div class="character" data-character="sage" data-role="survivor">
+                        <div class="character-sprite sage">🔮</div>
+                        <h3>Sage</h3>
+                        <p>Místico Sanador - Survivor</p>
+                        <p>Habilidades:</p>
+                        <p>• Q: Curación (Restaura 30 HP, CD: 8s)</p>
+                        <p>• E: Barrera Mística (Inmunidad 2s, CD: 15s)</p>
+                        <p>• R: Teletransporte (CD: 25s)</p>
+                        <p>• Sueño Eterno (Pasiva LMS): +25% velocidad</p>
+                    </div>
+                    <div class="character" data-character="sonic" data-role="survivor">
+                        <div class="character-sprite sonic">💨</div>
+                        <h3>Sonic</h3>
+                        <p>Erizo Azul - Survivor</p>
+                        <p>Habilidades:</p>
+                        <p>• Q: Dropdash dirigido (20s, CD: 15s)</p>
+                        <p>• E: Supervelocidad + transporte (CD: 12s)</p>
+                        <p>• R: Spin Dash (Dash rápido, CD: 8s)</p>
+                        <p>• Dodge igual que Meowl</p>
+                    </div>
+                    <div class="character" data-character="shadow" data-role="killer">
+                        <div class="character-sprite shadow">👻</div>
+                        <h3>Shadow</h3>
+                        <p>Asesino Sombra - Killer</p>
+                        <p>Habilidades:</p>
+                        <p>• Q: Invisibilidad (3s, CD: 10s)</p>
+                        <p>• E: Velocidad +50% (4s, CD: 8s)</p>
+                        <p>• R: Salto Sombra (Dash, CD: 15s)</p>
+                        <p>• C: Modo Fenix (1:30, Rage lleno)</p>
+                    </div>
+                </div>
+                <div class="map-selection">
+                    <h3>Selecciona Mapa</h3>
+                    <div class="maps">
+                        <button class="map-btn active" data-map="forest">🌲 Bosque</button>
+                        <button class="map-btn" data-map="desert">🏜️ Desierto</button>
+                        <button class="map-btn" data-map="city">🏙️ Ciudad</button>
+                    </div>
+                </div>
+                <div class="bot-controls">
+                    <button id="addBotBtn">Limpiar Bots</button>
+                    <button id="addSurvivorBtn">+ Survivor Bot</button>
+                    <button id="addKillerBtn">+ Killer Bot</button>
+                    <span id="botCount">Bots: 0</span>
+                </div>
+            </div>
+            <div class="player-info">
+                <input type="text" id="playerName" placeholder="Tu nombre" maxlength="15">
+                <button id="joinBtn">Iniciar Juego Local</button>
+                <button onclick="window.location.href='index.html'" style="margin-top: 10px; padding: 0.5rem 1rem; background: #666; border: none; border-radius: 15px; color: white; cursor: pointer;">Volver al Multijugador</button>
+            </div>
+        </div>
+
+        <div id="game" class="screen">
+            <div id="gameArea">
+                <canvas id="gameCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Código del juego local (copiado del HTML original)
+        class Game {
+            constructor() {
+                this.players = {};
+                this.myPlayerId = 'player1';
+                this.selectedCharacter = null;
+                this.selectedRole = null;
+                this.lastManStanding = false;
+                this.keys = {};
+                this.camera = { x: 0, y: 0 };
+                this.worldSize = { width: 2000, height: 1500 };
+                this.gameTimer = 300;
+                this.canvas = null;
+                this.ctx = null;
+                this.lmsMusic = null;
+                this.musicPlaying = false;
+                this.gameStarted = false;
+                this.meowlImage = null;
+                this.sageImage = null;
+                this.beatZoom = 1.0;
+                this.screenShake = 0;
+                this.victoryMessage = null;
+                this.abilities = {
+                    q: { cooldown: 0, maxCooldown: 0 },
+                    e: { cooldown: 0, maxCooldown: 0 },
+                    r: { cooldown: 0, maxCooldown: 0 }
+                };
+                this.audioContext = null;
+                this.analyser = null;
+                this.dataArray = null;
+                this.beatHistory = [];
+                this.lastBeatIntensity = 0;
+                this.subtitleText = '';
+                this.subtitleOpacity = 0;
+                this.particles = [];
+                this.mapObjects = [];
+                this.currentMap = 'forest';
+                this.hitboxes = [];
+                this.mousePos = { x: 0, y: 0 };
+                this.escapeRing = { active: false, rotation: 0 };
+                this.rageLevel = 0;
+                this.maxRage = 500;
+                this.fenixMode = { active: false, timer: 5400 }; // 90 segundos (1:30)
+                this.baseTimer = 100;
+                this.spectatorTarget = 0;
+                this.fenixUsed = false;
+                this.escapingPlayers = new Set();
+                this.killerVictoryAnimation = { active: false, timer: 0 };
+                
+                // Inicializar audio
+                this.lmsMusic = new Audio();
+                this.lmsMusic.loop = false;
+                this.lmsMusic.volume = 0.7;
+                this.lmsMusic.crossOrigin = 'anonymous';
+                
+                this.init();
+            }
+
+            init() {
+                this.setupUIEventListeners();
+                this.startBotAI();
+                this.startGameTimer();
+            }
+
+            setupUIEventListeners() {
+                document.querySelectorAll('.character').forEach(char => {
+                    char.addEventListener('click', () => {
+                        document.querySelectorAll('.character').forEach(c => c.classList.remove('selected'));
+                        char.classList.add('selected');
+                        this.selectedCharacter = char.dataset.character;
+                        this.selectedRole = char.dataset.role;
+                    });
+                });
+
+                document.getElementById('joinBtn').addEventListener('click', () => {
+                    this.joinGame();
+                });
+                
+                document.getElementById('addSurvivorBtn').addEventListener('click', () => {
+                    const survivors = ['meowl', 'sage', 'sonic'];
+                    const randomSurvivor = survivors[Math.floor(Math.random() * survivors.length)];
+                    this.addBot('survivor', randomSurvivor);
+                });
+                
+                document.getElementById('addKillerBtn').addEventListener('click', () => {
+                    this.addBot('killer', 'shadow');
+                });
+                
+                document.getElementById('addBotBtn').addEventListener('click', () => {
+                    this.clearBots();
+                });
+                
+                document.querySelectorAll('.map-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentMap = btn.dataset.map;
+                    });
+                });
+            }
+            
+            setupGameEventListeners() {
+                this.keydownHandler = (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+                    
+                    // Prevenir comportamiento por defecto para teclas de juego
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'q', 'e', 'r', ' '].includes(e.key.toLowerCase()) || 
+                        ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                    
+                    if (e.key.toLowerCase() === 'q') {
+                        const player = this.players[this.myPlayerId];
+                        if (player && player.spectator) {
+                            this.switchSpectatorTarget(-1);
+                        } else {
+                            this.useAbility('q');
+                        }
+                    }
+                    if (e.key.toLowerCase() === 'e') {
+                        const player = this.players[this.myPlayerId];
+                        if (player && player.spectator) {
+                            this.switchSpectatorTarget(1);
+                        } else {
+                            this.useAbility('e');
+                        }
+                    }
+                    if (e.key.toLowerCase() === 'r') this.useAbility('r');
+                    if (e.key.toLowerCase() === 'f') this.tryRevive();
+                    if (e.key.toLowerCase() === 'c') {
+                        const player = this.players[this.myPlayerId];
+                        if (player && player.role === 'killer' && !this.fenixUsed && this.rageLevel >= this.maxRage) {
+                            this.activateFenixMode();
+                        }
+                    }
+                };
+                
+                this.keyupHandler = (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                    if (e.key.toLowerCase() === 'f') this.stopRevive();
+                };
+                
+                document.addEventListener('keydown', this.keydownHandler);
+                document.addEventListener('keyup', this.keyupHandler);
+                
+                // Event listeners para mouse
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mousePos.x = e.clientX - rect.left + this.camera.x;
+                    this.mousePos.y = e.clientY - rect.top + this.camera.y;
+                });
+                
+                this.canvas.addEventListener('mousedown', (e) => {
+                    if (e.button === 0) { // Click izquierdo
+                        this.handleAttack();
+                    }
+                });
+            }
+
+            joinGame() {
+                const playerName = document.getElementById('playerName').value.trim();
+                
+                if (!playerName) {
+                    alert('Por favor ingresa tu nombre');
+                    return;
+                }
+
+                if (!this.selectedCharacter) {
+                    alert('Por favor selecciona un personaje');
+                    return;
+                }
+
+                // Mostrar pantalla de carga
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.style.display = 'block';
+                loadingScreen.classList.remove('hidden');
+                
+                // Cargar recursos del juego
+                this.loadGameResources().then(() => {
+                    this.startGame();
+                });
+            }
+            
+            loadGameResources() {
+                return new Promise((resolve) => {
+                    let loadedCount = 0;
+                    const totalResources = 3; // incluir sonido de muerte
+                    const loadingText = document.getElementById('loadingText');
+                    
+                    const updateLoadingText = () => {
+                        const percentage = Math.floor((loadedCount / totalResources) * 100);
+                        loadingText.textContent = `Cargando recursos... ${percentage}%`;
+                    };
+                    
+                    const checkComplete = () => {
+                        loadedCount++;
+                        updateLoadingText();
+                        if (loadedCount >= totalResources) {
+                            loadingText.textContent = 'Iniciando juego...';
+                            setTimeout(resolve, 500);
+                        }
+                    };
+                    
+                    loadingText.textContent = 'Cargando recursos... 0%';
+                    
+                    // Cargar imágenes
+                    this.meowlImage = new Image();
+                    this.meowlImage.onload = checkComplete;
+                    this.meowlImage.onerror = checkComplete;
+                    this.meowlImage.src = 'assets/Meowl.png';
+                    
+                    this.sageImage = new Image();
+                    this.sageImage.onload = checkComplete;
+                    this.sageImage.onerror = checkComplete;
+                    this.sageImage.src = 'assets/sage.jpeg';
+
+                    // Cargar sonido de muerte
+                    try {
+                        this.deathSound = new Audio('assets/deathsound.mp3');
+                        this.deathSound.preload = 'auto';
+                        this.deathSound.volume = 0.9;
+                        this.deathSound.oncanplaythrough = checkComplete;
+                        this.deathSound.onerror = checkComplete;
+                    } catch (e) {
+                        checkComplete();
+                    }
+
+                    // Cargar sonido de muerte
+                    try {
+                        this.deathSound = new Audio('assets/deathsound.mp3');
+                        this.deathSound.preload = 'auto';
+                        this.deathSound.volume = 0.9;
+                        this.deathSound.oncanplaythrough = checkComplete;
+                        this.deathSound.onerror = checkComplete;
+                    } catch (e) {
+                        checkComplete();
+                    }
+                });
+            }
+            
+            startGame() {
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.classList.add('hidden');
+                
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+                
+                const playerName = document.getElementById('playerName').value.trim();
+                this.gameStarted = true;
+
+                this.players[this.myPlayerId] = {
+                    id: this.myPlayerId,
+                    name: playerName,
+                    role: this.selectedRole,
+                    character: this.selectedCharacter,
+                    x: 1000,
+                    y: 750,
+                    alive: true,
+                    health: this.selectedCharacter === 'sage' ? 120 : (this.selectedCharacter === 'shadow' ? 600 : 100),
+                    maxHealth: this.selectedCharacter === 'sage' ? 120 : (this.selectedCharacter === 'shadow' ? 600 : 100),
+                    secondLife: false,
+                    spectator: false,
+                    downed: false,
+                    reviveProgress: 0,
+                    beingRevived: null,
+                    downedTimer: 0,
+                    dodge: (this.selectedCharacter === 'meowl' || this.selectedCharacter === 'sonic') ? 45 : 0,
+                    barrier: this.selectedCharacter === 'sage' ? 0 : 0,
+                    isBot: false,
+                    invisible: false,
+                    speedBoost: false,
+                    flying: false,
+                    attackCooldown: 0,
+                    stunned: false,
+                    fenixUsed: false
+                };
+                
+                if (this.selectedCharacter === 'meowl') {
+                    this.abilities.q = { cooldown: 0, maxCooldown: 12000 };
+                    this.abilities.e = { cooldown: 0, maxCooldown: 6000 };
+                    this.abilities.r = { cooldown: 0, maxCooldown: 20000 };
+                } else if (this.selectedCharacter === 'sonic') {
+                    this.abilities.q = { cooldown: 0, maxCooldown: 15000 };
+                    this.abilities.e = { cooldown: 0, maxCooldown: 12000 };
+                    this.abilities.r = { cooldown: 0, maxCooldown: 8000 };
+                } else if (this.selectedCharacter === 'sage') {
+                    this.abilities.q = { cooldown: 0, maxCooldown: 8000 };
+                    this.abilities.e = { cooldown: 0, maxCooldown: 15000 };
+                    this.abilities.r = { cooldown: 0, maxCooldown: 25000 };
+                } else if (this.selectedCharacter === 'shadow') {
+                    this.abilities.q = { cooldown: 0, maxCooldown: 10000 };
+                    this.abilities.e = { cooldown: 0, maxCooldown: 8000 };
+                    this.abilities.r = { cooldown: 0, maxCooldown: 15000 };
+                }
+
+                // Calcular tiempo dinámico: 1:40 base + 1min por jugador
+                const totalPlayers = Object.keys(this.players).length;
+                this.gameTimer = this.baseTimer + (totalPlayers * 60);
+                
+                this.generateMap();
+                this.showGameScreen();
+            }
+
+            addBot(role, character) {
+                const botId = 'bot_' + Math.random().toString(36).substr(2, 9);
+                this.players[botId] = {
+                    id: botId,
+                    name: `${character}_${Math.random().toString(36).substr(2, 3)}`,
+                    role: role,
+                    character: character,
+                    x: 100 + Math.random() * 1800,
+                    y: 100 + Math.random() * 1300,
+                    alive: true,
+                    health: character === 'sage' ? 120 : (character === 'shadow' ? 600 : 100),
+                    maxHealth: character === 'sage' ? 120 : (character === 'shadow' ? 600 : 100),
+                    secondLife: false,
+                    spectator: false,
+                    downed: false,
+                    reviveProgress: 0,
+                    beingRevived: null,
+                    downedTimer: 0,
+                    dodge: (character === 'meowl' || character === 'sonic') ? 45 : 0,
+                    barrier: character === 'sage' ? 0 : 0,
+                    isBot: true,
+                    invisible: false,
+                    speedBoost: false,
+                    flying: false,
+                    attackCooldown: 0,
+                    stunned: false,
+                    aiDirection: Math.random() * Math.PI * 2,
+                    aiTimer: 0
+                };
+                this.updateUI();
+            }
+
+            clearBots() {
+                Object.keys(this.players).forEach(id => {
+                    if (this.players[id].isBot) {
+                        delete this.players[id];
+                    }
+                });
+                this.updateUI();
+            }
+
+            showGameScreen() {
+                document.getElementById('lobby').classList.remove('active');
+                document.getElementById('game').classList.add('active');
+                
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resizeCanvas();
+                
+                // Enfocar el canvas para asegurar que reciba eventos de teclado
+                this.canvas.tabIndex = 1;
+                this.canvas.focus();
+                
+                // Activar event listeners del juego DESPUÉS de crear el canvas
+                this.setupGameEventListeners();
+                
+                window.addEventListener('resize', () => this.resizeCanvas());
+                this.gameLoop();
+            }
+            
+            gameLoop() {
+                // Snapshot previo para detectar transiciones (ej. alive:true -> alive:false)
+                const prevPlayers = this.players ? Object.assign({}, this.players) : {};
+
+                this.updateMovement();
+                this.updateCamera();
+                this.updateBeatZoom();
+                this.updateCooldowns();
+                this.updateSubtitles();
+                this.updateParticles();
+                this.updateHitboxes();
+                this.updateRevive();
+                this.updateEscapeRing();
+                this.updateFenixMode();
+                this.updateRage();
+                this.updateKillerVictoryAnimation();
+
+                // Detectar muerte definitiva del jugador local (prev alive -> now not alive)
+                try {
+                    const prevMe = prevPlayers[this.myPlayerId];
+                    const nowMe = this.players[this.myPlayerId];
+                    if (prevMe && prevMe.alive && nowMe && !nowMe.alive) {
+                        if (this.deathSound) {
+                            try { this.deathSound.currentTime = 0; } catch (e) {}
+                            this.deathSound.play().catch(() => {});
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error comprobando muerte local:', e);
+                }
+
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            updateMovement() {
+                if (!this.players[this.myPlayerId] || !this.players[this.myPlayerId].alive) return;
+
+                const player = this.players[this.myPlayerId];
+                
+                // No moverse si está stunned, downed, en modo espectador o ha escapado
+                if (player.stunned || player.spectator || player.downed || this.escapingPlayers.has(player.id)) return;
+                
+                let speed = player.role === 'killer' ? 8 : 5;
+                
+                if (this.lastManStanding && player.character === 'meowl') {
+                    speed *= 0.8;
+                } else if (this.lastManStanding && player.character === 'sage') {
+                    speed *= 1.25;
+                }
+                
+                if (player.speedBoost) speed *= 1.8;
+                if (player.flying) speed *= 1.2;
+
+                if (this.keys['arrowup'] || this.keys['w']) {
+                    player.y = Math.max(0, player.y - speed);
+                }
+                if (this.keys['arrowdown'] || this.keys['s']) {
+                    player.y = Math.min(this.worldSize.height - 30, player.y + speed);
+                }
+                if (this.keys['arrowleft'] || this.keys['a']) {
+                    player.x = Math.max(0, player.x - speed);
+                }
+                if (this.keys['arrowright'] || this.keys['d']) {
+                    player.x = Math.min(this.worldSize.width - 30, player.x + speed);
+                }
+            }
+            
+            updateCamera() {
+                const player = this.players[this.myPlayerId];
+                if (player) {
+                    if (player.spectator) {
+                        const alivePlayers = Object.values(this.players).filter(p => p.alive && !p.spectator);
+                        if (alivePlayers.length > 0) {
+                            // Validar y corregir el índice del espectador
+                            if (this.spectatorTarget >= alivePlayers.length) {
+                                this.spectatorTarget = 0;
+                            }
+                            const target = alivePlayers[this.spectatorTarget];
+                            if (target) {
+                                this.camera.x = target.x - this.canvas.width / 2;
+                                this.camera.y = target.y - this.canvas.height / 2;
+                            }
+                        } else {
+                            this.spectatorTarget = 0;
+                        }
+                    } else {
+                        this.camera.x = player.x - this.canvas.width / 2;
+                        this.camera.y = player.y - this.canvas.height / 2;
+                    }
+                    
+                    // Permitir que la cámara se mueva libremente dentro del mundo
+                    this.camera.x = Math.max(0, Math.min(Math.max(0, this.worldSize.width - this.canvas.width), this.camera.x));
+                    this.camera.y = Math.max(0, Math.min(Math.max(0, this.worldSize.height - this.canvas.height), this.camera.y));
+                }
+            }
+            
+            updateBeatZoom() {
+                if (!this.lastManStanding || !this.musicPlaying || !this.analyser) {
+                    this.beatZoom = Math.max(1.0, this.beatZoom * 0.95);
+                    this.screenShake *= 0.9;
+                    return;
+                }
+                
+                this.analyser.getByteFrequencyData(this.dataArray);
+                
+                let bassSum = 0;
+                const bassStart = Math.floor(this.dataArray.length * 0.02);
+                const bassEnd = Math.floor(this.dataArray.length * 0.2);
+                for (let i = bassStart; i < bassEnd; i++) {
+                    bassSum += this.dataArray[i];
+                }
+                const bassAverage = bassSum / (bassEnd - bassStart);
+                
+                let kickSum = 0;
+                const kickStart = Math.floor(this.dataArray.length * 0.2);
+                const kickEnd = Math.floor(this.dataArray.length * 0.6);
+                for (let i = kickStart; i < kickEnd; i++) {
+                    kickSum += this.dataArray[i];
+                }
+                const kickAverage = kickSum / (kickEnd - kickStart);
+                
+                const currentIntensity = (bassAverage * 0.7 + kickAverage * 0.3) / 255;
+                
+                this.beatHistory.push(currentIntensity);
+                if (this.beatHistory.length > 10) this.beatHistory.shift();
+                
+                const avgHistory = this.beatHistory.reduce((a, b) => a + b, 0) / this.beatHistory.length;
+                const beatThreshold = avgHistory * 1.3;
+                
+                if (currentIntensity > beatThreshold && currentIntensity > this.lastBeatIntensity * 1.15) {
+                    const beatStrength = Math.min(currentIntensity * 1.5, 0.8);
+                    this.beatZoom = 1.0 + (beatStrength * 0.12);
+                    this.screenShake = beatStrength * 3;
+                } else {
+                    this.beatZoom = Math.max(1.0, this.beatZoom * 0.95);
+                    this.screenShake *= 0.9;
+                }
+                
+                this.lastBeatIntensity = currentIntensity;
+            }
+            
+            updateCooldowns() {
+                const deltaTime = 16;
+                if (this.abilities.q.cooldown > 0) {
+                    this.abilities.q.cooldown = Math.max(0, this.abilities.q.cooldown - deltaTime);
+                }
+                if (this.abilities.e.cooldown > 0) {
+                    this.abilities.e.cooldown = Math.max(0, this.abilities.e.cooldown - deltaTime);
+                }
+                if (this.abilities.r.cooldown > 0) {
+                    this.abilities.r.cooldown = Math.max(0, this.abilities.r.cooldown - deltaTime);
+                }
+                
+                Object.values(this.players).forEach(player => {
+                    if (player.attackCooldown > 0) {
+                        player.attackCooldown = Math.max(0, player.attackCooldown - deltaTime);
+                    }
+                });
+            }
+            
+            updateSubtitles() {
+                if (!this.lmsMusic || !this.musicPlaying || !this.lastManStanding) {
+                    this.subtitleOpacity = Math.max(0, this.subtitleOpacity - 0.05);
+                    if (this.subtitleOpacity <= 0) this.subtitleText = "";
+                    return;
+                }
+                
+                const currentTime = this.lmsMusic.currentTime;
+                const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && p.alive);
+                
+                const lyrics = {
+                    'meowl': [
+                        { time: 0, text: "Welcome to the new world" },
+                        { time: 4, text: "Rise up from the shadows" },
+                        { time: 8, text: "Fight for your dreams" },
+                        { time: 12, text: "Never give up hope" },
+                        { time: 16, text: "Light will guide you" },
+                        { time: 20, text: "Through the darkest night" }
+                    ],
+                    'sage': [
+                        { time: 0, text: "One way dream" },
+                        { time: 4, text: "Sleep eternal" },
+                        { time: 8, text: "Wake up your soul" },
+                        { time: 12, text: "Find inner peace" },
+                        { time: 16, text: "Rest in harmony" },
+                        { time: 20, text: "Dreams never die" }
+                    ]
+                };
+                
+                const currentLyrics = lastSurvivor ? lyrics[lastSurvivor.character] || lyrics['meowl'] : lyrics['meowl'];
+                
+                let currentLyric = null;
+                for (let i = currentLyrics.length - 1; i >= 0; i--) {
+                    if (currentTime >= currentLyrics[i].time) {
+                        currentLyric = currentLyrics[i];
+                        break;
+                    }
+                }
+                
+                if (currentLyric && currentTime < currentLyric.time + 3.5) {
+                    this.subtitleText = currentLyric.text;
+                    this.subtitleOpacity = 1.0;
+                } else {
+                    this.subtitleOpacity = Math.max(0, this.subtitleOpacity - 0.05);
+                    if (this.subtitleOpacity <= 0) this.subtitleText = "";
+                }
+            }
+            
+            useAbility(key) {
+                const player = this.players[this.myPlayerId];
+                if (!player || !player.alive || player.spectator || player.downed || this.escapingPlayers.has(player.id)) return;
+                
+                const ability = this.abilities[key];
+                if (ability.cooldown > 0) return;
+                
+                if (key === 'q') {
+                    if (player.character === 'meowl') {
+                        player.flying = true;
+                        ability.cooldown = ability.maxCooldown;
+                        this.createParticles(player.x + 15, player.y + 15, '#FFD700', 12, 'explosion');
+                        setTimeout(() => { player.flying = false; }, 5000);
+                    } else if (player.character === 'sonic') {
+                        // Dropdash dirigido con mouse
+                        const angle = Math.atan2(this.mousePos.y - (player.y + 15), this.mousePos.x - (player.x + 15));
+                        const dashDistance = 300;
+                        const newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * dashDistance));
+                        const newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * dashDistance));
+                        
+                        ability.cooldown = ability.maxCooldown;
+                        this.createParticles(player.x + 15, player.y + 15, '#0080FF', 15, 'explosion');
+                        player.x = newX;
+                        player.y = newY;
+                        this.createParticles(newX + 15, newY + 15, '#0080FF', 15, 'explosion');
+                        
+                        // Crear hitbox de stun para killers
+                        this.createHitbox({
+                            type: 'sonic_dropdash',
+                            x: newX + 15,
+                            y: newY + 15,
+                            radius: 80,
+                            life: 20,
+                            ownerId: player.id,
+                            color: '#0080FF'
+                        });
+                        
+                        // Durar 20 segundos con efecto visual
+                        player.dropdashActive = true;
+                        setTimeout(() => { player.dropdashActive = false; }, 20000);
+                    } else if (player.character === 'sage') {
+                        if (!this.lastManStanding) {
+                            // Curación con hitbox para curar aliados cercanos
+                            player.health = Math.min(player.maxHealth, player.health + 30);
+                            ability.cooldown = ability.maxCooldown;
+                            this.createParticles(player.x + 15, player.y + 15, '#44ff44', 10, 'heal');
+                            
+                            // Crear hitbox de curación
+                            this.createHitbox({
+                                type: 'sage_heal',
+                                x: player.x + 15,
+                                y: player.y + 15,
+                                radius: 100,
+                                life: 30,
+                                ownerId: player.id,
+                                color: '#44FF44'
+                            });
+                        }
+                    } else if (player.character === 'shadow') {
+                        player.invisible = true;
+                        ability.cooldown = ability.maxCooldown;
+                        this.createParticles(player.x + 15, player.y + 15, '#9b59b6', 6);
+                        setTimeout(() => { player.invisible = false; }, 3000);
+                    }
+                } else if (key === 'e') {
+                    if (player.character === 'meowl') {
+                        player.dodge = Math.min(45, player.dodge + 30); // Reducido máximo de 50 a 45
+                        ability.cooldown = ability.maxCooldown;
+                        this.createParticles(player.x + 15, player.y + 15, '#FFD700', 6);
+                    } else if (player.character === 'sonic') {
+                        // Supervelocidad + transporte de survivors
+                        player.speedBoost = true;
+                        ability.cooldown = ability.maxCooldown;
+                        this.createParticles(player.x + 15, player.y + 15, '#FF8000', 12, 'explosion');
+                        
+                        // Buscar survivors cercanos para transportar (excepto pesados como Shadow)
+                        Object.values(this.players).forEach(target => {
+                            if (target.role === 'survivor' && target.id !== player.id && target.character !== 'shadow' && target.alive) {
+                                const distance = Math.sqrt(
+                                    Math.pow(player.x - target.x, 2) + 
+                                    Math.pow(player.y - target.y, 2)
+                                );
+                                
+                                if (distance <= 100) {
+                                    // Transportar al survivor a una posición segura
+                                    const safeX = Math.random() * (this.worldSize.width - 200) + 100;
+                                    const safeY = Math.random() * (this.worldSize.height - 200) + 100;
+                                    this.createParticles(target.x + 15, target.y + 15, '#FF8000', 8);
+                                    target.x = safeX;
+                                    target.y = safeY;
+                                    this.createParticles(safeX + 15, safeY + 15, '#FF8000', 8);
+                                }
+                            }
+                        });
+                        
+                        setTimeout(() => { player.speedBoost = false; }, 4000);
+                    } else if (player.character === 'sage') {
+                        player.barrier = 100;
+                        ability.cooldown = ability.maxCooldown;
+                        this.createParticles(player.x + 15, player.y + 15, '#00FFFF', 12, 'explosion');
+                        setTimeout(() => { player.barrier = 0; }, 2500); // Reducido de 3s a 2.5s
+                    } else if (player.character === 'shadow') {
+                        player.speedBoost = true;
+                        ability.cooldown = ability.maxCooldown;
+                        this.createParticles(player.x + 15, player.y + 15, '#00FF00', 6);
+                        setTimeout(() => { player.speedBoost = false; }, 2500); // Reducido de 3s a 2.5s
+                    }
+                } else if (key === 'r') {
+                    if (player.character === 'meowl') {
+                        // Grito Nocturno con hitbox
+                        ability.cooldown = ability.maxCooldown;
+                        this.createParticles(player.x + 15, player.y + 15, '#FF6B6B', 15, 'explosion');
+                        
+                        this.createHitbox({
+                            type: 'meowl_scream',
+                            x: player.x + 15,
+                            y: player.y + 15,
+                            radius: 150,
+                            life: 20,
+                            ownerId: player.id,
+                            color: '#FF6B6B'
+                        });
+                    } else if (player.character === 'sonic') {
+                        // Spin Dash - Dash rápido
+                        ability.cooldown = ability.maxCooldown;
+                        const dashDistance = 250;
+                        const angle = Math.atan2(this.mousePos.y - (player.y + 15), this.mousePos.x - (player.x + 15));
+                        const newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * dashDistance));
+                        const newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * dashDistance));
+                        this.createParticles(player.x + 15, player.y + 15, '#0080FF', 12, 'explosion');
+                        player.x = newX;
+                        player.y = newY;
+                        this.createParticles(newX + 15, newY + 15, '#0080FF', 12, 'explosion');
+                    } else if (player.character === 'sage') {
+                        // Teletransporte
+                        ability.cooldown = ability.maxCooldown;
+                        const newX = Math.random() * (this.worldSize.width - 100) + 50;
+                        const newY = Math.random() * (this.worldSize.height - 100) + 50;
+                        this.createParticles(player.x + 15, player.y + 15, '#9B59B6', 8);
+                        player.x = newX;
+                        player.y = newY;
+                        this.createParticles(newX + 15, newY + 15, '#9B59B6', 8);
+                    } else if (player.character === 'shadow') {
+                        // Salto Sombra - Dash hacia el cursor
+                        ability.cooldown = ability.maxCooldown;
+                        const dashDistance = 200;
+                        const angle = Math.random() * Math.PI * 2;
+                        const newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * dashDistance));
+                        const newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * dashDistance));
+                        this.createParticles(player.x + 15, player.y + 15, '#2C3E50', 8);
+                        player.x = newX;
+                        player.y = newY;
+                        this.createParticles(newX + 15, newY + 15, '#2C3E50', 8);
+                    }
+                }
+            }
+
+            render() {
+                // Fondo con gradiente dinámico
+                const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+                if (this.lastManStanding) {
+                    gradient.addColorStop(0, '#2c1810');
+                    gradient.addColorStop(0.5, '#4a1a1a');
+                    gradient.addColorStop(1, '#1a0a0a');
+                } else {
+                    gradient.addColorStop(0, '#1a1a2e');
+                    gradient.addColorStop(0.5, '#16213e');
+                    gradient.addColorStop(1, '#0f3460');
+                }
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.ctx.save();
+                
+                if (this.lastManStanding) {
+                    if (this.screenShake > 0.2) {
+                        const shakeX = (Math.random() - 0.5) * this.screenShake * 0.5;
+                        const shakeY = (Math.random() - 0.5) * this.screenShake * 0.5;
+                        this.ctx.translate(shakeX, shakeY);
+                    }
+                    
+                    if (this.beatZoom !== 1.0) {
+                        const centerX = this.canvas.width / 2;
+                        const centerY = this.canvas.height / 2;
+                        this.ctx.translate(centerX, centerY);
+                        this.ctx.scale(this.beatZoom, this.beatZoom);
+                        this.ctx.translate(-centerX, -centerY);
+                    }
+                }
+                
+                this.ctx.translate(-this.camera.x, -this.camera.y);
+                
+                this.drawMapObjects();
+                
+                Object.values(this.players).forEach(player => {
+                    this.drawPlayer(player);
+                });
+                
+                this.drawParticles();
+                this.drawHitboxes();
+                this.drawEscapeRing();
+                
+                this.ctx.restore();
+                
+                this.drawTimer();
+                this.drawUI();
+                this.drawRageBar();
+                this.drawFenixMode();
+                this.drawSubtitles();
+                
+                // Mostrar modo espectador (movido abajo)
+                const player = this.players[this.myPlayerId];
+                if (player && player.spectator) {
+                    const panelWidth = 500;
+                    const panelX = (this.canvas.width - panelWidth) / 2;
+                    
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.fillRect(panelX, this.canvas.height - 120, panelWidth, 60);
+                    
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 20px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('MODO ESPECTADOR', this.canvas.width / 2, this.canvas.height - 90);
+                    
+                    const alivePlayers = Object.values(this.players).filter(p => p.alive && !p.spectator);
+                    if (alivePlayers.length > 0) {
+                        if (this.spectatorTarget >= alivePlayers.length) {
+                            this.spectatorTarget = 0;
+                        }
+                        const target = alivePlayers[this.spectatorTarget];
+                        if (target) {
+                            this.ctx.font = 'bold 14px Arial';
+                            this.ctx.fillText(`Siguiendo: ${target.name} | Q/E para cambiar`, this.canvas.width / 2, this.canvas.height - 70);
+                        }
+                    } else {
+                        this.ctx.font = 'bold 14px Arial';
+                        this.ctx.fillText('No hay jugadores vivos para seguir', this.canvas.width / 2, this.canvas.height - 70);
+                    }
+                }
+                
+                if (this.lastManStanding) {
+                    const intensity = Math.max(0, (this.beatZoom - 1) * 8);
+                    const bgAlpha = Math.min(0.8, 0.6 + intensity * 0.2);
+                    this.ctx.fillStyle = `rgba(255, 0, 0, ${bgAlpha})`;
+                    this.ctx.fillRect(0, 60, this.canvas.width, 60);
+                    
+                    if (intensity > 0.05) {
+                        this.ctx.strokeStyle = `rgba(255, 255, 0, ${Math.min(0.8, intensity)})`;
+                        this.ctx.lineWidth = 2 + intensity * 2;
+                        this.ctx.strokeRect(0, 60, this.canvas.width, 60);
+                    }
+                    
+                    this.ctx.shadowColor = '#FFD700';
+                    this.ctx.shadowBlur = 8 + intensity * 12;
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 32px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('LAST MAN STANDING!', this.canvas.width / 2, 100);
+                    this.ctx.shadowBlur = 0;
+                }
+                
+                if (this.victoryMessage) {
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                    this.ctx.fillRect(0, this.canvas.height/2 - 60, this.canvas.width, 120);
+                    
+                    this.ctx.shadowColor = '#FFD700';
+                    this.ctx.shadowBlur = 20;
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 48px "Impact", "Arial Black", sans-serif';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(this.victoryMessage, this.canvas.width / 2, this.canvas.height/2);
+                    
+                    this.ctx.shadowBlur = 10;
+                    this.ctx.font = 'bold 24px "Impact", "Arial Black", sans-serif';
+                    this.ctx.fillText('LMS COMPLETED!', this.canvas.width / 2, this.canvas.height/2 + 40);
+                    
+                    this.ctx.shadowBlur = 0;
+                }
+            }
+            
+            drawSubtitles() {
+                if (this.subtitleOpacity <= 0 || !this.subtitleText) return;
+                
+                const x = this.canvas.width / 2;
+                const y = this.canvas.height - 100;
+                
+                this.ctx.font = 'bold 28px Arial';
+                this.ctx.textAlign = 'center';
+                
+                const textMetrics = this.ctx.measureText(this.subtitleText);
+                const textWidth = textMetrics.width;
+                const padding = 16;
+                
+                this.ctx.fillStyle = `rgba(0, 0, 0, ${this.subtitleOpacity * 0.8})`;
+                this.ctx.fillRect(x - textWidth/2 - padding, y - 20, textWidth + padding * 2, 40);
+                
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${this.subtitleOpacity})`;
+                this.ctx.strokeStyle = `rgba(0, 0, 0, ${this.subtitleOpacity})`;
+                this.ctx.lineWidth = 3;
+                this.ctx.strokeText(this.subtitleText, x, y + 5);
+                this.ctx.fillText(this.subtitleText, x, y + 5);
+            }
+            
+            createParticles(x, y, color, count, type = 'normal') {
+                for (let i = 0; i < count; i++) {
+                    const particle = {
+                        x: x + (Math.random() - 0.5) * 20,
+                        y: y + (Math.random() - 0.5) * 20,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 6,
+                        color: color,
+                        life: 60,
+                        maxLife: 60,
+                        size: Math.random() * 4 + 2,
+                        type: type
+                    };
+                    
+                    if (type === 'explosion') {
+                        particle.vx *= 2;
+                        particle.vy *= 2;
+                        particle.size *= 1.5;
+                    } else if (type === 'heal') {
+                        particle.vy = -Math.abs(particle.vy);
+                        particle.size *= 0.8;
+                    }
+                    
+                    this.particles.push(particle);
+                }
+            }
+            
+            updateParticles() {
+                this.particles = this.particles.filter(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life--;
+                    return particle.life > 0;
+                });
+            }
+            
+            updateHitboxes() {
+                this.hitboxes = this.hitboxes.filter(hitbox => {
+                    hitbox.life--;
+                    
+                    // Verificar colisiones
+                    if (hitbox.life > 0) {
+                        this.checkHitboxCollisions(hitbox);
+                    }
+                    
+                    return hitbox.life > 0;
+                });
+            }
+            
+            checkHitboxCollisions(hitbox) {
+                Object.values(this.players).forEach(target => {
+                    if (!target.alive || target.id === hitbox.ownerId) return;
+                    
+                    // Verificar si el target está en el rango del hitbox
+                    const distance = Math.sqrt(
+                        Math.pow(target.x + 15 - hitbox.x, 2) + 
+                        Math.pow(target.y + 15 - hitbox.y, 2)
+                    );
+                    
+                    if (distance <= hitbox.radius) {
+                        this.applyHitboxEffect(hitbox, target);
+                        hitbox.life = 0; // Destruir hitbox después del impacto
+                    }
+                });
+            }
+            
+            applyHitboxEffect(hitbox, target) {
+                const attacker = this.players[hitbox.ownerId];
+                if (!attacker) return;
+                
+                switch (hitbox.type) {
+                    case 'killer_attack':
+                        if (target.role === 'survivor') {
+                            let damage = 30; // Reducido de 35 a 30
+                            // Boost de daño durante modo Fenix
+                            if (this.fenixMode.active) damage *= 2;
+                            
+                            // Sistema de esquive de Meowl y Sonic - siempre se consume
+                            if ((target.character === 'meowl' || target.character === 'sonic') && target.dodge > 0) {
+                                target.dodge = Math.max(0, target.dodge - 25);
+                                const dodgeColor = target.character === 'sonic' ? '#0080FF' : '#FFD700';
+                                this.createParticles(target.x + 15, target.y + 15, dodgeColor, 6);
+                                // Aumentar rage del killer
+                                if (attacker.role === 'killer') this.rageLevel = Math.min(this.maxRage, this.rageLevel + 25);
+                                return; // Esquive exitoso - NO hacer daño
+                            }
+                            
+                            // Shadow solo puede ser stunneado, no matado
+                            if (target.character === 'shadow') {
+                                target.stunned = true;
+                                this.createParticles(target.x + 15, target.y + 15, '#9B59B6', 8);
+                                setTimeout(() => { target.stunned = false; }, 3000);
+                                return; // Shadow no recibe daño, solo stun
+                            }
+                            
+                            // Verificar barrera de Sage
+                            if (target.character === 'sage' && target.barrier > 0) {
+                                target.barrier = Math.max(0, target.barrier - damage);
+                                this.createParticles(target.x + 15, target.y + 15, '#00FFFF', 6);
+                                // Aumentar rage del killer
+                                if (attacker.role === 'killer') this.rageLevel = Math.min(this.maxRage, this.rageLevel + 15);
+                                return; // Bloqueado por barrera
+                            }
+                            
+                            target.health = Math.max(0, target.health - damage);
+                            this.createParticles(target.x + 15, target.y + 15, '#FF0000', 8);
+
+                            // Aplicar miniboost / knockback: alejar al survivor del killer
+                            try {
+                                const dx = target.x - attacker.x;
+                                const dy = target.y - attacker.y;
+                                const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                                const knockbackDistance = 100; // ajustar si quieres más/menos empuje
+                                const nx = dx / dist;
+                                const ny = dy / dist;
+                                target.x = Math.max(0, Math.min(this.worldSize.width - 30, Math.round(target.x + nx * knockbackDistance)));
+                                target.y = Math.max(0, Math.min(this.worldSize.height - 30, Math.round(target.y + ny * knockbackDistance)));
+                                // Partículas en la nueva posición para visual
+                                this.createParticles(target.x + 15, target.y + 15, '#FF8000', 6);
+                            } catch (e) {
+                                console.warn('Error aplicando knockback local:', e);
+                            }
+                            
+                            // NO aumentar rage por hacer daño normal
+                            
+                            if (target.health <= 0) {
+                                if (this.lastManStanding) {
+                                    // Durante LMS es instakill
+                                    target.alive = false;
+                                    target.spectator = true;
+                                    if (this.deathSound) {
+                                        try { this.deathSound.currentTime = 0; } catch (e) {}
+                                        this.deathSound.play().catch(() => {});
+                                    }
+                                } else if (!target.secondLife) {
+                                    // Primera muerte - quedar downed
+                                    target.downed = true;
+                                    target.health = 1;
+                                    target.downedTimer = 0;
+                                    this.createParticles(target.x + 15, target.y + 15, '#FF6B6B', 8);
+                                } else {
+                                    // Segunda muerte - modo espectador
+                                    target.alive = false;
+                                    target.spectator = true;
+                                    if (this.deathSound) {
+                                        try { this.deathSound.currentTime = 0; } catch (e) {}
+                                        this.deathSound.play().catch(() => {});
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 'meowl_scream':
+                        if (target.role === 'killer') {
+                            target.stunned = true;
+                            this.createParticles(target.x + 15, target.y + 15, '#FF6B6B', 6);
+                            // Meowl gana dodge por stunear
+                            if (attacker.character === 'meowl') {
+                                attacker.dodge = Math.min(45, attacker.dodge + 25);
+                            }
+                            // Aumentar rage significativamente por stun
+                            if (target.id === this.myPlayerId) {
+                                this.rageLevel = Math.min(this.maxRage, this.rageLevel + 40);
+                            }
+                            setTimeout(() => { target.stunned = false; }, 2000);
+                        }
+                        break;
+                        
+                    case 'sonic_dropdash':
+                        if (target.role === 'killer') {
+                            target.stunned = true;
+                            this.createParticles(target.x + 15, target.y + 15, '#0080FF', 8);
+                            // Sonic gana dodge por stunear (3 stuns recargan el dodge)
+                            if (attacker.character === 'sonic') {
+                                attacker.stunCount = (attacker.stunCount || 0) + 1;
+                                if (attacker.stunCount >= 3) {
+                                    attacker.dodge = Math.min(45, attacker.dodge + 45); // Recarga completa
+                                    attacker.stunCount = 0;
+                                    this.createParticles(attacker.x + 15, attacker.y + 15, '#FFD700', 10);
+                                }
+                            }
+                            // Aumentar rage por stun
+                            if (target.id === this.myPlayerId) {
+                                this.rageLevel = Math.min(this.maxRage, this.rageLevel + 35);
+                            }
+                            setTimeout(() => { target.stunned = false; }, 2500);
+                        }
+                        break;
+                        
+                    case 'sage_heal':
+                        if (target.role === 'survivor' && target.id !== hitbox.ownerId) {
+                            target.health = Math.min(target.maxHealth, target.health + 15);
+                            this.createParticles(target.x + 15, target.y + 15, '#44FF44', 6);
+                        }
+                        break;
+                }
+            }
+            
+            handleAttack() {
+                const player = this.players[this.myPlayerId];
+                if (!player || !player.alive || player.spectator || player.downed || player.attackCooldown > 0 || this.escapingPlayers.has(player.id)) return;
+                
+                if (player.role === 'killer') {
+                    // Ataque básico del killer
+                    const attackRange = 50;
+                    const angle = Math.atan2(this.mousePos.y - (player.y + 15), this.mousePos.x - (player.x + 15));
+                    
+                    this.createHitbox({
+                        type: 'killer_attack',
+                        x: player.x + 15 + Math.cos(angle) * 25,
+                        y: player.y + 15 + Math.sin(angle) * 25,
+                        radius: attackRange,
+                        life: 8,
+                        ownerId: player.id,
+                        color: '#FF0000'
+                    });
+                    
+                    player.attackCooldown = 1080; // Reducido a 1.08 segundos (1.2s * 0.9)
+                    this.createParticles(player.x + 15, player.y + 15, '#FF0000', 6);
+                }
+            }
+            
+            createHitbox(hitboxData) {
+                this.hitboxes.push(hitboxData);
+            }
+            
+            tryRevive() {
+                const player = this.players[this.myPlayerId];
+                if (!player || !player.alive || player.spectator || player.downed) return;
+                
+                // Buscar jugadores downed cercanos del mismo equipo
+                Object.values(this.players).forEach(target => {
+                    if (target.downed && target.role === player.role && target.id !== player.id) {
+                        const distance = Math.sqrt(
+                            Math.pow(player.x - target.x, 2) + 
+                            Math.pow(player.y - target.y, 2)
+                        );
+                        
+                        if (distance <= 50) {
+                            target.beingRevived = player.id;
+                        }
+                    }
+                });
+            }
+            
+            stopRevive() {
+                Object.values(this.players).forEach(player => {
+                    if (player.beingRevived === this.myPlayerId) {
+                        player.beingRevived = null;
+                        player.reviveProgress = 0;
+                    }
+                });
+            }
+            
+            updateRevive() {
+                Object.values(this.players).forEach(player => {
+                    if (player.downed) {
+                        player.downedTimer++;
+                        if (player.downedTimer >= 1200) {
+                            // Reproducir sonido de muerte al morir por tiempo de downed
+                            if (this.deathSound && player.id === this.myPlayerId) {
+                                try { this.deathSound.currentTime = 0; } catch (e) {}
+                                this.deathSound.play().catch(() => {});
+                            }
+                            player.alive = false;
+                            player.spectator = true;
+                            player.downed = false;
+                            this.createParticles(player.x + 15, player.y + 15, '#8B0000', 15);
+                            return;
+                        }
+                    }
+                    
+                    if (player.downed && player.beingRevived) {
+                        const reviver = this.players[player.beingRevived];
+                        if (reviver && reviver.alive && !reviver.downed) {
+                            const distance = Math.sqrt(
+                                Math.pow(reviver.x - player.x, 2) + 
+                                Math.pow(reviver.y - player.y, 2)
+                            );
+                            
+                            // Para jugadores humanos necesita F, para bots automático
+                            const canRevive = reviver.isBot || this.keys['f'];
+                            
+                            if (distance <= 50 && canRevive) {
+                                player.reviveProgress += reviver.isBot ? 3 : 2;
+                                
+                                if (player.reviveProgress >= 100) {
+                                    // Revive completo
+                                    player.downed = false;
+                                    player.secondLife = true;
+                                    player.health = 80; // Segunda vida siempre 80 HP
+                                    player.maxHealth = 80;
+                                    player.reviveProgress = 0;
+                                    player.beingRevived = null;
+                                    player.downedTimer = 0;
+                                    this.createParticles(player.x + 15, player.y + 15, '#FFD700', 12);
+                                }
+                            } else if (distance > 50) {
+                                player.beingRevived = null;
+                                player.reviveProgress = 0;
+                            }
+                        } else {
+                            player.beingRevived = null;
+                            player.reviveProgress = 0;
+                        }
+                    }
+                });
+            }
+            
+            updateEscapeRing() {
+                // Activar anillo cuando queden exactamente 80 segundos (1:20)
+                if (this.gameTimer <= 80 && !this.escapeRing.active) {
+                    this.escapeRing.active = true;
+                }
+                
+                // Rotar Meowl si el anillo está activo
+                if (this.escapeRing.active) {
+                    this.escapeRing.rotation += 0.05;
+                    
+                    // Verificar si algún survivor está dentro del anillo
+                    this.checkEscapeRingCollision();
+                }
+            }
+            
+            activateFenixMode() {
+                const player = this.players[this.myPlayerId];
+                if (!player || player.role !== 'killer' || this.fenixMode.active || this.fenixUsed) return;
+                
+                this.fenixMode.active = true;
+                this.fenixMode.timer = 5400;
+                this.fenixUsed = true;
+                this.rageLevel = this.maxRage;
+            }
+            
+            updateFenixMode() {
+                if (this.fenixMode.active && this.fenixMode.timer > 0) {
+                    this.fenixMode.timer--;
+                    if (this.fenixMode.timer <= 0) {
+                        this.fenixMode.active = false;
+                        this.rageLevel = 0;
+                    }
+                }
+            }
+            
+            checkEscapeRingCollision() {
+                const centerX = this.worldSize.width / 2;
+                const centerY = this.worldSize.height / 2;
+                const ringRadius = 120;
+                
+                const aliveSurvivors = Object.values(this.players).filter(p => 
+                    p.role === 'survivor' && p.alive && !p.spectator
+                );
+                
+                let survivorsInRing = 0;
+                
+                aliveSurvivors.forEach(player => {
+                    const distance = Math.sqrt(
+                        Math.pow(player.x + 15 - centerX, 2) + 
+                        Math.pow(player.y + 15 - centerY, 2)
+                    );
+                    
+                    if (distance <= ringRadius) {
+                        if (!this.escapingPlayers.has(player.id)) {
+                            this.escapingPlayers.add(player.id);
+                            this.createParticles(player.x + 15, player.y + 15, '#FFD700', 20, 'escape');
+                        }
+                        survivorsInRing++;
+                    }
+                });
+                
+                // Verificar condiciones de escape
+                if (this.lastManStanding && survivorsInRing > 0) {
+                    // En LMS: cualquier survivor que escape gana individualmente
+                    const escapedSurvivor = aliveSurvivors.find(p => {
+                        const distance = Math.sqrt(
+                            Math.pow(p.x + 15 - centerX, 2) + 
+                            Math.pow(p.y + 15 - centerY, 2)
+                        );
+                        return distance <= ringRadius;
+                    });
+                    
+                    if (escapedSurvivor) {
+                        this.killerVictoryAnimation.active = true;
+                        this.killerVictoryAnimation.timer = 180;
+                        this.endGame(`${escapedSurvivor.character.toUpperCase()} ESCAPED!`);
+                    }
+                } else if (!this.lastManStanding && survivorsInRing === aliveSurvivors.length && aliveSurvivors.length > 0) {
+                    // Modo normal: TODOS los survivors deben escapar
+                    this.killerVictoryAnimation.active = true;
+                    this.killerVictoryAnimation.timer = 180;
+                    this.endGame('ALL SURVIVORS ESCAPED!');
+                }
+            }
+            
+            switchSpectatorTarget(direction) {
+                const alivePlayers = Object.values(this.players).filter(p => p.alive && !p.spectator);
+                if (alivePlayers.length > 0) {
+                    this.spectatorTarget = (this.spectatorTarget + direction + alivePlayers.length) % alivePlayers.length;
+                } else {
+                    this.spectatorTarget = 0;
+                }
+            }
+            
+            endGame(message) {
+                this.victoryMessage = message;
+                setTimeout(() => {
+                    document.getElementById('game').classList.remove('active');
+                    document.getElementById('lobby').classList.add('active');
+                    this.resetGame();
+                }, 5000);
+            }
+            
+            resetGame() {
+                this.players = {};
+                this.gameTimer = this.baseTimer;
+                this.lastManStanding = false;
+                this.victoryMessage = null;
+                this.rageLevel = 0;
+                this.fenixMode = { active: false, timer: 0 };
+                this.escapeRing = { active: false, rotation: 0 };
+                this.particles = [];
+                this.hitboxes = [];
+                this.spectatorTarget = 0;
+                this.fenixUsed = false;
+                this.gameStarted = false;
+                this.musicPlaying = false;
+                this.escapingPlayers = new Set();
+                this.killerVictoryAnimation = { active: false, timer: 0 };
+                
+                // Detener música si está reproduciéndose
+                if (this.lmsMusic) {
+                    this.lmsMusic.pause();
+                    this.lmsMusic.currentTime = 0;
+                }
+            }
+            
+            updateRage() {
+                const player = this.players[this.myPlayerId];
+                if (!player || player.role !== 'killer') return;
+                
+                // Rage pasivo solo cuando está stunned
+                if (player.stunned && this.rageLevel < this.maxRage) {
+                    this.rageLevel = Math.min(this.maxRage, this.rageLevel + 0.1);
+                }
+            }
+            
+            drawParticles() {
+                this.particles.forEach(particle => {
+                    const alpha = particle.life / particle.maxLife;
+                    const size = particle.size * alpha;
+                    
+                    this.ctx.save();
+                    this.ctx.globalAlpha = alpha;
+                    
+                    if (particle.type === 'explosion') {
+                        // Efecto de explosión con gradiente
+                        const gradient = this.ctx.createRadialGradient(
+                            particle.x, particle.y, 0,
+                            particle.x, particle.y, size
+                        );
+                        gradient.addColorStop(0, particle.color);
+                        gradient.addColorStop(1, 'transparent');
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    } else if (particle.type === 'heal') {
+                        // Efecto de curación con brillo
+                        this.ctx.shadowColor = particle.color;
+                        this.ctx.shadowBlur = 10;
+                        this.ctx.fillStyle = particle.color;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    } else if (particle.type === 'escape') {
+                        // Efecto de escape con brillo dorado
+                        this.ctx.shadowColor = '#FFD700';
+                        this.ctx.shadowBlur = 15;
+                        this.ctx.fillStyle = particle.color;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, size * 1.5, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    } else {
+                        // Partícula normal mejorada
+                        this.ctx.fillStyle = particle.color;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    
+                    this.ctx.restore();
+                });
+            }
+            
+            drawHitboxes() {
+                this.hitboxes.forEach(hitbox => {
+                    const alpha = Math.min(0.3, hitbox.life / 30);
+                    this.ctx.strokeStyle = hitbox.color;
+                    this.ctx.fillStyle = hitbox.color;
+                    this.ctx.globalAlpha = alpha;
+                    this.ctx.lineWidth = 2;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(hitbox.x, hitbox.y, hitbox.radius, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                    
+                    this.ctx.globalAlpha = alpha * 0.2;
+                    this.ctx.fill();
+                    
+                    this.ctx.globalAlpha = 1.0;
+                });
+            }
+            
+            drawStatusEffects(player) {
+                const iconSize = 12;
+                let iconX = player.x + 35;
+                const iconY = player.y - 15;
+                
+                if (player.flying) {
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.fillRect(iconX, iconY, iconSize, iconSize);
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.font = '10px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('✈', iconX + iconSize/2, iconY + iconSize - 2);
+                    iconX += iconSize + 2;
+                }
+                
+                if (player.speedBoost) {
+                    this.ctx.fillStyle = '#00FF00';
+                    this.ctx.fillRect(iconX, iconY, iconSize, iconSize);
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.font = '10px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('⚡', iconX + iconSize/2, iconY + iconSize - 2);
+                    iconX += iconSize + 2;
+                }
+                
+                if (player.barrier > 0) {
+                    this.ctx.fillStyle = '#00FFFF';
+                    this.ctx.fillRect(iconX, iconY, iconSize, iconSize);
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.font = '10px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('🛡', iconX + iconSize/2, iconY + iconSize - 2);
+                    iconX += iconSize + 2;
+                }
+                
+                if (player.stunned) {
+                    this.ctx.fillStyle = '#8B0000';
+                    this.ctx.fillRect(iconX, iconY, iconSize, iconSize);
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.font = '10px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('💫', iconX + iconSize/2, iconY + iconSize - 2);
+                }
+            }
+
+            drawPlayer(player) {
+                if (!player) return;
+                if (!player.alive && !player.spectator && !player.downed) return;
+                
+                // No dibujar survivors que están escapando
+                if (this.escapingPlayers.has(player.id)) return;
+                
+                const size = 30;
+                
+                if (player.spectator) {
+                    this.ctx.globalAlpha = 0.2;
+                } else if (player.downed) {
+                    this.ctx.globalAlpha = 0.6;
+                } else if (player.invisible) {
+                    this.ctx.globalAlpha = 0.3;
+                }
+                
+                let playerColor = player.role === 'survivor' ? '#4ecdc4' : '#ff6b6b';
+                if (player.downed) {
+                    playerColor = '#8B0000'; // Rojo oscuro para downed
+                } else if (player.secondLife) {
+                    playerColor = '#FFD700'; // Dorado para segunda vida
+                } else if (player.role === 'killer' && this.killerVictoryAnimation.active) {
+                    playerColor = '#FF0000'; // Rojo brillante para killer ganador
+                }
+                
+                this.ctx.fillStyle = playerColor;
+                this.ctx.fillRect(player.x, player.y, size, size);
+                
+                this.ctx.globalAlpha = 1.0;
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(player.name || 'Unknown', player.x + size/2, player.y - 5);
+
+                if (player.character === 'meowl') {
+                    if (this.meowlImage && this.meowlImage.complete) {
+                        this.ctx.drawImage(this.meowlImage, player.x, player.y, size, size);
+                    } else {
+                        this.ctx.font = '20px Arial';
+                        this.ctx.fillText('🦉', player.x + size/2, player.y + size/2 + 5);
+                    }
+                } else if (player.character === 'sage') {
+                    if (this.sageImage && this.sageImage.complete) {
+                        this.ctx.drawImage(this.sageImage, player.x, player.y, size, size);
+                    } else {
+                        this.ctx.font = '20px Arial';
+                        this.ctx.fillText('🔮', player.x + size/2, player.y + size/2 + 5);
+                    }
+                } else if (player.character === 'sonic') {
+                    this.ctx.font = '20px Arial';
+                    this.ctx.fillText('💨', player.x + size/2, player.y + size/2 + 5);
+                } else if (player.character === 'shadow') {
+                    this.ctx.font = '20px Arial';
+                    this.ctx.fillText('👻', player.x + size/2, player.y + size/2 + 5);
+                }
+                
+                this.drawHealthBars(player);
+                this.drawStatusEffects(player);
+
+                if (player.id === this.myPlayerId) {
+                    this.ctx.strokeStyle = '#fff';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(player.x - 2, player.y - 2, size + 4, size + 4);
+                }
+            }
+            
+            drawHealthBars(player) {
+                const barWidth = 60;
+                const barHeight = 8;
+                const x = player.x - 15;
+                const y = player.y - 30;
+                
+                // Fondo de la barra
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(x - 1, y - 1, barWidth + 2, barHeight + 2);
+                this.ctx.fillStyle = '#333';
+                this.ctx.fillRect(x, y, barWidth, barHeight);
+                
+                // Color de la vida según el estado
+                let healthColor;
+                if (player.secondLife) {
+                    healthColor = '#FFD700'; // Dorado para segunda vida
+                } else if (player.health > 100) {
+                    healthColor = '#9b59b6'; // Morado para vida extra
+                } else if (player.health === player.maxHealth) {
+                    healthColor = '#44ff44'; // Verde para vida completa
+                } else {
+                    healthColor = '#ff4444'; // Rojo para vida baja
+                }
+                
+                this.ctx.fillStyle = healthColor;
+                this.ctx.fillRect(x, y, (player.health / player.maxHealth) * barWidth, barHeight);
+                
+                // Texto de vida
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.strokeStyle = 'black';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeText(`${player.health}/${player.maxHealth}`, x + barWidth/2, y - 2);
+                this.ctx.fillText(`${player.health}/${player.maxHealth}`, x + barWidth/2, y - 2);
+                
+                // Indicadores de estado
+                if (player.downed) {
+                    this.ctx.fillStyle = '#FF0000';
+                    this.ctx.font = 'bold 8px Arial';
+                    this.ctx.strokeText('DOWNED', x + barWidth/2, y + barHeight + 10);
+                    this.ctx.fillText('DOWNED', x + barWidth/2, y + barHeight + 10);
+                    
+                    // Barra de revive
+                    if (player.reviveProgress > 0) {
+                        const reviveBarY = y + barHeight + 12;
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.fillRect(x, reviveBarY, barWidth, 4);
+                        this.ctx.fillStyle = '#00FF00';
+                        this.ctx.fillRect(x, reviveBarY, (player.reviveProgress / 100) * barWidth, 4);
+                    }
+                } else if (player.secondLife) {
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 8px Arial';
+                    this.ctx.strokeText('2ND LIFE', x + barWidth/2, y + barHeight + 10);
+                    this.ctx.fillText('2ND LIFE', x + barWidth/2, y + barHeight + 10);
+                }
+                
+                if (player.role === 'survivor') {
+                    if (player.character === 'meowl' || player.character === 'sonic') {
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.fillRect(x, y + 8, barWidth, barHeight - 2);
+                        this.ctx.fillStyle = player.character === 'sonic' ? '#0080FF' : '#FFD700';
+                        this.ctx.fillRect(x, y + 8, (player.dodge / 50) * barWidth, barHeight - 2);
+                    } else if (player.character === 'sage') {
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.fillRect(x, y + 8, barWidth, barHeight - 2);
+                        this.ctx.fillStyle = '#00FFFF';
+                        this.ctx.fillRect(x, y + 8, ((player.barrier || 0) / 100) * barWidth, barHeight - 2);
+                    }
+                }
+            }
+
+            drawTimer() {
+                let timer = this.gameTimer;
+                let color = timer <= 30 ? '#ff4444' : 'white';
+                let label = '';
+                
+                if (this.lastManStanding && this.lmsMusic && this.musicPlaying) {
+                    const remaining = this.lmsMusic.duration - this.lmsMusic.currentTime;
+                    timer = Math.max(0, Math.floor(remaining));
+                    color = timer <= 30 ? '#ff4444' : '#FFD700';
+                    label = 'LMS ';
+                }
+                
+                const minutes = Math.floor(timer / 60);
+                const seconds = timer % 60;
+                const timeText = `${label}${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Timer con mejor diseño
+                this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = 2;
+                const timerX = this.canvas.width/2 - 80;
+                const timerY = 10;
+                this.ctx.fillRect(timerX, timerY, 160, 40);
+                this.ctx.strokeRect(timerX, timerY, 160, 40);
+                
+                this.ctx.shadowColor = color;
+                this.ctx.shadowBlur = 10;
+                this.ctx.fillStyle = color;
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(timeText, this.canvas.width/2, 35);
+                this.ctx.shadowBlur = 0;
+            }
+
+            drawUI() {
+                const alivePlayers = Object.values(this.players).filter(p => p.alive).length;
+                const totalBots = Object.values(this.players).filter(p => p.isBot).length;
+                
+                // Panel de información mejorado
+                this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                this.ctx.strokeStyle = '#4ecdc4';
+                this.ctx.lineWidth = 2;
+                this.ctx.fillRect(10, 10, 200, 60);
+                this.ctx.strokeRect(10, 10, 200, 60);
+                
+                this.ctx.fillStyle = '#4ecdc4';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(`💫 Jugadores vivos: ${alivePlayers}`, 15, 30);
+                this.ctx.fillText(`🤖 Bots: ${totalBots}`, 15, 50);
+                
+                this.drawSidePanel();
+                this.drawAbilityButtons();
+            }
+            
+            drawRageBar() {
+                const player = this.players[this.myPlayerId];
+                if (!player || player.role !== 'killer') return;
+                
+                // Ocultar barra durante LMS
+                if (this.lastManStanding) return;
+                
+                const barWidth = 25;
+                const barHeight = 200;
+                const x = 20;
+                const y = this.canvas.height / 2 - 100;
+                
+                // Fondo con borde
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                this.ctx.strokeStyle = '#FF0000';
+                this.ctx.lineWidth = 2;
+                this.ctx.fillRect(x - 5, y - 5, barWidth + 40, barHeight + 10);
+                this.ctx.strokeRect(x - 5, y - 5, barWidth + 40, barHeight + 10);
+                
+                // Barra de rage vertical
+                this.ctx.fillStyle = '#333';
+                this.ctx.fillRect(x, y, barWidth, barHeight);
+                
+                // Llenar desde abajo hacia arriba con gradiente
+                const fillHeight = (this.rageLevel / this.maxRage) * barHeight;
+                const rageGradient = this.ctx.createLinearGradient(x, y + barHeight, x, y);
+                rageGradient.addColorStop(0, '#FF0000');
+                rageGradient.addColorStop(0.5, '#FF4500');
+                rageGradient.addColorStop(1, '#FFD700');
+                this.ctx.fillStyle = rageGradient;
+                this.ctx.fillRect(x, y + barHeight - fillHeight, barWidth, fillHeight);
+                
+                // Efecto de brillo si está lleno
+                if (this.rageLevel >= this.maxRage) {
+                    this.ctx.shadowColor = '#FFD700';
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.strokeStyle = '#FFD700';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.strokeRect(x, y, barWidth, barHeight);
+                    this.ctx.shadowBlur = 0;
+                }
+                
+                // Emoji según nivel de rage
+                let emoji = '😐'; // Neutral
+                if (this.rageLevel > 75) emoji = '😡'; // Muy enojado
+                else if (this.rageLevel > 50) emoji = '😠'; // Enojado
+                else if (this.rageLevel > 25) emoji = '😤'; // Molesto
+                
+                this.ctx.font = '20px Arial';
+                this.ctx.fillText(emoji, x + barWidth + 5, y - 10);
+                
+                // Texto horizontal
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('RAGE', x + barWidth/2, y + barHeight + 15);
+            }
+            
+            drawFenixMode() {
+                if (!this.fenixMode.active) return;
+                
+                // Texto rojo abajo
+                this.ctx.fillStyle = '#FF0000';
+                this.ctx.font = 'bold 32px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.strokeStyle = '#000';
+                this.ctx.lineWidth = 3;
+                
+                const messages = [
+                    'YA ME ARDÍ Y LOS VOY A MATAR',
+                    'I\'M PISSED AND I\'M GONNA KILL THEM',
+                    'JE SUIS ÉNERVÉ ET JE VAIS LES TUER'
+                ];
+                const message = messages[Math.floor(Math.random() * messages.length)];
+                
+                this.ctx.strokeText(message, this.canvas.width / 2, this.canvas.height - 100);
+                this.ctx.fillText(message, this.canvas.width / 2, this.canvas.height - 100);
+                
+                // Timer separado estilo rage mode - siempre 1:30
+                const remainingSeconds = Math.floor(this.fenixMode.timer / 60);
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                const timeText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Fondo rojo con borde
+                this.ctx.fillStyle = 'rgba(139, 0, 0, 0.9)';
+                this.ctx.fillRect(this.canvas.width/2 - 70, 60, 140, 30);
+                this.ctx.strokeStyle = '#FF0000';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(this.canvas.width/2 - 70, 60, 140, 30);
+                
+                // Texto FENIX MODE
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.font = 'bold 12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('FENIX MODE', this.canvas.width/2, 72);
+                
+                // Timer
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.fillText(timeText, this.canvas.width/2, 86);
+            }
+            
+            drawSidePanel() {
+                const player = this.players[this.myPlayerId];
+                if (!player) return;
+                
+                const panelX = 20;
+                const panelY = this.canvas.height - 150;
+                const panelWidth = 350;
+                const panelHeight = 120;
+                
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
+                
+                this.ctx.strokeStyle = player.role === 'survivor' ? '#4ecdc4' : '#ff6b6b';
+                this.ctx.lineWidth = 3;
+                this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
+                
+                const avatarSize = 80;
+                this.ctx.fillStyle = player.role === 'survivor' ? '#4ecdc4' : '#ff6b6b';
+                this.ctx.fillRect(panelX + 10, panelY + 20, avatarSize, avatarSize);
+                
+                if (player.character === 'meowl' && this.meowlImage && this.meowlImage.complete) {
+                    this.ctx.drawImage(this.meowlImage, panelX + 10, panelY + 20, avatarSize, avatarSize);
+                } else if (player.character === 'sage' && this.sageImage && this.sageImage.complete) {
+                    this.ctx.drawImage(this.sageImage, panelX + 10, panelY + 20, avatarSize, avatarSize);
+                } else {
+                    this.ctx.font = '50px Arial';
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.textAlign = 'center';
+                    let emoji = '👻';
+                    if (player.character === 'meowl') emoji = '🦉';
+                    else if (player.character === 'sage') emoji = '🔮';
+                    else if (player.character === 'sonic') emoji = '💨';
+                    this.ctx.fillText(emoji, panelX + 50, panelY + 70);
+                }
+                
+                const barX = panelX + 100;
+                const barY = panelY + 25;
+                const barWidth = 180;
+                const barHeight = 20;
+                
+                this.ctx.fillStyle = '#333';
+                this.ctx.fillRect(barX, barY, barWidth, barHeight);
+                
+                let healthColor = '#44ff44';
+                let maxHealth = 100;
+                if (player.health > 100) {
+                    healthColor = '#9b59b6';
+                    maxHealth = player.character === 'sage' ? 150 : 160;
+                } else if (player.health < 100) {
+                    healthColor = '#ff4444';
+                }
+                
+                this.ctx.fillStyle = healthColor;
+                this.ctx.fillRect(barX, barY, (player.health / maxHealth) * barWidth, barHeight);
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(`${player.name} - ${player.character.toUpperCase()} (${player.role.toUpperCase()})`, barX, barY - 5);
+                this.ctx.fillText(`HP: ${player.health}/${maxHealth}`, barX, barY + 35);
+                
+                if (player.character === 'meowl' || player.character === 'sonic') {
+                    const dodgeBarY = barY + 50;
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.fillRect(barX, dodgeBarY, barWidth, 15);
+                    this.ctx.fillStyle = player.character === 'sonic' ? '#0080FF' : '#FFD700';
+                    this.ctx.fillRect(barX, dodgeBarY, ((player.dodge || 0) / 50) * barWidth, 15);
+                    this.ctx.fillText(`Esquive: ${player.dodge || 0}/50`, barX, dodgeBarY + 25);
+                } else if (player.character === 'sage') {
+                    const barrierBarY = barY + 50;
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.fillRect(barX, barrierBarY, barWidth, 15);
+                    this.ctx.fillStyle = '#00FFFF';
+                    this.ctx.fillRect(barX, barrierBarY, ((player.barrier || 0) / 100) * barWidth, 15);
+                    this.ctx.fillText(`Barrera: ${player.barrier || 0}/100`, barX, barrierBarY + 25);
+                }
+                
+                if (this.lastManStanding && player.role === 'survivor') {
+                    this.ctx.fillStyle = '#ff6b6b';
+                    this.ctx.font = 'bold 12px Arial';
+                    let lmsText = 'LAST MAN STANDING!';
+                    if (player.character === 'meowl') lmsText += ' (Culpa: -20% Vel)';
+                    else if (player.character === 'sage') lmsText += ' (Sueño: +25% Vel)';
+                    this.ctx.fillText(lmsText, barX, barY + 90);
+                }
+            }
+            
+            drawAbilityButtons() {
+                const player = this.players[this.myPlayerId];
+                if (!player) return;
+                
+                const buttonSize = 60;
+                const buttonSpacing = 10;
+                const startX = this.canvas.width - (buttonSize * 3 + buttonSpacing * 2 + 20);
+                const startY = this.canvas.height - buttonSize - 20;
+                
+                const qReady = this.abilities.q.cooldown === 0;
+                const qDisabled = this.lastManStanding && player.character === 'sage';
+                const qColor = qDisabled ? 'rgba(255, 0, 0, 0.5)' : (qReady ? 'rgba(0, 255, 0, 0.8)' : 'rgba(128, 128, 128, 0.8)');
+                this.ctx.fillStyle = qColor;
+                this.ctx.fillRect(startX, startY, buttonSize, buttonSize);
+                
+                this.ctx.strokeStyle = qDisabled ? '#ff0000' : (qReady ? '#00ff00' : '#666');
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(startX, startY, buttonSize, buttonSize);
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Q', startX + buttonSize/2, startY + buttonSize/2 + 8);
+                
+                if (!qReady) {
+                    const cooldownPercent = this.abilities.q.cooldown / this.abilities.q.maxCooldown;
+                    this.ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                    this.ctx.fillRect(startX, startY + buttonSize * (1 - cooldownPercent), buttonSize, buttonSize * cooldownPercent);
+                    
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.font = 'bold 12px Arial';
+                    this.ctx.fillText(Math.ceil(this.abilities.q.cooldown / 1000) + 's', startX + buttonSize/2, startY - 5);
+                }
+                
+                const eReady = this.abilities.e.cooldown === 0;
+                this.ctx.fillStyle = eReady ? 'rgba(0, 255, 255, 0.8)' : 'rgba(128, 128, 128, 0.8)';
+                this.ctx.fillRect(startX + buttonSize + buttonSpacing, startY, buttonSize, buttonSize);
+                
+                this.ctx.strokeStyle = eReady ? '#00ffff' : '#666';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(startX + buttonSize + buttonSpacing, startY, buttonSize, buttonSize);
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('E', startX + buttonSize + buttonSpacing + buttonSize/2, startY + buttonSize/2 + 8);
+                
+                if (!eReady) {
+                    const cooldownPercent = this.abilities.e.cooldown / this.abilities.e.maxCooldown;
+                    this.ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                    this.ctx.fillRect(startX + buttonSize + buttonSpacing, startY + buttonSize * (1 - cooldownPercent), buttonSize, buttonSize * cooldownPercent);
+                    
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.font = 'bold 12px Arial';
+                    this.ctx.fillText(Math.ceil(this.abilities.e.cooldown / 1000) + 's', startX + buttonSize + buttonSpacing + buttonSize/2, startY - 5);
+                }
+                
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                this.ctx.fillRect(startX, startY - 50, buttonSize * 3 + buttonSpacing * 2, 40);
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 12px Arial';
+                this.ctx.textAlign = 'left';
+                
+                if (player.character === 'meowl') {
+                    this.ctx.fillText('Q: Vuelo (5s)', startX + 5, startY - 30);
+                    this.ctx.fillText('E: Dodge | R: Grito', startX + 5, startY - 15);
+                } else if (player.character === 'sonic') {
+                    this.ctx.fillText('Q: Dropdash (20s)', startX + 5, startY - 30);
+                    this.ctx.fillText('E: Supervel | R: Spin', startX + 5, startY - 15);
+                } else if (player.character === 'sage') {
+                    const healText = this.lastManStanding ? 'Q: Curación (LMS)' : 'Q: Curación (+30)';
+                    this.ctx.fillStyle = this.lastManStanding ? '#ff6666' : 'white';
+                    this.ctx.fillText(healText, startX + 5, startY - 30);
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.fillText('E: Barrera | R: Tele', startX + 5, startY - 15);
+                } else if (player.character === 'shadow') {
+                    this.ctx.fillText('Q: Invisible (3s)', startX + 5, startY - 30);
+                    this.ctx.fillText('E: Speed | R: Dash', startX + 5, startY - 15);
+                }
+                
+                // Botón R para habilidad ultimate
+                const rReady = this.abilities.r.cooldown === 0;
+                this.ctx.fillStyle = rReady ? 'rgba(255, 0, 255, 0.8)' : 'rgba(128, 128, 128, 0.8)';
+                this.ctx.fillRect(startX + (buttonSize + buttonSpacing) * 2, startY, buttonSize, buttonSize);
+                
+                this.ctx.strokeStyle = rReady ? '#ff00ff' : '#666';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(startX + (buttonSize + buttonSpacing) * 2, startY, buttonSize, buttonSize);
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('R', startX + (buttonSize + buttonSpacing) * 2 + buttonSize/2, startY + buttonSize/2 + 8);
+                
+                if (!rReady) {
+                    const cooldownPercent = this.abilities.r.cooldown / this.abilities.r.maxCooldown;
+                    this.ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                    this.ctx.fillRect(startX + (buttonSize + buttonSpacing) * 2, startY + buttonSize * (1 - cooldownPercent), buttonSize, buttonSize * cooldownPercent);
+                    
+                    this.ctx.fillStyle = 'white';
+                    this.ctx.font = 'bold 12px Arial';
+                    this.ctx.fillText(Math.ceil(this.abilities.r.cooldown / 1000) + 's', startX + (buttonSize + buttonSpacing) * 2 + buttonSize/2, startY - 5);
+                }
+                
+                // Botón C para Fenix Mode (solo killers)
+                if (player.role === 'killer') {
+                    const cButtonX = startX + (buttonSize + buttonSpacing) * 3 + 10;
+                    const canUseFenix = !this.fenixUsed && this.rageLevel >= this.maxRage;
+                    
+                    this.ctx.fillStyle = canUseFenix ? 'rgba(255, 0, 0, 0.8)' : 'rgba(128, 128, 128, 0.5)';
+                    this.ctx.fillRect(cButtonX, startY, buttonSize, buttonSize);
+                    
+                    this.ctx.strokeStyle = canUseFenix ? '#ff0000' : '#666';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(cButtonX, startY, buttonSize, buttonSize);
+                    
+                    if (this.fenixUsed) {
+                        this.ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+                        this.ctx.font = 'bold 30px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText('✗', cButtonX + buttonSize/2, startY + buttonSize/2 + 10);
+                    } else {
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.font = 'bold 24px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText('C', cButtonX + buttonSize/2, startY + buttonSize/2 + 8);
+                    }
+                    
+                    // Texto de estado
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.fillRect(cButtonX, startY - 30, buttonSize, 20);
+                    this.ctx.fillStyle = this.fenixUsed ? '#ff6666' : 'white';
+                    this.ctx.font = 'bold 10px Arial';
+                    this.ctx.fillText(this.fenixUsed ? 'USADO' : 'FENIX', cButtonX + buttonSize/2, startY - 15);
+                }
+                
+                // Mostrar controles de ataque
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                this.ctx.fillRect(startX, startY + 70, buttonSize * 4 + buttonSpacing * 3, 30);
+                
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 12px Arial';
+                this.ctx.textAlign = 'left';
+                
+                if (player.role === 'killer') {
+                    this.ctx.fillText('Click Izq: Ataque | C: Fenix Mode', startX + 5, startY + 90);
+                } else {
+                    this.ctx.fillText('F: Revivir | R: Ultimate', startX + 5, startY + 90);
+                }
+            }
+
+            startBotAI() {
+                setInterval(() => {
+                    Object.values(this.players).forEach(bot => {
+                        if (!bot.isBot || !bot.alive || bot.downed || bot.stunned) return;
+                        
+                        if (bot.aiDirection === undefined) {
+                            bot.aiDirection = Math.random() * Math.PI * 2;
+                            bot.aiTimer = 0;
+                            bot.aiState = 'patrol';
+                            bot.lastKnownKillerPos = null;
+                            bot.escapeAttempts = 0;
+                        }
+                        
+                        bot.aiTimer++;
+                        
+                        if (bot.role === 'survivor') {
+                            if (!bot.qCooldown) bot.qCooldown = 0;
+                            if (!bot.eCooldown) bot.eCooldown = 0;
+                            if (!bot.rCooldown) bot.rCooldown = 0;
+                            
+                            if (bot.qCooldown > 0) bot.qCooldown -= 100;
+                            if (bot.eCooldown > 0) bot.eCooldown -= 100;
+                            if (bot.rCooldown > 0) bot.rCooldown -= 100;
+                            
+                            // Prioridad 1: Escapar si el anillo está activo
+                            if (this.escapeRing.active) {
+                                const centerX = this.worldSize.width / 2;
+                                const centerY = this.worldSize.height / 2;
+                                const distanceToCenter = Math.sqrt(Math.pow(bot.x + 15 - centerX, 2) + Math.pow(bot.y + 15 - centerY, 2));
+                                
+                                if (distanceToCenter > 120) {
+                                    const angle = Math.atan2(centerY - (bot.y + 15), centerX - (bot.x + 15));
+                                    const speed = bot.flying ? 6 : 4;
+                                    bot.x += Math.cos(angle) * speed;
+                                    bot.y += Math.sin(angle) * speed;
+                                    bot.x = Math.max(0, Math.min(this.worldSize.width - 30, bot.x));
+                                    bot.y = Math.max(0, Math.min(this.worldSize.height - 30, bot.y));
+                                    
+                                    // Usar habilidades para escapar más rápido
+                                    if (bot.character === 'meowl' && bot.qCooldown <= 0 && !bot.flying) {
+                                        bot.flying = true;
+                                        bot.qCooldown = 12000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#FFD700', 8);
+                                        setTimeout(() => { bot.flying = false; }, 5000);
+                                    } else if (bot.character === 'sage' && bot.rCooldown <= 0 && distanceToCenter > 200) {
+                                        bot.rCooldown = 25000;
+                                        const escapeX = centerX + (Math.random() - 0.5) * 100;
+                                        const escapeY = centerY + (Math.random() - 0.5) * 100;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#9B59B6', 8);
+                                        bot.x = Math.max(0, Math.min(this.worldSize.width - 30, escapeX));
+                                        bot.y = Math.max(0, Math.min(this.worldSize.height - 30, escapeY));
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#9B59B6', 8);
+                                    }
+                                    return;
+                                }
+                            }
+                            
+                            const nearbyKillers = Object.values(this.players).filter(p => 
+                                p.role === 'killer' && p.alive && !p.downed
+                            );
+                            
+                            let closestKiller = null;
+                            let killerDistance = Infinity;
+                            
+                            for (let killer of nearbyKillers) {
+                                const distance = Math.sqrt(Math.pow(bot.x - killer.x, 2) + Math.pow(bot.y - killer.y, 2));
+                                if (distance < killerDistance) {
+                                    closestKiller = killer;
+                                    killerDistance = distance;
+                                }
+                            }
+                            
+                            // Prioridad 2: Huir de killers
+                            if (closestKiller && killerDistance < 150) {
+                                bot.lastKnownKillerPos = { x: closestKiller.x, y: closestKiller.y };
+                                bot.aiState = 'fleeing';
+                                
+                                // Usar habilidades defensivas inteligentemente
+                                if (bot.character === 'meowl') {
+                                    if (bot.eCooldown <= 0 && bot.dodge < 25 && killerDistance < 80) {
+                                        bot.dodge = Math.min(50, bot.dodge + 25);
+                                        bot.eCooldown = 6000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#FFD700', 6);
+                                    }
+                                    if (bot.qCooldown <= 0 && killerDistance < 100) {
+                                        bot.flying = true;
+                                        bot.qCooldown = 12000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#FFD700', 8);
+                                        setTimeout(() => { bot.flying = false; }, 5000);
+                                    }
+                                    if (bot.rCooldown <= 0 && killerDistance < 70) {
+                                        bot.rCooldown = 20000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#FF6B6B', 10);
+                                        this.createHitbox({
+                                            type: 'meowl_scream',
+                                            x: bot.x + 15,
+                                            y: bot.y + 15,
+                                            radius: 150,
+                                            life: 20,
+                                            ownerId: bot.id,
+                                            color: '#FF6B6B'
+                                        });
+                                    }
+                                } else if (bot.character === 'sonic') {
+                                    // Sonic usa Dropdash (Q) para alejarse rápidamente
+                                    if (bot.qCooldown <= 0 && killerDistance < 100) {
+                                        bot.qCooldown = 15000;
+                                        // Calcular un punto alejado del killer
+                                        const escapeAngle = Math.atan2(bot.y - closestKiller.y, bot.x - closestKiller.x);
+                                        const dashDistance = 300;
+                                        const newX = Math.max(0, Math.min(this.worldSize.width - 30, bot.x + Math.cos(escapeAngle) * dashDistance));
+                                        const newY = Math.max(0, Math.min(this.worldSize.height - 30, bot.y + Math.sin(escapeAngle) * dashDistance));
+                                        
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#0080FF', 15, 'explosion');
+                                        bot.x = newX;
+                                        bot.y = newY;
+                                        this.createParticles(newX + 15, newY + 15, '#0080FF', 15, 'explosion');
+                                        
+                                        this.createHitbox({
+                                            type: 'sonic_dropdash',
+                                            x: newX + 15,
+                                            y: newY + 15,
+                                            radius: 80,
+                                            life: 20,
+                                            ownerId: bot.id,
+                                            color: '#0080FF'
+                                        });
+                                    }
+                                    
+                                    // Sonic usa Supervelocidad (E) cuando está en peligro
+                                    if (bot.eCooldown <= 0 && killerDistance < 150) {
+                                        bot.speedBoost = true;
+                                        bot.eCooldown = 12000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#FF8000', 12, 'explosion');
+                                        
+                                        // Buscar survivors cercanos para transportar
+                                        Object.values(this.players).forEach(target => {
+                                            if (target.role === 'survivor' && target.id !== bot.id && target.character !== 'shadow' && target.alive) {
+                                                const distance = Math.sqrt(
+                                                    Math.pow(bot.x - target.x, 2) + 
+                                                    Math.pow(bot.y - target.y, 2)
+                                                );
+                                                
+                                                if (distance <= 100) {
+                                                    const safeX = Math.random() * (this.worldSize.width - 200) + 100;
+                                                    const safeY = Math.random() * (this.worldSize.height - 200) + 100;
+                                                    this.createParticles(target.x + 15, target.y + 15, '#FF8000', 8);
+                                                    target.x = safeX;
+                                                    target.y = safeY;
+                                                    this.createParticles(safeX + 15, safeY + 15, '#FF8000', 8);
+                                                }
+                                            }
+                                        });
+                                        
+                                        setTimeout(() => { bot.speedBoost = false; }, 4000);
+                                    }
+                                    
+                                    // Sonic usa Spin Dash (R) para escapar rápido
+                                    if (bot.rCooldown <= 0 && killerDistance < 80) {
+                                        bot.rCooldown = 8000;
+                                        const escapeAngle = Math.atan2(bot.y - closestKiller.y, bot.x - closestKiller.x);
+                                        const dashDistance = 250;
+                                        const newX = Math.max(0, Math.min(this.worldSize.width - 30, bot.x + Math.cos(escapeAngle) * dashDistance));
+                                        const newY = Math.max(0, Math.min(this.worldSize.height - 30, bot.y + Math.sin(escapeAngle) * dashDistance));
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#0080FF', 12, 'explosion');
+                                        bot.x = newX;
+                                        bot.y = newY;
+                                        this.createParticles(newX + 15, newY + 15, '#0080FF', 12, 'explosion');
+                                    }
+                                } else if (bot.character === 'sage') {
+                                    if (bot.eCooldown <= 0 && killerDistance < 120) {
+                                        bot.barrier = 100;
+                                        bot.eCooldown = 15000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#00FFFF', 8);
+                                        setTimeout(() => { bot.barrier = 0; }, 2000);
+                                    }
+                                    if (bot.qCooldown <= 0 && bot.health < 70 && !this.lastManStanding) {
+                                        bot.health = Math.min(bot.maxHealth, bot.health + 30);
+                                        bot.qCooldown = 8000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#44ff44', 6);
+                                    }
+                                    if (bot.rCooldown <= 0 && killerDistance < 80) {
+                                        bot.rCooldown = 25000;
+                                        const safeX = bot.x + (Math.random() - 0.5) * 400;
+                                        const safeY = bot.y + (Math.random() - 0.5) * 400;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#9B59B6', 8);
+                                        bot.x = Math.max(0, Math.min(this.worldSize.width - 30, safeX));
+                                        bot.y = Math.max(0, Math.min(this.worldSize.height - 30, safeY));
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#9B59B6', 8);
+                                    }
+                                }
+                                
+                                // Huir inteligentemente (zigzag)
+                                const fleeAngle = Math.atan2(bot.y - closestKiller.y, bot.x - closestKiller.x);
+                                const zigzag = Math.sin(bot.aiTimer * 0.1) * 0.5;
+                                const finalAngle = fleeAngle + zigzag;
+                                const fleeSpeed = bot.flying ? 5 : 4;
+                                bot.x += Math.cos(finalAngle) * fleeSpeed;
+                                bot.y += Math.sin(finalAngle) * fleeSpeed;
+                                bot.x = Math.max(0, Math.min(this.worldSize.width - 30, bot.x));
+                                bot.y = Math.max(0, Math.min(this.worldSize.height - 30, bot.y));
+                                return;
+                            }
+                            
+                            // Prioridad 3: Revivir aliados
+                            const downedAllies = Object.values(this.players).filter(p => 
+                                p.role === 'survivor' && p.downed && p.id !== bot.id
+                            );
+                            
+                            if (downedAllies.length > 0 && (!closestKiller || killerDistance > 200)) {
+                                const closest = downedAllies.reduce((prev, curr) => {
+                                    const prevDist = Math.sqrt(Math.pow(bot.x - prev.x, 2) + Math.pow(bot.y - prev.y, 2));
+                                    const currDist = Math.sqrt(Math.pow(bot.x - curr.x, 2) + Math.pow(bot.y - curr.y, 2));
+                                    return currDist < prevDist ? curr : prev;
+                                });
+                                
+                                const distance = Math.sqrt(Math.pow(bot.x - closest.x, 2) + Math.pow(bot.y - closest.y, 2));
+                                
+                                if (distance <= 50) {
+                                    closest.beingRevived = bot.id;
+                                    closest.reviveProgress += 3;
+                                    
+                                    if (closest.reviveProgress >= 100) {
+                                        closest.downed = false;
+                                        closest.secondLife = true;
+                                        closest.health = 80; // Segunda vida siempre 80 HP
+                                        closest.maxHealth = 80;
+                                        closest.reviveProgress = 0;
+                                        closest.beingRevived = null;
+                                        closest.downedTimer = 0;
+                                        this.createParticles(closest.x + 15, closest.y + 15, '#FFD700', 12);
+                                    }
+                                    return;
+                                } else {
+                                    const angle = Math.atan2(closest.y - bot.y, closest.x - bot.x);
+                                    bot.x += Math.cos(angle) * 3;
+                                    bot.y += Math.sin(angle) * 3;
+                                    bot.x = Math.max(0, Math.min(this.worldSize.width - 30, bot.x));
+                                    bot.y = Math.max(0, Math.min(this.worldSize.height - 30, bot.y));
+                                    return;
+                                }
+                            }
+                            
+                            // Prioridad 4: Patrullar/explorar
+                            if (bot.aiTimer % 60 === 0) {
+                                bot.aiDirection = Math.random() * Math.PI * 2;
+                            }
+                            
+                            const speed = 2;
+                            bot.x += Math.cos(bot.aiDirection) * speed;
+                            bot.y += Math.sin(bot.aiDirection) * speed;
+                            bot.x = Math.max(0, Math.min(this.worldSize.width - 30, bot.x));
+                            bot.y = Math.max(0, Math.min(this.worldSize.height - 30, bot.y));
+                        }
+                        
+                        // IA mejorada para killer bots
+                        if (bot.role === 'killer') {
+                            if (!bot.qCooldown) bot.qCooldown = 0;
+                            if (!bot.eCooldown) bot.eCooldown = 0;
+                            if (!bot.rCooldown) bot.rCooldown = 0;
+                            
+                            if (bot.qCooldown > 0) bot.qCooldown -= 100;
+                            if (bot.eCooldown > 0) bot.eCooldown -= 100;
+                            if (bot.rCooldown > 0) bot.rCooldown -= 100;
+                            
+                            const allSurvivors = Object.values(this.players).filter(p => 
+                                p.role === 'survivor' && p.alive && !p.downed && !p.spectator
+                            );
+                            
+                            if (allSurvivors.length > 0) {
+                                // Estrategia: Priorizar survivors con poca vida o sin habilidades
+                                const priorityTarget = allSurvivors.reduce((prev, curr) => {
+                                    const prevDist = Math.sqrt(Math.pow(bot.x - prev.x, 2) + Math.pow(bot.y - prev.y, 2));
+                                    const currDist = Math.sqrt(Math.pow(bot.x - curr.x, 2) + Math.pow(bot.y - curr.y, 2));
+                                    
+                                    // Priorizar survivors con poca vida
+                                    const prevPriority = prevDist - (prev.health < 50 ? 100 : 0) - (prev.downed ? 200 : 0);
+                                    const currPriority = currDist - (curr.health < 50 ? 100 : 0) - (curr.downed ? 200 : 0);
+                                    
+                                    return currPriority < prevPriority ? curr : prev;
+                                });
+                                
+                                const distance = Math.sqrt(Math.pow(bot.x - priorityTarget.x, 2) + Math.pow(bot.y - priorityTarget.y, 2));
+                                
+                                // Usar habilidades estratégicamente
+                                if (bot.character === 'shadow') {
+                                    if (bot.qCooldown <= 0 && distance > 100 && distance < 200) {
+                                        bot.invisible = true;
+                                        bot.qCooldown = 10000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#9b59b6', 6);
+                                        setTimeout(() => { bot.invisible = false; }, 3000);
+                                    }
+                                    if (bot.eCooldown <= 0 && distance < 150) {
+                                        bot.speedBoost = true;
+                                        bot.eCooldown = 8000;
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#00FF00', 6);
+                                        setTimeout(() => { bot.speedBoost = false; }, 4000);
+                                    }
+                                    if (bot.rCooldown <= 0 && distance > 80 && distance < 250) {
+                                        bot.rCooldown = 15000;
+                                        const dashAngle = Math.atan2(priorityTarget.y - bot.y, priorityTarget.x - bot.x);
+                                        const dashDistance = 150;
+                                        const newX = Math.max(0, Math.min(this.worldSize.width - 30, bot.x + Math.cos(dashAngle) * dashDistance));
+                                        const newY = Math.max(0, Math.min(this.worldSize.height - 30, bot.y + Math.sin(dashAngle) * dashDistance));
+                                        this.createParticles(bot.x + 15, bot.y + 15, '#2C3E50', 8);
+                                        bot.x = newX;
+                                        bot.y = newY;
+                                        this.createParticles(newX + 15, newY + 15, '#2C3E50', 8);
+                                    }
+                                }
+                                
+                                // Perseguir con predicción de movimiento
+                                const angle = Math.atan2(priorityTarget.y - bot.y, priorityTarget.x - bot.x);
+                                const speed = bot.speedBoost ? 5 : 3.5;
+                                bot.x += Math.cos(angle) * speed;
+                                bot.y += Math.sin(angle) * speed;
+                                bot.x = Math.max(0, Math.min(this.worldSize.width - 30, bot.x));
+                                bot.y = Math.max(0, Math.min(this.worldSize.height - 30, bot.y));
+                                
+                                // Atacar con mejor timing
+                                if (distance < 65 && bot.attackCooldown <= 0) {
+                                    this.createHitbox({
+                                        type: 'killer_attack',
+                                        x: bot.x + 15,
+                                        y: bot.y + 15,
+                                        radius: 55,
+                                        life: 10,
+                                        ownerId: bot.id,
+                                        color: '#FF0000'
+                                    });
+                                    bot.attackCooldown = 1000; // Aumentado de 800 a 1000ms
+                                    this.createParticles(bot.x + 15, bot.y + 15, '#FF0000', 8);
+                                }
+                                return;
+                            }
+                            
+                            // Patrullar si no hay survivors
+                            if (bot.aiTimer % 45 === 0) {
+                                bot.aiDirection = Math.random() * Math.PI * 2;
+                            }
+                            
+                            const speed = 2.5;
+                            bot.x += Math.cos(bot.aiDirection) * speed;
+                            bot.y += Math.sin(bot.aiDirection) * speed;
+                            bot.x = Math.max(0, Math.min(this.worldSize.width - 30, bot.x));
+                            bot.y = Math.max(0, Math.min(this.worldSize.height - 30, bot.y));
+                        }
+                    });
+                }, 100);
+            }
+
+            startGameTimer() {
+                setInterval(() => {
+                    this.checkLMSCondition();
+                    // Pausar timer base durante modo Fenix
+                    if (this.gameTimer > 0 && !this.fenixMode.active && this.gameStarted) {
+                        this.gameTimer--;
+                    }
+                }, 1000);
+            }
+
+            checkLMSCondition() {
+                if (!this.gameStarted) return;
+                
+                const aliveSurvivors = Object.values(this.players).filter(p => p.role === 'survivor' && p.alive && !p.spectator);
+                const aliveKillers = Object.values(this.players).filter(p => p.role === 'killer' && p.alive && !p.spectator);
+                
+                // Verificar victoria de killers
+                if (aliveSurvivors.length === 0 && aliveKillers.length > 0) {
+                    this.killerVictoryAnimation.active = true;
+                    this.killerVictoryAnimation.timer = 180; // 3 segundos
+                    this.endGame('KILLERS WIN!');
+                    return;
+                }
+                
+                // Verificar victoria de survivors por tiempo
+                if (this.gameTimer <= 0 && aliveSurvivors.length > 0) {
+                    const lastSurvivor = aliveSurvivors[0];
+                    this.killerVictoryAnimation.active = true;
+                    this.killerVictoryAnimation.timer = 180; // 3 segundos
+                    this.endGame(`${lastSurvivor.character.toUpperCase()} WINS!`);
+                    return;
+                }
+                
+                if (aliveSurvivors.length === 1 && aliveKillers.length >= 1 && !this.lastManStanding) {
+                    this.activateLMS();
+                }
+                
+                if (this.lastManStanding && (aliveSurvivors.length !== 1 || aliveKillers.length === 0)) {
+                    this.endLMS();
+                }
+            }
+
+            activateLMS() {
+                this.lastManStanding = true;
+                console.log('🔥 LMS ACTIVADO!');
+                
+                const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && p.alive);
+                if (lastSurvivor) {
+                    if (lastSurvivor.character === 'meowl') {
+                        this.lmsMusic.src = 'assets/NEWWORLD.mp4';
+                        lastSurvivor.health = Math.min(160, lastSurvivor.health + 60);
+                        lastSurvivor.maxHealth = 160;
+                    } else if (lastSurvivor.character === 'sonic') {
+                        this.lmsMusic.src = 'assets/SpeedofSoundRound2.mp3';
+                        lastSurvivor.health = Math.min(150, lastSurvivor.health + 50);
+                        lastSurvivor.maxHealth = 150;
+                        lastSurvivor.speedBoost = true; // Sonic gets permanent speed boost in LMS
+                    } else if (lastSurvivor.character === 'sage') {
+                        this.lmsMusic.src = 'assets/One way dream (sage lms theme).mp4';
+                        lastSurvivor.health = Math.min(150, lastSurvivor.health + 50);
+                        lastSurvivor.maxHealth = 150;
+                        lastSurvivor.barrier = 100;
+                    }
+                }
+                
+                // Solo reproducir música si el juego ha iniciado
+                if (this.gameStarted) {
+                    this.playLMSMusic();
+                }
+            }
+
+            playLMSMusic() {
+                if (this.lmsMusic && !this.musicPlaying) {
+                    this.lmsMusic.currentTime = 0;
+                    this.lmsMusic.play()
+                        .then(() => {
+                            this.musicPlaying = true;
+                            this.setupAudioAnalysis();
+                        })
+                        .catch(e => {
+                            console.log('Error reproduciendo música:', e);
+                        });
+                    
+                    this.lmsMusic.addEventListener('ended', () => {
+                        this.endLMS();
+                    });
+                }
+            }
+            
+            setupAudioAnalysis() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const source = this.audioContext.createMediaElementSource(this.lmsMusic);
+                    this.analyser = this.audioContext.createAnalyser();
+                    
+                    source.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                    
+                    this.analyser.fftSize = 512;
+                    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+                } catch (e) {
+                    console.log('Error configurando análisis de audio:', e);
+                }
+            }
+
+            endLMS() {
+                this.lastManStanding = false;
+                this.musicPlaying = false;
+                this.beatZoom = 1.0;
+                this.screenShake = 0;
+                this.beatHistory = [];
+                this.lastBeatIntensity = 0;
+                this.subtitleText = '';
+                this.subtitleOpacity = 0;
+                
+                // Detener música si está reproduciéndose
+                if (this.lmsMusic) {
+                    this.lmsMusic.pause();
+                    this.lmsMusic.currentTime = 0;
+                }
+                
+                if (this.audioContext) {
+                    this.audioContext.close();
+                    this.audioContext = null;
+                    this.analyser = null;
+                    this.dataArray = null;
+                }
+                
+                const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && p.alive);
+                if (lastSurvivor) {
+                    this.endGame(`${lastSurvivor.character.toUpperCase()} WINS!`);
+                }
+                
+                console.log('✅ LMS TERMINADO - SURVIVOR WINS!');
+            }
+            
+            updateUI() {
+                const totalBots = Object.values(this.players).filter(p => p.isBot).length;
+                const botCountElement = document.getElementById('botCount');
+                if (botCountElement) {
+                    botCountElement.textContent = `Bots: ${totalBots}`;
+                }
+            }
+
+            generateMap() {
+                this.mapObjects = [];
+                
+                if (this.currentMap === 'forest') {
+                    this.generateForestMap();
+                } else if (this.currentMap === 'desert') {
+                    this.generateDesertMap();
+                } else if (this.currentMap === 'city') {
+                    this.generateCityMap();
+                }
+            }
+            
+            generateForestMap() {
+                // Árboles
+                for (let i = 0; i < 50; i++) {
+                    this.mapObjects.push({
+                        type: 'tree',
+                        x: Math.random() * (this.worldSize.width - 60) + 30,
+                        y: Math.random() * (this.worldSize.height - 60) + 30,
+                        size: 40 + Math.random() * 20
+                    });
+                }
+                
+                // Arbustos
+                for (let i = 0; i < 80; i++) {
+                    this.mapObjects.push({
+                        type: 'bush',
+                        x: Math.random() * (this.worldSize.width - 40) + 20,
+                        y: Math.random() * (this.worldSize.height - 40) + 20,
+                        size: 20 + Math.random() * 15
+                    });
+                }
+                
+                // Rocas
+                for (let i = 0; i < 30; i++) {
+                    this.mapObjects.push({
+                        type: 'rock',
+                        x: Math.random() * (this.worldSize.width - 50) + 25,
+                        y: Math.random() * (this.worldSize.height - 50) + 25,
+                        size: 30 + Math.random() * 25
+                    });
+                }
+            }
+            
+            generateDesertMap() {
+                // Cactus
+                for (let i = 0; i < 40; i++) {
+                    this.mapObjects.push({
+                        type: 'cactus',
+                        x: Math.random() * (this.worldSize.width - 50) + 25,
+                        y: Math.random() * (this.worldSize.height - 50) + 25,
+                        size: 30 + Math.random() * 20
+                    });
+                }
+                
+                // Dunas de arena
+                for (let i = 0; i < 25; i++) {
+                    this.mapObjects.push({
+                        type: 'dune',
+                        x: Math.random() * (this.worldSize.width - 80) + 40,
+                        y: Math.random() * (this.worldSize.height - 80) + 40,
+                        size: 60 + Math.random() * 40
+                    });
+                }
+                
+                // Rocas del desierto
+                for (let i = 0; i < 35; i++) {
+                    this.mapObjects.push({
+                        type: 'desert_rock',
+                        x: Math.random() * (this.worldSize.width - 45) + 25,
+                        y: Math.random() * (this.worldSize.height - 45) + 25,
+                        size: 25 + Math.random() * 20
+                    });
+                }
+            }
+            
+            generateCityMap() {
+                // Edificios
+                for (let i = 0; i < 20; i++) {
+                    this.mapObjects.push({
+                        type: 'building',
+                        x: Math.random() * (this.worldSize.width - 100) + 50,
+                        y: Math.random() * (this.worldSize.height - 100) + 50,
+                        size: 80 + Math.random() * 40,
+                        height: 60 + Math.random() * 80
+                    });
+                }
+                
+                // Autos
+                for (let i = 0; i < 45; i++) {
+                    this.mapObjects.push({
+                        type: 'car',
+                        x: Math.random() * (this.worldSize.width - 60) + 30,
+                        y: Math.random() * (this.worldSize.height - 60) + 30,
+                        size: 40 + Math.random() * 15
+                    });
+                }
+                
+                // Postes de luz
+                for (let i = 0; i < 30; i++) {
+                    this.mapObjects.push({
+                        type: 'lamppost',
+                        x: Math.random() * (this.worldSize.width - 30) + 15,
+                        y: Math.random() * (this.worldSize.height - 30) + 15,
+                        size: 15
+                    });
+                }
+            }
+            
+            drawEscapeRing() {
+                if (!this.escapeRing.active) return;
+                
+                const centerX = this.worldSize.width / 2;
+                const centerY = this.worldSize.height / 2;
+                const radius = 120;
+                const meowlCount = 6;
+                
+                for (let i = 0; i < meowlCount; i++) {
+                    const angle = (i / meowlCount) * Math.PI * 2 + this.escapeRing.rotation;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    this.ctx.font = '30px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.fillText('🦉', x, y);
+                }
+                
+                // Texto central
+                this.ctx.font = 'bold 24px Arial';
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.textAlign = 'center';
+                this.ctx.strokeStyle = '#000';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeText('ANILLO DE ESCAPE TEMPORAL', centerX, centerY - 10);
+                this.ctx.fillText('ANILLO DE ESCAPE TEMPORAL', centerX, centerY - 10);
+                
+                this.ctx.font = 'bold 18px Arial';
+                this.ctx.strokeText('¡Los survivors pueden escapar!', centerX, centerY + 20);
+                this.ctx.fillText('¡Los survivors pueden escapar!', centerX, centerY + 20);
+            }
+            
+            drawMapObjects() {
+                // Cambiar color de fondo según el mapa
+                if (this.currentMap === 'desert') {
+                    this.ctx.fillStyle = '#F4A460';
+                } else if (this.currentMap === 'city') {
+                    this.ctx.fillStyle = '#2F2F2F';
+                } else {
+                    this.ctx.fillStyle = '#34495e';
+                }
+                this.ctx.fillRect(0, 0, this.worldSize.width, this.worldSize.height);
+                
+                this.mapObjects.forEach(obj => {
+                    this.ctx.save();
+                    
+                    // Elementos del bosque
+                    if (obj.type === 'tree') {
+                        this.ctx.fillStyle = '#8B4513';
+                        this.ctx.fillRect(obj.x + obj.size/3, obj.y + obj.size/2, obj.size/3, obj.size/2);
+                        this.ctx.fillStyle = '#228B22';
+                        this.ctx.beginPath();
+                        this.ctx.arc(obj.x + obj.size/2, obj.y + obj.size/3, obj.size/2, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                    } else if (obj.type === 'bush') {
+                        this.ctx.fillStyle = '#32CD32';
+                        this.ctx.beginPath();
+                        this.ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                    } else if (obj.type === 'rock') {
+                        this.ctx.fillStyle = '#696969';
+                        this.ctx.fillRect(obj.x, obj.y, obj.size, obj.size * 0.7);
+                        this.ctx.fillStyle = '#808080';
+                        this.ctx.fillRect(obj.x + 3, obj.y + 3, obj.size - 6, obj.size * 0.7 - 6);
+                        
+                    // Elementos del desierto
+                    } else if (obj.type === 'cactus') {
+                        this.ctx.fillStyle = '#228B22';
+                        this.ctx.fillRect(obj.x + obj.size/3, obj.y, obj.size/3, obj.size);
+                        this.ctx.fillRect(obj.x, obj.y + obj.size/3, obj.size/2, obj.size/4);
+                        
+                    } else if (obj.type === 'dune') {
+                        this.ctx.fillStyle = '#DEB887';
+                        this.ctx.beginPath();
+                        this.ctx.ellipse(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2, obj.size/4, 0, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                    } else if (obj.type === 'desert_rock') {
+                        this.ctx.fillStyle = '#CD853F';
+                        this.ctx.fillRect(obj.x, obj.y, obj.size, obj.size * 0.6);
+                        
+                    // Elementos de la ciudad
+                    } else if (obj.type === 'building') {
+                        this.ctx.fillStyle = '#4A4A4A';
+                        this.ctx.fillRect(obj.x, obj.y, obj.size, obj.height);
+                        this.ctx.fillStyle = '#FFD700';
+                        for (let i = 0; i < 3; i++) {
+                            for (let j = 0; j < 4; j++) {
+                                this.ctx.fillRect(obj.x + 10 + i * 20, obj.y + 10 + j * 15, 8, 8);
+                            }
+                        }
+                        
+                    } else if (obj.type === 'car') {
+                        this.ctx.fillStyle = ['#FF0000', '#0000FF', '#FFFF00', '#00FF00'][Math.floor(Math.random() * 4)];
+                        this.ctx.fillRect(obj.x, obj.y + obj.size/4, obj.size, obj.size/2);
+                        this.ctx.fillStyle = '#87CEEB';
+                        this.ctx.fillRect(obj.x + obj.size/4, obj.y, obj.size/2, obj.size/3);
+                        
+                    } else if (obj.type === 'lamppost') {
+                        this.ctx.fillStyle = '#2F2F2F';
+                        this.ctx.fillRect(obj.x + obj.size/3, obj.y, obj.size/6, obj.size * 3);
+                        this.ctx.fillStyle = '#FFFF99';
+                        this.ctx.beginPath();
+                        this.ctx.arc(obj.x + obj.size/2, obj.y, obj.size/3, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    
+                    this.ctx.restore();
+                });
+            }
+
+            updateKillerVictoryAnimation() {
+                if (this.killerVictoryAnimation.active && this.killerVictoryAnimation.timer > 0) {
+                    this.killerVictoryAnimation.timer--;
+                    
+                    // Crear partículas rojas para killers
+                    Object.values(this.players).forEach(player => {
+                        if (player.role === 'killer' && player.alive) {
+                            if (this.killerVictoryAnimation.timer % 10 === 0) {
+                                this.createParticles(player.x + 15, player.y + 15, '#FF0000', 8, 'explosion');
+                            }
+                        }
+                    });
+                    
+                    // Hacer desaparecer killers gradualmente
+                    if (this.killerVictoryAnimation.timer <= 0) {
+                        Object.values(this.players).forEach(player => {
+                            if (player.role === 'killer' && player.alive) {
+                                this.createParticles(player.x + 15, player.y + 15, '#FF0000', 25, 'explosion');
+                                player.spectator = true;
+                            }
+                        });
+                        this.killerVictoryAnimation.active = false;
+                    }
+                }
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            new Game();
+        });
+    </script>
+</body>
+</html>

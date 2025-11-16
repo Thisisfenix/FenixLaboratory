@@ -1,26 +1,64 @@
 {
   "proyecto": "FenixLaboratory",
-  "version": "2.0.9",
-  "lastUpdate": "2024-12-20",
+  "version": "2.1.0",
+  "lastUpdate": "2025-01-15",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.0.9",
-    "fecha": "2024-12-20",
+    "numero": "2.1.0",
+    "fecha": "2025-11-15",
     "tipo": "major",
     "estado": "estable",
     "cambios_principales": [
-      "Sistema de perfiles de usuario con fotos personalizadas",
-      "Avatares inteligentes con emojis únicos por usuario",
-      "Modal de perfil clickeable con estadísticas detalladas",
-      "Sistema de temas expandido con Funky Atlas",
-      "Metadatos optimizados para Discord y redes sociales"
+      "Nuevo juego Deadly Pursuer integrado al laboratorio",
+      "Juego multijugador online con 3 personajes únicos",
+      "Integración completa con Discord Friends",
+      "Sistema de habilidades especiales por personaje",
+      "Navegación mejorada con nueva sección de juegos"
     ]
   },
   
   "updates": [
+    {
+      "version": "2.1.0",
+      "date": "2025-11-15",
+      "title": "🎮 Deadly Pursuer - Juego Multijugador Integrado",
+      "type": "major",
+      "features": [
+        "🎮 Nuevo juego Deadly Pursuer completamente funcional",
+        "👥 Multijugador online hasta 8 jugadores simultáneos",
+        "🔥 3 personajes únicos: 2019x (Killer), Gissel y iA777 (Survivors)",
+        "⚔️ Sistema de habilidades especiales por personaje",
+        "🌐 Integración completa con Discord Friends",
+        "📱 Compatible con dispositivos móviles y escritorio",
+        "🎯 Supabase para sincronización en tiempo real",
+        "🎨 Interfaz visual atractiva con gradientes y efectos",
+        "🖱️ Canvas de juego optimizado para diferentes pantallas",
+        "🎪 Nueva sección dedicada en el laboratorio"
+      ],
+      "fixes": [
+        "🔧 Navegación mejorada con enlace directo al juego",
+        "📱 Optimización móvil para orientación landscape",
+        "🎨 Banner de loading-screen.png como fondo de la card",
+        "⚡ Carga rápida del juego desde el laboratorio principal",
+        "🔗 Enlaces correctos entre index.html principal y public/index.html",
+        "📱 Prevención de zoom en dispositivos móviles durante el juego",
+        "🎯 Canvas responsivo que se adapta al tamaño de pantalla",
+        "🔄 Detección automática de cambio de orientación"
+      ],
+      "game_features": [
+        "🔥 2019x (Killer): Sigilo, You Can't Run, Orbe de Daño, Rage Mode",
+        "🦋 Gissel (Survivor): Alas Puntiagudas, Pasiva LMS, 100-160 HP",
+        "🤖 iA777 (Robot): Carga, Autoreparación, Autodestrucción/Sierra",
+        "🎮 Controles optimizados para touch y teclado",
+        "🌐 Lobby con selección de personaje y nombre",
+        "⚡ Sistema de cooldowns y habilidades balanceadas",
+        "🏆 Mecánicas de supervivencia y eliminación",
+        "📱 Interfaz adaptativa para diferentes dispositivos"
+      ]
+    },
     {
       "version": "2.0.9",
       "date": "2025-11-03",

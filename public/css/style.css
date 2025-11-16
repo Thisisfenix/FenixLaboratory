@@ -1,0 +1,339 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: white;
+    overflow: hidden;
+}
+
+#gameContainer {
+    width: 100vw;
+    height: 100vh;
+}
+
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#lobby h1 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    color: #ff6b6b;
+}
+
+.character-selection {
+    background: rgba(255,255,255,0.1);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+.characters {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.character {
+    background: rgba(255,255,255,0.05);
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    min-width: 200px;
+}
+
+.character:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-5px);
+}
+
+.character.selected {
+    border-color: #4ecdc4;
+    background: rgba(78, 205, 196, 0.2);
+}
+
+.character-sprite {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+}
+
+.meowl {
+    background: linear-gradient(45deg, #8B4513, #DEB887);
+    background-image: url('../assets/Meowl.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: relative;
+    border: 2px solid #8B4513;
+}
+
+.meowl::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(139, 69, 19, 0.1);
+    border-radius: 50%;
+}
+
+.character h3 {
+    color: #4ecdc4;
+    margin-bottom: 0.5rem;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+#playerName {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 25px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+}
+
+#playerName::placeholder {
+    color: rgba(255,255,255,0.7);
+}
+
+#joinBtn {
+    padding: 1rem 2rem;
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#joinBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,107,107,0.4);
+}
+
+#joinBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#game {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#gameArea {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #0f3460;
+}
+
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    cursor: crosshair;
+}
+
+#ui {
+    display: none;
+}
+
+#playerInfo {
+    display: flex;
+    gap: 2rem;
+    font-size: 1.1rem;
+}
+
+#playerRole {
+    font-weight: bold;
+}
+
+.survivor {
+    color: #4ecdc4;
+}
+
+.killer {
+    color: #ff6b6b;
+}
+
+.shadow {
+    background: linear-gradient(45deg, #2c3e50, #34495e);
+    position: relative;
+}
+
+.sage {
+    background: linear-gradient(45deg, #00CED1, #4169E1);
+    background-image: url('../assets/sage.jpeg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: relative;
+    border: 2px solid #00CED1;
+}
+
+.sage::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 206, 209, 0.1);
+    border-radius: 50%;
+}
+
+.shadow::before {
+    content: '👻';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+}
+
+.bot-controls {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 10;
+}
+
+#addBotBtn, #addSurvivorBtn, #addKillerBtn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+#addBotBtn {
+    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+}
+
+#addSurvivorBtn {
+    background: linear-gradient(45deg, #4ecdc4, #45b7b8);
+}
+
+#addKillerBtn {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+}
+
+#addBotBtn:hover, #addSurvivorBtn:hover, #addKillerBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+#botCount {
+    color: #bdc3c7;
+    font-size: 0.9rem;
+}
+
+.lobby-status {
+    margin-top: 1rem;
+    background: rgba(0,0,0,0.3);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 2px solid #4ecdc4;
+    max-width: 600px;
+    width: 100%;
+}
+
+.lobby-info h3 {
+    color: #4ecdc4;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.lobby-info p {
+    margin: 0.5rem 0;
+    text-align: center;
+}
+
+.players-list {
+    margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.player-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background: rgba(255,255,255,0.05);
+    border-radius: 5px;
+    border-left: 3px solid;
+}
+
+.player-item.survivor {
+    border-left-color: #4ecdc4;
+}
+
+.player-item.killer {
+    border-left-color: #ff6b6b;
+}
+
+.player-emoji {
+    font-size: 1.2rem;
+}
+
+.player-name {
+    flex: 1;
+    font-weight: bold;
+}
+
+.player-role {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.1);
+}
