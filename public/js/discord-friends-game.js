@@ -984,9 +984,20 @@ class DiscordFriendsGame {
     updateRageMode() {
         Object.values(this.players).forEach(player => {
             if (player.role === 'killer') {
+                // Inicializar rageMode si no existe
+                if (!player.rageMode) {
+                    player.rageMode = { active: false, timer: 0 };
+                }
+                if (player.rageLevel === undefined) {
+                    player.rageLevel = 0;
+                }
+                if (player.maxRage === undefined) {
+                    player.maxRage = 500;
+                }
+                
                 // Ganar rage gradualmente
                 if (!player.rageMode.active && !player.rageUsed && player.rageLevel < player.maxRage) {
-                    player.rageLevel += player.rageGainRate;
+                    player.rageLevel += (player.rageGainRate || 1);
                     
                     // Ganar rage extra por atacar survivors
                     if (player.id === this.myPlayerId && this.abilities.basicAttack.cooldown > this.abilities.basicAttack.maxCooldown - 100) {
