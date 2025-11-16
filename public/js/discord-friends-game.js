@@ -521,9 +521,9 @@ class DiscordFriendsGame {
                     this.lobbyCountdown = data.countdown;
                     console.log('📡 Received countdown start:', data.countdown);
                 } else if (data.type === 'update') {
-                    // Forzar countdown válido entre 0 y 10
-                    if (data.countdown >= 0 && data.countdown <= 10) {
-                        this.lobbyCountdown = Math.max(0, Math.min(10, data.countdown));
+                    // Forzar countdown válido entre 0 y 30
+                    if (data.countdown >= 0 && data.countdown <= 30) {
+                        this.lobbyCountdown = Math.max(0, Math.min(30, data.countdown));
                     } else {
                         this.resetCountdown(); // Reset si está fuera de rango
                         return;
@@ -660,7 +660,7 @@ class DiscordFriendsGame {
         });
         
         // Reset countdown si está atascado o fuera de rango
-        if (this.countdownActive && (this.lobbyCountdown > 10 || this.lobbyCountdown < 0)) {
+        if (this.countdownActive && (this.lobbyCountdown > 30 || this.lobbyCountdown < 0)) {
             console.log('⚠️ Countdown out of range, resetting...');
             this.resetCountdown();
             return;
@@ -686,9 +686,9 @@ class DiscordFriendsGame {
         }
         
         this.countdownActive = true;
-        this.lobbyCountdown = 10; // COUNTDOWN FIJO DE 10 SEGUNDOS
+        this.lobbyCountdown = 30; // COUNTDOWN FIJO DE 30 SEGUNDOS
         
-        console.log('⏰ Starting countdown from 10...');
+        console.log('⏰ Starting countdown from 30...');
         
         // Broadcast countdown start to all players
         if (this.supabaseGame) {
