@@ -174,6 +174,17 @@ class SupabaseGame {
         });
     }
     
+    sendCountdownReset() {
+        this.channel.send({
+            type: 'broadcast',
+            event: 'countdown',
+            payload: {
+                type: 'reset',
+                playerId: this.myPlayerId
+            }
+        });
+    }
+    
     sendPing() {
         this.channel.send({
             type: 'broadcast',

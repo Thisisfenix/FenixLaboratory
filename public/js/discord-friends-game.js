@@ -426,8 +426,14 @@ class DiscordFriendsGame {
                 if (data.type === 'start') {
                     this.countdownActive = true;
                     this.lobbyCountdown = data.countdown;
+                    console.log('📡 Received countdown start:', data.countdown);
                 } else if (data.type === 'update') {
-                    this.lobbyCountdown = data.countdown;
+                    // Solo actualizar si el countdown es válido
+                    if (data.countdown >= 0 && data.countdown <= 60) {
+                        this.lobbyCountdown = data.countdown;
+                    }
+                } else if (data.type === 'reset') {
+                    this.resetCountdown();
                 }
                 this.updateLobbyUI();
             }
@@ -540,8 +546,15 @@ class DiscordFriendsGame {
             survivors, 
             killers, 
             countdownActive: this.countdownActive,
+            countdown: this.lobbyCountdown,
             players: playerList.map(p => `${p.name}(${p.role})`)
         });
+        
+        // Reset countdown si está atascado
+        if (this.countdownActive && this.lobbyCountdown > 60) {
+            console.log('⚠️ Countdown stuck, resetting...');
+            this.resetCountdown();
+        }
         
         if (playerList.length >= 2 && survivors >= 1 && killers >= 1 && !this.countdownActive) {
             // Only the first player (by ID) starts the countdown
@@ -557,17 +570,22 @@ class DiscordFriendsGame {
     }
 
     startLobbyCountdown() {
+        // Limpiar countdown anterior si existe
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
+        
         this.countdownActive = true;
-        this.lobbyCountdown = 60;
+        this.lobbyCountdown = 10; // Reducir a 10 segundos para testing
         
         console.log('⏰ Starting countdown...');
         
         // Broadcast countdown start to all players
         if (this.supabaseGame) {
-            this.supabaseGame.sendCountdownStart(60);
+            this.supabaseGame.sendCountdownStart(this.lobbyCountdown);
         }
         
-        const countdownInterval = setInterval(async () => {
+        this.countdownInterval = setInterval(() => {
             this.lobbyCountdown--;
             
             // Broadcast countdown update every second
@@ -578,7 +596,9 @@ class DiscordFriendsGame {
             this.updateLobbyUI();
             
             if (this.lobbyCountdown <= 0) {
-                clearInterval(countdownInterval);
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = null;
+                this.countdownActive = false;
                 
                 try {
                     if (this.supabaseGame) {
@@ -588,9 +608,21 @@ class DiscordFriendsGame {
                     console.log('🚀 Game started!');
                 } catch (error) {
                     console.error('❌ Error starting game:', error);
+                    this.resetCountdown();
                 }
             }
         }, 1000);
+    }
+    
+    resetCountdown() {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = null;
+        }
+        this.countdownActive = false;
+        this.lobbyCountdown = 0;
+        this.updateLobbyUI();
+        console.log('🔄 Countdown reset');
     }
 
     setupAbilities() {
