@@ -4235,12 +4235,12 @@ class DiscordFriendsGame {
             }
         } else if (player.role === 'survivor' && player.character === 'luna') {
             let iconSrc;
-            if (!player.alive) {
-                iconSrc = 'assets/icons/LunaDeadIcon.png';
-            } else if (player.health <= 50) {
+            if (player.alive && player.health > 50) {
+                iconSrc = 'assets/icons/LunaNormalIcon.png';
+            } else if (player.alive && player.health <= 50) {
                 iconSrc = 'assets/icons/LunaDangerIcon.png';
             } else {
-                iconSrc = 'assets/icons/LunaNormalIcon.png';
+                iconSrc = 'assets/icons/LunaDeadIcon.png';
             }
             
             if (!this.lunaIcons) {
@@ -4257,12 +4257,12 @@ class DiscordFriendsGame {
             }
         } else if (player.role === 'survivor' && player.character === 'iA777') {
             let iconSrc;
-            if (!player.alive) {
-                iconSrc = 'assets/icons/IA777DeadIcon.png';
-            } else if (player.health <= 60) {
+            if (player.alive && player.health > 60) {
+                iconSrc = 'assets/icons/IA777NormalIcon.png';
+            } else if (player.alive && player.health <= 60) {
                 iconSrc = 'assets/icons/IA777DangerIcon.png';
             } else {
-                iconSrc = 'assets/icons/IA777NormalIcon.png';
+                iconSrc = 'assets/icons/IA777DeadIcon.png';
             }
             
             if (!this.ia777Icons) {
