@@ -1,14 +1,14 @@
 {
   "proyecto": "FenixLaboratory",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "lastUpdate": "2025-01-15",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.1.0",
-    "fecha": "2025-11-15",
+    "numero": "2.1.1",
+    "fecha": "2025-01-15",
     "tipo": "major",
     "estado": "estable",
     "cambios_principales": [
@@ -21,6 +21,36 @@
   },
   
   "updates": [
+    {
+      "version": "2.1.1",
+      "date": "2025-01-15",
+      "title": "⚖️ Abel LMS Balance + Música Personalizada",
+      "type": "minor",
+      "features": [
+        "🎵 Nueva música LMS personalizada para Abel (Abellmsposibble_.mp3)",
+        "⏱️ Timer LMS extendido a 5 minutos para Abel",
+        "💚 Auto Repair de Abel cura completamente durante LMS",
+        "⚡ Cooldowns 50% más rápidos para Abel en LMS",
+        "🏃 Velocidad aumentada para Abel en LMS (igual que killers)",
+        "🛡️ Sistema de resistencia preparado para Abel en LMS",
+        "🎮 Iconos de personajes agregados al lobby (Gissel y Luna)",
+        "🖼️ Avatares dinámicos para Luna (Normal/Danger/Dead)"
+      ],
+      "fixes": [
+        "🔧 Balance mejorado para supervivencia de 5 minutos en LMS",
+        "🎯 Abel ahora es viable durante toda la duración de su música",
+        "⚡ Experiencia de juego más equilibrada en Last Man Standing",
+        "🎨 Interfaz visual mejorada con iconos de personajes"
+      ],
+      "abel_improvements": [
+        "🎵 Música LMS personalizada de 5 minutos",
+        "💚 Curación completa con Auto Repair en LMS",
+        "⚡ Cooldowns reducidos (deltaTime 24 vs 16)",
+        "🏃 Velocidad 6 (igual que killers) en LMS",
+        "🛡️ Resistencia al daño preparada para implementar",
+        "⏱️ Timer sincronizado con duración de música"
+      ]
+    },
     {
       "version": "2.1.0",
       "date": "2025-11-15",

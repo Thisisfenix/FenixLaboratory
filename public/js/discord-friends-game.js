@@ -465,6 +465,45 @@ class DiscordFriendsGame {
                 player.rageMode = data.rageMode;
                 player.rageLevel = 0;
                 player.rageUsed = true;
+            } else if (data.type === 'energy_juice_activate' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.energyJuiceActive = true;
+                player.energyJuiceTimer = 600;
+                player.speedBoost = true;
+            } else if (data.type === 'punch_activate' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.punchActive = true;
+                player.punchTimer = 60;
+                player.punchHit = false;
+            } else if (data.type === 'punch_hit' && this.players[data.targetId]) {
+                const target = this.players[data.targetId];
+                const puncher = this.players[data.puncherId];
+                
+                target.health = Math.max(0, target.health - data.damage);
+                target.stunned = true;
+                target.stunTimer = data.stunDuration;
+                
+                if (puncher) {
+                    puncher.health = data.puncherHealth;
+                    puncher.punchStuns = (puncher.punchStuns || 0) + 1;
+                    
+                    if (puncher.health >= 30 && !puncher.resistanceActive) {
+                        puncher.resistanceActive = true;
+                    }
+                }
+                
+                this.createParticles(target.x + 15, target.y + 15, '#FFD700', 15);
+            } else if (data.type === 'taunt_activate' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.tauntActive = true;
+                player.tauntTimer = 60;
+                player.tauntHit = false;
+            } else if (data.type === 'taunt_hit' && this.players[data.targetId]) {
+                const target = this.players[data.targetId];
+                target.screenBlurred = true;
+                target.blurTimer = data.blurDuration;
+                
+                this.createParticles(target.x + 15, target.y + 15, '#FF69B4', 20);
             }
         };
         
@@ -543,8 +582,8 @@ class DiscordFriendsGame {
             x: Math.random() * 800 + 100,
             y: Math.random() * 600 + 100,
             alive: !this.gameStarted,
-            health: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : 100) : 600,
-            maxHealth: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : 100) : 600,
+            health: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : 100)) : 600,
+            maxHealth: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : 100)) : 600,
             spectating: this.gameStarted,
             joinedAt: Date.now()
         };
@@ -707,6 +746,10 @@ class DiscordFriendsGame {
             this.abilities.q = { cooldown: 0, maxCooldown: 20000 }; // Carga - 20s
             this.abilities.e = { cooldown: 0, maxCooldown: 25000 }; // Autoreparación - 25s
             this.abilities.r = { cooldown: 0, maxCooldown: 25000 }; // Sierra - 25s en LMS
+        } else if (this.selectedCharacter === 'luna') {
+            this.abilities.q = { cooldown: 0, maxCooldown: 20000, uses: 3, maxUses: 3 }; // Energy Juice - 20s, 3 usos
+            this.abilities.e = { cooldown: 0, maxCooldown: 32000 }; // Punch - 32s
+            this.abilities.r = { cooldown: 0, maxCooldown: 15000 }; // Taunt - 15s
         }
         this.abilities.basicAttack = { cooldown: 0, maxCooldown: 1500 };
     }
@@ -1041,6 +1084,10 @@ class DiscordFriendsGame {
             const trulyAliveSurvivors = Object.values(this.players).filter(p => p.role === 'survivor' && p.alive && !p.downed && !p.spectating);
             
             if (trulyAliveSurvivors.length === 0 && aliveKillers.length > 0) {
+                // Si estamos en LMS y el survivor murió, detener música
+                if (this.lastManStanding) {
+                    this.stopLMSMusic();
+                }
                 this.endGame('KILLERS WIN!');
             } else if (this.gameTimer <= 0 && trulyAliveSurvivors.length > 0 && !this.gameTimerPaused) {
                 this.endGame('SURVIVORS WIN!');
@@ -1054,17 +1101,24 @@ class DiscordFriendsGame {
         
         const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && p.alive);
         if (lastSurvivor) {
-            lastSurvivor.health = Math.min(160, lastSurvivor.health + 60);
-            lastSurvivor.maxHealth = 160;
+            // Curación completa para iA777 en LMS
+            if (lastSurvivor.character === 'iA777') {
+                lastSurvivor.health = lastSurvivor.maxHealth;
+                lastSurvivor.lmsFullHeal = true;
+                lastSurvivor.lmsResistance = true; // 25% menos daño
+            } else {
+                lastSurvivor.health = Math.min(160, lastSurvivor.health + 60);
+                lastSurvivor.maxHealth = 160;
+            }
             lastSurvivor.lmsBonus = true;
             lastSurvivor.lastLife = true;
             
             this.createParticles(lastSurvivor.x + 15, lastSurvivor.y + 15, '#FFD700', 20);
         }
         
-        // Cambiar timer a duración de la canción (aproximadamente 3:30)
-        const config = window.GAME_CONFIG || {};
-        this.gameTimer = config.LMS_TIMER || 210; // 3 minutos 30 segundos por defecto
+        // El timer se ajustará automáticamente cuando se cargue la música
+        // Valor temporal hasta que se cargue la duración real
+        this.gameTimer = 300; // Temporal, se actualizará con la duración real
         
         // Reproducir música de LMS
         this.playLMSMusic();
@@ -1449,9 +1503,9 @@ class DiscordFriendsGame {
                 player.autoRepairTimer--;
                 player.autoRepairTick++;
                 
-                // Regenerar 5 HP cada 180 frames (3 segundos) - máximo 100 HP
+                // Regenerar 5 HP cada 180 frames (3 segundos) - curación completa para iA777 en LMS
                 if (player.autoRepairTick >= 180 && player.id === this.myPlayerId) {
-                    const maxHealHealth = Math.min(100, player.maxHealth);
+                    const maxHealHealth = (player.character === 'iA777' && this.lastManStanding) ? player.maxHealth : Math.min(100, player.maxHealth);
                     if (player.health < maxHealHealth) {
                         player.health = Math.min(maxHealHealth, player.health + 5);
                         this.createParticles(player.x + 15, player.y + 15, '#00FF00', 8);
@@ -1475,6 +1529,133 @@ class DiscordFriendsGame {
         });
     }
 
+    updateLunaAbilities() {
+        Object.values(this.players).forEach(player => {
+            // Energy Juice
+            if (player.energyJuiceActive) {
+                player.energyJuiceTimer--;
+                if (player.energyJuiceTimer <= 0) {
+                    player.energyJuiceActive = false;
+                    player.speedBoost = false;
+                }
+            }
+            
+            // Punch
+            if (player.punchActive) {
+                player.punchTimer--;
+                
+                const nearbyKillers = Object.values(this.players).filter(target => 
+                    target.role === 'killer' && target.alive && target.id !== player.id
+                );
+                
+                nearbyKillers.forEach(target => {
+                    const distance = Math.sqrt(
+                        Math.pow(target.x - player.x, 2) + 
+                        Math.pow(target.y - player.y, 2)
+                    );
+                    
+                    if (distance < 40 && !player.punchHit) {
+                        player.punchHit = true;
+                        player.punchActive = false;
+                        
+                        // Incrementar contador de stuneos
+                        player.punchStuns = (player.punchStuns || 0) + 1;
+                        
+                        // Daño base 20, mayor si ha stuneado 3 veces
+                        let damage = player.punchStuns >= 3 ? 35 : 20;
+                        
+                        // Aplicar resistencia si está activa
+                        if (player.resistanceActive) {
+                            damage = Math.floor(damage * 0.7); // 30% menos daño
+                        }
+                        
+                        target.health = Math.max(0, target.health - damage);
+                        
+                        // Stun duration
+                        let stunDuration = player.resistanceActive ? 180 : 240; // 3s o 4s
+                        target.stunned = true;
+                        target.stunTimer = stunDuration;
+                        
+                        // Ganar vida por acertar
+                        if (player.id === this.myPlayerId) {
+                            player.health = Math.min(player.maxHealth, player.health + 15);
+                            
+                            // Activar resistencia si llega a 30 HP
+                            if (player.health >= 30 && !player.resistanceActive) {
+                                player.resistanceActive = true;
+                                this.createParticles(player.x + 15, player.y + 15, '#9370DB', 20);
+                            }
+                        }
+                        
+                        if (this.supabaseGame) {
+                            this.supabaseGame.sendAttack({
+                                type: 'punch_hit',
+                                targetId: target.id,
+                                damage: damage,
+                                stunDuration: stunDuration,
+                                puncherId: player.id,
+                                puncherHealth: player.health
+                            });
+                        }
+                        
+                        this.createParticles(target.x + 15, target.y + 15, '#FFD700', 15);
+                    }
+                });
+                
+                if (player.punchTimer <= 0) {
+                    player.punchActive = false;
+                }
+            }
+            
+            // Taunt
+            if (player.tauntActive) {
+                player.tauntTimer--;
+                
+                const nearbyKillers = Object.values(this.players).filter(target => 
+                    target.role === 'killer' && target.alive && target.id !== player.id
+                );
+                
+                nearbyKillers.forEach(target => {
+                    const distance = Math.sqrt(
+                        Math.pow(target.x - player.x, 2) + 
+                        Math.pow(target.y - player.y, 2)
+                    );
+                    
+                    if (distance < 60 && !player.tauntHit) {
+                        player.tauntHit = true;
+                        player.tauntActive = false;
+                        
+                        // Aplicar efecto de pantalla nublada
+                        target.screenBlurred = true;
+                        target.blurTimer = 300; // 5 segundos
+                        
+                        if (this.supabaseGame) {
+                            this.supabaseGame.sendAttack({
+                                type: 'taunt_hit',
+                                targetId: target.id,
+                                blurDuration: 300
+                            });
+                        }
+                        
+                        this.createParticles(target.x + 15, target.y + 15, '#FF69B4', 20);
+                    }
+                });
+                
+                if (player.tauntTimer <= 0) {
+                    player.tauntActive = false;
+                }
+            }
+            
+            // Actualizar blur
+            if (player.screenBlurred) {
+                player.blurTimer--;
+                if (player.blurTimer <= 0) {
+                    player.screenBlurred = false;
+                }
+            }
+        });
+    }
+    
     updateSelfDestruct() {
         Object.values(this.players).forEach(player => {
             // Activar canSelfDestruct cuando la vida baje a 50 o menos
@@ -1656,6 +1837,7 @@ class DiscordFriendsGame {
                 this.updateCharge();
                 this.updateAutoRepair();
                 this.updateSelfDestruct();
+                this.updateLunaAbilities();
                 this.updateReviveSystem();
                 this.updateGameTimer();
                 this.updatePing();
@@ -1705,6 +1887,16 @@ class DiscordFriendsGame {
         if (!player.alive || player.downed) return;
 
         let speed = player.role === 'killer' ? 6 : (player.character === 'iA777' ? 5 : 4);
+        
+        // iA777 speed boost en LMS
+        if (player.character === 'iA777' && this.lastManStanding) {
+            speed = 6; // Velocidad de killer en LMS
+        }
+        
+        // Luna speed boost
+        if (player.character === 'luna' && player.speedBoost) {
+            speed = 7; // Velocidad II
+        }
         let moved = false;
         let newX = player.x;
         let newY = player.y;
@@ -1847,9 +2039,16 @@ class DiscordFriendsGame {
     }
 
     updateCooldowns() {
-        const deltaTime = 16;
+        const player = this.players[this.myPlayerId];
+        // Cooldowns más rápidos para iA777 en LMS
+        const deltaTime = (player && player.character === 'iA777' && this.lastManStanding) ? 24 : 16;
+        
         if (this.abilities.q.cooldown > 0) {
             this.abilities.q.cooldown = Math.max(0, this.abilities.q.cooldown - deltaTime);
+            // Resetear usos de Energy Juice para Luna
+            if (this.abilities.q.cooldown === 0 && this.selectedCharacter === 'luna') {
+                this.abilities.q.uses = this.abilities.q.maxUses;
+            }
         }
         if (this.abilities.e.cooldown > 0) {
             this.abilities.e.cooldown = Math.max(0, this.abilities.e.cooldown - deltaTime);
@@ -2147,6 +2346,20 @@ class DiscordFriendsGame {
                     abilityData.cooldown = 0;
                     this.activateSelfDestruct(player);
                 }
+            }
+        } else if (player.character === 'luna') {
+            if (ability === 'q' && abilityData.uses > 0) {
+                this.activateEnergyJuice(player);
+                abilityData.uses--;
+                if (abilityData.uses <= 0) {
+                    abilityData.cooldown = abilityData.maxCooldown;
+                } else {
+                    abilityData.cooldown = 0; // No cooldown si aún tiene usos
+                }
+            } else if (ability === 'e') {
+                this.activatePunch(player);
+            } else if (ability === 'r') {
+                this.activateTaunt(player);
             }
         }
     }
@@ -2592,6 +2805,57 @@ class DiscordFriendsGame {
             }
             
             this.ctx.shadowBlur = 0;
+        } else if (player.character === 'luna') {
+            // Efectos especiales de Luna
+            if (player.energyJuiceActive) {
+                this.ctx.shadowColor = '#00FFFF';
+                this.ctx.shadowBlur = 10;
+            } else if (player.punchActive) {
+                this.ctx.shadowColor = '#FFD700';
+                this.ctx.shadowBlur = 15;
+            } else if (player.tauntActive) {
+                this.ctx.shadowColor = '#FF69B4';
+                this.ctx.shadowBlur = 10;
+            }
+            
+            // Cubo morado para Luna
+            let color1 = '#9370DB';
+            let color2 = '#8A2BE2';
+            
+            if (player.resistanceActive) {
+                color1 = '#4B0082';
+                color2 = '#6A0DAD';
+            }
+            
+            this.ctx.fillStyle = color1;
+            this.ctx.fillRect(player.x, player.y, size, size);
+            this.ctx.fillStyle = color2;
+            this.ctx.fillRect(player.x + 3, player.y + 3, size - 6, size - 6);
+            
+            this.ctx.font = '16px Arial';
+            this.ctx.fillStyle = 'white';
+            this.ctx.textAlign = 'center';
+            
+            let emoji = '👊';
+            if (player.energyJuiceActive) emoji = '⚡';
+            else if (player.punchActive) emoji = '🥊';
+            else if (player.tauntActive) emoji = '😜';
+            
+            this.ctx.fillText(emoji, player.x + size/2, player.y + size/2 + 5);
+            
+            // Indicadores de habilidades
+            if (player.resistanceActive) {
+                this.ctx.fillStyle = '#9370DB';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('RESIST', player.x + size/2, player.y - 15);
+            }
+            if (player.energyJuiceActive) {
+                this.ctx.fillStyle = '#00FFFF';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('SPEED II', player.x + size/2, player.y - 25);
+            }
+            
+            this.ctx.shadowBlur = 0;
         } else if (player.character === 'iA777') {
             // Efectos especiales
             if (player.charging) {
@@ -2757,7 +3021,7 @@ class DiscordFriendsGame {
         const x = player.x - 15;
         const y = player.y - 30;
         
-        // Icon for survivors - only show for Gissel
+        // Icon for survivors - Gissel and Luna
         if (player.role === 'survivor' && player.character === 'gissel') {
             if (!this.gisselIcon) {
                 this.gisselIcon = new Image();
@@ -2766,6 +3030,28 @@ class DiscordFriendsGame {
             
             if (this.gisselIcon.complete) {
                 this.ctx.drawImage(this.gisselIcon, x - 18, y - 2, 12, 12);
+            }
+        } else if (player.role === 'survivor' && player.character === 'luna') {
+            let iconSrc;
+            if (!player.alive) {
+                iconSrc = 'public/assets/icons/LunaDeadIcon.png';
+            } else if (player.health <= 50) {
+                iconSrc = 'public/assets/icons/LunaDangerIcon.png';
+            } else {
+                iconSrc = 'public/assets/icons/LunaNormalIcon.png';
+            }
+            
+            if (!this.lunaIcons) {
+                this.lunaIcons = {};
+            }
+            
+            if (!this.lunaIcons[iconSrc]) {
+                this.lunaIcons[iconSrc] = new Image();
+                this.lunaIcons[iconSrc].src = iconSrc;
+            }
+            
+            if (this.lunaIcons[iconSrc].complete) {
+                this.ctx.drawImage(this.lunaIcons[iconSrc], x - 18, y - 2, 12, 12);
             }
         }
         
@@ -2833,7 +3119,17 @@ class DiscordFriendsGame {
             this.ctx.fillText(`🎮 ${player.name} (${player.character})`, 15, 30);
             this.ctx.fillText(`❤️ HP: ${player.health}/${player.maxHealth}`, 15, 50);
             this.ctx.fillText(`🎯 Role: ${player.role}`, 15, 70);
-        this.ctx.fillText(`💥 Hitboxes: ${this.hitboxes.length}`, 15, 90);
+            
+            // Mostrar usos de Energy Juice para Luna
+            if (player.character === 'luna') {
+                const ability = this.abilities.q;
+                this.ctx.fillText(`⚡ Energy Juice: ${ability.uses}/${ability.maxUses}`, 15, 90);
+                if (player.punchStuns) {
+                    this.ctx.fillText(`👊 Punch Stuns: ${player.punchStuns}`, 15, 110);
+                }
+            } else {
+                this.ctx.fillText(`💥 Hitboxes: ${this.hitboxes.length}`, 15, 90);
+            }
         
         // Mostrar prompt de revive
         if (this.showRevivePrompt) {
@@ -2866,6 +3162,20 @@ class DiscordFriendsGame {
             this.ctx.font = 'bold 16px Arial';
             this.ctx.textAlign = 'center';
             this.ctx.fillText('MODO ESPECTADOR', this.canvas.width/2, 80);
+        }
+        
+        // Efecto de pantalla nublada para Luna's taunt
+        if (player && player.screenBlurred) {
+            this.ctx.save();
+            this.ctx.fillStyle = 'rgba(128,128,128,0.4)';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Texto de efecto
+            this.ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            this.ctx.font = 'bold 24px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('BURLADO', this.canvas.width/2, this.canvas.height/2);
+            this.ctx.restore();
         }
         
         // Ping display
@@ -2917,6 +3227,25 @@ class DiscordFriendsGame {
                 rageBtn.classList.add('cooldown');
             } else {
                 rageBtn.classList.remove('cooldown');
+            }
+        }
+        
+        // Update Energy Juice uses for Luna
+        if (player.character === 'luna') {
+            const qBtn = document.getElementById('abilityQ');
+            if (qBtn) {
+                const ability = this.abilities.q;
+                if (ability.uses <= 0 && ability.cooldown > 0) {
+                    qBtn.classList.add('cooldown');
+                    const cooldownSec = Math.ceil(ability.cooldown / 1000);
+                    qBtn.textContent = cooldownSec + 's';
+                } else if (ability.uses > 0) {
+                    qBtn.classList.remove('cooldown');
+                    qBtn.textContent = `Q(${ability.uses})`;
+                } else {
+                    qBtn.classList.remove('cooldown');
+                    qBtn.textContent = 'Q';
+                }
             }
         }
     }
@@ -3198,21 +3527,24 @@ class DiscordFriendsGame {
 
     playLMSMusic() {
         try {
-            this.lmsMusic = new Audio('public/assets/SpeedofSoundRound2.mp3');
+            this.lmsMusic = new Audio('public/assets/Abellmsposibble_.mp3');
             this.lmsMusic.volume = 0.6;
             this.lmsMusic.loop = false;
             this.lmsMusicStartTime = Date.now();
             
             this.lmsMusic.addEventListener('loadedmetadata', () => {
                 if (this.lastManStanding) {
+                    // Timer = duración exacta de la canción
                     this.gameTimer = Math.floor(this.lmsMusic.duration);
                     this.lmsMusicDuration = this.lmsMusic.duration;
+                    console.log(`🎵 LMS Timer set to song duration: ${this.gameTimer} seconds`);
                 }
             });
             
             this.lmsMusic.addEventListener('ended', () => {
                 if (this.lastManStanding) {
                     this.gameTimer = 0;
+                    console.log('🎵 Song ended, LMS timer finished');
                 }
             });
             
@@ -3225,9 +3557,9 @@ class DiscordFriendsGame {
             }
         } catch (error) {
             console.log('LMS music not available:', error);
-            // Fallback timer si no hay música
-            const config = window.GAME_CONFIG || {};
-            this.gameTimer = config.LMS_TIMER || 210;
+            // Fallback: usar duración estimada de la canción
+            this.gameTimer = 300; // Fallback de 5 minutos
+            this.lmsMusicDuration = 300;
         }
     }
 
@@ -3798,6 +4130,51 @@ class DiscordFriendsGame {
         if (this.supabaseGame) {
             this.supabaseGame.sendAttack({
                 type: 'sierra_activate',
+                playerId: player.id
+            });
+        }
+    }
+    
+    activateEnergyJuice(player) {
+        player.energyJuiceActive = true;
+        player.energyJuiceTimer = 600; // 10 segundos
+        player.speedBoost = true;
+        
+        this.createParticles(player.x + 15, player.y + 15, '#00FFFF', 15);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'energy_juice_activate',
+                playerId: player.id
+            });
+        }
+    }
+    
+    activatePunch(player) {
+        player.punchActive = true;
+        player.punchTimer = 60; // 1 segundo de duración
+        player.punchHit = false;
+        
+        this.createParticles(player.x + 15, player.y + 15, '#FFD700', 20);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'punch_activate',
+                playerId: player.id
+            });
+        }
+    }
+    
+    activateTaunt(player) {
+        player.tauntActive = true;
+        player.tauntTimer = 60; // 1 segundo de duración
+        player.tauntHit = false;
+        
+        this.createParticles(player.x + 15, player.y + 15, '#FF69B4', 15);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'taunt_activate',
                 playerId: player.id
             });
         }
