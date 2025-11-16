@@ -33,6 +33,7 @@
         "⚡ Cooldowns 50% más rápidos para Abel en LMS",
         "🏃 Velocidad aumentada para Abel en LMS (igual que killers)",
         "🛡️ Sistema de resistencia preparado para Abel en LMS",
+        "🌙 Luna agregada al selector de personajes del lobby",
         "🎮 Iconos de personajes agregados al lobby (Gissel y Luna)",
         "🖼️ Avatares dinámicos para Luna (Normal/Danger/Dead)"
       ],
@@ -40,6 +41,7 @@
         "🔧 Balance mejorado para supervivencia de 5 minutos en LMS",
         "🎯 Abel ahora es viable durante toda la duración de su música",
         "⚡ Experiencia de juego más equilibrada en Last Man Standing",
+        "🌙 Luna ahora disponible en selector (estaba codificada pero oculta)",
         "🎨 Interfaz visual mejorada con iconos de personajes"
       ],
       "abel_improvements": [
