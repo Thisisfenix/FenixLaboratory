@@ -521,11 +521,12 @@ class DiscordFriendsGame {
                     this.lobbyCountdown = data.countdown;
                     console.log('📡 Received countdown start:', data.countdown);
                 } else if (data.type === 'update') {
-                    // Forzar countdown válido entre 0 y 60
-                    if (data.countdown >= 0 && data.countdown <= 60) {
-                        this.lobbyCountdown = Math.max(0, Math.min(60, data.countdown));
+                    // Forzar countdown válido entre 0 y 10
+                    if (data.countdown >= 0 && data.countdown <= 10) {
+                        this.lobbyCountdown = Math.max(0, Math.min(10, data.countdown));
                     } else {
-                        this.lobbyCountdown = 60; // Reset a 60 si está fuera de rango
+                        this.resetCountdown(); // Reset si está fuera de rango
+                        return;
                     }
                 } else if (data.type === 'reset') {
                     this.resetCountdown();
@@ -659,9 +660,10 @@ class DiscordFriendsGame {
         });
         
         // Reset countdown si está atascado o fuera de rango
-        if (this.countdownActive && (this.lobbyCountdown > 60 || this.lobbyCountdown < 0)) {
-            console.log('⚠️ Countdown out of range, forcing to 60...');
-            this.lobbyCountdown = 60;
+        if (this.countdownActive && (this.lobbyCountdown > 10 || this.lobbyCountdown < 0)) {
+            console.log('⚠️ Countdown out of range, resetting...');
+            this.resetCountdown();
+            return;
         }
         
         if (playerList.length >= 2 && survivors >= 1 && killers >= 1 && !this.countdownActive) {
@@ -684,9 +686,9 @@ class DiscordFriendsGame {
         }
         
         this.countdownActive = true;
-        this.lobbyCountdown = 60; // FORZADO A 60 SEGUNDOS
+        this.lobbyCountdown = 10; // COUNTDOWN FIJO DE 10 SEGUNDOS
         
-        console.log('⏰ Starting countdown...');
+        console.log('⏰ Starting countdown from 10...');
         
         // Broadcast countdown start to all players
         if (this.supabaseGame) {
