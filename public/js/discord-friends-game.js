@@ -1025,11 +1025,14 @@ class DiscordFriendsGame {
         
         const loadingDiv = document.getElementById('loadingScreen');
         if (loadingDiv) {
+            loadingDiv.style.background = "linear-gradient(135deg, rgba(0,0,0,0.8), rgba(10,10,10,0.8)), url('assets/loading-screen.png')";
+            loadingDiv.style.backgroundSize = "cover";
+            loadingDiv.style.backgroundPosition = "center";
             loadingDiv.innerHTML = `
                 <div style="text-align: center;">
-                    <div id="loadingText" style="font-size: 2rem; color: #FFD700; font-weight: bold;">Conectando al servidor...</div>
-                    <div style="margin-top: 1rem; color: #fff; font-size: 1.2rem;">Sincronizando jugadores</div>
-                    <div style="margin-top: 2rem; color: rgba(255,255,255,0.7); font-size: 1rem;">Preparando Discord Friends Game...</div>
+                    <div id="loadingText" style="font-size: 2rem; color: #FFD700; font-weight: bold; background: rgba(0,0,0,0.7); padding: 1rem 2rem; border-radius: 15px; backdrop-filter: blur(10px);">Conectando al servidor...</div>
+                    <div style="margin-top: 1rem; color: #fff; font-size: 1.2rem; background: rgba(0,0,0,0.5); padding: 0.5rem 1rem; border-radius: 10px;">Sincronizando jugadores</div>
+                    <div style="margin-top: 2rem; color: rgba(255,255,255,0.7); font-size: 1rem; background: rgba(0,0,0,0.5); padding: 0.5rem 1rem; border-radius: 10px;">Preparando Discord Friends Game...</div>
                     <div style="margin-top: 1rem; color: rgba(255,255,255,0.5); font-size: 0.9rem;">Por favor espera...</div>
                 </div>
             `;

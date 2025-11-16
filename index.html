@@ -1984,13 +1984,13 @@
   <div class="main-content" id="main-content">
     <!-- Hero -->
     <section class="hero">
-    <div class="container">
-      <h1 id="typewriter">THISISFENIX LABORATORY</h1>
-      <p>Donde subo mis experimentos raros y proyectos random</p>
-      <a href="#proyectos" class="btn btn-neon" onclick="safeScrollIntoView('proyectos'); return false;"><i class="bi bi-arrow-down me-2"></i>Ver Proyectos</a>
-    </div>
-    <div class="particles" id="particles"></div>
-  </section>
+      <div class="container">
+        <h1 id="typewriter">THISISFENIX LABORATORY</h1>
+        <p>Donde subo mis experimentos raros y proyectos random</p>
+        <a href="#proyectos" class="btn btn-neon" onclick="safeScrollIntoView('proyectos'); return false;"><i class="bi bi-arrow-down me-2"></i>Ver Proyectos</a>
+      </div>
+      <div class="particles" id="particles"></div>
+    </section>
   <!-- Proyectos -->
   <section id="proyectos" class="container">
     <h2>PROYECTOS</h2>
@@ -3095,6 +3095,8 @@
 
     function typeWriterEffect() {
       const title = document.getElementById('typewriter');
+      if (!title) return;
+      
       const text = "THISISFENIX LABORATORY";
       let i = 0;
 
@@ -3102,9 +3104,9 @@
 
       function type() {
         if (i < text.length) {
-          title.textContent += text.charAt(i);
+          title.textContent = text.substring(0, i + 1);
           i++;
-          setTimeout(type, 50);
+          setTimeout(type, 80);
         }
       }
 

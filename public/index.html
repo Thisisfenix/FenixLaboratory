@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="screen-orientation" content="landscape">
-    <title>Deadly Pursuit</title>
+    <title>Discord Friends - Deadly Pursuit</title>
     <link rel="icon" type="image/x-icon" href="assets/deadlypursuir.ico">
     <style>
         * {
@@ -65,7 +65,10 @@
         
         /* Loading Screen */
         #loadingScreen {
-            background: linear-gradient(135deg, #000000, #0a0a0a);
+            background: linear-gradient(135deg, #000000, #0a0a0a), url('assets/loading-screen.png');
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -78,6 +81,10 @@
             font-weight: bold;
             text-shadow: 0 0 20px rgba(255,0,0,0.8);
             animation: pulse 2s infinite;
+            background: rgba(0,0,0,0.7);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
         }
         
         @keyframes pulse {
@@ -542,7 +549,7 @@
     <div id="lobby" class="screen active">
         <div class="header">
             <h1>Discord Friends</h1>
-            <p class="subtitle">Deadly Pursuit - Multijugador Online</p>
+            <p class="subtitle">4 Personajes Únicos - Sistema de Rage Mode - Multijugador Online</p>
         </div>
 
         <div class="game-section">
@@ -558,7 +565,7 @@
                         <strong>Q - Sigilo:</strong> Invisibilidad + daño crítico (20s CD)<br>
                         <strong>E - You Can't Run:</strong> Proyectil rastreador + jumpscare (15s CD)<br>
                         <strong>R - Orbe de Daño:</strong> Proyectil de 40 daño (8s CD)<br>
-                        <strong>C - Rage Mode:</strong> +50% daño, pausa timer (1 uso)
+                        <strong>C - Rage Mode:</strong> +50% daño, +33% velocidad, inmunidad stuns (1 uso)
                     </div>
                 </div>
 
@@ -599,6 +606,19 @@
                         <strong>E - Punch:</strong> Golpe que da vida y stunea killers (32s CD)<br>
                         <strong>R - Taunt:</strong> Nubla la pantalla del killer (15s CD)<br>
                         <strong>Especial:</strong> 85 HP, resistencia al llegar a 30 HP
+                    </div>
+                </div>
+
+                <!-- Angel - Survivor Support -->
+                <div class="character-card" data-character="angel" data-role="survivor">
+                    <div class="character-avatar">😇</div>
+                    <div class="character-name">Angel</div>
+                    <div class="character-role">Survivor Support</div>
+                    <div class="character-abilities">
+                        <strong>Q - Sacrificio Angelical:</strong> 40% vida por curación + speed boost aliados (35s CD)<br>
+                        <strong>E - Dash Protector:</strong> 90-130 unidades con negación de ataques (40s CD)<br>
+                        <strong>R - Descanso:</strong> 3-6 HP/s curación para sí mismo y aliados (25s CD)<br>
+                        <strong>Especial:</strong> 90 HP, soporte puro, 130 HP + bonuses en LMS
                     </div>
                 </div>
             </div>
