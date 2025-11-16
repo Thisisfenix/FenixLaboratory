@@ -35,9 +35,9 @@ class SupabaseGame {
         }
     }
     
-    async setupRealtimeChannel() {
+    async setupRealtimeChannel(lobbyId = 'lobby-1') {
         return new Promise((resolve) => {
-            this.channel = this.supabase.channel('deadly-pursuit-game')
+            this.channel = this.supabase.channel(`deadly-pursuit-${lobbyId}`)
                 .on('broadcast', { event: 'player-move' }, (payload) => {
                     console.log('Received player-move:', payload.payload);
                     this.updatePlayerPosition(payload.payload);
@@ -74,6 +74,9 @@ class SupabaseGame {
                 })
                 .on('broadcast', { event: 'timer-sync' }, (payload) => {
                     this.handleTimerSync(payload.payload);
+                })
+                .on('broadcast', { event: 'lobby-list' }, (payload) => {
+                    this.handleLobbyList(payload.payload);
                 })
                 .subscribe((status) => {
                     console.log('Supabase subscription status:', status);
@@ -288,5 +291,39 @@ class SupabaseGame {
     
     handleTimerSync(data) {
         // This will be overridden by the main game
+    }
+    
+    requestLobbyList() {
+        this.channel.send({
+            type: 'broadcast',
+            event: 'lobby-list',
+            payload: {
+                type: 'request',
+                playerId: this.myPlayerId
+            }
+        });
+    }
+    
+    sendLobbyStatus(lobbyData) {
+        this.channel.send({
+            type: 'broadcast',
+            event: 'lobby-list',
+            payload: {
+                type: 'status',
+                playerId: this.myPlayerId,
+                ...lobbyData
+            }
+        });
+    }
+    
+    handleLobbyList(data) {
+        // This will be overridden by the main game
+    }
+    
+    switchLobby(newLobbyId) {
+        if (this.channel) {
+            this.channel.unsubscribe();
+        }
+        return this.setupRealtimeChannel(newLobbyId);
     }
 }

@@ -19,12 +19,14 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #000000, #0a0a0a, #1a0a0a);
-            color: #ff4444;
-            overflow-x: hidden;
-            overflow-y: auto;
+            background: #000000;
+            color: #ffffff;
+            overflow: hidden;
             min-height: 100vh;
             touch-action: manipulation;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
         
         /* Scrollbar personalizado para PC */
@@ -97,6 +99,7 @@
             flex-direction: column;
             padding: 1rem;
             overflow-y: auto;
+            height: 100vh;
         }
         
         .header {
@@ -106,36 +109,36 @@
         
         .header h1 {
             font-size: clamp(2rem, 8vw, 4rem);
-            color: #ff0000;
-            text-shadow: 0 0 30px rgba(255,0,0,0.5);
+            color: #FFD700;
+            text-shadow: 0 0 30px rgba(255,215,0,0.5);
             margin-bottom: 0.5rem;
             animation: glow 3s ease-in-out infinite alternate;
         }
         
         @keyframes glow {
-            from { filter: drop-shadow(0 0 20px rgba(255,0,0,0.5)); }
-            to { filter: drop-shadow(0 0 30px rgba(255,0,0,0.8)); }
+            from { filter: drop-shadow(0 0 20px rgba(255,215,0,0.5)); }
+            to { filter: drop-shadow(0 0 30px rgba(255,215,0,0.8)); }
         }
         
         .subtitle {
             font-size: clamp(1rem, 3vw, 1.5rem);
-            color: rgba(255,68,68,0.8);
+            color: rgba(255,255,255,0.8);
             margin-bottom: 1rem;
         }
         
         .game-section {
-            background: rgba(255,0,0,0.05);
+            background: rgba(0,0,0,0.8);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,0,0,0.2);
+            border: 1px solid rgba(255,215,0,0.3);
             border-radius: 20px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 8px 32px rgba(255,0,0,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
         
         .section-title {
             font-size: clamp(1.2rem, 4vw, 2rem);
-            color: #ff0000;
+            color: #FFD700;
             text-align: center;
             margin-bottom: 1.5rem;
             font-weight: 600;
@@ -149,8 +152,8 @@
         }
         
         .character-card {
-            background: linear-gradient(145deg, rgba(255,0,0,0.1), rgba(0,0,0,0.8));
-            border: 2px solid rgba(255,0,0,0.3);
+            background: linear-gradient(145deg, rgba(0,0,0,0.9), rgba(20,20,20,0.8));
+            border: 2px solid rgba(255,215,0,0.3);
             border-radius: 16px;
             padding: 1.5rem;
             text-align: center;
@@ -163,14 +166,14 @@
         
         .character-card:hover {
             transform: translateY(-8px);
-            border-color: #ff0000;
-            box-shadow: 0 20px 40px rgba(255,0,0,0.4);
+            border-color: #FFD700;
+            box-shadow: 0 20px 40px rgba(255,215,0,0.4);
         }
         
         .character-card.selected {
-            border-color: #ff0000;
-            background: linear-gradient(145deg, rgba(255,0,0,0.2), rgba(0,0,0,0.9));
-            box-shadow: 0 0 40px rgba(255,0,0,0.6);
+            border-color: #FFD700;
+            background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(0,0,0,0.9));
+            box-shadow: 0 0 40px rgba(255,215,0,0.6);
             transform: scale(1.02);
         }
         
@@ -179,24 +182,24 @@
             height: 80px;
             margin: 0 auto 1rem;
             border-radius: 50%;
-            background: linear-gradient(45deg, #ff0000, #660000);
+            background: linear-gradient(45deg, #333333, #111111);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2.5rem;
-            box-shadow: 0 8px 25px rgba(255,0,0,0.4);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
         }
         
         .character-name {
             font-size: 1.4rem;
-            color: #ff0000;
+            color: #FFD700;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
         
         .character-role {
             font-size: 1rem;
-            color: rgba(255,68,68,0.8);
+            color: rgba(255,255,255,0.8);
             margin-bottom: 1rem;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -206,7 +209,7 @@
             text-align: left;
             font-size: 0.85rem;
             line-height: 1.4;
-            color: rgba(255,68,68,0.9);
+            color: rgba(255,255,255,0.9);
         }
         
         .player-form {
@@ -221,9 +224,9 @@
             width: 100%;
             max-width: 400px;
             padding: 1rem 1.5rem;
-            border: 2px solid rgba(255,0,0,0.5);
+            border: 2px solid rgba(255,215,0,0.5);
             background: rgba(0,0,0,0.8);
-            color: #ff4444;
+            color: #ffffff;
             border-radius: 50px;
             font-size: 1.1rem;
             backdrop-filter: blur(10px);
@@ -232,13 +235,13 @@
         }
         
         #playerName::placeholder {
-            color: rgba(255,68,68,0.6);
+            color: rgba(255,255,255,0.6);
         }
         
         #playerName:focus {
             outline: none;
-            border-color: #ff0000;
-            box-shadow: 0 0 25px rgba(255,0,0,0.6);
+            border-color: #FFD700;
+            box-shadow: 0 0 25px rgba(255,215,0,0.6);
         }
         
         .btn {
@@ -258,14 +261,14 @@
         }
         
         .btn-primary {
-            background: linear-gradient(45deg, #ff0000, #660000);
-            color: white;
-            box-shadow: 0 8px 25px rgba(255,0,0,0.5);
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            box-shadow: 0 8px 25px rgba(255,215,0,0.5);
         }
         
         .btn-primary:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 35px rgba(255,0,0,0.6);
+            box-shadow: 0 12px 35px rgba(255,215,0,0.6);
         }
         
         /* Game Screen */
@@ -381,27 +384,28 @@
         /* Mobile Game Controls */
         .mobile-controls {
             position: fixed;
-            bottom: 0;
+            top: 0;
             left: 0;
             right: 0;
-            height: 120px;
-            background: rgba(0,0,0,0.8);
+            bottom: 0;
+            background: transparent;
             display: none;
             z-index: 1000;
             pointer-events: none;
         }
         
         .mobile-controls.active {
-            display: flex;
+            display: block;
             pointer-events: auto;
         }
         
         .joystick-container {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 80px;
-            height: 80px;
+            bottom: 30px;
+            left: 30px;
+            width: 100px;
+            height: 100px;
+            pointer-events: auto;
         }
         
         .joystick-base {
@@ -427,26 +431,28 @@
         
         .ability-buttons {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            pointer-events: auto;
         }
         
         .ability-btn {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: rgba(255,0,0,0.8);
-            border: 2px solid #ff0000;
+            background: rgba(255,0,0,0.9);
+            border: 3px solid #ff0000;
             color: white;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
             user-select: none;
+            pointer-events: auto;
         }
         
         .ability-btn:active {
@@ -564,9 +570,26 @@
     <div id="lobby" class="screen active">
         <div class="header">
             <h1>Discord Friends</h1>
-            <p class="subtitle">4 Personajes Únicos - Sistema de Rage Mode - Multijugador Online</p>
+            <p class="subtitle">5 Personajes Únicos - Sistema de Rage Mode - Multijugador Online</p>
         </div>
 
+        <div class="game-section">
+            <h2 class="section-title">Selecciona Lobby</h2>
+            
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center;">
+                <select id="lobbySelect" style="padding: 0.8rem; border: 2px solid rgba(255,215,0,0.5); background: rgba(0,0,0,0.8); color: #ffffff; border-radius: 10px; font-size: 1rem; min-width: 200px;">
+                    <option value="lobby-1">Lobby 1</option>
+                    <option value="lobby-2">Lobby 2</option>
+                    <option value="lobby-3">Lobby 3</option>
+                    <option value="lobby-4">Lobby 4</option>
+                    <option value="lobby-5">Lobby 5</option>
+                </select>
+                <button id="refreshLobbies" class="btn" style="background: linear-gradient(45deg, #666, #333); color: white; padding: 0.8rem 1.5rem; min-width: auto;">🔄 Actualizar</button>
+            </div>
+            
+            <div id="lobbyInfo" style="background: rgba(0,0,0,0.6); padding: 1rem; border-radius: 10px; margin-bottom: 2rem; text-align: center; color: #fff;"></div>
+        </div>
+        
         <div class="game-section">
             <h2 class="section-title">Selecciona tu Personaje</h2>
             
@@ -581,6 +604,19 @@
                         <strong>E - You Can't Run:</strong> Proyectil rastreador + jumpscare (15s CD)<br>
                         <strong>R - Orbe de Daño:</strong> Proyectil de 40 daño (8s CD)<br>
                         <strong>C - Rage Mode:</strong> +50% daño, +33% velocidad, inmunidad stuns (1 uso)
+                    </div>
+                </div>
+
+                <!-- Vortex - Killer -->
+                <div class="character-card" data-character="vortex" data-role="killer">
+                    <div class="character-avatar">🌀</div>
+                    <div class="character-name">Vortex</div>
+                    <div class="character-role">Killer</div>
+                    <div class="character-abilities">
+                        <strong>Q - Warp Strike:</strong> Teleport random + movimiento teledirigido inesquivable (25s CD)<br>
+                        <strong>E - Void Step:</strong> Teleport hacia survivor cercano (18s CD)<br>
+                        <strong>R - Phantom Orb:</strong> Orbe explosivo si survivor esquiva (12s CD)<br>
+                        <strong>C - Power Surge:</strong> x2 poder, 700 HP, killeable (1 uso)
                     </div>
                 </div>
 
@@ -636,11 +672,32 @@
                         <strong>Especial:</strong> 90 HP, soporte puro, 130 HP + bonuses en LMS
                     </div>
                 </div>
+
+                <!-- Iris - Survivor Telekinetic -->
+                <div class="character-card" data-character="iris" data-role="survivor">
+                    <div class="character-avatar">🔮</div>
+                    <div class="character-name">Iris</div>
+                    <div class="character-role">Survivor Telekinetic</div>
+                    <div class="character-abilities">
+                        <em>"Ella estaba ayudando a iA777 a derrotar a un robot de Maxwell, hasta que vio como se metía a un portal iA, sin darse cuenta que ella también iba a ser teletransportada."</em><br><br>
+                        <strong>Q - Curación:</strong> Se cura 10-20 HP, cura aliados 15 HP/3s por 20s (20s CD)<br>
+                        <strong>E - Telekinesis:</strong> Empuja al killer si está a 0.5m, dura 5s (25s CD)<br>
+                        <strong>R - Dash:</strong> Se aleja del killer, lo stunea 2s y recarga 25 de esquive<br>
+                        <strong>Pasiva:</strong> Barra de esquive de 75 que aguanta 2 golpes
+                    </div>
+                </div>
             </div>
 
             <div class="player-form">
-                <input type="text" id="playerName" placeholder="Ingresa tu nombre de Discord" maxlength="20">
-                <button id="joinBtn" class="btn btn-primary">Unirse al Servidor</button>
+                <input type="text" id="playerName" placeholder="Ingresa tu nombre de jugador" maxlength="20">
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button id="joinBtn" class="btn btn-primary">Unirse como Jugador</button>
+                    <button id="spectateBtn" class="btn" style="background: linear-gradient(45deg, #666, #333); color: white;">👁️ Espectar Partida</button>
+                </div>
+                <div style="text-align: center; margin-top: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                    📝 Selecciona un lobby arriba, elige tu personaje y únete a la acción<br>
+                    👁️ Modo espectador: Observa partidas en curso sin participar
+                </div>
             </div>
         </div>
         

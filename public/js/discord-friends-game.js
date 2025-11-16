@@ -7,6 +7,9 @@ class DiscordFriendsGame {
         this.selectedRole = null;
         this.gameStarted = false;
         this.playersInLobby = {};
+        this.currentLobby = 'lobby-1';
+        this.availableLobbies = {};
+        this.spectatorMode = false;
         this.keys = {};
         this.camera = { x: 0, y: 0 };
         const config = window.GAME_CONFIG || {};
@@ -45,6 +48,8 @@ class DiscordFriendsGame {
         this.mobileControls = null;
         this.ping = 0;
         this.lastPingTime = 0;
+        this.gamepadIndex = null;
+        this.gamepadButtons = {};
         
         this.init();
     }
@@ -60,6 +65,7 @@ class DiscordFriendsGame {
         
         // Hide loading and show lobby
         this.hideConnectionLoading();
+        this.refreshLobbyList();
         this.startGameLoop();
     }
     
@@ -184,7 +190,22 @@ class DiscordFriendsGame {
         });
 
         document.getElementById('joinBtn').addEventListener('click', () => {
+            this.spectatorMode = false;
             this.joinGame();
+        });
+        
+        document.getElementById('spectateBtn').addEventListener('click', () => {
+            this.spectatorMode = true;
+            this.joinGame();
+        });
+        
+        document.getElementById('refreshLobbies').addEventListener('click', () => {
+            this.refreshLobbyList();
+        });
+        
+        document.getElementById('lobbySelect').addEventListener('change', (e) => {
+            this.currentLobby = e.target.value;
+            this.updateLobbyInfo();
         });
         
         // Cleanup on page unload
@@ -197,6 +218,17 @@ class DiscordFriendsGame {
             if (!document.hidden && this.gameStarted) {
                 this.syncGameTimer();
             }
+        });
+        
+        // Gamepad support
+        window.addEventListener('gamepadconnected', (e) => {
+            console.log('🎮 Gamepad connected:', e.gamepad.id);
+            this.gamepadIndex = e.gamepad.index;
+        });
+        
+        window.addEventListener('gamepaddisconnected', (e) => {
+            console.log('🎮 Gamepad disconnected');
+            this.gamepadIndex = null;
         });
     }
 
@@ -504,6 +536,30 @@ class DiscordFriendsGame {
                 target.blurTimer = data.blurDuration;
                 
                 this.createParticles(target.x + 15, target.y + 15, '#FF69B4', 20);
+            } else if (data.type === 'iris_healing' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.healingAura = true;
+                player.healingTimer = 1200;
+                player.healingTick = 0;
+            } else if (data.type === 'telekinesis_activate' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.telekinesisActive = true;
+                player.telekinesisTimer = 300;
+            } else if (data.type === 'telekinesis_hit' && this.players[data.targetId]) {
+                const target = this.players[data.targetId];
+                target.x = data.knockbackX;
+                target.y = data.knockbackY;
+                target.telekinesisEffect = true;
+                target.telekinesisTimer = 300;
+                
+                this.createParticles(target.x + 15, target.y + 15, '#9370DB', 20);
+            } else if (data.type === 'iris_dash' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.irisDashActive = true;
+                player.irisDashTimer = 60;
+            } else if (data.type === 'dodge_regen' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.dodgeBar = data.dodgeBar;
             }
         };
         
@@ -551,26 +607,50 @@ class DiscordFriendsGame {
                 console.log('🕐 Timer synced with', data.playerId);
             }
         };
+        
+        this.supabaseGame.handleLobbyList = (data) => {
+            if (data.type === 'request' && data.playerId !== this.myPlayerId) {
+                const lobbyStatus = {
+                    lobbyId: this.currentLobby,
+                    players: Object.keys(this.playersInLobby).length,
+                    gameStarted: this.gameStarted
+                };
+                this.supabaseGame.sendLobbyStatus(lobbyStatus);
+            } else if (data.type === 'status' && data.playerId !== this.myPlayerId) {
+                this.availableLobbies[data.lobbyId] = {
+                    players: data.players,
+                    gameStarted: data.gameStarted
+                };
+                this.updateLobbyInfo();
+            }
+        };
     }
 
     async joinGame() {
         const playerName = document.getElementById('playerName').value.trim();
         
         if (!playerName) {
-            alert('Por favor ingresa tu nombre');
+            alert('Por favor ingresa tu nombre de jugador');
             return;
         }
 
-        if (!this.selectedCharacter) {
-            alert('Por favor selecciona un personaje');
+        if (!this.spectatorMode && !this.selectedCharacter) {
+            alert('Por favor selecciona un personaje antes de unirte como jugador');
             return;
         }
         
-        // Verificar si ya hay un killer
-        if (this.selectedRole === 'killer') {
+        // Verificar estado del lobby seleccionado
+        const lobbyInfo = this.availableLobbies[this.currentLobby];
+        if (!this.spectatorMode && lobbyInfo && lobbyInfo.players >= 8) {
+            alert(`El ${this.currentLobby} está lleno (8/8 jugadores). Prueba otro lobby o únete como espectador.`);
+            return;
+        }
+        
+        // Verificar si ya hay un killer (solo si no es espectador)
+        if (!this.spectatorMode && this.selectedRole === 'killer') {
             const existingKiller = Object.values(this.playersInLobby).find(p => p.role === 'killer');
             if (existingKiller && existingKiller.id !== this.myPlayerId) {
-                alert('Ya hay un killer en el lobby. Solo puede haber uno.');
+                alert(`Ya hay un killer en ${this.currentLobby}. Solo puede haber uno por lobby.`);
                 return;
             }
         }
@@ -578,14 +658,20 @@ class DiscordFriendsGame {
         const playerData = {
             id: this.myPlayerId,
             name: playerName,
-            character: this.selectedCharacter,
-            role: this.selectedRole,
+
             x: Math.random() * 800 + 100,
             y: Math.random() * 600 + 100,
-            alive: !this.gameStarted,
-            health: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : 100))) : 600,
-            maxHealth: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : 100))) : 600,
-            spectating: this.gameStarted,
+            alive: !this.gameStarted && !this.spectatorMode,
+            character: this.spectatorMode ? 'spectator' : this.selectedCharacter,
+            role: this.spectatorMode ? 'spectator' : this.selectedRole,
+            health: this.spectatorMode ? 0 : (this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : (this.selectedCharacter === 'iris' ? 100 : 100)))) : (this.selectedCharacter === 'vortex' ? 700 : 600)),
+            maxHealth: this.spectatorMode ? 0 : (this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : (this.selectedCharacter === 'iris' ? 100 : 100)))) : (this.selectedCharacter === 'vortex' ? 700 : 600)),
+            // Iris passive - dodge bar
+            dodgeBar: this.selectedCharacter === 'iris' ? 75 : 0,
+            maxDodgeBar: this.selectedCharacter === 'iris' ? 75 : 0,
+            dodgeHits: this.selectedCharacter === 'iris' ? 0 : 0,
+            spectating: this.gameStarted || this.spectatorMode,
+            lobby: this.currentLobby,
             joinedAt: Date.now()
         };
 
@@ -593,9 +679,13 @@ class DiscordFriendsGame {
             if (this.supabaseGame) {
                 console.log('📝 Joining lobby as:', playerData.name, playerData.character, playerData.role);
                 
-                // Si el juego ya empezó, notificar al jugador
-                if (this.gameStarted) {
-                    alert('La partida ya comenzó. Entrarás como espectador.');
+                // Mensajes según el modo de unión
+                if (this.gameStarted && !this.spectatorMode) {
+                    alert(`La partida en ${this.currentLobby} ya comenzó. Entrarás como espectador.`);
+                } else if (this.spectatorMode) {
+                    console.log(`Joining ${this.currentLobby} as spectator`);
+                } else {
+                    console.log(`Joining ${this.currentLobby} as player: ${playerData.character}`);
                 }
                 
                 // Add player to local state first
@@ -604,7 +694,12 @@ class DiscordFriendsGame {
                 
                 console.log('Local lobby after join:', Object.values(this.playersInLobby).map(p => `${p.name}(${p.role})`));
                 
-                // Broadcast to other players
+                // Switch to selected lobby if different
+                if (this.currentLobby !== 'lobby-1') {
+                    await this.supabaseGame.switchLobby(this.currentLobby);
+                    this.setupSupabaseEvents();
+                }
+                
                 this.supabaseGame.sendPlayerJoin(playerData);
                 
                 // Solicitar sincronización del lobby
@@ -740,6 +835,10 @@ class DiscordFriendsGame {
             this.abilities.q = { cooldown: 0, maxCooldown: 20000 }; // Sigilo - 20s
             this.abilities.e = { cooldown: 0, maxCooldown: 15000 }; // You Can't Run - 15s
             this.abilities.r = { cooldown: 0, maxCooldown: 8000 }; // Orbe Blanco - 8s
+        } else if (this.selectedCharacter === 'vortex') {
+            this.abilities.q = { cooldown: 0, maxCooldown: 25000 }; // Warp Strike - 25s
+            this.abilities.e = { cooldown: 0, maxCooldown: 18000 }; // Void Step - 18s
+            this.abilities.r = { cooldown: 0, maxCooldown: 12000 }; // Phantom Orb - 12s
         } else if (this.selectedCharacter === 'gissel') {
             this.abilities.q = { cooldown: 0, maxCooldown: 18000 }; // Alas Puntiagudas - 18s
             this.abilities.e = { cooldown: 0, maxCooldown: 12000 };
@@ -756,6 +855,10 @@ class DiscordFriendsGame {
             this.abilities.q = { cooldown: 0, maxCooldown: 35000 }; // Sacrificio Angelical - 35s
             this.abilities.e = { cooldown: 0, maxCooldown: 40000 }; // Dash Protector - 40s
             this.abilities.r = { cooldown: 0, maxCooldown: 25000 }; // Descanso - 25s
+        } else if (this.selectedCharacter === 'iris') {
+            this.abilities.q = { cooldown: 0, maxCooldown: 20000 }; // Curación - 20s
+            this.abilities.e = { cooldown: 0, maxCooldown: 25000 }; // Telekinesis - 25s
+            this.abilities.r = { cooldown: 0, maxCooldown: 15000 }; // Dash - 15s
         }
         this.abilities.basicAttack = { cooldown: 0, maxCooldown: 1500 };
     }
@@ -995,7 +1098,7 @@ class DiscordFriendsGame {
                     player.maxRage = 500;
                 }
                 
-                // Ganar rage gradualmente
+                // Ganar rage gradualmente SOLO si no se ha usado
                 if (!player.rageMode.active && !player.rageUsed && player.rageLevel < player.maxRage) {
                     player.rageLevel += (player.rageGainRate || 1);
                     
@@ -1003,6 +1106,11 @@ class DiscordFriendsGame {
                     if (player.id === this.myPlayerId && this.abilities.basicAttack.cooldown > this.abilities.basicAttack.maxCooldown - 100) {
                         player.rageLevel += 5; // Bonus por atacar
                     }
+                }
+                
+                // Asegurar que rageUsed permanezca true después de usar rage mode
+                if (player.rageUsed) {
+                    player.rageLevel = 0; // Mantener en 0 después de usar
                 }
                 
                 // Rage mode activo
@@ -1023,6 +1131,45 @@ class DiscordFriendsGame {
                     if (player.rageMode.timer <= 0) {
                         player.rageMode.active = false;
                         this.createParticles(player.x + 15, player.y + 15, '#8B0000', 8);
+                    }
+                }
+            }
+        });
+    }
+
+    updateVortexAbilities() {
+        Object.values(this.players).forEach(player => {
+            if (player.character === 'vortex') {
+                // Warp Strike - movimiento teledirigido
+                if (player.warpStrikeActive) {
+                    player.warpStrikeTimer--;
+                    
+                    const nearestSurvivor = this.findNearestSurvivor(player);
+                    if (nearestSurvivor && player.id === this.myPlayerId) {
+                        const angle = Math.atan2(nearestSurvivor.y - player.y, nearestSurvivor.x - player.x);
+                        const speed = 8;
+                        const newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * speed));
+                        const newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * speed));
+                        
+                        player.x = newX;
+                        player.y = newY;
+                        
+                        if (this.supabaseGame) {
+                            this.supabaseGame.sendPlayerMove(newX, newY);
+                        }
+                    }
+                    
+                    if (player.warpStrikeTimer <= 0) {
+                        player.warpStrikeActive = false;
+                    }
+                }
+                
+                // Power Surge
+                if (player.powerSurge && player.powerSurge.active) {
+                    player.powerSurge.timer--;
+                    
+                    if (player.powerSurge.timer <= 0) {
+                        player.powerSurge.active = false;
                     }
                 }
             }
@@ -1085,6 +1232,12 @@ class DiscordFriendsGame {
         this.playersInLobby = {};
         this.countdownActive = false;
         
+        // Reproducir chase theme si soy 2019X o Vortex
+        const myPlayer = this.players[this.myPlayerId];
+        if (myPlayer && (myPlayer.character === '2019x' || myPlayer.character === 'vortex') && myPlayer.role === 'killer') {
+            this.playChaseTheme();
+        }
+        
         this.showLoadingScreen();
     }
 
@@ -1140,6 +1293,9 @@ class DiscordFriendsGame {
         this.lastManStanding = true;
         this.lmsActivated = true;
         
+        // Detener chase theme durante LMS
+        this.stopChaseTheme();
+        
         const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && !p.spectating);
         console.log('Last survivor found:', lastSurvivor ? lastSurvivor.name : 'None');
         
@@ -1176,6 +1332,13 @@ class DiscordFriendsGame {
                 lastSurvivor.lmsHealBoost = true; // Curación mejorada
                 lastSurvivor.lmsDashBoost = true; // Dash mejorado
                 console.log(`Angel LMS bonuses applied: Health ${oldHealth} -> ${lastSurvivor.health}, Angel Power, Resistance, Heal boost, Dash boost`);
+            } else if (lastSurvivor.character === 'gissel') {
+                const oldHealth = lastSurvivor.health;
+                lastSurvivor.health = Math.min(160, lastSurvivor.health + 60);
+                lastSurvivor.maxHealth = 160;
+                lastSurvivor.lmsGisselPower = true; // Poder especial de Gissel
+                lastSurvivor.lmsResistance = true; // 20% menos daño
+                console.log(`Gissel LMS bonuses applied: Health ${oldHealth} -> ${lastSurvivor.health}, Gissel Power, Resistance`);
             } else {
                 const oldHealth = lastSurvivor.health;
                 lastSurvivor.health = Math.min(160, lastSurvivor.health + 60);
@@ -1306,8 +1469,9 @@ class DiscordFriendsGame {
         this.countdownActive = false;
         this.lobbyCountdown = 0;
         
-        // Detener música de LMS
+        // Detener música de LMS y chase theme
         this.stopLMSMusic();
+        this.stopChaseTheme();
         
         document.getElementById('lobby').classList.add('active');
         document.getElementById('game').classList.remove('active');
@@ -1872,6 +2036,89 @@ class DiscordFriendsGame {
         });
     }
     
+    updateIrisAbilities() {
+        Object.values(this.players).forEach(player => {
+            // Dodge bar regeneration for Iris
+            if (player.character === 'iris' && player.dodgeBar < player.maxDodgeBar) {
+                // Regenerate 1 dodge point every 2 seconds (120 frames)
+                if (!player.dodgeRegenTimer) player.dodgeRegenTimer = 0;
+                player.dodgeRegenTimer++;
+                
+                if (player.dodgeRegenTimer >= 120) {
+                    player.dodgeBar = Math.min(player.maxDodgeBar, player.dodgeBar + 1);
+                    player.dodgeRegenTimer = 0;
+                    
+                    // Sync dodge bar with other players
+                    if (player.id === this.myPlayerId && this.supabaseGame) {
+                        this.supabaseGame.sendAttack({
+                            type: 'dodge_regen',
+                            playerId: player.id,
+                            dodgeBar: player.dodgeBar
+                        });
+                    }
+                }
+            }
+            
+            // Healing aura
+            if (player.healingAura) {
+                player.healingTimer--;
+                player.healingTick++;
+                
+                // Heal allies every 3 seconds (180 frames)
+                if (player.healingTick >= 180) {
+                    const nearbySurvivors = Object.values(this.players).filter(target => 
+                        target.role === 'survivor' && target.alive && target.id !== player.id && !target.downed
+                    );
+                    
+                    nearbySurvivors.forEach(target => {
+                        if (target.health < target.maxHealth) {
+                            target.health = Math.min(target.maxHealth, target.health + 15);
+                            this.createParticles(target.x + 15, target.y + 15, '#00FF7F', 8);
+                            
+                            if (this.supabaseGame) {
+                                this.supabaseGame.sendAttack({
+                                    type: 'heal',
+                                    targetId: target.id,
+                                    health: target.health
+                                });
+                            }
+                        }
+                    });
+                    
+                    player.healingTick = 0;
+                }
+                
+                if (player.healingTimer <= 0) {
+                    player.healingAura = false;
+                }
+            }
+            
+            // Telekinesis active state
+            if (player.telekinesisActive) {
+                player.telekinesisTimer--;
+                if (player.telekinesisTimer <= 0) {
+                    player.telekinesisActive = false;
+                }
+            }
+            
+            // Telekinesis effect on targets
+            if (player.telekinesisEffect) {
+                player.telekinesisTimer--;
+                if (player.telekinesisTimer <= 0) {
+                    player.telekinesisEffect = false;
+                }
+            }
+            
+            // Iris dash
+            if (player.irisDashActive) {
+                player.irisDashTimer--;
+                if (player.irisDashTimer <= 0) {
+                    player.irisDashActive = false;
+                }
+            }
+        });
+    }
+    
     updateSelfDestruct() {
         Object.values(this.players).forEach(player => {
             // Activar canSelfDestruct cuando la vida baje a 50 o menos
@@ -2056,6 +2303,7 @@ class DiscordFriendsGame {
                 this.updateHitboxes();
                 this.updateStealth();
                 this.updateRageMode();
+                this.updateVortexAbilities();
                 this.updateSharpWings();
                 this.updateYouCantRun();
                 this.updateCharge();
@@ -2063,10 +2311,12 @@ class DiscordFriendsGame {
                 this.updateSelfDestruct();
                 this.updateLunaAbilities();
                 this.updateAngelAbilities();
+                this.updateIrisAbilities();
                 this.updateReviveSystem();
                 this.updateGameTimer();
                 this.updatePing();
                 this.updateDamageIndicators();
+                this.updateChaseThemeVolume();
                 this.checkLMSCondition();
             }
             this.render();
@@ -2132,6 +2382,9 @@ class DiscordFriendsGame {
         if (player.angelSpeedBoost) {
             speed = 6; // Velocidad de killer temporalmente
         }
+        // Handle gamepad input
+        this.updateGamepadInput();
+        
         let moved = false;
         let newX = player.x;
         let newY = player.y;
@@ -2234,6 +2487,50 @@ class DiscordFriendsGame {
                 this.lastPositionUpdate = Date.now();
             }
         }
+    }
+
+    updateGamepadInput() {
+        if (this.gamepadIndex === null) return;
+        
+        const gamepad = navigator.getGamepads()[this.gamepadIndex];
+        if (!gamepad) return;
+        
+        // Left stick movement (axes 0,1)
+        const deadzone = 0.2;
+        const leftX = Math.abs(gamepad.axes[0]) > deadzone ? gamepad.axes[0] : 0;
+        const leftY = Math.abs(gamepad.axes[1]) > deadzone ? gamepad.axes[1] : 0;
+        
+        this.keys['a'] = leftX < -deadzone;
+        this.keys['d'] = leftX > deadzone;
+        this.keys['w'] = leftY < -deadzone;
+        this.keys['s'] = leftY > deadzone;
+        
+        // Buttons
+        const buttons = {
+            0: 'space', // A button - attack
+            1: 'q',     // B button - Q ability
+            2: 'e',     // X button - E ability
+            3: 'r',     // Y button - R ability
+            4: 'c',     // LB - C ability
+            9: 'escape' // Start - pause/menu
+        };
+        
+        Object.keys(buttons).forEach(buttonIndex => {
+            const button = gamepad.buttons[buttonIndex];
+            const key = buttons[buttonIndex];
+            const wasPressed = this.gamepadButtons[buttonIndex];
+            const isPressed = button && button.pressed;
+            
+            if (isPressed && !wasPressed) {
+                if (key === 'space') this.handleAttack();
+                else if (key === 'q') this.useAbility('q');
+                else if (key === 'e') this.useAbility('e');
+                else if (key === 'r') this.useAbility('r');
+                else if (key === 'c') this.activateRageMode();
+            }
+            
+            this.gamepadButtons[buttonIndex] = isPressed;
+        });
     }
     
     updateRemotePlayerInterpolation() {
@@ -2448,16 +2745,38 @@ class DiscordFriendsGame {
             
             // Aplicar rage mode damage boost
             if (attacker && attacker.rageMode && attacker.rageMode.active) {
-                damage = Math.floor(damage * 1.5); // 50% más daño en rage mode
+                damage = Math.floor(damage * 1.5);
+            }
+            
+            // Iris dodge mechanic
+            if (target.character === 'iris' && target.dodgeBar > 0) {
+                target.dodgeHits++;
+                if (target.dodgeHits <= 2) {
+                    target.dodgeBar = Math.max(0, target.dodgeBar - 37.5);
+                    this.createParticles(target.x + 15, target.y + 15, '#00BFFF', 15);
+                    this.showDamageIndicator(target, 0, 'dodged');
+                    
+                    // Sync dodge bar consumption
+                    if (target.id === this.myPlayerId && this.supabaseGame) {
+                        this.supabaseGame.sendAttack({
+                            type: 'dodge_regen',
+                            playerId: target.id,
+                            dodgeBar: target.dodgeBar
+                        });
+                    }
+                    return;
+                }
             }
             
             // Aplicar resistencia de LMS
             if (target.character === 'luna' && target.lmsResistance) {
-                damage = Math.floor(damage * 0.8); // 20% menos daño
+                damage = Math.floor(damage * 0.8);
             } else if (target.character === 'iA777' && target.lmsResistance) {
-                damage = Math.floor(damage * 0.75); // 25% menos daño
+                damage = Math.floor(damage * 0.75);
             } else if (target.character === 'angel' && target.lmsResistance) {
-                damage = Math.floor(damage * 0.75); // 25% menos daño
+                damage = Math.floor(damage * 0.75);
+            } else if (target.character === 'gissel' && target.lmsResistance) {
+                damage = Math.floor(damage * 0.8);
             }
             
             target.health = Math.max(0, target.health - damage);
@@ -2503,16 +2822,40 @@ class DiscordFriendsGame {
             
             // Aplicar rage mode damage boost
             if (attacker && attacker.rageMode && attacker.rageMode.active) {
-                damage = Math.floor(damage * 1.5); // 50% más daño en rage mode
+                damage = Math.floor(damage * 1.5);
+            }
+            
+            // Iris dodge mechanic for white orb
+            if (target.character === 'iris' && target.dodgeBar > 0) {
+                target.dodgeHits++;
+                if (target.dodgeHits <= 2) {
+                    target.dodgeBar = Math.max(0, target.dodgeBar - 37.5);
+                    this.createParticles(target.x + 15, target.y + 15, '#00BFFF', 15);
+                    this.showDamageIndicator(target, 0, 'dodged');
+                    
+                    // Sync dodge bar consumption
+                    if (target.id === this.myPlayerId && this.supabaseGame) {
+                        this.supabaseGame.sendAttack({
+                            type: 'dodge_regen',
+                            playerId: target.id,
+                            dodgeBar: target.dodgeBar
+                        });
+                    }
+                    
+                    hitbox.life = 0;
+                    return;
+                }
             }
             
             // Aplicar resistencia de LMS
             if (target.character === 'luna' && target.lmsResistance) {
-                damage = Math.floor(damage * 0.8); // 20% menos daño
+                damage = Math.floor(damage * 0.8);
             } else if (target.character === 'iA777' && target.lmsResistance) {
-                damage = Math.floor(damage * 0.75); // 25% menos daño
+                damage = Math.floor(damage * 0.75);
             } else if (target.character === 'angel' && target.lmsResistance) {
-                damage = Math.floor(damage * 0.75); // 25% menos daño
+                damage = Math.floor(damage * 0.75);
+            } else if (target.character === 'gissel' && target.lmsResistance) {
+                damage = Math.floor(damage * 0.8);
             }
             
             target.health = Math.max(0, target.health - damage);
@@ -2569,6 +2912,55 @@ class DiscordFriendsGame {
             
             this.createParticles(target.x + 15, target.y + 15, '#FF8000', 15);
             hitbox.life = 0;
+        } else if (hitbox.type === 'phantom_orb' && target.role === 'survivor' && !hitbox.exploded) {
+            // Phantom orb explota si el survivor lo esquiva
+            const distance = Math.sqrt(
+                Math.pow(target.x + 15 - hitbox.x, 2) + 
+                Math.pow(target.y + 15 - hitbox.y, 2)
+            );
+            
+            if (distance > hitbox.radius + 10) {
+                // Survivor esquivó, explotar
+                hitbox.exploded = true;
+                this.createParticles(hitbox.x, hitbox.y, '#8A2BE2', 25);
+                
+                // Daño de explosión en área
+                Object.values(this.players).forEach(nearbyTarget => {
+                    if (nearbyTarget.role === 'survivor' && nearbyTarget.alive) {
+                        const explosionDistance = Math.sqrt(
+                            Math.pow(nearbyTarget.x + 15 - hitbox.x, 2) + 
+                            Math.pow(nearbyTarget.y + 15 - hitbox.y, 2)
+                        );
+                        
+                        if (explosionDistance <= 80) {
+                            const attacker = this.players[hitbox.ownerId];
+                            let damage = 35;
+                            
+                            if (attacker && attacker.powerSurge && attacker.powerSurge.active) {
+                                damage = Math.floor(damage * 2);
+                            }
+                            
+                            nearbyTarget.health = Math.max(0, nearbyTarget.health - damage);
+                            
+                            if (nearbyTarget.health <= 0) {
+                                if (nearbyTarget.lastLife || nearbyTarget.character === 'iA777') {
+                                    nearbyTarget.alive = false;
+                                    nearbyTarget.spectating = true;
+                                } else {
+                                    nearbyTarget.alive = false;
+                                    nearbyTarget.downed = true;
+                                    nearbyTarget.reviveTimer = 1200;
+                                }
+                            }
+                            
+                            this.createParticles(nearbyTarget.x + 15, nearbyTarget.y + 15, '#8A2BE2', 15);
+                            this.showDamageIndicator(nearbyTarget, damage, 'phantom_orb');
+                        }
+                    }
+                });
+                
+                hitbox.life = 0;
+            }
         }
     }
 
@@ -2607,6 +2999,14 @@ class DiscordFriendsGame {
             } else if (ability === 'r') {
                 // Orbe de Daño
                 this.launchDamageOrb(player);
+            }
+        } else if (player.character === 'vortex') {
+            if (ability === 'q') {
+                this.activateWarpStrike(player);
+            } else if (ability === 'e') {
+                this.activateVoidStep(player);
+            } else if (ability === 'r') {
+                this.launchPhantomOrb(player);
             }
         } else if (player.character === 'gissel') {
             if (ability === 'q') {
@@ -2647,6 +3047,14 @@ class DiscordFriendsGame {
                 this.activateProtectiveDash(player);
             } else if (ability === 'r') {
                 this.activateRest(player);
+            }
+        } else if (player.character === 'iris') {
+            if (ability === 'q') {
+                this.activateHealing(player);
+            } else if (ability === 'e') {
+                this.activateTelekinesis(player);
+            } else if (ability === 'r') {
+                this.activateIrisDash(player);
             }
         }
     }
@@ -2817,31 +3225,142 @@ class DiscordFriendsGame {
     activateRageMode() {
         const player = this.players[this.myPlayerId];
         if (!player || !player.alive || player.role !== 'killer') return;
-        if (player.rageLevel < player.maxRage || player.rageMode.active || player.rageUsed) return;
-        if (this.lastManStanding) return; // Deshabilitado en LMS
         
-        // Activar Rage Mode
-        player.rageMode = { active: true, timer: 5400 }; // 1:30 minutos
-        player.rageLevel = 0;
-        player.rageUsed = true; // Solo se puede usar una vez
+        if (player.character === 'vortex') {
+            if (player.powerSurgeUsed) return;
+            
+            // Power Surge para Vortex
+            player.powerSurge = { active: true, timer: 3600 }; // 1 minuto
+            player.powerSurgeUsed = true;
+            
+            this.createParticles(player.x + 15, player.y + 15, '#9370DB', 30);
+            
+            if (this.supabaseGame) {
+                this.supabaseGame.sendAttack({
+                    type: 'power_surge',
+                    playerId: player.id,
+                    powerSurge: player.powerSurge,
+                    powerSurgeUsed: true
+                });
+            }
+        } else {
+            if (player.rageLevel < player.maxRage || player.rageMode.active || player.rageUsed) return;
+            if (this.lastManStanding) return;
+            
+            // Rage Mode para otros killers
+            player.rageMode = { active: true, timer: 5400 };
+            player.rageLevel = 0;
+            player.rageUsed = true;
+            
+            this.createParticles(player.x + 15, player.y + 15, '#FF4500', 30);
+            
+            if (this.supabaseGame) {
+                this.supabaseGame.sendAttack({
+                    type: 'rage_mode',
+                    playerId: player.id,
+                    rageMode: player.rageMode,
+                    rageUsed: true
+                });
+            }
+        }
+    }
+
+    activateWarpStrike(player) {
+        // Teleport a ubicación random
+        const randomX = Math.random() * (this.worldSize.width - 30);
+        const randomY = Math.random() * (this.worldSize.height - 30);
         
-        // Bonuses durante rage mode:
-        // - Velocidad aumentada (8 en lugar de 6)
-        // - Cooldowns reducidos a la mitad
-        // - Daño aumentado 50%
-        // - Inmunidad a stuns
+        player.x = randomX;
+        player.y = randomY;
+        player.warpStrikeActive = true;
+        player.warpStrikeTimer = 300; // 5 segundos
         
-        // Efectos visuales
-        this.createParticles(player.x + 15, player.y + 15, '#FF4500', 30);
+        this.createParticles(randomX + 15, randomY + 15, '#9370DB', 20);
         
-        // Sync with Supabase
         if (this.supabaseGame) {
+            this.supabaseGame.sendPlayerMove(randomX, randomY);
             this.supabaseGame.sendAttack({
-                type: 'rage_mode',
-                playerId: player.id,
-                rageMode: player.rageMode
+                type: 'warp_strike_activate',
+                playerId: player.id
             });
         }
+    }
+
+    activateVoidStep(player) {
+        const nearestSurvivor = this.findNearestSurvivor(player);
+        if (!nearestSurvivor) return;
+        
+        // Teleport cerca del survivor
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 60;
+        const newX = Math.max(0, Math.min(this.worldSize.width - 30, nearestSurvivor.x + Math.cos(angle) * distance));
+        const newY = Math.max(0, Math.min(this.worldSize.height - 30, nearestSurvivor.y + Math.sin(angle) * distance));
+        
+        player.x = newX;
+        player.y = newY;
+        
+        this.createParticles(newX + 15, newY + 15, '#4B0082', 15);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendPlayerMove(newX, newY);
+        }
+    }
+
+    launchPhantomOrb(player) {
+        const nearestSurvivor = this.findNearestSurvivor(player);
+        if (!nearestSurvivor) return;
+        
+        const angle = Math.atan2(nearestSurvivor.y - player.y, nearestSurvivor.x - player.x);
+        const speed = 8;
+        
+        const orbData = {
+            type: 'phantom_orb',
+            x: player.x + 15,
+            y: player.y + 15,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: 20,
+            life: 240,
+            ownerId: player.id,
+            color: '#8A2BE2',
+            hasHit: false,
+            exploded: false
+        };
+        
+        this.hitboxes.push(orbData);
+        this.createParticles(player.x + 15, player.y + 15, '#8A2BE2', 12);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'phantom_orb',
+                attackData: orbData,
+                playerId: player.id
+            });
+        }
+    }
+
+    findNearestSurvivor(killer) {
+        const survivors = Object.values(this.players).filter(p => 
+            p.role === 'survivor' && p.alive && !p.downed
+        );
+        
+        if (survivors.length === 0) return null;
+        
+        let nearest = null;
+        let minDistance = Infinity;
+        
+        survivors.forEach(survivor => {
+            const distance = Math.sqrt(
+                Math.pow(killer.x - survivor.x, 2) + 
+                Math.pow(killer.y - survivor.y, 2)
+            );
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearest = survivor;
+            }
+        });
+        
+        return nearest;
     }
 
     render() {
@@ -2891,6 +3410,7 @@ class DiscordFriendsGame {
         if (player && this.isMobile()) {
             this.updateMobileControlsUI(player);
             this.drawVirtualJoystick();
+            this.drawMobileControls(player); // Solo botones de habilidades
         }
     }
     
@@ -3100,6 +3620,53 @@ class DiscordFriendsGame {
             }
             
             this.ctx.globalAlpha = 1.0;
+            this.ctx.shadowBlur = 0;
+        } else if (player.character === 'vortex') {
+            // Efectos especiales de Vortex
+            if (player.warpStrikeActive) {
+                this.ctx.shadowColor = '#9370DB';
+                this.ctx.shadowBlur = 20;
+            } else if (player.powerSurge && player.powerSurge.active) {
+                this.ctx.shadowColor = '#8A2BE2';
+                this.ctx.shadowBlur = 25;
+            }
+            
+            // Cubo púrpura para Vortex
+            let color1 = '#8A2BE2';
+            let color2 = '#4B0082';
+            
+            if (player.powerSurge && player.powerSurge.active) {
+                color1 = '#9370DB';
+                color2 = '#6A0DAD';
+            }
+            
+            this.ctx.fillStyle = color1;
+            this.ctx.fillRect(player.x, player.y, size, size);
+            this.ctx.fillStyle = color2;
+            this.ctx.fillRect(player.x + 3, player.y + 3, size - 6, size - 6);
+            
+            this.ctx.font = '16px Arial';
+            this.ctx.fillStyle = 'white';
+            this.ctx.textAlign = 'center';
+            
+            let emoji = '🌀';
+            if (player.warpStrikeActive) emoji = '⚡';
+            else if (player.powerSurge && player.powerSurge.active) emoji = '🔮';
+            
+            this.ctx.fillText(emoji, player.x + size/2, player.y + size/2 + 5);
+            
+            // Indicadores de habilidades
+            if (player.warpStrikeActive) {
+                this.ctx.fillStyle = '#9370DB';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('WARP STRIKE', player.x + size/2, player.y - 15);
+            }
+            if (player.powerSurge && player.powerSurge.active) {
+                this.ctx.fillStyle = '#8A2BE2';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('POWER SURGE', player.x + size/2, player.y - 25);
+            }
+            
             this.ctx.shadowBlur = 0;
         } else if (player.character === 'gissel') {
             // Efecto de Sharp Wings
@@ -3345,6 +3912,72 @@ class DiscordFriendsGame {
             }
             
             this.ctx.shadowBlur = 0;
+        } else if (player.character === 'iris') {
+            // Efectos especiales de Iris
+            if (player.healingAura) {
+                this.ctx.shadowColor = '#00FF7F';
+                this.ctx.shadowBlur = 15;
+            } else if (player.telekinesisActive) {
+                this.ctx.shadowColor = '#9370DB';
+                this.ctx.shadowBlur = 12;
+            } else if (player.irisDashActive) {
+                this.ctx.shadowColor = '#00BFFF';
+                this.ctx.shadowBlur = 10;
+            }
+            
+            // Cubo púrpura para Iris
+            let color1 = '#9370DB';
+            let color2 = '#8A2BE2';
+            
+            if (player.healingAura) {
+                color1 = '#00FF7F';
+                color2 = '#32CD32';
+            } else if (player.telekinesisActive) {
+                color1 = '#9370DB';
+                color2 = '#4B0082';
+            }
+            
+            this.ctx.fillStyle = color1;
+            this.ctx.fillRect(player.x, player.y, size, size);
+            this.ctx.fillStyle = color2;
+            this.ctx.fillRect(player.x + 3, player.y + 3, size - 6, size - 6);
+            
+            this.ctx.font = '16px Arial';
+            this.ctx.fillStyle = 'white';
+            this.ctx.textAlign = 'center';
+            
+            let emoji = '🔮'; // Crystal ball
+            if (player.healingAura) emoji = '💚'; // Green heart
+            else if (player.telekinesisActive) emoji = '🌀'; // Cyclone
+            else if (player.irisDashActive) emoji = '💨'; // Dash
+            
+            this.ctx.fillText(emoji, player.x + size/2, player.y + size/2 + 5);
+            
+            // Indicadores de habilidades
+            if (player.healingAura) {
+                this.ctx.fillStyle = '#00FF7F';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('HEALING AURA', player.x + size/2, player.y - 15);
+            }
+            if (player.telekinesisActive) {
+                this.ctx.fillStyle = '#9370DB';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('TELEKINESIS', player.x + size/2, player.y - 25);
+            }
+            
+            this.ctx.shadowBlur = 0;
+        } else if (player.character === 'spectator') {
+            this.ctx.fillStyle = '#666666';
+            this.ctx.fillRect(player.x, player.y, size, size);
+            this.ctx.fillStyle = '#999999';
+            this.ctx.fillRect(player.x + 3, player.y + 3, size - 6, size - 6);
+            
+            this.ctx.font = '16px Arial';
+            this.ctx.fillStyle = 'white';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('👁️', player.x + size/2, player.y + size/2 + 5);
+            
+            this.ctx.shadowBlur = 0;
         } else {
             // Default colored cubes for other characters
             let playerColor = player.role === 'survivor' ? '#4ecdc4' : '#ff6b6b';
@@ -3363,6 +3996,11 @@ class DiscordFriendsGame {
         
         // Health bar
         this.drawHealthBar(player);
+        
+        // Dodge bar for Iris
+        if (player.character === 'iris') {
+            this.drawDodgeBar(player);
+        }
         
         // Highlight own player
         if (player.id === this.myPlayerId) {
@@ -3475,8 +4113,26 @@ class DiscordFriendsGame {
         this.ctx.font = 'bold 10px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(`${player.health}/${player.maxHealth}`, x + barWidth/2, y - 2);
+    }
+    
+    drawDodgeBar(player) {
+        const barWidth = 60;
+        const barHeight = 6;
+        const x = player.x - 15;
+        const y = player.y - 45;
         
-
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillRect(x - 1, y - 1, barWidth + 2, barHeight + 2);
+        this.ctx.fillStyle = '#333';
+        this.ctx.fillRect(x, y, barWidth, barHeight);
+        
+        this.ctx.fillStyle = '#00BFFF';
+        this.ctx.fillRect(x, y, (player.dodgeBar / player.maxDodgeBar) * barWidth, barHeight);
+        
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = 'bold 8px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`Dodge: ${player.dodgeBar}/${player.maxDodgeBar}`, x + barWidth/2, y - 2);
     }
 
     renderParticles() {
@@ -3622,6 +4278,15 @@ class DiscordFriendsGame {
         this.ctx.font = 'bold 14px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(`${this.ping}ms`, this.canvas.width - 55, 30);
+        
+        // Gamepad indicator
+        if (this.gamepadIndex !== null) {
+            this.ctx.fillStyle = 'rgba(0,255,0,0.8)';
+            this.ctx.fillRect(this.canvas.width - 100, 45, 90, 25);
+            this.ctx.fillStyle = '#000';
+            this.ctx.font = 'bold 12px Arial';
+            this.ctx.fillText('🎮 Controller', this.canvas.width - 55, 62);
+        }
     }
     
     updatePing() {
@@ -3739,85 +4404,10 @@ class DiscordFriendsGame {
         const isLandscape = window.innerWidth > window.innerHeight;
         
         // Better sizing for different screen sizes
-        const joystickSize = Math.min(canvasWidth, canvasHeight) * (isLandscape ? 0.12 : 0.15);
         const buttonSize = Math.min(canvasWidth, canvasHeight) * (isLandscape ? 0.08 : 0.1);
         const spacing = buttonSize * 1.2;
         
-        // Better positioning
-        const joystickX = joystickSize * 0.8;
-        const joystickY = canvasHeight - joystickSize * 0.8;
-        
-        // Draw enhanced joystick
-        this.ctx.save();
-        
-        // Outer ring shadow
-        this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
-        this.ctx.beginPath();
-        this.ctx.arc(joystickX + 2, joystickY + 2, joystickSize/2 + 4, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Outer ring
-        this.ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        this.ctx.beginPath();
-        this.ctx.arc(joystickX, joystickY, joystickSize/2 + 2, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Inner background
-        this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        this.ctx.beginPath();
-        this.ctx.arc(joystickX, joystickY, joystickSize/2, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Border
-        this.ctx.strokeStyle = '#7289DA';
-        this.ctx.lineWidth = 3;
-        this.ctx.stroke();
-        
-        // Calculate stick position with smooth interpolation
-        let stickX = joystickX;
-        let stickY = joystickY;
-        
-        if (this.joystickState.active) {
-            const maxDistance = joystickSize/2 - 15;
-            const dx = this.joystickState.currentX - joystickX;
-            const dy = this.joystickState.currentY - joystickY;
-            const distance = Math.sqrt(dx*dx + dy*dy);
-            
-            if (distance > maxDistance) {
-                const angle = Math.atan2(dy, dx);
-                stickX = joystickX + Math.cos(angle) * maxDistance;
-                stickY = joystickY + Math.sin(angle) * maxDistance;
-            } else {
-                stickX = this.joystickState.currentX;
-                stickY = this.joystickState.currentY;
-            }
-        }
-        
-        // Draw stick with glow effect
-        const stickRadius = joystickSize * 0.15;
-        
-        // Stick glow
-        this.ctx.shadowColor = '#FFD700';
-        this.ctx.shadowBlur = 8;
-        this.ctx.fillStyle = '#FFD700';
-        this.ctx.beginPath();
-        this.ctx.arc(stickX, stickY, stickRadius + 2, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Stick core
-        this.ctx.shadowBlur = 0;
-        this.ctx.fillStyle = '#FFA500';
-        this.ctx.beginPath();
-        this.ctx.arc(stickX, stickY, stickRadius, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Stick highlight
-        this.ctx.fillStyle = '#FFFF80';
-        this.ctx.beginPath();
-        this.ctx.arc(stickX - stickRadius/3, stickY - stickRadius/3, stickRadius/2, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        this.ctx.restore();
+        // JOYSTICK REMOVIDO - Solo se dibuja en drawVirtualJoystick()
         
         // Enhanced ability buttons
         const buttonY = canvasHeight - buttonSize * 0.8;
@@ -3919,7 +4509,6 @@ class DiscordFriendsGame {
         
         // Store enhanced control positions with proper touch areas
         this.mobileControls = {
-            joystick: {x: joystickX, y: joystickY, size: joystickSize, touchRadius: joystickSize/2 + 10},
             abilities: {
                 q: {x: startX, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5},
                 e: {x: startX + buttonSize + spacing, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5},
@@ -3928,10 +4517,35 @@ class DiscordFriendsGame {
         };
     }
 
+    refreshLobbyList() {
+        if (this.supabaseGame) {
+            this.supabaseGame.requestLobbyList();
+        }
+        this.updateLobbyInfo();
+    }
+    
+    updateLobbyInfo() {
+        const lobbySelect = document.getElementById('lobbySelect');
+        if (lobbySelect) {
+            // Update lobby dropdown with status info
+            Array.from(lobbySelect.options).forEach(option => {
+                const lobbyId = option.value;
+                const lobbyInfo = this.availableLobbies[lobbyId];
+                if (lobbyInfo) {
+                    const status = lobbyInfo.gameStarted ? '🎮' : '⏳';
+                    option.textContent = `${lobbyId.toUpperCase()} (${lobbyInfo.players}/8) ${status}`;
+                } else {
+                    option.textContent = `${lobbyId.toUpperCase()} (0/8) ⏳`;
+                }
+            });
+        }
+    }
+
     updateLobbyUI() {
         const totalPlayers = Object.keys(this.playersInLobby).length;
         const survivors = Object.values(this.playersInLobby).filter(p => p.role === 'survivor');
         const killers = Object.values(this.playersInLobby).filter(p => p.role === 'killer');
+        const spectators = Object.values(this.playersInLobby).filter(p => p.role === 'spectator');
         const killerPlayer = killers.length > 0 ? killers[0] : null;
         
         let statusElement = document.getElementById('lobbyStatus');
@@ -3957,9 +4571,10 @@ class DiscordFriendsGame {
         
         statusElement.innerHTML = `
             <div style="background: rgba(114,137,218,0.2); padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px solid #7289DA; text-align: center;">
-                <h3 style="color: #7289DA; margin-bottom: 15px;">🎮 Discord Friends Lobby</h3>
+                <h3 style="color: #7289DA; margin-bottom: 15px;">🎮 ${this.currentLobby.toUpperCase()}</h3>
                 <p style="color: #fff; font-size: 1.1rem; margin: 10px 0;">Jugadores: ${totalPlayers}/8</p>
                 <p style="color: #fff; margin: 10px 0;">🛡️ Survivors: ${survivors.length} | ⚔️ Killer: ${killerStatus}</p>
+                ${spectators.length > 0 ? `<p style="color: #ccc; margin: 5px 0;">👁️ Espectadores: ${spectators.length}</p>` : ''}
                 ${statusMessage}
             </div>
         `;
@@ -3973,6 +4588,12 @@ class DiscordFriendsGame {
             
             if (lastSurvivor && lastSurvivor.character === 'iA777') {
                 musicPath = 'assets/IA777LMS.mp3';
+            } else if (lastSurvivor && lastSurvivor.character === 'gissel') {
+                musicPath = 'assets/GisselLMS1.mp3';
+            } else if (lastSurvivor && lastSurvivor.character === 'luna') {
+                musicPath = 'assets/LunaLMS2.mp3';
+            } else if (lastSurvivor && lastSurvivor.character === 'iris') {
+                musicPath = 'assets/IrisLMS.mp3';
             } else {
                 musicPath = 'assets/SpeedofSoundRound2.mp3';
             }
@@ -3980,14 +4601,17 @@ class DiscordFriendsGame {
             this.lmsMusic = new Audio(musicPath);
             this.lmsMusic.volume = 0.6;
             this.lmsMusic.loop = false;
-            this.lmsMusicStartTime = Date.now();
+            
+            // Evento cuando la canción REALMENTE empieza a reproducirse
+            this.lmsMusic.addEventListener('play', () => {
+                this.lmsMusicStartTime = Date.now();
+                console.log('🎵 LMS Music started playing, timer synchronized');
+            });
             
             this.lmsMusic.addEventListener('loadedmetadata', () => {
                 if (this.lastManStanding) {
-                    // Timer = duración exacta de la canción
-                    this.gameTimer = Math.floor(this.lmsMusic.duration);
                     this.lmsMusicDuration = this.lmsMusic.duration;
-                    console.log(`🎵 LMS Timer set to song duration: ${this.gameTimer} seconds`);
+                    console.log(`🎵 LMS Music loaded: ${this.lmsMusicDuration} seconds`);
                 }
             });
             
@@ -4000,7 +4624,13 @@ class DiscordFriendsGame {
             
             const playPromise = this.lmsMusic.play();
             if (playPromise !== undefined) {
-                playPromise.catch(error => {
+                playPromise.then(() => {
+                    // Timer se sincroniza cuando la canción REALMENTE empieza
+                    if (this.lastManStanding && this.lmsMusicDuration) {
+                        this.gameTimer = Math.floor(this.lmsMusicDuration);
+                        console.log(`🎵 LMS Timer set to song duration: ${this.gameTimer} seconds`);
+                    }
+                }).catch(error => {
                     console.log('LMS music autoplay blocked, will play on next user interaction');
                     this.pendingLMSMusic = true;
                 });
@@ -4018,6 +4648,69 @@ class DiscordFriendsGame {
             this.lmsMusic.pause();
             this.lmsMusic.currentTime = 0;
             this.lmsMusic = null;
+        }
+    }
+    
+    playChaseTheme() {
+        try {
+            const myPlayer = this.players[this.myPlayerId];
+            let themePath = 'assets/ChaseTheme2019X.mp3';
+            
+            if (myPlayer && myPlayer.character === 'vortex') {
+                themePath = 'assets/VortexChaseTheme.mp3';
+            }
+            
+            this.chaseMusic = new Audio(themePath);
+            this.chaseMusic.volume = 0.4;
+            this.chaseMusic.loop = true;
+            
+            const playPromise = this.chaseMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log('Chase theme autoplay blocked');
+                });
+            }
+        } catch (error) {
+            console.log('Chase theme not available:', error);
+        }
+    }
+    
+    updateChaseThemeVolume() {
+        if (!this.chaseMusic || this.lastManStanding) return;
+        
+        const myPlayer = this.players[this.myPlayerId];
+        if (!myPlayer || myPlayer.role !== 'survivor') return;
+        
+        const chaseKiller = Object.values(this.players).find(p => 
+            (p.character === '2019x' || p.character === 'vortex') && p.role === 'killer' && p.alive
+        );
+        
+        if (!chaseKiller) {
+            this.chaseMusic.volume = 0;
+            return;
+        }
+        
+        // Calcular distancia al killer
+        const distance = Math.sqrt(
+            Math.pow(myPlayer.x - chaseKiller.x, 2) + 
+            Math.pow(myPlayer.y - chaseKiller.y, 2)
+        );
+        
+        // Radio de 300 unidades para escuchar el chase theme
+        const maxDistance = 300;
+        if (distance <= maxDistance) {
+            const volume = Math.max(0.1, 0.4 * (1 - distance / maxDistance));
+            this.chaseMusic.volume = volume;
+        } else {
+            this.chaseMusic.volume = 0;
+        }
+    }
+    
+    stopChaseTheme() {
+        if (this.chaseMusic) {
+            this.chaseMusic.pause();
+            this.chaseMusic.currentTime = 0;
+            this.chaseMusic = null;
         }
     }
 
@@ -4084,9 +4777,14 @@ class DiscordFriendsGame {
             
             // Color según tipo de ataque
             let color = '#FF0000';
+            let text = `-${indicator.damage}`;
             if (indicator.attackType === 'you_cant_run') color = '#8B0000';
             else if (indicator.attackType === 'white_orb') color = '#FF8000';
-            else if (indicator.damage === 50) color = '#FFD700'; // Stealth
+            else if (indicator.damage === 50) color = '#FFD700';
+            else if (indicator.attackType === 'dodged') {
+                color = '#00BFFF';
+                text = 'DODGED!';
+            }
             
             this.ctx.fillStyle = color;
             this.ctx.strokeStyle = '#000';
@@ -4094,9 +4792,8 @@ class DiscordFriendsGame {
             this.ctx.font = 'bold 20px Arial';
             this.ctx.textAlign = 'center';
             
-            // Dibujar texto con borde
-            this.ctx.strokeText(`-${indicator.damage}`, indicator.x, indicator.y);
-            this.ctx.fillText(`-${indicator.damage}`, indicator.x, indicator.y);
+            this.ctx.strokeText(text, indicator.x, indicator.y);
+            this.ctx.fillText(text, indicator.x, indicator.y);
             
             this.ctx.restore();
         });
@@ -4741,6 +5438,174 @@ class DiscordFriendsGame {
         if (this.supabaseGame) {
             this.supabaseGame.sendAttack({
                 type: 'rest_activate',
+                playerId: player.id
+            });
+        }
+    }
+    
+    // Iris Abilities
+    activateHealing(player) {
+        // Self heal 10-20 HP
+        const selfHeal = Math.floor(Math.random() * 11) + 10; // 10-20
+        player.health = Math.min(player.maxHealth, player.health + selfHeal);
+        
+        // Find nearby survivors to heal
+        const nearbySurvivors = Object.values(this.players).filter(target => 
+            target.role === 'survivor' && target.alive && target.id !== player.id && !target.downed
+        );
+        
+        // Start healing aura for allies
+        player.healingAura = true;
+        player.healingTimer = nearbySurvivors.length > 0 ? 1200 : 300; // 20s if healing others, 5s if alone
+        player.healingTick = 0;
+        
+        this.createParticles(player.x + 15, player.y + 15, '#00FF7F', 25);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'iris_healing',
+                playerId: player.id,
+                selfHeal: selfHeal
+            });
+        }
+    }
+    
+    activateTelekinesis(player) {
+        // Find killers within 0.5 meter range (30 pixels)
+        const nearbyKillers = Object.values(this.players).filter(target => 
+            target.role === 'killer' && target.alive && target.id !== player.id
+        );
+        
+        let telekinesisHit = false;
+        nearbyKillers.forEach(target => {
+            const distance = Math.sqrt(
+                Math.pow(target.x - player.x, 2) + 
+                Math.pow(target.y - player.y, 2)
+            );
+            
+            if (distance <= 30) { // 0.5 meter range
+                telekinesisHit = true;
+                
+                // Push killer away
+                const angle = Math.atan2(target.y - player.y, target.x - player.x);
+                const pushDistance = 80;
+                const newX = Math.max(0, Math.min(this.worldSize.width - 30, 
+                    target.x + Math.cos(angle) * pushDistance));
+                const newY = Math.max(0, Math.min(this.worldSize.height - 30, 
+                    target.y + Math.sin(angle) * pushDistance));
+                
+                target.x = newX;
+                target.y = newY;
+                
+                // Apply telekinesis effect
+                target.telekinesisEffect = true;
+                target.telekinesisTimer = 300; // 5 seconds
+                
+                this.createParticles(target.x + 15, target.y + 15, '#9370DB', 20);
+                
+                if (this.supabaseGame) {
+                    this.supabaseGame.sendPlayerMove(newX, newY);
+                    this.supabaseGame.sendAttack({
+                        type: 'telekinesis_hit',
+                        targetId: target.id,
+                        knockbackX: newX,
+                        knockbackY: newY
+                    });
+                }
+            }
+        });
+        
+        if (telekinesisHit) {
+            player.telekinesisActive = true;
+            player.telekinesisTimer = 300; // 5 seconds duration
+        }
+        
+        this.createParticles(player.x + 15, player.y + 15, '#9370DB', 15);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'telekinesis_activate',
+                playerId: player.id
+            });
+        }
+    }
+    
+    activateIrisDash(player) {
+        player.irisDashActive = true;
+        player.irisDashTimer = 60; // 1 second
+        
+        // Dash away from killer (opposite direction)
+        const nearbyKillers = Object.values(this.players).filter(target => 
+            target.role === 'killer' && target.alive && target.id !== player.id
+        );
+        
+        if (nearbyKillers.length > 0) {
+            // Find closest killer
+            let closestKiller = null;
+            let minDistance = Infinity;
+            
+            nearbyKillers.forEach(killer => {
+                const distance = Math.sqrt(
+                    Math.pow(killer.x - player.x, 2) + 
+                    Math.pow(killer.y - player.y, 2)
+                );
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestKiller = killer;
+                }
+            });
+            
+            if (closestKiller) {
+                // Dash away from killer
+                const angle = Math.atan2(player.y - closestKiller.y, player.x - closestKiller.x);
+                const dashDistance = 100;
+                const newX = Math.max(0, Math.min(this.worldSize.width - 30, 
+                    player.x + Math.cos(angle) * dashDistance));
+                const newY = Math.max(0, Math.min(this.worldSize.height - 30, 
+                    player.y + Math.sin(angle) * dashDistance));
+                
+                player.x = newX;
+                player.y = newY;
+                
+                // Stun killer if close enough
+                if (minDistance <= 50) {
+                    closestKiller.stunned = true;
+                    closestKiller.stunTimer = 120; // 2 seconds
+                    
+                    this.createParticles(closestKiller.x + 15, closestKiller.y + 15, '#FF69B4', 15);
+                    
+                    if (this.supabaseGame) {
+                        this.supabaseGame.sendAttack({
+                            type: 'stun',
+                            targetId: closestKiller.id,
+                            stunDuration: 120
+                        });
+                    }
+                }
+                
+                // Recharge dodge bar by 25
+                player.dodgeBar = Math.min(player.maxDodgeBar, player.dodgeBar + 25);
+                
+                // Sync dodge bar recharge
+                if (this.supabaseGame) {
+                    this.supabaseGame.sendAttack({
+                        type: 'dodge_regen',
+                        playerId: player.id,
+                        dodgeBar: player.dodgeBar
+                    });
+                }
+                
+                if (this.supabaseGame) {
+                    this.supabaseGame.sendPlayerMove(newX, newY);
+                }
+            }
+        }
+        
+        this.createParticles(player.x + 15, player.y + 15, '#00BFFF', 20);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'iris_dash',
                 playerId: player.id
             });
         }
