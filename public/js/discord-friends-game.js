@@ -1064,14 +1064,15 @@ class DiscordFriendsGame {
     checkLMSCondition() {
         if (!this.gameStarted) return;
         
-        const aliveSurvivors = Object.values(this.players).filter(p => p.role === 'survivor' && (p.alive || p.downed));
+        const aliveSurvivors = Object.values(this.players).filter(p => p.role === 'survivor' && p.alive && !p.downed && !p.spectating);
+        const totalActiveSurvivors = Object.values(this.players).filter(p => p.role === 'survivor' && !p.spectating);
         const aliveKillers = Object.values(this.players).filter(p => p.role === 'killer' && p.alive);
         
         // Solo verificar si hay jugadores
         if (Object.keys(this.players).length === 0) return;
         
-        // Activar LMS cuando quede 1 survivor
-        if (aliveSurvivors.length === 1 && aliveKillers.length >= 1 && !this.lmsActivated) {
+        // Activar LMS cuando quede 1 survivor (contando downed como potencialmente vivos)
+        if (totalActiveSurvivors.length === 1 && aliveKillers.length >= 1 && !this.lmsActivated) {
             this.activateLMS();
         }
         
@@ -1099,8 +1100,16 @@ class DiscordFriendsGame {
         this.lastManStanding = true;
         this.lmsActivated = true;
         
-        const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && p.alive);
+        const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && !p.spectating);
         if (lastSurvivor) {
+            // Si está downed, revivir para LMS
+            if (lastSurvivor.downed) {
+                lastSurvivor.alive = true;
+                lastSurvivor.downed = false;
+                lastSurvivor.beingRevived = false;
+                lastSurvivor.reviveProgress = 0;
+            }
+            
             // Curación completa para iA777 en LMS
             if (lastSurvivor.character === 'iA777') {
                 lastSurvivor.health = lastSurvivor.maxHealth;
