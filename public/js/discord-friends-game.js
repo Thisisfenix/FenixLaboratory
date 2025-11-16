@@ -1994,8 +1994,9 @@ class DiscordFriendsGame {
                         target.health = Math.max(0, target.health - damage);
                         
                         // Stun duration (solo si no está en rage mode)
+                        let stunDuration = 0;
                         if (!(target.rageMode && target.rageMode.active)) {
-                            let stunDuration = player.resistanceActive ? 180 : 240; // 3s o 4s
+                            stunDuration = player.resistanceActive ? 180 : 240; // 3s o 4s
                             if (player.lmsPunchBoost) {
                                 stunDuration += 60; // +1s stun en LMS
                             }
