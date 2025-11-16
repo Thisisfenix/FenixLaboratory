@@ -560,6 +560,14 @@ class DiscordFriendsGame {
             } else if (data.type === 'dodge_regen' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
                 const player = this.players[data.playerId];
                 player.dodgeBar = data.dodgeBar;
+            } else if (data.type === 'warp_strike_activate' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.warpStrikeActive = true;
+                player.warpStrikeTimer = 300;
+            } else if (data.type === 'power_surge' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.powerSurge = data.powerSurge;
+                player.powerSurgeUsed = data.powerSurgeUsed;
             }
         };
         
@@ -888,7 +896,8 @@ class DiscordFriendsGame {
             
             // Abilities
             if (key === 'q') this.useAbility('q');
-            if (key === 'e') {
+            if (key === 'e') this.useAbility('e');
+            if (key === 'f') {
                 // Verificar si es para revivir
                 if (this.showRevivePrompt) {
                     const downedPlayer = this.players[this.showRevivePrompt];
@@ -897,8 +906,6 @@ class DiscordFriendsGame {
                         downedPlayer.reviveProgress = 0;
                         this.showRevivePrompt = null;
                     }
-                } else {
-                    this.useAbility('e');
                 }
             }
             if (key === 'r') this.useAbility('r');
@@ -948,6 +955,112 @@ class DiscordFriendsGame {
         // Supabase handles disconnection automatically
     }
     
+    handleTouchStart(e) {
+        const touches = e.changedTouches;
+        for (let i = 0; i < touches.length; i++) {
+            const touch = touches[i];
+            const rect = this.canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            // Check joystick area
+            if (this.mobileControls && this.mobileControls.joystick) {
+                const joyDist = Math.sqrt(
+                    Math.pow(x - this.mobileControls.joystick.x, 2) + 
+                    Math.pow(y - this.mobileControls.joystick.y, 2)
+                );
+                if (joyDist < this.mobileControls.joystick.size) {
+                    this.joystickState.active = true;
+                    this.joystickState.startX = this.mobileControls.joystick.x;
+                    this.joystickState.startY = this.mobileControls.joystick.y;
+                    this.joystickState.currentX = x;
+                    this.joystickState.currentY = y;
+                    this.joystickState.touchId = touch.identifier;
+                    continue;
+                }
+            }
+            
+            // Check revive button
+            if (this.reviveButton) {
+                const reviveDist = Math.sqrt(
+                    Math.pow(x - this.reviveButton.x, 2) + 
+                    Math.pow(y - this.reviveButton.y, 2)
+                );
+                if (reviveDist < this.reviveButton.size/2) {
+                    if (this.showRevivePrompt) {
+                        const downedPlayer = this.players[this.showRevivePrompt];
+                        if (downedPlayer && downedPlayer.downed) {
+                            downedPlayer.beingRevived = true;
+                            downedPlayer.reviveProgress = 0;
+                            this.showRevivePrompt = null;
+                        }
+                    }
+                    continue;
+                }
+            }
+            
+            // Check attack button for killers
+            if (this.attackButton) {
+                const attackDist = Math.sqrt(
+                    Math.pow(x - this.attackButton.x, 2) + 
+                    Math.pow(y - this.attackButton.y, 2)
+                );
+                if (attackDist < this.attackButton.size/2) {
+                    this.handleAttack();
+                    continue;
+                }
+            }
+        }
+    }
+    
+    handleTouchMove(e) {
+        const touches = e.changedTouches;
+        for (let i = 0; i < touches.length; i++) {
+            const touch = touches[i];
+            if (this.joystickState.active && touch.identifier === this.joystickState.touchId) {
+                const rect = this.canvas.getBoundingClientRect();
+                this.joystickState.currentX = touch.clientX - rect.left;
+                this.joystickState.currentY = touch.clientY - rect.top;
+                
+                // Update movement keys based on joystick
+                const dx = this.joystickState.currentX - this.joystickState.startX;
+                const dy = this.joystickState.currentY - this.joystickState.startY;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                
+                if (distance > 20) {
+                    this.keys['w'] = dy < -10;
+                    this.keys['s'] = dy > 10;
+                    this.keys['a'] = dx < -10;
+                    this.keys['d'] = dx > 10;
+                } else {
+                    this.keys['w'] = false;
+                    this.keys['s'] = false;
+                    this.keys['a'] = false;
+                    this.keys['d'] = false;
+                }
+                break;
+            }
+        }
+    }
+    
+    handleTouchEnd(e) {
+        const touches = e.changedTouches;
+        for (let i = 0; i < touches.length; i++) {
+            const touch = touches[i];
+            if (this.joystickState.active && touch.identifier === this.joystickState.touchId) {
+                this.joystickState.active = false;
+                this.joystickState.touchId = null;
+                
+                // Reset movement keys
+                this.keys['w'] = false;
+                this.keys['s'] = false;
+                this.keys['a'] = false;
+                this.keys['d'] = false;
+                break;
+            }
+        }
+    }
+    
     setupMobileControls() {
         // Improved touch handling with better performance
         this.canvas.addEventListener('touchstart', (e) => {
@@ -982,6 +1095,7 @@ class DiscordFriendsGame {
         
         // Setup ability button listeners
         this.setupMobileAbilityButtons();
+        this.setupMobileReviveButton();
     }
     
     activateMobileControls() {
@@ -1022,6 +1136,31 @@ class DiscordFriendsGame {
                 });
             }
         });
+    }
+    
+    setupMobileReviveButton() {
+        const reviveBtn = document.getElementById('reviveBtn');
+        if (reviveBtn) {
+            reviveBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (this.showRevivePrompt) {
+                    const downedPlayer = this.players[this.showRevivePrompt];
+                    if (downedPlayer && downedPlayer.downed) {
+                        downedPlayer.beingRevived = true;
+                        downedPlayer.reviveProgress = 0;
+                        this.showRevivePrompt = null;
+                    }
+                }
+                
+                // Visual feedback
+                reviveBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    reviveBtn.style.transform = 'scale(1)';
+                }, 100);
+            }, {passive: false});
+        }
     }
 
     handleAttack(e) {
@@ -1154,13 +1293,18 @@ class DiscordFriendsGame {
                         player.x = newX;
                         player.y = newY;
                         
-                        if (this.supabaseGame) {
-                            this.supabaseGame.sendPlayerMove(newX, newY);
+                        // Limitar actualizaciones de red para evitar spam
+                        if (!player.warpStrikeLastUpdate || Date.now() - player.warpStrikeLastUpdate > 100) {
+                            if (this.supabaseGame) {
+                                this.supabaseGame.sendPlayerMove(newX, newY);
+                            }
+                            player.warpStrikeLastUpdate = Date.now();
                         }
                     }
                     
                     if (player.warpStrikeTimer <= 0) {
                         player.warpStrikeActive = false;
+                        player.warpStrikeLastUpdate = null;
                     }
                 }
                 
@@ -2361,7 +2505,7 @@ class DiscordFriendsGame {
         
         if (!player.alive || player.downed) return;
 
-        let speed = player.role === 'killer' ? 6 : (player.character === 'iA777' ? 5 : 4);
+        let speed = player.role === 'killer' ? 6 : (player.character === 'iA777' ? 5 : (player.character === 'angel' ? 4.5 : 4));
         
         // Rage mode speed boost para killers
         if (player.role === 'killer' && player.rageMode && player.rageMode.active) {
@@ -3274,6 +3418,7 @@ class DiscordFriendsGame {
         player.y = randomY;
         player.warpStrikeActive = true;
         player.warpStrikeTimer = 300; // 5 segundos
+        player.warpStrikeLastUpdate = null;
         
         this.createParticles(randomX + 15, randomY + 15, '#9370DB', 20);
         
@@ -4225,7 +4370,7 @@ class DiscordFriendsGame {
             this.ctx.fillRect(10, 120, 200, 30);
             this.ctx.fillStyle = '#000';
             this.ctx.font = 'bold 14px Arial';
-            this.ctx.fillText('Presiona E para revivir', 15, 140);
+            this.ctx.fillText('Presiona F para revivir', 15, 140);
         }
         }
         
@@ -4240,7 +4385,7 @@ class DiscordFriendsGame {
         this.ctx.fillText('Q/E/R: Habilidades', this.canvas.width - 190, this.canvas.height - 60);
         this.ctx.fillText('Click/Space: Atacar', this.canvas.width - 190, this.canvas.height - 40);
         this.ctx.fillText('C: Rage Mode (Killers)', this.canvas.width - 190, this.canvas.height - 20);
-        this.ctx.fillText('E: Revivir (cerca de downed)', this.canvas.width - 190, this.canvas.height - 0);
+        this.ctx.fillText('F: Revivir (cerca de downed)', this.canvas.width - 190, this.canvas.height - 0);
         
         // Mostrar estado de espectador
         if (player && player.spectating) {
@@ -4407,7 +4552,9 @@ class DiscordFriendsGame {
         const buttonSize = Math.min(canvasWidth, canvasHeight) * (isLandscape ? 0.08 : 0.1);
         const spacing = buttonSize * 1.2;
         
-        // JOYSTICK REMOVIDO - Solo se dibuja en drawVirtualJoystick()
+        // Virtual joystick en la esquina inferior izquierda
+        const joystickX = buttonSize * 1.5;
+        const joystickY = canvasHeight - buttonSize * 1.5;
         
         // Enhanced ability buttons
         const buttonY = canvasHeight - buttonSize * 0.8;
@@ -4507,13 +4654,51 @@ class DiscordFriendsGame {
             this.ctx.restore();
         }
         
+        // Botón de revivir (solo visible cuando hay prompt)
+        if (this.showRevivePrompt) {
+            const reviveX = buttonSize * 0.8;
+            const reviveY = canvasHeight / 2;
+            
+            this.ctx.save();
+            
+            // Revive button shadow
+            this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            this.ctx.beginPath();
+            this.ctx.arc(reviveX + 3, reviveY + 3, buttonSize/2 + 3, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Revive button gradient
+            const reviveGradient = this.ctx.createRadialGradient(reviveX, reviveY - buttonSize/4, 0, reviveX, reviveY, buttonSize/2);
+            reviveGradient.addColorStop(0, 'rgba(0, 255, 0, 0.9)');
+            reviveGradient.addColorStop(1, 'rgba(0, 150, 0, 0.9)');
+            
+            this.ctx.fillStyle = reviveGradient;
+            this.ctx.beginPath();
+            this.ctx.arc(reviveX, reviveY, buttonSize/2, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            this.ctx.strokeStyle = '#FFFFFF';
+            this.ctx.lineWidth = 3;
+            this.ctx.stroke();
+            
+            this.ctx.fillStyle = 'white';
+            this.ctx.font = `bold ${buttonSize * 0.4}px Arial`;
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('F', reviveX, reviveY + buttonSize * 0.12);
+            
+            this.reviveButton = {x: reviveX, y: reviveY, size: buttonSize};
+            this.ctx.restore();
+        }
+        
         // Store enhanced control positions with proper touch areas
         this.mobileControls = {
+            joystick: {x: joystickX, y: joystickY, size: buttonSize * 2},
             abilities: {
                 q: {x: startX, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5},
                 e: {x: startX + buttonSize + spacing, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5},
                 r: {x: startX + (buttonSize + spacing) * 2, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5}
-            }
+            },
+            revive: this.showRevivePrompt ? {x: this.reviveButton.x, y: this.reviveButton.y, size: buttonSize, touchRadius: buttonSize/2 + 5} : null
         };
     }
 
