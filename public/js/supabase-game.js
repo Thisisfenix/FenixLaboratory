@@ -66,6 +66,12 @@ class SupabaseGame {
                 .on('broadcast', { event: 'lobby-request' }, (payload) => {
                     this.handleLobbyRequest(payload.payload);
                 })
+                .on('broadcast', { event: 'player-leave' }, (payload) => {
+                    this.removePlayer(payload.payload.playerId);
+                })
+                .on('broadcast', { event: 'lobby-clear' }, (payload) => {
+                    this.handleLobbyClear(payload.payload);
+                })
                 .subscribe((status) => {
                     console.log('Supabase subscription status:', status);
                     if (status === 'SUBSCRIBED') {
@@ -219,6 +225,39 @@ class SupabaseGame {
     }
     
     handleLobbyRequest(data) {
+        // This will be overridden by the main game
+    }
+    
+    removePlayer(playerId) {
+        if (this.players[playerId]) {
+            delete this.players[playerId];
+            console.log('Player removed:', playerId);
+        }
+    }
+    
+    removePlayerFromLobby(playerId) {
+        this.channel.send({
+            type: 'broadcast',
+            event: 'player-leave',
+            payload: {
+                playerId: playerId,
+                timestamp: Date.now()
+            }
+        });
+    }
+    
+    clearLobby() {
+        this.channel.send({
+            type: 'broadcast',
+            event: 'lobby-clear',
+            payload: {
+                clearedBy: this.myPlayerId,
+                timestamp: Date.now()
+            }
+        });
+    }
+    
+    handleLobbyClear(data) {
         // This will be overridden by the main game
     }
 }

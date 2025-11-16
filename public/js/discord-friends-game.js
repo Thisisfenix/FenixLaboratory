@@ -138,10 +138,26 @@ class DiscordFriendsGame {
             this.myPlayerId = this.supabaseGame.myPlayerId;
             console.log('✅ Connected to Supabase:', this.myPlayerId);
             
+            // Limpiar lobby de jugadores antiguos
+            this.clearOldPlayers();
+            
         } catch (error) {
             console.error('❌ Supabase init error:', error);
             this.myPlayerId = 'guest_' + Math.random().toString(36).substr(2, 9);
         }
+    }
+    
+    clearOldPlayers() {
+        // Limpiar estado local del lobby
+        this.playersInLobby = {};
+        this.players = {};
+        
+        // Enviar señal de limpieza si hay conexión
+        if (this.supabaseGame) {
+            this.supabaseGame.clearLobby();
+        }
+        
+        console.log('🧹 Cleared old players from lobby');
     }
 
 
@@ -217,11 +233,19 @@ class DiscordFriendsGame {
         
         this.supabaseGame.addPlayer = (data) => {
             if (data.id !== this.myPlayerId) {
+                // Verificar que el jugador sea reciente (últimos 30 segundos)
+                const now = Date.now();
+                if (data.joinedAt && (now - data.joinedAt) > 30000) {
+                    console.log('Ignoring old player:', data.name, 'joined', (now - data.joinedAt)/1000, 'seconds ago');
+                    return;
+                }
+                
                 console.log('Adding remote player:', data.name, data.role);
                 this.players[data.id] = data;
                 if (!this.gameStarted) {
                     this.playersInLobby[data.id] = data;
                     console.log('Current lobby:', Object.keys(this.playersInLobby).length, 'players');
+                    console.log('Players in lobby:', Object.values(this.playersInLobby).map(p => `${p.name}(${p.role})`));
                     
                     // Sincronizar estado del lobby para nuevos jugadores
                     this.syncLobbyState(data.id);
@@ -232,14 +256,44 @@ class DiscordFriendsGame {
             }
         };
         
+        // Manejar desconexiones de jugadores
+        this.supabaseGame.removePlayer = (playerId) => {
+            if (this.playersInLobby[playerId]) {
+                console.log('Removing player from lobby:', playerId);
+                delete this.playersInLobby[playerId];
+                delete this.players[playerId];
+                this.updateLobbyUI();
+            }
+        };
+        
+        // Manejar limpieza del lobby
+        this.supabaseGame.handleLobbyClear = (data) => {
+            if (data.clearedBy !== this.myPlayerId) {
+                console.log('Lobby cleared by:', data.clearedBy);
+                // Limpiar todos los jugadores excepto el propio
+                Object.keys(this.playersInLobby).forEach(playerId => {
+                    if (playerId !== this.myPlayerId) {
+                        delete this.playersInLobby[playerId];
+                        delete this.players[playerId];
+                    }
+                });
+                this.updateLobbyUI();
+            }
+        };
+        
         // Manejar sincronización de lobby
         this.supabaseGame.handleLobbySync = (data) => {
             if (data.playerId !== this.myPlayerId) {
-                // Actualizar estado del lobby con la información recibida
+                console.log('Syncing lobby state from:', data.playerId);
+                const now = Date.now();
+                
+                // Limpiar jugadores antiguos antes de sincronizar
                 Object.keys(data.lobbyState).forEach(playerId => {
-                    if (playerId !== this.myPlayerId) {
-                        this.playersInLobby[playerId] = data.lobbyState[playerId];
-                        this.players[playerId] = data.lobbyState[playerId];
+                    const player = data.lobbyState[playerId];
+                    // Solo agregar jugadores recientes (últimos 30 segundos)
+                    if (playerId !== this.myPlayerId && player.joinedAt && (now - player.joinedAt) <= 30000) {
+                        this.playersInLobby[playerId] = player;
+                        this.players[playerId] = player;
                     }
                 });
                 
@@ -249,6 +303,7 @@ class DiscordFriendsGame {
                     this.lobbyCountdown = data.lobbyCountdown;
                 }
                 
+                console.log('Updated lobby after sync:', Object.values(this.playersInLobby).map(p => `${p.name}(${p.role})`));
                 this.updateLobbyUI();
             }
         };
@@ -426,11 +481,13 @@ class DiscordFriendsGame {
 
         try {
             if (this.supabaseGame) {
-                console.log('📝 Joining lobby as:', playerData.name, playerData.character);
+                console.log('📝 Joining lobby as:', playerData.name, playerData.character, playerData.role);
                 
                 // Add player to local state first
                 this.playersInLobby[this.myPlayerId] = playerData;
                 this.players[this.myPlayerId] = playerData;
+                
+                console.log('Local lobby after join:', Object.values(this.playersInLobby).map(p => `${p.name}(${p.role})`));
                 
                 // Broadcast to other players
                 this.supabaseGame.sendPlayerJoin(playerData);
@@ -946,7 +1003,9 @@ class DiscordFriendsGame {
     }
 
     resetGame() {
-        this.players = {};
+        // Limpiar jugadores antiguos
+        this.clearOldPlayers();
+        
         const config = window.GAME_CONFIG || {};
         this.gameTimer = config.GAME_TIMER || 180;
         this.lastManStanding = false;
@@ -2787,9 +2846,9 @@ class DiscordFriendsGame {
 
     updateLobbyUI() {
         const totalPlayers = Object.keys(this.playersInLobby).length;
-        const survivors = Object.values(this.playersInLobby).filter(p => p.role === 'survivor').length;
-        const killers = Object.values(this.playersInLobby).filter(p => p.role === 'killer').length;
-        const killerPlayer = Object.values(this.playersInLobby).find(p => p.role === 'killer');
+        const survivors = Object.values(this.playersInLobby).filter(p => p.role === 'survivor');
+        const killers = Object.values(this.playersInLobby).filter(p => p.role === 'killer');
+        const killerPlayer = killers.length > 0 ? killers[0] : null;
         
         let statusElement = document.getElementById('lobbyStatus');
         if (!statusElement) return;
@@ -2797,21 +2856,26 @@ class DiscordFriendsGame {
         let statusMessage;
         if (this.countdownActive && this.lobbyCountdown > 0) {
             statusMessage = `<p style="color: #FFD700; text-align: center; font-size: 1.5rem; font-weight: bold;">🚀 Iniciando en ${this.lobbyCountdown}...</p>`;
-        } else if (totalPlayers >= 2 && survivors >= 1 && killers >= 1) {
+        } else if (totalPlayers >= 2 && survivors.length >= 1 && killers.length >= 1) {
             statusMessage = '<p style="color: #4ecdc4; text-align: center; font-size: 1.2rem;">✅ ¡Listos para jugar!</p>';
         } else {
             statusMessage = '<p style="color: #ff6b6b; text-align: center;">⏳ Esperando más jugadores...</p>';
         }
         
+        // Lista de survivors
+        let survivorsList = survivors.length > 0 ? 
+            survivors.map(s => `${s.name} (${s.character})`).join(', ') : 
+            'Ninguno';
+        
         let killerStatus = killerPlayer ? 
-            `⚔️ Killer: ${killerPlayer.name} (${killerPlayer.character})` : 
-            '⚔️ Killer: Disponible';
+            `${killerPlayer.name} (${killerPlayer.character})` : 
+            'Disponible';
         
         statusElement.innerHTML = `
             <div style="background: rgba(114,137,218,0.2); padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px solid #7289DA; text-align: center;">
                 <h3 style="color: #7289DA; margin-bottom: 15px;">🎮 Discord Friends Lobby</h3>
                 <p style="color: #fff; font-size: 1.1rem; margin: 10px 0;">Jugadores: ${totalPlayers}/8</p>
-                <p style="color: #fff; margin: 10px 0;">🛡️ Survivors: ${survivors} | ${killerStatus}</p>
+                <p style="color: #fff; margin: 10px 0;">🛡️ Survivors: ${survivors.length} | ⚔️ Killer: ${killerStatus}</p>
                 ${statusMessage}
             </div>
         `;
@@ -2861,9 +2925,18 @@ class DiscordFriendsGame {
     }
 
     cleanupPlayer() {
-        // Supabase handles cleanup automatically on disconnect
+        // Limpiar jugador del lobby
         if (this.supabaseGame && this.myPlayerId) {
-            console.log('🧹 Player cleanup handled by Supabase');
+            this.supabaseGame.removePlayerFromLobby(this.myPlayerId);
+            console.log('🧹 Player cleanup:', this.myPlayerId);
+        }
+        
+        // Limpiar estado local
+        if (this.playersInLobby[this.myPlayerId]) {
+            delete this.playersInLobby[this.myPlayerId];
+        }
+        if (this.players[this.myPlayerId]) {
+            delete this.players[this.myPlayerId];
         }
     }
 
