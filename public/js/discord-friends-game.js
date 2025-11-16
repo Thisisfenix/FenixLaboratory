@@ -3024,6 +3024,10 @@ class DiscordFriendsGame {
         this.ctx.globalAlpha = 1.0;
     }
 
+    isImageValid(img) {
+        return img && img.complete && img.naturalWidth > 0 && !img.src.includes('broken');
+    }
+
     drawHealthBar(player) {
         const barWidth = 60;
         const barHeight = 8;
@@ -3037,12 +3041,8 @@ class DiscordFriendsGame {
                 this.gisselIcon.src = 'public/assets/icons/GisselInactiveIcon.png';
             }
             
-            if (this.gisselIcon.complete && !this.gisselIcon.naturalWidth === 0) {
-                try {
-                    this.ctx.drawImage(this.gisselIcon, x - 18, y - 2, 12, 12);
-                } catch (e) {
-                    console.log('Error loading Gissel icon');
-                }
+            if (this.isImageValid(this.gisselIcon)) {
+                this.ctx.drawImage(this.gisselIcon, x - 18, y - 2, 12, 12);
             }
         } else if (player.role === 'survivor' && player.character === 'luna') {
             let iconSrc;
@@ -3063,12 +3063,8 @@ class DiscordFriendsGame {
                 this.lunaIcons[iconSrc].src = iconSrc;
             }
             
-            if (this.lunaIcons[iconSrc].complete && !this.lunaIcons[iconSrc].naturalWidth === 0) {
-                try {
-                    this.ctx.drawImage(this.lunaIcons[iconSrc], x - 18, y - 2, 12, 12);
-                } catch (e) {
-                    console.log('Error loading Luna icon');
-                }
+            if (this.isImageValid(this.lunaIcons[iconSrc])) {
+                this.ctx.drawImage(this.lunaIcons[iconSrc], x - 18, y - 2, 12, 12);
             }
         }
         
