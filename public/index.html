@@ -306,6 +306,43 @@
             }
         }
         
+        /* Mobile Refresh Button */
+        .mobile-refresh {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #ff0000, #660000);
+            border: 2px solid rgba(255,0,0,0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(255,0,0,0.4);
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .mobile-refresh:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255,0,0,0.6);
+        }
+        
+        .mobile-refresh:active {
+            transform: scale(0.95);
+        }
+        
+        /* Hide on desktop */
+        @media (min-width: 768px) {
+            .mobile-refresh {
+                display: none;
+            }
+        }
+        
         /* Game Canvas - Responsive */
         #gameCanvas {
             position: fixed;
@@ -492,6 +529,10 @@
     </style>
 </head>
 <body>
+    <!-- Mobile Refresh Button -->
+    <div class="mobile-refresh" id="mobileRefresh" title="Recargar página (F5)">
+        ↻
+    </div>
     <!-- Loading Screen -->
     <div id="loadingScreen" class="screen">
         <div id="loadingText">Cargando Discord Friends...</div>
@@ -602,5 +643,12 @@
     <!-- Game Scripts -->
     <script src="js/supabase-game.js"></script>
     <script src="js/discord-friends-game.js"></script>
+    
+    <!-- Mobile Refresh Control -->
+    <script>
+        document.getElementById('mobileRefresh').addEventListener('click', function() {
+            location.reload(true);
+        });
+    </script>
 </body>
 </html>
