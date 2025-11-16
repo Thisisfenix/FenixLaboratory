@@ -376,6 +376,8 @@ class DiscordFriendsGame {
                 // Reproducir sonido de muerte para todos
                 if (target.health <= 0) {
                     this.playDeathSound();
+                    // Increase timer by 15 seconds on death
+                    this.gameTimer += 15;
                 }
                 
                 // Aplicar knockback si está presente
@@ -1663,8 +1665,8 @@ class DiscordFriendsGame {
                         player.stunHits = (player.stunHits || 0) + 1;
                         
                         // Aplicar stun y knockback (solo si no está en rage mode)
+                        let stunDuration = player.stunHits >= 3 ? 180 : 90;
                         if (!(target.rageMode && target.rageMode.active)) {
-                            const stunDuration = player.stunHits >= 3 ? 180 : 90;
                             target.stunned = true;
                             target.stunTimer = stunDuration;
                             
@@ -2342,6 +2344,8 @@ class DiscordFriendsGame {
                     player.downed = false;
                     player.spectating = true;
                     this.playDeathSound();
+                    // Increase timer by 15 seconds on death
+                    this.gameTimer += 15;
                 }
                 
                 // Verificar si otro survivor está cerca para revivir
@@ -2505,26 +2509,33 @@ class DiscordFriendsGame {
         
         if (!player.alive || player.downed) return;
 
-        let speed = player.role === 'killer' ? 6 : (player.character === 'iA777' ? 5 : (player.character === 'angel' ? 4.5 : 4));
+        // Balanced base speeds for all characters
+        let speed;
+        if (player.role === 'killer') {
+            speed = player.character === 'vortex' ? 5.5 : 5; // Vortex slightly faster, others 5
+        } else {
+            // Survivors base speed 4.5
+            speed = 4.5;
+        }
         
         // Rage mode speed boost para killers
         if (player.role === 'killer' && player.rageMode && player.rageMode.active) {
-            speed = 8; // Velocidad aumentada en rage mode
+            speed = 7; // Reduced from 8 to 7
         }
         
         // iA777 speed boost en LMS
         if (player.character === 'iA777' && this.lastManStanding) {
-            speed = 6; // Velocidad de killer en LMS
+            speed = 5.5; // Slightly reduced
         }
         
         // Luna speed boost
         if (player.character === 'luna' && (player.speedBoost || player.lmsSpeedBoost)) {
-            speed = 7; // Velocidad II
+            speed = 6; // Reduced from 7 to 6
         }
         
         // Angel speed boost para aliados
         if (player.angelSpeedBoost) {
-            speed = 6; // Velocidad de killer temporalmente
+            speed = 5.5; // Reduced from 6 to 5.5
         }
         // Handle gamepad input
         this.updateGamepadInput();
@@ -2845,11 +2856,15 @@ class DiscordFriendsGame {
                     target.alive = false;
                     target.spectating = true;
                     this.playDeathSound();
+                    // Increase timer by 15 seconds on death
+                    this.gameTimer += 15;
                 } else {
                     target.alive = false;
                     target.downed = true;
                     target.reviveTimer = 1200;
                     target.beingRevived = false;
+                    // Increase timer by 10 seconds on down
+                    this.gameTimer += 10;
                 }
             }
             
@@ -2936,11 +2951,15 @@ class DiscordFriendsGame {
                     target.alive = false;
                     target.spectating = true;
                     this.playDeathSound();
+                    // Increase timer by 15 seconds on death
+                    this.gameTimer += 15;
                 } else {
                     target.alive = false;
                     target.downed = true;
                     target.reviveTimer = 1200;
                     target.beingRevived = false;
+                    // Increase timer by 10 seconds on down
+                    this.gameTimer += 10;
                 }
             }
             
@@ -3026,11 +3045,15 @@ class DiscordFriendsGame {
                     target.alive = false;
                     target.spectating = true;
                     this.playDeathSound();
+                    // Increase timer by 15 seconds on death
+                    this.gameTimer += 15;
                 } else {
                     target.alive = false;
                     target.downed = true;
                     target.reviveTimer = 1200;
                     target.beingRevived = false;
+                    // Increase timer by 10 seconds on down
+                    this.gameTimer += 10;
                 }
             }
             
@@ -4231,6 +4254,28 @@ class DiscordFriendsGame {
             
             if (this.isImageValid(this.lunaIcons[iconSrc])) {
                 this.ctx.drawImage(this.lunaIcons[iconSrc], x - 18, y - 2, 12, 12);
+            }
+        } else if (player.role === 'survivor' && player.character === 'iA777') {
+            let iconSrc;
+            if (!player.alive) {
+                iconSrc = 'assets/icons/IA777DeadIcon.png';
+            } else if (player.health <= 60) {
+                iconSrc = 'assets/icons/IA777DangerIcon.png';
+            } else {
+                iconSrc = 'assets/icons/IA777NormalIcon.png';
+            }
+            
+            if (!this.ia777Icons) {
+                this.ia777Icons = {};
+            }
+            
+            if (!this.ia777Icons[iconSrc]) {
+                this.ia777Icons[iconSrc] = new Image();
+                this.ia777Icons[iconSrc].src = iconSrc;
+            }
+            
+            if (this.isImageValid(this.ia777Icons[iconSrc])) {
+                this.ctx.drawImage(this.ia777Icons[iconSrc], x - 18, y - 2, 12, 12);
             }
         }
         
