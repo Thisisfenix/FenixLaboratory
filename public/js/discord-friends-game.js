@@ -623,10 +623,24 @@ class DiscordFriendsGame {
             this.forceLandscape();
         }
         
+        // Handle orientation changes
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                this.resizeCanvas();
+                this.updateCamera();
+            }, 100);
+        });
+        
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+            this.updateCamera();
+        });
+        
         // Supabase handles disconnection automatically
     }
     
     setupMobileControls() {
+        // Improved touch handling with better performance
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.handleTouchStart(e);
@@ -641,6 +655,21 @@ class DiscordFriendsGame {
             e.preventDefault();
             this.handleTouchEnd(e);
         }, {passive: false});
+        
+        this.canvas.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            this.handleTouchEnd(e);
+        }, {passive: false});
+        
+        // Initialize joystick state
+        this.joystickState = {
+            active: false,
+            startX: 0,
+            startY: 0,
+            currentX: 0,
+            currentY: 0,
+            touchId: null
+        };
     }
 
     handleAttack(e) {
@@ -1166,6 +1195,11 @@ class DiscordFriendsGame {
                     player.grabbedKiller = null;
                     player.chargeStunned = false;
                     
+                    // Resetear objetivo de carga en móvil
+                    if (player.id === this.myPlayerId && this.isMobile()) {
+                        this.chargeTarget = null;
+                    }
+                    
                     // Liberar killer si estaba agarrado
                     Object.values(this.players).forEach(killer => {
                         if (killer.grabbedBy === player.id) {
@@ -1191,19 +1225,22 @@ class DiscordFriendsGame {
                 player.autoRepairTimer--;
                 player.autoRepairTick++;
                 
-                // Regenerar 5 HP cada 180 frames (3 segundos)
+                // Regenerar 5 HP cada 180 frames (3 segundos) - máximo 100 HP
                 if (player.autoRepairTick >= 180 && player.id === this.myPlayerId) {
-                    player.health = Math.min(player.maxHealth, player.health + 5);
-                    this.createParticles(player.x + 15, player.y + 15, '#00FF00', 8);
-                    player.autoRepairTick = 0;
-                    
-                    if (this.supabaseGame) {
-                        this.supabaseGame.sendAttack({
-                            type: 'heal',
-                            targetId: player.id,
-                            health: player.health
-                        });
+                    const maxHealHealth = Math.min(100, player.maxHealth);
+                    if (player.health < maxHealHealth) {
+                        player.health = Math.min(maxHealHealth, player.health + 5);
+                        this.createParticles(player.x + 15, player.y + 15, '#00FF00', 8);
+                        
+                        if (this.supabaseGame) {
+                            this.supabaseGame.sendAttack({
+                                type: 'heal',
+                                targetId: player.id,
+                                health: player.health
+                            });
+                        }
                     }
+                    player.autoRepairTick = 0;
                 }
                 
                 // Terminar después de 20 segundos
@@ -1479,11 +1516,21 @@ class DiscordFriendsGame {
                 }
             }
         } else if (player.charging && !player.wallStunned) {
-            if (this.lastMouseX && this.lastMouseY) {
-                const angle = Math.atan2(this.lastMouseY - (player.y + 15), this.lastMouseX - (player.x + 15));
+            // En móvil, usar la posición del toque para dirigir la carga
+            let targetX = this.lastMouseX;
+            let targetY = this.lastMouseY;
+            
+            // Si es móvil y hay un toque activo, usar esa posición
+            if (this.isMobile() && this.chargeTarget) {
+                targetX = this.chargeTarget.x;
+                targetY = this.chargeTarget.y;
+            }
+            
+            if (targetX && targetY) {
+                const angle = Math.atan2(targetY - (player.y + 15), targetX - (player.x + 15));
                 const distance = Math.sqrt(
-                    Math.pow(this.lastMouseX - (player.x + 15), 2) + 
-                    Math.pow(this.lastMouseY - (player.y + 15), 2)
+                    Math.pow(targetX - (player.x + 15), 2) + 
+                    Math.pow(targetY - (player.y + 15), 2)
                 );
                 
                 if (distance > 10) {
@@ -2543,54 +2590,95 @@ class DiscordFriendsGame {
     }
 
     drawMobileControls(player) {
-        const canvasWidth = this.canvas.cssWidth || this.canvas.width;
-        const canvasHeight = this.canvas.cssHeight || this.canvas.height;
+        const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
+        const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
         
         const isLandscape = window.innerWidth > window.innerHeight;
         
-        // Optimized for landscape mode
-        const joystickSize = isLandscape ? 90 : 120;
-        const buttonSize = isLandscape ? 60 : 80;
-        const spacing = isLandscape ? 65 : 90;
+        // Better sizing for different screen sizes
+        const joystickSize = Math.min(canvasWidth, canvasHeight) * (isLandscape ? 0.12 : 0.15);
+        const buttonSize = Math.min(canvasWidth, canvasHeight) * (isLandscape ? 0.08 : 0.1);
+        const spacing = buttonSize * 1.2;
         
-        // Joystick position - closer to edge in landscape
-        const joystickX = isLandscape ? 70 : 100;
-        const joystickY = canvasHeight - joystickSize/2 - (isLandscape ? 20 : 30);
+        // Better positioning
+        const joystickX = joystickSize * 0.8;
+        const joystickY = canvasHeight - joystickSize * 0.8;
         
-        // Draw joystick
+        // Draw enhanced joystick
         this.ctx.save();
-        this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        
+        // Outer ring shadow
+        this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
         this.ctx.beginPath();
-        this.ctx.arc(joystickX, joystickY, joystickSize/2 + 3, 0, Math.PI * 2);
+        this.ctx.arc(joystickX + 2, joystickY + 2, joystickSize/2 + 4, 0, Math.PI * 2);
         this.ctx.fill();
         
-        this.ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        // Outer ring
+        this.ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        this.ctx.beginPath();
+        this.ctx.arc(joystickX, joystickY, joystickSize/2 + 2, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Inner background
+        this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
         this.ctx.beginPath();
         this.ctx.arc(joystickX, joystickY, joystickSize/2, 0, Math.PI * 2);
         this.ctx.fill();
         
+        // Border
         this.ctx.strokeStyle = '#7289DA';
         this.ctx.lineWidth = 3;
         this.ctx.stroke();
         
-        // Draw joystick stick
+        // Calculate stick position with smooth interpolation
         let stickX = joystickX;
         let stickY = joystickY;
         
-        if (this.joystickActive && this.joystickTouch) {
-            stickX = this.joystickTouch.x;
-            stickY = this.joystickTouch.y;
+        if (this.joystickState.active) {
+            const maxDistance = joystickSize/2 - 15;
+            const dx = this.joystickState.currentX - joystickX;
+            const dy = this.joystickState.currentY - joystickY;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            
+            if (distance > maxDistance) {
+                const angle = Math.atan2(dy, dx);
+                stickX = joystickX + Math.cos(angle) * maxDistance;
+                stickY = joystickY + Math.sin(angle) * maxDistance;
+            } else {
+                stickX = this.joystickState.currentX;
+                stickY = this.joystickState.currentY;
+            }
         }
         
+        // Draw stick with glow effect
+        const stickRadius = joystickSize * 0.15;
+        
+        // Stick glow
+        this.ctx.shadowColor = '#FFD700';
+        this.ctx.shadowBlur = 8;
         this.ctx.fillStyle = '#FFD700';
         this.ctx.beginPath();
-        this.ctx.arc(stickX, stickY, isLandscape ? 18 : 25, 0, Math.PI * 2);
+        this.ctx.arc(stickX, stickY, stickRadius + 2, 0, Math.PI * 2);
         this.ctx.fill();
+        
+        // Stick core
+        this.ctx.shadowBlur = 0;
+        this.ctx.fillStyle = '#FFA500';
+        this.ctx.beginPath();
+        this.ctx.arc(stickX, stickY, stickRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Stick highlight
+        this.ctx.fillStyle = '#FFFF80';
+        this.ctx.beginPath();
+        this.ctx.arc(stickX - stickRadius/3, stickY - stickRadius/3, stickRadius/2, 0, Math.PI * 2);
+        this.ctx.fill();
+        
         this.ctx.restore();
         
-        // Ability buttons - optimized layout for landscape
-        const buttonY = canvasHeight - buttonSize/2 - (isLandscape ? 20 : 30);
-        const startX = canvasWidth - (buttonSize * 3 + spacing * 2) - (isLandscape ? 20 : 30);
+        // Enhanced ability buttons
+        const buttonY = canvasHeight - buttonSize * 0.8;
+        const startX = canvasWidth - (buttonSize * 3 + spacing * 2) - buttonSize * 0.5;
         
         ['Q', 'E', 'R'].forEach((key, index) => {
             const x = startX + (buttonSize + spacing) * index;
@@ -2599,53 +2687,76 @@ class DiscordFriendsGame {
             
             this.ctx.save();
             
-            // Button shadow
-            this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            // Enhanced button shadow
+            this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
             this.ctx.beginPath();
-            this.ctx.arc(x + buttonSize/2 + 2, buttonY + 2, buttonSize/2 + 2, 0, Math.PI * 2);
+            this.ctx.arc(x + 3, buttonY + 3, buttonSize/2 + 3, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // Button background
-            this.ctx.fillStyle = onCooldown ? 'rgba(100,100,100,0.9)' : 'rgba(255,215,0,0.9)';
+            // Button background with gradient effect
+            const gradient = this.ctx.createRadialGradient(x, buttonY - buttonSize/4, 0, x, buttonY, buttonSize/2);
+            if (onCooldown) {
+                gradient.addColorStop(0, 'rgba(120,120,120,0.9)');
+                gradient.addColorStop(1, 'rgba(80,80,80,0.9)');
+            } else {
+                gradient.addColorStop(0, 'rgba(255,235,0,0.9)');
+                gradient.addColorStop(1, 'rgba(255,165,0,0.9)');
+            }
+            
+            this.ctx.fillStyle = gradient;
             this.ctx.beginPath();
-            this.ctx.arc(x + buttonSize/2, buttonY, buttonSize/2, 0, Math.PI * 2);
+            this.ctx.arc(x, buttonY, buttonSize/2, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // Button border
-            this.ctx.strokeStyle = '#FFFFFF';
+            // Enhanced border
+            this.ctx.strokeStyle = onCooldown ? '#666' : '#FFFFFF';
             this.ctx.lineWidth = 3;
             this.ctx.stroke();
             
-            // Button text - smaller in landscape
-            this.ctx.fillStyle = onCooldown ? '#666' : '#000';
-            this.ctx.font = `bold ${isLandscape ? 24 : 32}px Arial`;
+            // Button text with better sizing
+            this.ctx.fillStyle = onCooldown ? '#444' : '#000';
+            this.ctx.font = `bold ${buttonSize * 0.4}px Arial`;
             this.ctx.textAlign = 'center';
-            this.ctx.fillText(key, x + buttonSize/2, buttonY + (isLandscape ? 8 : 10));
+            this.ctx.fillText(key, x, buttonY + buttonSize * 0.12);
             
-            // Cooldown indicator
+            // Enhanced cooldown indicator
             if (onCooldown) {
                 const cooldownSec = Math.ceil(ability.cooldown / 1000);
                 this.ctx.fillStyle = '#fff';
-                this.ctx.font = `bold ${isLandscape ? 12 : 16}px Arial`;
-                this.ctx.fillText(cooldownSec + 's', x + buttonSize/2, buttonY + (isLandscape ? 22 : 28));
+                this.ctx.font = `bold ${buttonSize * 0.25}px Arial`;
+                this.ctx.fillText(cooldownSec + 's', x, buttonY + buttonSize * 0.35);
+                
+                // Cooldown arc
+                const progress = 1 - (ability.cooldown / ability.maxCooldown);
+                this.ctx.strokeStyle = '#00ff00';
+                this.ctx.lineWidth = 4;
+                this.ctx.beginPath();
+                this.ctx.arc(x, buttonY, buttonSize/2 - 2, -Math.PI/2, -Math.PI/2 + (progress * Math.PI * 2));
+                this.ctx.stroke();
             }
             
             this.ctx.restore();
         });
         
-        // Attack button for killers - positioned better in landscape
+        // Enhanced attack button for killers
         if (player.role === 'killer') {
-            const attackX = canvasWidth - buttonSize/2 - (isLandscape ? 20 : 30);
-            const attackY = buttonY - buttonSize - (isLandscape ? 15 : 20);
+            const attackX = canvasWidth - buttonSize * 0.8;
+            const attackY = buttonY - buttonSize * 1.3;
             
             this.ctx.save();
             
-            this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            // Attack button shadow
+            this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
             this.ctx.beginPath();
-            this.ctx.arc(attackX + 2, attackY + 2, buttonSize/2 + 2, 0, Math.PI * 2);
+            this.ctx.arc(attackX + 3, attackY + 3, buttonSize/2 + 3, 0, Math.PI * 2);
             this.ctx.fill();
             
-            this.ctx.fillStyle = 'rgba(255, 0, 0, 0.9)';
+            // Attack button gradient
+            const attackGradient = this.ctx.createRadialGradient(attackX, attackY - buttonSize/4, 0, attackX, attackY, buttonSize/2);
+            attackGradient.addColorStop(0, 'rgba(255, 100, 100, 0.9)');
+            attackGradient.addColorStop(1, 'rgba(200, 0, 0, 0.9)');
+            
+            this.ctx.fillStyle = attackGradient;
             this.ctx.beginPath();
             this.ctx.arc(attackX, attackY, buttonSize/2, 0, Math.PI * 2);
             this.ctx.fill();
@@ -2655,21 +2766,21 @@ class DiscordFriendsGame {
             this.ctx.stroke();
             
             this.ctx.fillStyle = 'white';
-            this.ctx.font = `bold ${isLandscape ? 28 : 36}px Arial`;
+            this.ctx.font = `bold ${buttonSize * 0.5}px Arial`;
             this.ctx.textAlign = 'center';
-            this.ctx.fillText('⚔️', attackX, attackY + (isLandscape ? 10 : 12));
+            this.ctx.fillText('⚔️', attackX, attackY + buttonSize * 0.15);
             
             this.attackButton = {x: attackX, y: attackY, size: buttonSize};
             this.ctx.restore();
         }
         
-        // Store control positions
+        // Store enhanced control positions with proper touch areas
         this.mobileControls = {
-            joystick: {x: joystickX, y: joystickY, size: joystickSize},
+            joystick: {x: joystickX, y: joystickY, size: joystickSize, touchRadius: joystickSize/2 + 10},
             abilities: {
-                q: {x: startX + buttonSize/2, y: buttonY, size: buttonSize},
-                e: {x: startX + buttonSize + spacing + buttonSize/2, y: buttonY, size: buttonSize},
-                r: {x: startX + (buttonSize + spacing) * 2 + buttonSize/2, y: buttonY, size: buttonSize}
+                q: {x: startX, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5},
+                e: {x: startX + buttonSize + spacing, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5},
+                r: {x: startX + (buttonSize + spacing) * 2, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5}
             }
         };
     }
@@ -2769,7 +2880,9 @@ class DiscordFriendsGame {
             radius: 80,
             glowRadius: 100,
             active: true,
-            pulseTimer: 0
+            pulseTimer: 0,
+            showIndicator: true,
+            indicatorTimer: 300 // 5 segundos de indicador
         };
         
         // Cargar imagen de Meowl
@@ -2789,6 +2902,16 @@ class DiscordFriendsGame {
         // Efecto de pulso
         this.escapeRing.pulseTimer += 0.1;
         const pulse = Math.sin(this.escapeRing.pulseTimer) * 0.2 + 1;
+        
+        // Indicador en el minimapa/UI si está activo
+        if (this.escapeRing.showIndicator && this.escapeRing.indicatorTimer > 0) {
+            this.escapeRing.indicatorTimer--;
+            this.drawEscapeRingIndicator();
+            
+            if (this.escapeRing.indicatorTimer <= 0) {
+                this.escapeRing.showIndicator = false;
+            }
+        }
         
         // Glow exterior
         this.ctx.shadowColor = '#FFD700';
@@ -2836,6 +2959,57 @@ class DiscordFriendsGame {
         
         // Verificar si algún survivor está en el anillo
         this.checkEscapeRingCollision();
+    }
+    
+    drawEscapeRingIndicator() {
+        const player = this.players[this.myPlayerId];
+        if (!player || player.role !== 'survivor') return;
+        
+        // Calcular dirección hacia el anillo
+        const dx = this.escapeRing.x - (player.x + 15);
+        const dy = this.escapeRing.y - (player.y + 15);
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        const angle = Math.atan2(dy, dx);
+        
+        // Dibujar flecha indicadora en el borde de la pantalla
+        const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
+        const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
+        
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+        const indicatorDistance = Math.min(centerX, centerY) - 50;
+        
+        const indicatorX = centerX + Math.cos(angle) * indicatorDistance;
+        const indicatorY = centerY + Math.sin(angle) * indicatorDistance;
+        
+        this.ctx.save();
+        this.ctx.translate(indicatorX, indicatorY);
+        this.ctx.rotate(angle);
+        
+        // Flecha dorada pulsante
+        const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 1;
+        this.ctx.scale(pulse, pulse);
+        
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 2;
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo(15, 0);
+        this.ctx.lineTo(-10, -8);
+        this.ctx.lineTo(-5, 0);
+        this.ctx.lineTo(-10, 8);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.stroke();
+        
+        this.ctx.restore();
+        
+        // Texto de distancia
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.font = 'bold 14px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`${Math.floor(distance)}m`, indicatorX, indicatorY + 25);
     }
     
     checkEscapeRingCollision() {
@@ -2898,91 +3072,150 @@ class DiscordFriendsGame {
     }
 
     handleTouchStart(e) {
-        const touch = e.touches[0];
-        const rect = this.canvas.getBoundingClientRect();
-        const touchX = touch.clientX - rect.left;
-        const touchY = touch.clientY - rect.top;
-        
-        if (!this.mobileControls) return;
-        
-        // Check attack button
-        if (this.attackButton) {
-            const dx = touchX - (this.attackButton.x + this.attackButton.size/2);
-            const dy = touchY - (this.attackButton.y + this.attackButton.size/2);
-            if (Math.sqrt(dx*dx + dy*dy) <= this.attackButton.size/2) {
-                this.handleAttack();
-                return;
+        for (let i = 0; i < e.touches.length; i++) {
+            const touch = e.touches[i];
+            const rect = this.canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const touchX = (touch.clientX - rect.left) * dpr / dpr;
+            const touchY = (touch.clientY - rect.top) * dpr / dpr;
+            
+            if (!this.mobileControls) continue;
+            
+            // Check attack button
+            if (this.attackButton) {
+                const dx = touchX - this.attackButton.x;
+                const dy = touchY - this.attackButton.y;
+                if (Math.sqrt(dx*dx + dy*dy) <= this.attackButton.size/2) {
+                    this.handleAttack();
+                    continue;
+                }
             }
-        }
-        
-        // Check ability buttons
-        Object.keys(this.mobileControls.abilities).forEach(key => {
-            const btn = this.mobileControls.abilities[key];
-            const dx = touchX - (btn.x + btn.size/2);
-            const dy = touchY - (btn.y + btn.size/2);
-            if (Math.sqrt(dx*dx + dy*dy) <= btn.size/2) {
-                this.useAbility(key);
-                return;
+            
+            // Check ability buttons with expanded touch area
+            let buttonPressed = false;
+            Object.keys(this.mobileControls.abilities).forEach(key => {
+                const btn = this.mobileControls.abilities[key];
+                const dx = touchX - btn.x;
+                const dy = touchY - btn.y;
+                if (Math.sqrt(dx*dx + dy*dy) <= btn.touchRadius) {
+                    this.useAbility(key);
+                    buttonPressed = true;
+                }
+            });
+            
+            if (buttonPressed) continue;
+            
+            // Check joystick with expanded touch area
+            const joystick = this.mobileControls.joystick;
+            const joyDx = touchX - joystick.x;
+            const joyDy = touchY - joystick.y;
+            const joyDistance = Math.sqrt(joyDx*joyDx + joyDy*joyDy);
+            
+            if (joyDistance <= joystick.touchRadius && !this.joystickState.active) {
+                this.joystickState = {
+                    active: true,
+                    startX: joystick.x,
+                    startY: joystick.y,
+                    currentX: touchX,
+                    currentY: touchY,
+                    touchId: touch.identifier
+                };
             }
-        });
-        
-        // Check joystick
-        const joystick = this.mobileControls.joystick;
-        const joyDx = touchX - (joystick.x + joystick.size/2);
-        const joyDy = touchY - (joystick.y + joystick.size/2);
-        if (Math.sqrt(joyDx*joyDx + joyDy*joyDy) <= joystick.size/2) {
-            this.joystickActive = true;
-            this.joystickTouch = {x: touchX, y: touchY};
+            
+            // Para iA777, capturar toque para dirigir la carga
+            const player = this.players[this.myPlayerId];
+            if (player && player.character === 'iA777' && player.charging && !buttonPressed && joyDistance > joystick.touchRadius) {
+                this.chargeTarget = {
+                    x: touchX + this.camera.x,
+                    y: touchY + this.camera.y
+                };
+            }
         }
     }
     
     handleTouchMove(e) {
-        if (!this.joystickActive) return;
+        if (!this.joystickState.active) return;
         
-        const touch = e.touches[0];
-        const rect = this.canvas.getBoundingClientRect();
-        const touchX = touch.clientX - rect.left;
-        const touchY = touch.clientY - rect.top;
-        
-        const joystick = this.mobileControls.joystick;
-        const centerX = joystick.x + joystick.size/2;
-        const centerY = joystick.y + joystick.size/2;
-        
-        const dx = touchX - centerX;
-        const dy = touchY - centerY;
-        const distance = Math.sqrt(dx*dx + dy*dy);
-        const maxDistance = joystick.size/2 - 20;
-        
-        if (distance > maxDistance) {
-            const angle = Math.atan2(dy, dx);
-            this.joystickTouch = {
-                x: centerX + Math.cos(angle) * maxDistance,
-                y: centerY + Math.sin(angle) * maxDistance
-            };
-        } else {
-            this.joystickTouch = {x: touchX, y: touchY};
+        // Find the touch that corresponds to our joystick
+        for (let i = 0; i < e.touches.length; i++) {
+            const touch = e.touches[i];
+            if (touch.identifier === this.joystickState.touchId) {
+                const rect = this.canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                const touchX = (touch.clientX - rect.left) * dpr / dpr;
+                const touchY = (touch.clientY - rect.top) * dpr / dpr;
+                
+                // Smooth joystick movement with better precision
+                const centerX = this.joystickState.startX;
+                const centerY = this.joystickState.startY;
+                
+                const dx = touchX - centerX;
+                const dy = touchY - centerY;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                const maxDistance = this.mobileControls.joystick.size/2 - 15;
+                
+                // Update joystick position with constraints
+                if (distance > maxDistance) {
+                    const angle = Math.atan2(dy, dx);
+                    this.joystickState.currentX = centerX + Math.cos(angle) * maxDistance;
+                    this.joystickState.currentY = centerY + Math.sin(angle) * maxDistance;
+                } else {
+                    this.joystickState.currentX = touchX;
+                    this.joystickState.currentY = touchY;
+                }
+                
+                // Convert to movement with improved sensitivity
+                const normalizedX = (this.joystickState.currentX - centerX) / maxDistance;
+                const normalizedY = (this.joystickState.currentY - centerY) / maxDistance;
+                
+                // Better deadzone and sensitivity
+                const deadzone = 0.15;
+                const sensitivity = 1.2;
+                
+                // Apply deadzone and sensitivity
+                const adjustedX = Math.abs(normalizedX) > deadzone ? normalizedX * sensitivity : 0;
+                const adjustedY = Math.abs(normalizedY) > deadzone ? normalizedY * sensitivity : 0;
+                
+                // Set virtual keys with improved thresholds
+                this.keys['w'] = adjustedY < -0.2;
+                this.keys['s'] = adjustedY > 0.2;
+                this.keys['a'] = adjustedX < -0.2;
+                this.keys['d'] = adjustedX > 0.2;
+                
+                break;
+            }
         }
-        
-        // Convert to movement
-        const normalizedX = (this.joystickTouch.x - centerX) / maxDistance;
-        const normalizedY = (this.joystickTouch.y - centerY) / maxDistance;
-        
-        // Set virtual keys based on joystick position
-        this.keys['w'] = normalizedY < -0.3;
-        this.keys['s'] = normalizedY > 0.3;
-        this.keys['a'] = normalizedX < -0.3;
-        this.keys['d'] = normalizedX > 0.3;
     }
     
     handleTouchEnd(e) {
-        this.joystickActive = false;
-        this.joystickTouch = null;
-        
-        // Clear virtual movement keys
-        this.keys['w'] = false;
-        this.keys['s'] = false;
-        this.keys['a'] = false;
-        this.keys['d'] = false;
+        // Check if our joystick touch ended
+        if (this.joystickState.active) {
+            let touchStillActive = false;
+            for (let i = 0; i < e.touches.length; i++) {
+                if (e.touches[i].identifier === this.joystickState.touchId) {
+                    touchStillActive = true;
+                    break;
+                }
+            }
+            
+            if (!touchStillActive) {
+                // Reset joystick state
+                this.joystickState = {
+                    active: false,
+                    startX: 0,
+                    startY: 0,
+                    currentX: 0,
+                    currentY: 0,
+                    touchId: null
+                };
+                
+                // Clear virtual movement keys
+                this.keys['w'] = false;
+                this.keys['s'] = false;
+                this.keys['a'] = false;
+                this.keys['d'] = false;
+            }
+        }
     }
 
     playDeathSound() {
@@ -3011,6 +3244,11 @@ class DiscordFriendsGame {
         player.chargeHit = false;
         player.grabbedKiller = null;
         player.chargeStunned = false;
+        
+        // Resetear objetivo de carga en móvil
+        if (this.isMobile()) {
+            this.chargeTarget = null;
+        }
         
         this.createParticles(player.x + 15, player.y + 15, '#00FFFF', 15);
         
@@ -3096,18 +3334,29 @@ class DiscordFriendsGame {
     resizeCanvas() {
         if (this.canvas) {
             const dpr = window.devicePixelRatio || 1;
+            
+            // Force canvas to fill viewport properly
+            this.canvas.style.width = '100vw';
+            this.canvas.style.height = '100vh';
+            
             const rect = this.canvas.getBoundingClientRect();
             
+            // Set actual canvas size with device pixel ratio
             this.canvas.width = rect.width * dpr;
             this.canvas.height = rect.height * dpr;
             
-            this.canvas.style.width = rect.width + 'px';
-            this.canvas.style.height = rect.height + 'px';
-            
+            // Scale context to match device pixel ratio
             this.ctx.scale(dpr, dpr);
             
+            // Store logical dimensions
             this.canvas.cssWidth = rect.width;
             this.canvas.cssHeight = rect.height;
+            
+            // Ensure proper rendering on orientation change
+            this.ctx.imageSmoothingEnabled = false;
+            this.ctx.webkitImageSmoothingEnabled = false;
+            this.ctx.mozImageSmoothingEnabled = false;
+            this.ctx.msImageSmoothingEnabled = false;
         }
     }
 }

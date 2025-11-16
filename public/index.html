@@ -279,17 +279,38 @@
             }
         }
         
-        /* Game Canvas Mobile Landscape */
-        @media screen and (orientation: landscape) and (max-height: 600px) {
-            #gameCanvas {
-                touch-action: none;
-                -webkit-touch-callout: none;
-                -webkit-user-select: none;
-                user-select: none;
-            }
-            
+        /* Game Canvas - Fixed Orientation Issues */
+        #gameCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            object-fit: cover;
+        }
+        
+        @media screen and (orientation: landscape) {
             body {
                 overflow: hidden;
+            }
+            
+            #gameCanvas {
+                image-rendering: pixelated;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: crisp-edges;
+            }
+        }
+        
+        @media screen and (orientation: portrait) {
+            #gameCanvas {
+                transform: rotate(90deg);
+                transform-origin: center;
+                width: 100vh !important;
+                height: 100vw !important;
             }
         }
         
