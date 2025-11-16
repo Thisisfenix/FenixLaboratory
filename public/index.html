@@ -318,29 +318,44 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(45deg, #ff0000, #660000);
-            border: 2px solid rgba(255,0,0,0.5);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            border: 3px solid #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(255,0,0,0.4);
+            z-index: 10000;
+            box-shadow: 0 6px 20px rgba(255,0,0,0.6);
             transition: all 0.3s ease;
-            font-size: 1.2rem;
+            font-size: 1.8rem;
             color: white;
+            font-weight: bold;
+            animation: refreshPulse 2s infinite;
+        }
+        
+        @keyframes refreshPulse {
+            0%, 100% { 
+                box-shadow: 0 6px 20px rgba(255,0,0,0.6);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 8px 30px rgba(255,0,0,0.9);
+                transform: scale(1.05);
+            }
         }
         
         .mobile-refresh:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(255,0,0,0.6);
+            transform: scale(1.15) rotate(180deg);
+            box-shadow: 0 10px 35px rgba(255,0,0,0.8);
+            background: linear-gradient(45deg, #ff4444, #ff0000);
         }
         
         .mobile-refresh:active {
-            transform: scale(0.95);
+            transform: scale(0.9) rotate(360deg);
+            background: #ff6666;
         }
         
         /* Hide on desktop */
@@ -667,7 +682,21 @@
     <!-- Mobile Refresh Control -->
     <script>
         document.getElementById('mobileRefresh').addEventListener('click', function() {
-            location.reload(true);
+            // Limpiar caché agresivamente
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => caches.delete(name));
+                });
+            }
+            
+            // Limpiar localStorage
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+            } catch(e) {}
+            
+            // Forzar recarga completa
+            window.location.href = window.location.href + '?t=' + Date.now();
         });
         
         // Audio context unlock for mobile
