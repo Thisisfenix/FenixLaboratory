@@ -316,16 +316,51 @@ class DiscordFriendsGame {
                 target.health = data.health;
                 target.alive = data.alive;
                 
+                // Cancelar auto repair si está activo
+                if (target.autoRepairing) {
+                    target.autoRepairing = false;
+                    target.autoRepairTimer = 0;
+                }
+                
                 if (data.downed) {
                     target.downed = true;
                     target.reviveTimer = 1200;
                     target.beingRevived = false;
                 }
                 
-                // Create damage particles
-                this.createParticles(target.x + 15, target.y + 15, '#FF0000', 12);
+                if (data.spectating) {
+                    target.spectating = true;
+                    target.alive = false;
+                }
                 
-                console.log(`Player ${target.name} took damage: ${target.health}HP`);
+                // Reproducir sonido de muerte para todos
+                if (target.health <= 0) {
+                    this.playDeathSound();
+                }
+                
+                // Aplicar knockback si está presente
+                if (data.knockbackX !== undefined && data.knockbackY !== undefined) {
+                    target.x = data.knockbackX;
+                    target.y = data.knockbackY;
+                }
+                
+                // Crear partículas según el tipo de ataque
+                let particleColor = '#FF0000';
+                if (data.attackType === 'you_cant_run') {
+                    particleColor = '#8B0000';
+                    // Trigger jumpscare para el jugador objetivo
+                    if (data.targetId === this.myPlayerId) {
+                        this.triggerJumpscare(data.targetId);
+                    }
+                } else if (data.attackType === 'white_orb') {
+                    particleColor = '#FF8000';
+                } else if (data.damage === 50) {
+                    particleColor = '#FFD700'; // Stealth attack
+                }
+                
+                this.createParticles(target.x + 15, target.y + 15, particleColor, 12);
+                
+                console.log(`Player ${target.name} took ${data.damage} damage: ${target.health}HP (${data.attackType})`);
             } else if ((data.type === 'basic_attack' || data.type === 'white_orb') && data.playerId !== this.myPlayerId) {
                 this.hitboxes.push(data.attackData);
                 this.createParticles(data.attackData.x, data.attackData.y, data.attackData.color, 8);
@@ -334,6 +369,8 @@ class DiscordFriendsGame {
                 player.stealthMode = data.stealthMode;
                 player.criticalStrike = data.criticalStrike;
                 player.stealthTimer = 480;
+                player.stealthHits = 0;
+                player.maxStealthHits = 3;
             } else if (data.type === 'you_cant_run_activate' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
                 const player = this.players[data.playerId];
                 player.youCantRunActive = true;
@@ -364,6 +401,7 @@ class DiscordFriendsGame {
                 target.health = data.health;
                 target.reviveProgress = 0;
                 target.lastLife = true;
+                target.spectating = false;
                 
                 this.createParticles(target.x + 15, target.y + 15, '#00FF00', 20);
             } else if (data.type === 'charge_activate' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
@@ -411,6 +449,11 @@ class DiscordFriendsGame {
                 target.y = data.knockbackY;
                 
                 this.createParticles(target.x + 15, target.y + 15, '#FF0000', 25);
+            } else if (data.type === 'rage_mode' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.rageMode = data.rageMode;
+                player.rageLevel = 0;
+                player.rageUsed = true;
             }
         };
         
@@ -428,9 +471,11 @@ class DiscordFriendsGame {
                     this.lobbyCountdown = data.countdown;
                     console.log('📡 Received countdown start:', data.countdown);
                 } else if (data.type === 'update') {
-                    // Solo actualizar si el countdown es válido
+                    // Forzar countdown válido entre 0 y 60
                     if (data.countdown >= 0 && data.countdown <= 60) {
-                        this.lobbyCountdown = data.countdown;
+                        this.lobbyCountdown = Math.max(0, Math.min(60, data.countdown));
+                    } else {
+                        this.lobbyCountdown = 60; // Reset a 60 si está fuera de rango
                     }
                 } else if (data.type === 'reset') {
                     this.resetCountdown();
@@ -550,10 +595,10 @@ class DiscordFriendsGame {
             players: playerList.map(p => `${p.name}(${p.role})`)
         });
         
-        // Reset countdown si está atascado
-        if (this.countdownActive && this.lobbyCountdown > 60) {
-            console.log('⚠️ Countdown stuck, resetting...');
-            this.resetCountdown();
+        // Reset countdown si está atascado o fuera de rango
+        if (this.countdownActive && (this.lobbyCountdown > 60 || this.lobbyCountdown < 0)) {
+            console.log('⚠️ Countdown out of range, forcing to 60...');
+            this.lobbyCountdown = 60;
         }
         
         if (playerList.length >= 2 && survivors >= 1 && killers >= 1 && !this.countdownActive) {
@@ -576,7 +621,7 @@ class DiscordFriendsGame {
         }
         
         this.countdownActive = true;
-        this.lobbyCountdown = 60;
+        this.lobbyCountdown = 60; // FORZADO A 60 SEGUNDOS
         
         console.log('⏰ Starting countdown...');
         
@@ -1837,9 +1882,8 @@ class DiscordFriendsGame {
             }
             
             if (collision) {
-                if (target.id === this.myPlayerId) {
-                    this.applyHitboxEffect(hitbox, target);
-                }
+                // Aplicar efectos a todos los jugadores, no solo al local
+                this.applyHitboxEffect(hitbox, target);
                 hitbox.life = 0;
             }
         });
@@ -1847,39 +1891,53 @@ class DiscordFriendsGame {
 
     applyHitboxEffect(hitbox, target) {
         if (hitbox.type === 'you_cant_run' && target.role === 'survivor' && !hitbox.hasHit) {
-            // You Can't Run - 25 de daño + jumpscare
             target.health = Math.max(0, target.health - 25);
             this.createParticles(target.x + 15, target.y + 15, '#8B0000', 15);
-            
-            // Jumpscare y mensaje "I Am God"
             this.triggerJumpscare(target.id);
             
             hitbox.hasHit = true;
-            hitbox.life = 0; // Destruir después del impacto
+            hitbox.life = 0;
             
-            if (target.health <= 0) {
-                target.alive = false;
+            // Cancelar auto repair
+            if (target.autoRepairing) {
+                target.autoRepairing = false;
+                target.autoRepairTimer = 0;
             }
             
-            // Sync with Supabase
+            if (target.health <= 0) {
+                if (target.lastLife || target.character === 'iA777') {
+                    target.alive = false;
+                    target.spectating = true;
+                    this.playDeathSound();
+                } else {
+                    target.alive = false;
+                    target.downed = true;
+                    target.reviveTimer = 1200;
+                    target.beingRevived = false;
+                }
+            }
+            
             if (this.supabaseGame) {
                 this.supabaseGame.sendAttack({
                     type: 'damage',
                     targetId: target.id,
                     health: target.health,
-                    alive: target.alive
+                    alive: target.health > 0,
+                    downed: target.health <= 0 && !target.lastLife && target.character !== 'iA777',
+                    spectating: target.health <= 0 && (target.lastLife || target.character === 'iA777'),
+                    damage: 25,
+                    attackerId: hitbox.ownerId,
+                    attackType: 'you_cant_run'
                 });
             }
         } else if (hitbox.type === 'basic_attack' && target.role === 'survivor') {
             const attacker = this.players[hitbox.ownerId];
             let damage = 30;
             
-            // Daño de sigilo si el atacante está en sigilo
             if (attacker && attacker.stealthMode && attacker.stealthHits < attacker.maxStealthHits) {
                 damage = 50;
                 attacker.stealthHits++;
                 
-                // Terminar sigilo después de 3 hits
                 if (attacker.stealthHits >= attacker.maxStealthHits) {
                     attacker.stealthMode = false;
                     attacker.criticalStrike = false;
@@ -1892,19 +1950,37 @@ class DiscordFriendsGame {
             
             target.health = Math.max(0, target.health - damage);
             
+            // Cancelar auto repair
+            if (target.autoRepairing) {
+                target.autoRepairing = false;
+                target.autoRepairTimer = 0;
+            }
+            
+            if (target.health <= 0) {
+                if (target.lastLife || target.character === 'iA777') {
+                    target.alive = false;
+                    target.spectating = true;
+                    this.playDeathSound();
+                } else {
+                    target.alive = false;
+                    target.downed = true;
+                    target.reviveTimer = 1200;
+                    target.beingRevived = false;
+                }
+            }
+            
             if (this.supabaseGame) {
                 this.supabaseGame.sendAttack({
                     type: 'damage',
                     targetId: target.id,
                     health: target.health,
                     alive: target.health > 0,
+                    downed: target.health <= 0 && !target.lastLife && target.character !== 'iA777',
+                    spectating: target.health <= 0 && (target.lastLife || target.character === 'iA777'),
                     damage: damage,
-                    attackerId: hitbox.ownerId
+                    attackerId: hitbox.ownerId,
+                    attackType: 'basic_attack'
                 });
-            }
-            
-            if (target.health <= 0) {
-                target.alive = false;
             }
         } else if (hitbox.type === 'white_orb' && target.role === 'survivor') {
             let damage = 40;
@@ -1921,6 +1997,25 @@ class DiscordFriendsGame {
             target.x = newX;
             target.y = newY;
             
+            // Cancelar auto repair
+            if (target.autoRepairing) {
+                target.autoRepairing = false;
+                target.autoRepairTimer = 0;
+            }
+            
+            if (target.health <= 0) {
+                if (target.lastLife || target.character === 'iA777') {
+                    target.alive = false;
+                    target.spectating = true;
+                    this.playDeathSound();
+                } else {
+                    target.alive = false;
+                    target.downed = true;
+                    target.reviveTimer = 1200;
+                    target.beingRevived = false;
+                }
+            }
+            
             if (this.supabaseGame) {
                 this.supabaseGame.sendPlayerMove(newX, newY);
                 this.supabaseGame.sendAttack({
@@ -1928,17 +2023,18 @@ class DiscordFriendsGame {
                     targetId: target.id,
                     health: target.health,
                     alive: target.health > 0,
+                    downed: target.health <= 0 && !target.lastLife && target.character !== 'iA777',
+                    spectating: target.health <= 0 && (target.lastLife || target.character === 'iA777'),
                     damage: damage,
-                    attackerId: hitbox.ownerId
+                    attackerId: hitbox.ownerId,
+                    attackType: 'white_orb',
+                    knockbackX: newX,
+                    knockbackY: newY
                 });
             }
             
             this.createParticles(target.x + 15, target.y + 15, '#FF8000', 8);
             hitbox.life = 0;
-            
-            if (target.health <= 0) {
-                target.alive = false;
-            }
         }
     }
 
@@ -2134,7 +2230,7 @@ class DiscordFriendsGame {
         const angle = Math.atan2(closestSurvivor.y - killer.y, closestSurvivor.x - killer.x);
         const speed = 15;
         
-        this.hitboxes.push({
+        const orbData = {
             type: 'white_orb',
             x: killer.x + 15,
             y: killer.y + 15,
@@ -2146,9 +2242,19 @@ class DiscordFriendsGame {
             ownerId: killer.id,
             color: '#FFFFFF',
             trail: []
-        });
+        };
         
+        this.hitboxes.push(orbData);
         this.createParticles(killer.x + 15, killer.y + 15, '#FFFFFF', 12);
+        
+        // Sincronizar orbe con otros jugadores
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'white_orb',
+                attackData: orbData,
+                playerId: killer.id
+            });
+        }
     }
 
     activateRageMode() {
@@ -2760,26 +2866,20 @@ class DiscordFriendsGame {
     drawVirtualJoystick() {
         if (!this.joystickState.active) return;
         
-        const canvasWidth = this.canvas.cssWidth || window.innerWidth;
-        const canvasHeight = this.canvas.cssHeight || window.innerHeight;
-        
-        // Responsive joystick sizing
-        const isPortrait = canvasHeight > canvasWidth;
-        const baseRadius = Math.min(canvasWidth, canvasHeight) * (isPortrait ? 0.08 : 0.06);
-        const knobRadius = baseRadius * 0.4;
-        
         this.ctx.save();
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         
-        // Draw base circle
+        const baseRadius = 60;
+        const knobRadius = 25;
+        
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        this.ctx.lineWidth = Math.max(2, baseRadius * 0.04);
+        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
         this.ctx.arc(this.joystickState.startX, this.joystickState.startY, baseRadius, 0, Math.PI * 2);
         this.ctx.fill();
         this.ctx.stroke();
         
-        // Calculate knob position
         const dx = this.joystickState.currentX - this.joystickState.startX;
         const dy = this.joystickState.currentY - this.joystickState.startY;
         const distance = Math.sqrt(dx*dx + dy*dy);
@@ -2794,10 +2894,9 @@ class DiscordFriendsGame {
             knobY = this.joystickState.startY + Math.sin(angle) * maxDistance;
         }
         
-        // Draw knob
         this.ctx.fillStyle = 'rgba(255, 200, 0, 0.9)';
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
-        this.ctx.lineWidth = Math.max(2, knobRadius * 0.15);
+        this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.arc(knobX, knobY, knobRadius, 0, Math.PI * 2);
         this.ctx.fill();
@@ -3422,7 +3521,7 @@ class DiscordFriendsGame {
 
     playDeathSound() {
         try {
-            const deathAudio = new Audio('assets/deathsound.mp3');
+            const deathAudio = new Audio('public/assets/deathsound.mp3');
             deathAudio.volume = 0.5;
             deathAudio.play().catch(e => console.log('Death sound blocked'));
         } catch (e) {
