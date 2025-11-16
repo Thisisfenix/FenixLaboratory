@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Game Reset</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #000000, #1a0a0a);
+            color: #ff4444;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        
+        .container {
+            text-align: center;
+            background: rgba(255, 0, 0, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px #ff0000;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #ff0000, #660000);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+            width: 100%;
+            max-width: 280px;
+            min-height: 50px;
+            touch-action: manipulation;
+        }
+        
+        .btn:hover, .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
+        }
+        
+        .info {
+            margin: 1rem 0;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            color: #ff6666;
+        }
+        
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+        
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .container {
+                padding: 1.5rem;
+                border-radius: 12px;
+            }
+            
+            .btn {
+                margin: 0.3rem 0;
+                padding: 0.8rem 1rem;
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                margin-bottom: 0.5rem;
+            }
+            
+            .info {
+                margin: 0.5rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Game Reset Tool</h1>
+        <p class="info">Herramienta para resetear el juego después de updates</p>
+        
+        <button class="btn" onclick="resetGame()" aria-label="Reset Game">🎮 Reset Game</button>
+        <button class="btn" onclick="clearCache()" aria-label="Clear Cache">🧹 Clear Cache</button>
+        <button class="btn" onclick="forceReload()" aria-label="Force Reload">⚡ Force Reload</button>
+        <button class="btn" onclick="openGame()" aria-label="Open Game">🚀 Open Game</button>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+        
+        function resetGame() {
+            try {
+                // Limpiar localStorage
+                localStorage.clear();
+                
+                // Limpiar sessionStorage
+                sessionStorage.clear();
+                
+                // Limpiar cookies del dominio
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                
+                showStatus('✅ Game data reset successfully!', 'success');
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+                
+            } catch (error) {
+                showStatus('❌ Error resetting game: ' + error.message, 'error');
+            }
+        }
+        
+        function clearCache() {
+            try {
+                // Forzar recarga sin cache
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            caches.delete(name);
+                        });
+                    });
+                }
+                
+                showStatus('🧹 Cache cleared!', 'success');
+                
+            } catch (error) {
+                showStatus('❌ Error clearing cache: ' + error.message, 'error');
+            }
+        }
+        
+        function forceReload() {
+            showStatus('⚡ Force reloading...', 'success');
+            
+            setTimeout(() => {
+                // Forzar recarga completa sin cache
+                window.location.reload(true);
+            }, 1000);
+        }
+        
+        function openGame() {
+            window.location.reload();
+        }
+        
+        // Auto-reset si se pasa parámetro
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('auto') === 'true') {
+            setTimeout(() => {
+                resetGame();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

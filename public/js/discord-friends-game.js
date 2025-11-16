@@ -709,21 +709,31 @@ class DiscordFriendsGame {
         // Mobile touch controls
         if (this.isMobile()) {
             this.setupMobileControls();
+            this.activateMobileControls();
             this.forceLandscape();
         }
         
-        // Handle orientation changes
+        // Handle orientation and resize changes
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
-                this.resizeCanvas();
-                this.updateCamera();
-            }, 100);
+                this.handleViewportChange();
+            }, 300); // Longer delay for orientation change
         });
         
         window.addEventListener('resize', () => {
-            this.resizeCanvas();
-            this.updateCamera();
+            this.handleViewportChange();
         });
+        
+        // Handle viewport changes on mobile browsers
+        if (this.isMobile()) {
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    this.handleViewportChange();
+                }, 100);
+            });
+        }
         
         // Supabase handles disconnection automatically
     }
@@ -759,6 +769,49 @@ class DiscordFriendsGame {
             currentY: 0,
             touchId: null
         };
+        
+        // Setup ability button listeners
+        this.setupMobileAbilityButtons();
+    }
+    
+    activateMobileControls() {
+        const mobileControls = document.getElementById('mobileControls');
+        if (mobileControls) {
+            mobileControls.classList.add('active');
+        }
+    }
+    
+    setupMobileAbilityButtons() {
+        // Setup ability buttons with touch events
+        ['Q', 'E', 'R', 'C'].forEach(key => {
+            const btn = document.getElementById(`ability${key}`);
+            if (btn) {
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const ability = this.abilities[key.toLowerCase()];
+                    if (!ability || ability.cooldown > 0) return;
+                    
+                    if (key === 'C') {
+                        this.activateRageMode();
+                    } else {
+                        this.useAbility(key.toLowerCase());
+                    }
+                    
+                    // Visual feedback
+                    btn.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        btn.style.transform = 'scale(1)';
+                    }, 100);
+                }, {passive: false});
+                
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            }
+        });
     }
 
     handleAttack(e) {
@@ -1700,12 +1753,13 @@ class DiscordFriendsGame {
     updateCamera() {
         const player = this.players[this.myPlayerId];
         if (player && this.canvas) {
-            const canvasWidth = this.canvas.cssWidth || this.canvas.width || window.innerWidth;
-            const canvasHeight = this.canvas.cssHeight || this.canvas.height || window.innerHeight;
+            const canvasWidth = this.canvas.cssWidth || window.innerWidth;
+            const canvasHeight = this.canvas.cssHeight || window.innerHeight;
             
             this.camera.x = player.x - canvasWidth / 2;
             this.camera.y = player.y - canvasHeight / 2;
             
+            // Clamp camera to world bounds
             this.camera.x = Math.max(0, Math.min(Math.max(0, this.worldSize.width - canvasWidth), this.camera.x));
             this.camera.y = Math.max(0, Math.min(Math.max(0, this.worldSize.height - canvasHeight), this.camera.y));
         }
@@ -2177,15 +2231,18 @@ class DiscordFriendsGame {
         this.drawUI();
         this.drawEscapeRing();
         
-        // Draw mobile controls if on mobile
+        // Update mobile controls UI
         const player = this.players[this.myPlayerId];
         if (player && this.isMobile()) {
-            this.drawMobileControls(player);
+            this.updateMobileControlsUI(player);
+            this.drawVirtualJoystick();
         }
     }
     
     isMobile() {
-        return window.innerWidth <= 1024 || 'ontouchstart' in window;
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               window.innerWidth <= 1024 || 
+               'ontouchstart' in window;
     }
 
     drawHitboxes() {
@@ -2680,6 +2737,84 @@ class DiscordFriendsGame {
         }
     }
 
+    updateMobileControlsUI(player) {
+        // Update cooldown displays on mobile buttons
+        ['q', 'e', 'r'].forEach(key => {
+            const btn = document.getElementById(`ability${key.toUpperCase()}`);
+            const ability = this.abilities[key];
+            
+            if (btn && ability) {
+                if (ability.cooldown > 0) {
+                    btn.classList.add('cooldown');
+                    const cooldownSec = Math.ceil(ability.cooldown / 1000);
+                    btn.textContent = cooldownSec + 's';
+                } else {
+                    btn.classList.remove('cooldown');
+                    btn.textContent = key.toUpperCase();
+                }
+            }
+        });
+        
+        // Update rage mode button for 2019x
+        const rageBtn = document.getElementById('abilityC');
+        if (rageBtn && player.character === '2019x') {
+            if (player.rageUsed || player.rageLevel < this.maxRage || this.lastManStanding) {
+                rageBtn.classList.add('cooldown');
+            } else {
+                rageBtn.classList.remove('cooldown');
+            }
+        }
+    }
+    
+    drawVirtualJoystick() {
+        if (!this.joystickState.active) return;
+        
+        const canvasWidth = this.canvas.cssWidth || window.innerWidth;
+        const canvasHeight = this.canvas.cssHeight || window.innerHeight;
+        
+        // Responsive joystick sizing
+        const isPortrait = canvasHeight > canvasWidth;
+        const baseRadius = Math.min(canvasWidth, canvasHeight) * (isPortrait ? 0.08 : 0.06);
+        const knobRadius = baseRadius * 0.4;
+        
+        this.ctx.save();
+        
+        // Draw base circle
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        this.ctx.lineWidth = Math.max(2, baseRadius * 0.04);
+        this.ctx.beginPath();
+        this.ctx.arc(this.joystickState.startX, this.joystickState.startY, baseRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.stroke();
+        
+        // Calculate knob position
+        const dx = this.joystickState.currentX - this.joystickState.startX;
+        const dy = this.joystickState.currentY - this.joystickState.startY;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        const maxDistance = baseRadius - knobRadius;
+        
+        let knobX = this.joystickState.currentX;
+        let knobY = this.joystickState.currentY;
+        
+        if (distance > maxDistance) {
+            const angle = Math.atan2(dy, dx);
+            knobX = this.joystickState.startX + Math.cos(angle) * maxDistance;
+            knobY = this.joystickState.startY + Math.sin(angle) * maxDistance;
+        }
+        
+        // Draw knob
+        this.ctx.fillStyle = 'rgba(255, 200, 0, 0.9)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
+        this.ctx.lineWidth = Math.max(2, knobRadius * 0.15);
+        this.ctx.beginPath();
+        this.ctx.arc(knobX, knobY, knobRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.stroke();
+        
+        this.ctx.restore();
+    }
+    
     drawMobileControls(player) {
         const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
         const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
@@ -3180,60 +3315,36 @@ class DiscordFriendsGame {
         for (let i = 0; i < e.touches.length; i++) {
             const touch = e.touches[i];
             const rect = this.canvas.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            const touchX = (touch.clientX - rect.left) * dpr / dpr;
-            const touchY = (touch.clientY - rect.top) * dpr / dpr;
+            const touchX = touch.clientX - rect.left;
+            const touchY = touch.clientY - rect.top;
             
-            if (!this.mobileControls) continue;
+            // Check if touch is on left side (joystick area) or right side (abilities)
+            const isLeftSide = touchX < window.innerWidth / 2;
             
-            // Check attack button
-            if (this.attackButton) {
-                const dx = touchX - this.attackButton.x;
-                const dy = touchY - this.attackButton.y;
-                if (Math.sqrt(dx*dx + dy*dy) <= this.attackButton.size/2) {
-                    this.handleAttack();
-                    continue;
-                }
-            }
-            
-            // Check ability buttons with expanded touch area
-            let buttonPressed = false;
-            Object.keys(this.mobileControls.abilities).forEach(key => {
-                const btn = this.mobileControls.abilities[key];
-                const dx = touchX - btn.x;
-                const dy = touchY - btn.y;
-                if (Math.sqrt(dx*dx + dy*dy) <= btn.touchRadius) {
-                    this.useAbility(key);
-                    buttonPressed = true;
-                }
-            });
-            
-            if (buttonPressed) continue;
-            
-            // Check joystick with expanded touch area
-            const joystick = this.mobileControls.joystick;
-            const joyDx = touchX - joystick.x;
-            const joyDy = touchY - joystick.y;
-            const joyDistance = Math.sqrt(joyDx*joyDx + joyDy*joyDy);
-            
-            if (joyDistance <= joystick.touchRadius && !this.joystickState.active) {
+            if (isLeftSide && !this.joystickState.active) {
+                // Activate joystick anywhere on left side
                 this.joystickState = {
                     active: true,
-                    startX: joystick.x,
-                    startY: joystick.y,
+                    startX: touchX,
+                    startY: touchY,
                     currentX: touchX,
                     currentY: touchY,
                     touchId: touch.identifier
                 };
-            }
-            
-            // Para iA777, capturar toque para dirigir la carga
-            const player = this.players[this.myPlayerId];
-            if (player && player.character === 'iA777' && player.charging && !buttonPressed && joyDistance > joystick.touchRadius) {
-                this.chargeTarget = {
-                    x: touchX + this.camera.x,
-                    y: touchY + this.camera.y
-                };
+            } else if (!isLeftSide) {
+                // Right side - check for attack or abilities
+                const player = this.players[this.myPlayerId];
+                if (player && player.role === 'killer') {
+                    this.handleAttack();
+                }
+                
+                // Para iA777, capturar toque para dirigir la carga
+                if (player && player.character === 'iA777' && player.charging) {
+                    this.chargeTarget = {
+                        x: touchX + this.camera.x,
+                        y: touchY + this.camera.y
+                    };
+                }
             }
         }
     }
@@ -3246,46 +3357,41 @@ class DiscordFriendsGame {
             const touch = e.touches[i];
             if (touch.identifier === this.joystickState.touchId) {
                 const rect = this.canvas.getBoundingClientRect();
-                const dpr = window.devicePixelRatio || 1;
-                const touchX = (touch.clientX - rect.left) * dpr / dpr;
-                const touchY = (touch.clientY - rect.top) * dpr / dpr;
+                const touchX = touch.clientX - rect.left;
+                const touchY = touch.clientY - rect.top;
                 
-                // Smooth joystick movement with better precision
+                // Update joystick position
+                this.joystickState.currentX = touchX;
+                this.joystickState.currentY = touchY;
+                
+                // Calculate movement direction
                 const centerX = this.joystickState.startX;
                 const centerY = this.joystickState.startY;
                 
                 const dx = touchX - centerX;
                 const dy = touchY - centerY;
                 const distance = Math.sqrt(dx*dx + dy*dy);
-                const maxDistance = this.mobileControls.joystick.size/2 - 15;
                 
-                // Update joystick position with constraints
-                if (distance > maxDistance) {
-                    const angle = Math.atan2(dy, dx);
-                    this.joystickState.currentX = centerX + Math.cos(angle) * maxDistance;
-                    this.joystickState.currentY = centerY + Math.sin(angle) * maxDistance;
+                // Improved sensitivity and deadzone
+                const deadzone = 30; // pixels
+                const maxDistance = 80; // pixels
+                
+                if (distance > deadzone) {
+                    const normalizedX = Math.max(-1, Math.min(1, dx / maxDistance));
+                    const normalizedY = Math.max(-1, Math.min(1, dy / maxDistance));
+                    
+                    // Set movement keys based on normalized values
+                    this.keys['w'] = normalizedY < -0.3;
+                    this.keys['s'] = normalizedY > 0.3;
+                    this.keys['a'] = normalizedX < -0.3;
+                    this.keys['d'] = normalizedX > 0.3;
                 } else {
-                    this.joystickState.currentX = touchX;
-                    this.joystickState.currentY = touchY;
+                    // Clear movement if within deadzone
+                    this.keys['w'] = false;
+                    this.keys['s'] = false;
+                    this.keys['a'] = false;
+                    this.keys['d'] = false;
                 }
-                
-                // Convert to movement with improved sensitivity
-                const normalizedX = (this.joystickState.currentX - centerX) / maxDistance;
-                const normalizedY = (this.joystickState.currentY - centerY) / maxDistance;
-                
-                // Better deadzone and sensitivity
-                const deadzone = 0.15;
-                const sensitivity = 1.2;
-                
-                // Apply deadzone and sensitivity
-                const adjustedX = Math.abs(normalizedX) > deadzone ? normalizedX * sensitivity : 0;
-                const adjustedY = Math.abs(normalizedY) > deadzone ? normalizedY * sensitivity : 0;
-                
-                // Set virtual keys with improved thresholds
-                this.keys['w'] = adjustedY < -0.2;
-                this.keys['s'] = adjustedY > 0.2;
-                this.keys['a'] = adjustedX < -0.2;
-                this.keys['d'] = adjustedX > 0.2;
                 
                 break;
             }
@@ -3333,14 +3439,37 @@ class DiscordFriendsGame {
         }
     }
 
-    forceLandscape() {
-        if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(() => {});
+    handleViewportChange() {
+        // Resize canvas to new viewport
+        this.resizeCanvas();
+        
+        // Update camera position
+        this.updateCamera();
+        
+        // Reposition mobile controls if needed
+        if (this.isMobile()) {
+            this.repositionMobileControls();
         }
         
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
+        console.log('Viewport changed:', window.innerWidth, 'x', window.innerHeight);
+    }
+    
+    repositionMobileControls() {
+        // Mobile controls will automatically adjust via CSS clamp() functions
+        // This function can be used for additional JavaScript-based adjustments if needed
+        const mobileControls = document.getElementById('mobileControls');
+        if (mobileControls) {
+            // Force a reflow to apply new CSS dimensions
+            mobileControls.style.display = 'none';
+            mobileControls.offsetHeight; // Trigger reflow
+            mobileControls.style.display = 'flex';
         }
+    }
+    
+    forceLandscape() {
+        // Remove forced landscape - let users play in any orientation
+        console.log('Game will adapt to current orientation:', 
+                   window.innerWidth > window.innerHeight ? 'landscape' : 'portrait');
     }
     
     activateCharge(player) {
@@ -3440,28 +3569,51 @@ class DiscordFriendsGame {
         if (this.canvas) {
             const dpr = window.devicePixelRatio || 1;
             
-            // Force canvas to fill viewport properly
-            this.canvas.style.width = '100vw';
-            this.canvas.style.height = '100vh';
+            // Get actual viewport dimensions
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
             
-            const rect = this.canvas.getBoundingClientRect();
+            // Set canvas to fill viewport
+            this.canvas.style.width = viewportWidth + 'px';
+            this.canvas.style.height = viewportHeight + 'px';
             
             // Set actual canvas size with device pixel ratio
-            this.canvas.width = rect.width * dpr;
-            this.canvas.height = rect.height * dpr;
+            this.canvas.width = viewportWidth * dpr;
+            this.canvas.height = viewportHeight * dpr;
             
             // Scale context to match device pixel ratio
-            this.ctx.scale(dpr, dpr);
+            if (this.ctx) {
+                this.ctx.scale(dpr, dpr);
+                
+                // Store logical dimensions
+                this.canvas.cssWidth = viewportWidth;
+                this.canvas.cssHeight = viewportHeight;
+                
+                // Ensure proper rendering
+                this.ctx.imageSmoothingEnabled = false;
+                this.ctx.webkitImageSmoothingEnabled = false;
+                this.ctx.mozImageSmoothingEnabled = false;
+                this.ctx.msImageSmoothingEnabled = false;
+            }
             
-            // Store logical dimensions
-            this.canvas.cssWidth = rect.width;
-            this.canvas.cssHeight = rect.height;
+            // Update camera bounds for new dimensions
+            this.updateCameraBounds();
+        }
+    }
+    
+    updateCameraBounds() {
+        if (this.canvas && this.players[this.myPlayerId]) {
+            const player = this.players[this.myPlayerId];
+            const canvasWidth = this.canvas.cssWidth || window.innerWidth;
+            const canvasHeight = this.canvas.cssHeight || window.innerHeight;
             
-            // Ensure proper rendering on orientation change
-            this.ctx.imageSmoothingEnabled = false;
-            this.ctx.webkitImageSmoothingEnabled = false;
-            this.ctx.mozImageSmoothingEnabled = false;
-            this.ctx.msImageSmoothingEnabled = false;
+            // Recalculate camera position
+            this.camera.x = player.x - canvasWidth / 2;
+            this.camera.y = player.y - canvasHeight / 2;
+            
+            // Clamp camera to world bounds
+            this.camera.x = Math.max(0, Math.min(Math.max(0, this.worldSize.width - canvasWidth), this.camera.x));
+            this.camera.y = Math.max(0, Math.min(Math.max(0, this.worldSize.height - canvasHeight), this.camera.y));
         }
     }
 }
