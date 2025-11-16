@@ -3037,8 +3037,12 @@ class DiscordFriendsGame {
                 this.gisselIcon.src = 'public/assets/icons/GisselInactiveIcon.png';
             }
             
-            if (this.gisselIcon.complete) {
-                this.ctx.drawImage(this.gisselIcon, x - 18, y - 2, 12, 12);
+            if (this.gisselIcon.complete && !this.gisselIcon.naturalWidth === 0) {
+                try {
+                    this.ctx.drawImage(this.gisselIcon, x - 18, y - 2, 12, 12);
+                } catch (e) {
+                    console.log('Error loading Gissel icon');
+                }
             }
         } else if (player.role === 'survivor' && player.character === 'luna') {
             let iconSrc;
@@ -3059,8 +3063,12 @@ class DiscordFriendsGame {
                 this.lunaIcons[iconSrc].src = iconSrc;
             }
             
-            if (this.lunaIcons[iconSrc].complete) {
-                this.ctx.drawImage(this.lunaIcons[iconSrc], x - 18, y - 2, 12, 12);
+            if (this.lunaIcons[iconSrc].complete && !this.lunaIcons[iconSrc].naturalWidth === 0) {
+                try {
+                    this.ctx.drawImage(this.lunaIcons[iconSrc], x - 18, y - 2, 12, 12);
+                } catch (e) {
+                    console.log('Error loading Luna icon');
+                }
             }
         }
         
