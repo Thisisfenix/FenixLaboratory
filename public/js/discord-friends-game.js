@@ -1072,14 +1072,27 @@ class DiscordFriendsGame {
         console.log('🔥 LAST MAN STANDING ACTIVATED!');
     }
 
-    endGame(message) {
+    endGame(winCondition) {
         this.gameStarted = false;
         this.lastManStanding = false;
         this.lmsActivated = false;
-        this.startEndGameAnimation(message);
+        
+        // Determinar mensaje según el rol del jugador
+        const player = this.players[this.myPlayerId];
+        let message;
+        
+        if (winCondition === 'KILLERS WIN!') {
+            message = player && player.role === 'killer' ? '🔥 ¡GANASTE!' : '💀 ¡PERDISTE!';
+        } else if (winCondition === 'SURVIVORS WIN!' || winCondition === 'SURVIVORS ESCAPED!') {
+            message = player && player.role === 'survivor' ? '🌟 ¡GANASTE!' : '💀 ¡PERDISTE!';
+        } else {
+            message = winCondition; // Fallback
+        }
+        
+        this.startEndGameAnimation(message, winCondition);
     }
     
-    startEndGameAnimation(message) {
+    startEndGameAnimation(message, winCondition) {
         Object.values(this.players).forEach(player => {
             if (player.role === 'killer') {
                 player.endGameRed = true;
@@ -1096,15 +1109,23 @@ class DiscordFriendsGame {
         }, 5000);
         
         setTimeout(() => {
-            this.showGameResults(message);
+            this.showGameResults(message, winCondition);
         }, 15000);
     }
     
-    showGameResults(message) {
+    showGameResults(message, winCondition) {
         this.cleanupDatabase();
         
         const survivors = Object.values(this.players).filter(p => p.role === 'survivor');
-        let resultsHTML = `<div style="font-size: 2rem; margin-bottom: 2rem;">${message}</div>`;
+        const player = this.players[this.myPlayerId];
+        
+        // Color del mensaje principal según si ganó o perdió
+        const messageColor = message.includes('GANASTE') ? '#00FF00' : '#FF0000';
+        
+        let resultsHTML = `<div style="font-size: 2rem; margin-bottom: 2rem; color: ${messageColor};">${message}</div>`;
+        
+        // Mostrar condición de victoria general
+        resultsHTML += `<div style="font-size: 1.5rem; margin-bottom: 1rem; color: #FFD700;">${winCondition}</div>`;
         
         resultsHTML += '<div style="font-size: 1.2rem; color: #fff; text-align: left; max-width: 400px;">';
         resultsHTML += '<h3 style="color: #4ecdc4; margin-bottom: 1rem;">📊 Resultados Survivors:</h3>';
@@ -2740,7 +2761,7 @@ class DiscordFriendsGame {
         if (player.role === 'survivor' && player.character === 'gissel') {
             if (!this.gisselIcon) {
                 this.gisselIcon = new Image();
-                this.gisselIcon.src = 'assets/icons/GisselInactiveIcon.png';
+                this.gisselIcon.src = 'public/assets/icons/GisselInactiveIcon.png';
             }
             
             if (this.gisselIcon.complete) {
@@ -3177,7 +3198,7 @@ class DiscordFriendsGame {
 
     playLMSMusic() {
         try {
-            this.lmsMusic = new Audio('assets/SpeedofSoundRound2.mp3');
+            this.lmsMusic = new Audio('public/assets/SpeedofSoundRound2.mp3');
             this.lmsMusic.volume = 0.6;
             this.lmsMusic.loop = false;
             this.lmsMusicStartTime = Date.now();
@@ -3354,7 +3375,7 @@ class DiscordFriendsGame {
         // Cargar imagen de Meowl
         if (!this.meowlImage) {
             this.meowlImage = new Image();
-            this.meowlImage.src = 'assets/Meowl.png';
+            this.meowlImage.src = 'public/assets/Meowl.png';
         }
         
         console.log('🌟 Escape ring appeared!');
@@ -3657,7 +3678,7 @@ class DiscordFriendsGame {
 
     playDeathSound() {
         try {
-            const deathAudio = new Audio('public/assets/deathsound.mp3');
+            const deathAudio = new Audio('assets/deathsound.mp3');
             deathAudio.volume = 0.5;
             deathAudio.play().catch(e => console.log('Death sound blocked'));
         } catch (e) {
