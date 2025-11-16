@@ -192,10 +192,10 @@ class DiscordFriendsGame {
             this.cleanupPlayer();
         });
         
-        // Cleanup on visibility change (tab switch, minimize)
+        // Sync timer on visibility change
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                this.cleanupPlayer();
+            if (!document.hidden && this.gameStarted) {
+                this.syncGameTimer();
             }
         });
     }
@@ -241,6 +241,14 @@ class DiscordFriendsGame {
                 }
                 
                 console.log('Adding remote player:', data.name, data.role);
+                
+                // Si el juego ya empezó, poner en modo espectador
+                if (this.gameStarted) {
+                    data.spectating = true;
+                    data.alive = false;
+                    console.log('Game already started, setting player as spectator:', data.name);
+                }
+                
                 this.players[data.id] = data;
                 if (!this.gameStarted) {
                     this.playersInLobby[data.id] = data;
@@ -361,6 +369,9 @@ class DiscordFriendsGame {
                 this.createParticles(target.x + 15, target.y + 15, particleColor, 12);
                 
                 console.log(`Player ${target.name} took ${data.damage} damage: ${target.health}HP (${data.attackType})`);
+                
+                // Mostrar indicador de daño flotante
+                this.showDamageIndicator(target, data.damage, data.attackType);
             } else if ((data.type === 'basic_attack' || data.type === 'white_orb') && data.playerId !== this.myPlayerId) {
                 this.hitboxes.push(data.attackData);
                 this.createParticles(data.attackData.x, data.attackData.y, data.attackData.color, 8);
@@ -493,6 +504,13 @@ class DiscordFriendsGame {
                 this.ping = Date.now() - data.originalTimestamp;
             }
         };
+        
+        this.supabaseGame.handleTimerSync = (data) => {
+            if (data.playerId !== this.myPlayerId && data.gameStartTime) {
+                this.gameStartTime = data.gameStartTime;
+                console.log('🕐 Timer synced with', data.playerId);
+            }
+        };
     }
 
     async joinGame() {
@@ -524,15 +542,21 @@ class DiscordFriendsGame {
             role: this.selectedRole,
             x: Math.random() * 800 + 100,
             y: Math.random() * 600 + 100,
-            alive: true,
+            alive: !this.gameStarted,
             health: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : 100) : 600,
             maxHealth: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : 100) : 600,
+            spectating: this.gameStarted,
             joinedAt: Date.now()
         };
 
         try {
             if (this.supabaseGame) {
                 console.log('📝 Joining lobby as:', playerData.name, playerData.character, playerData.role);
+                
+                // Si el juego ya empezó, notificar al jugador
+                if (this.gameStarted) {
+                    alert('La partida ya comenzó. Entrarás como espectador.');
+                }
                 
                 // Add player to local state first
                 this.playersInLobby[this.myPlayerId] = playerData;
@@ -986,6 +1010,7 @@ class DiscordFriendsGame {
     
     startGameFromRemote() {
         this.gameStarted = true;
+        this.gameStartTime = Date.now();
         this.players = {...this.playersInLobby};
         this.playersInLobby = {};
         this.countdownActive = false;
@@ -1545,12 +1570,12 @@ class DiscordFriendsGame {
                 const remaining = Math.max(0, (this.lmsMusicDuration || 210) - elapsed);
                 this.gameTimer = Math.ceil(remaining);
             } else {
-                if (!this.timerCounter) this.timerCounter = 0;
-                this.timerCounter++;
-                
-                if (this.timerCounter >= 60) {
-                    this.gameTimer--;
-                    this.timerCounter = 0;
+                // Usar tiempo real basado en timestamp de inicio
+                if (this.gameStartTime) {
+                    const elapsed = Math.floor((Date.now() - this.gameStartTime) / 1000);
+                    const config = window.GAME_CONFIG || {};
+                    const totalTime = config.GAME_TIMER || 180;
+                    this.gameTimer = Math.max(0, totalTime - elapsed);
                     
                     // Mostrar anillo de escape a los 80 segundos (1:20)
                     if (this.gameTimer === 80 && !this.escapeRing) {
@@ -1613,6 +1638,7 @@ class DiscordFriendsGame {
                 this.updateReviveSystem();
                 this.updateGameTimer();
                 this.updatePing();
+                this.updateDamageIndicators();
                 this.checkLMSCondition();
             }
             this.render();
@@ -1930,6 +1956,9 @@ class DiscordFriendsGame {
                     attackType: 'you_cant_run'
                 });
             }
+            
+            // Mostrar indicador de daño local
+            this.showDamageIndicator(target, 25, 'you_cant_run');
         } else if (hitbox.type === 'basic_attack' && target.role === 'survivor') {
             const attacker = this.players[hitbox.ownerId];
             let damage = 30;
@@ -1982,6 +2011,9 @@ class DiscordFriendsGame {
                     attackType: 'basic_attack'
                 });
             }
+            
+            // Mostrar indicador de daño local
+            this.showDamageIndicator(target, damage, 'basic_attack');
         } else if (hitbox.type === 'white_orb' && target.role === 'survivor') {
             let damage = 40;
             
@@ -2032,6 +2064,9 @@ class DiscordFriendsGame {
                     knockbackY: newY
                 });
             }
+            
+            // Mostrar indicador de daño local
+            this.showDamageIndicator(target, damage, 'white_orb');
             
             this.createParticles(target.x + 15, target.y + 15, '#FF8000', 8);
             hitbox.life = 0;
@@ -2325,6 +2360,8 @@ class DiscordFriendsGame {
         
         this.drawUI();
         this.drawEscapeRing();
+        this.drawDamageIndicators();
+        this.drawHitConfirmation();
         
         // Update mobile controls UI
         const player = this.players[this.myPlayerId];
@@ -3181,6 +3218,105 @@ class DiscordFriendsGame {
         }
     }
 
+    syncGameTimer() {
+        if (this.supabaseGame) {
+            this.supabaseGame.sendTimerSync({
+                gameStartTime: this.gameStartTime,
+                currentTimer: this.gameTimer
+            });
+        }
+    }
+    
+    showDamageIndicator(target, damage, attackType) {
+        // Crear indicador de daño flotante
+        const indicator = {
+            x: target.x + 15,
+            y: target.y - 10,
+            damage: damage,
+            attackType: attackType,
+            life: 120, // 2 segundos
+            maxLife: 120,
+            alpha: 1.0,
+            vy: -2 // Velocidad hacia arriba
+        };
+        
+        // Agregar a array de indicadores
+        if (!this.damageIndicators) {
+            this.damageIndicators = [];
+        }
+        this.damageIndicators.push(indicator);
+        
+        // Efecto de pantalla roja para el atacante
+        if (target.id !== this.myPlayerId) {
+            this.showHitConfirmation();
+        }
+    }
+    
+    showHitConfirmation() {
+        // Efecto de confirmación de golpe
+        this.hitConfirmation = {
+            active: true,
+            timer: 30, // 0.5 segundos
+            alpha: 0.3
+        };
+    }
+    
+    updateDamageIndicators() {
+        if (!this.damageIndicators) return;
+        
+        this.damageIndicators = this.damageIndicators.filter(indicator => {
+            indicator.life--;
+            indicator.y += indicator.vy;
+            indicator.alpha = indicator.life / indicator.maxLife;
+            return indicator.life > 0;
+        });
+    }
+    
+    drawDamageIndicators() {
+        if (!this.damageIndicators) return;
+        
+        this.damageIndicators.forEach(indicator => {
+            this.ctx.save();
+            this.ctx.globalAlpha = indicator.alpha;
+            
+            // Color según tipo de ataque
+            let color = '#FF0000';
+            if (indicator.attackType === 'you_cant_run') color = '#8B0000';
+            else if (indicator.attackType === 'white_orb') color = '#FF8000';
+            else if (indicator.damage === 50) color = '#FFD700'; // Stealth
+            
+            this.ctx.fillStyle = color;
+            this.ctx.strokeStyle = '#000';
+            this.ctx.lineWidth = 2;
+            this.ctx.font = 'bold 20px Arial';
+            this.ctx.textAlign = 'center';
+            
+            // Dibujar texto con borde
+            this.ctx.strokeText(`-${indicator.damage}`, indicator.x, indicator.y);
+            this.ctx.fillText(`-${indicator.damage}`, indicator.x, indicator.y);
+            
+            this.ctx.restore();
+        });
+    }
+    
+    drawHitConfirmation() {
+        if (!this.hitConfirmation || !this.hitConfirmation.active) return;
+        
+        this.hitConfirmation.timer--;
+        if (this.hitConfirmation.timer <= 0) {
+            this.hitConfirmation.active = false;
+            return;
+        }
+        
+        // Efecto de borde rojo
+        this.ctx.save();
+        this.ctx.globalAlpha = this.hitConfirmation.alpha;
+        this.ctx.strokeStyle = '#FF0000';
+        this.ctx.lineWidth = 8;
+        this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.restore();
+    }
+    
     cleanupPlayer() {
         // Limpiar jugador del lobby
         if (this.supabaseGame && this.myPlayerId) {

@@ -72,6 +72,9 @@ class SupabaseGame {
                 .on('broadcast', { event: 'lobby-clear' }, (payload) => {
                     this.handleLobbyClear(payload.payload);
                 })
+                .on('broadcast', { event: 'timer-sync' }, (payload) => {
+                    this.handleTimerSync(payload.payload);
+                })
                 .subscribe((status) => {
                     console.log('Supabase subscription status:', status);
                     if (status === 'SUBSCRIBED') {
@@ -209,6 +212,17 @@ class SupabaseGame {
         });
     }
     
+    sendTimerSync(timerData) {
+        this.channel.send({
+            type: 'broadcast',
+            event: 'timer-sync',
+            payload: {
+                playerId: this.myPlayerId,
+                ...timerData
+            }
+        });
+    }
+    
     sendLobbySync(syncData) {
         this.channel.send({
             type: 'broadcast',
@@ -269,6 +283,10 @@ class SupabaseGame {
     }
     
     handleLobbyClear(data) {
+        // This will be overridden by the main game
+    }
+    
+    handleTimerSync(data) {
         // This will be overridden by the main game
     }
 }
