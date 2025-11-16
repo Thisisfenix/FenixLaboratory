@@ -583,8 +583,8 @@ class DiscordFriendsGame {
             x: Math.random() * 800 + 100,
             y: Math.random() * 600 + 100,
             alive: !this.gameStarted,
-            health: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : 100)) : 600,
-            maxHealth: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : 100)) : 600,
+            health: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : 100))) : 600,
+            maxHealth: this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : 100))) : 600,
             spectating: this.gameStarted,
             joinedAt: Date.now()
         };
@@ -749,9 +749,13 @@ class DiscordFriendsGame {
             this.abilities.e = { cooldown: 0, maxCooldown: 25000 }; // Autoreparación - 25s
             this.abilities.r = { cooldown: 0, maxCooldown: 25000 }; // Sierra - 25s en LMS
         } else if (this.selectedCharacter === 'luna') {
-            this.abilities.q = { cooldown: 0, maxCooldown: 20000, uses: 3, maxUses: 3 }; // Energy Juice - 20s, 3 usos
-            this.abilities.e = { cooldown: 0, maxCooldown: 32000 }; // Punch - 32s
-            this.abilities.r = { cooldown: 0, maxCooldown: 15000 }; // Taunt - 15s
+            this.abilities.q = { cooldown: 0, maxCooldown: 16000, uses: 4, maxUses: 4 }; // Energy Juice - 16s, 4 usos
+            this.abilities.e = { cooldown: 0, maxCooldown: 25000 }; // Punch - 25s
+            this.abilities.r = { cooldown: 0, maxCooldown: 12000 }; // Taunt - 12s
+        } else if (this.selectedCharacter === 'angel') {
+            this.abilities.q = { cooldown: 0, maxCooldown: 35000 }; // Sacrificio Angelical - 35s
+            this.abilities.e = { cooldown: 0, maxCooldown: 40000 }; // Dash Protector - 40s
+            this.abilities.r = { cooldown: 0, maxCooldown: 25000 }; // Descanso - 25s
         }
         this.abilities.basicAttack = { cooldown: 0, maxCooldown: 1500 };
     }
@@ -979,28 +983,35 @@ class DiscordFriendsGame {
 
     updateRageMode() {
         Object.values(this.players).forEach(player => {
-            if (player.rageMode && player.rageMode.active) {
-                player.rageMode.timer--;
-                
-                // Crear partículas de rage
-                if (Math.random() < 0.4) {
-                    this.createParticles(
-                        player.x + Math.random() * 30, 
-                        player.y + Math.random() * 30, 
-                        '#FF4500', 
-                        1
-                    );
+            if (player.role === 'killer') {
+                // Ganar rage gradualmente
+                if (!player.rageMode.active && !player.rageUsed && player.rageLevel < player.maxRage) {
+                    player.rageLevel += player.rageGainRate;
+                    
+                    // Ganar rage extra por atacar survivors
+                    if (player.id === this.myPlayerId && this.abilities.basicAttack.cooldown > this.abilities.basicAttack.maxCooldown - 100) {
+                        player.rageLevel += 5; // Bonus por atacar
+                    }
                 }
                 
-                // Terminar rage mode
-                if (player.rageMode.timer <= 0) {
-                    player.rageMode.active = false;
-                    this.createParticles(player.x + 15, player.y + 15, '#8B0000', 8);
+                // Rage mode activo
+                if (player.rageMode && player.rageMode.active) {
+                    player.rageMode.timer--;
                     
-                    // Reanudar timer del juego
-                    if (this.gameTimerPaused) {
-                        this.gameTimerPaused = false;
-                        this.gameTimer = this.pausedTimer;
+                    // Crear partículas de rage
+                    if (Math.random() < 0.4) {
+                        this.createParticles(
+                            player.x + Math.random() * 30, 
+                            player.y + Math.random() * 30, 
+                            '#FF4500', 
+                            1
+                        );
+                    }
+                    
+                    // Terminar rage mode
+                    if (player.rageMode.timer <= 0) {
+                        player.rageMode.active = false;
+                        this.createParticles(player.x + 15, player.y + 15, '#8B0000', 8);
                     }
                 }
             }
@@ -1134,6 +1145,23 @@ class DiscordFriendsGame {
                 lastSurvivor.lmsFullHeal = true;
                 lastSurvivor.lmsResistance = true; // 25% menos daño
                 console.log('iA777 LMS bonuses applied: Full heal + resistance');
+            } else if (lastSurvivor.character === 'luna') {
+                const oldHealth = lastSurvivor.health;
+                lastSurvivor.health = Math.min(140, lastSurvivor.health + 55);
+                lastSurvivor.maxHealth = 140;
+                lastSurvivor.lmsSpeedBoost = true; // Velocidad permanente en LMS
+                lastSurvivor.lmsPunchBoost = true; // Punch más fuerte
+                lastSurvivor.lmsResistance = true; // 20% menos daño
+                console.log(`Luna LMS bonuses applied: Health ${oldHealth} -> ${lastSurvivor.health}, Speed boost, Punch boost, Resistance`);
+            } else if (lastSurvivor.character === 'angel') {
+                const oldHealth = lastSurvivor.health;
+                lastSurvivor.health = Math.min(130, lastSurvivor.health + 40);
+                lastSurvivor.maxHealth = 130;
+                lastSurvivor.lmsAngelPower = true; // Poder angelical supremo
+                lastSurvivor.lmsResistance = true; // 25% menos daño
+                lastSurvivor.lmsHealBoost = true; // Curación mejorada
+                lastSurvivor.lmsDashBoost = true; // Dash mejorado
+                console.log(`Angel LMS bonuses applied: Health ${oldHealth} -> ${lastSurvivor.health}, Angel Power, Resistance, Heal boost, Dash boost`);
             } else {
                 const oldHealth = lastSurvivor.health;
                 lastSurvivor.health = Math.min(160, lastSurvivor.health + 60);
@@ -1312,10 +1340,17 @@ class DiscordFriendsGame {
                         player.sharpWingsActive = false;
                         player.stunHits = (player.stunHits || 0) + 1;
                         
-                        // Aplicar stun y knockback
-                        const stunDuration = player.stunHits >= 3 ? 180 : 90;
-                        target.stunned = true;
-                        target.stunTimer = stunDuration;
+                        // Aplicar stun y knockback (solo si no está en rage mode)
+                        if (!(target.rageMode && target.rageMode.active)) {
+                            const stunDuration = player.stunHits >= 3 ? 180 : 90;
+                            target.stunned = true;
+                            target.stunTimer = stunDuration;
+                            
+                            // Ganar rage por ser stuneado
+                            if (target.role === 'killer' && !target.rageUsed) {
+                                target.rageLevel = Math.min(target.maxRage, target.rageLevel + 30);
+                            }
+                        }
                         
                         // Knockback
                         const angle = Math.atan2(target.y - player.y, target.x - player.x);
@@ -1352,6 +1387,12 @@ class DiscordFriendsGame {
             // Actualizar stun
             if (player.stunned) {
                 player.stunTimer--;
+                
+                // Ganar rage mientras está stuneado (1% por frame = 5 rage)
+                if (player.role === 'killer' && !player.rageUsed && player.rageLevel < player.maxRage) {
+                    player.rageLevel = Math.min(player.maxRage, player.rageLevel + 5);
+                }
+                
                 if (player.stunTimer <= 0) {
                     player.stunned = false;
                 }
@@ -1366,7 +1407,7 @@ class DiscordFriendsGame {
                 
                 // Verificar colisión con survivors
                 const nearbyTargets = Object.values(this.players).filter(target => 
-                    target.role === 'survivor' && target.alive && target.id !== player.id
+                    target.role === 'survivor' && target.alive && target.id !== player.id && !target.downed
                 );
                 
                 nearbyTargets.forEach(target => {
@@ -1375,38 +1416,55 @@ class DiscordFriendsGame {
                         Math.pow(target.y - player.y, 2)
                     );
                     
-                    if (distance < 40 && !player.youCantRunHit) {
+                    if (distance < 50 && !player.youCantRunHit) {
                         player.youCantRunHit = true;
                         player.youCantRunActive = false;
                         
-                        if (target.id === this.myPlayerId) {
-                            target.health = Math.max(0, target.health - 25);
-                            this.createParticles(target.x + 15, target.y + 15, '#8B0000', 15);
-                            this.triggerJumpscare(target.id);
-                            
-                            if (this.supabaseGame) {
-                                this.supabaseGame.sendAttack({
-                                    type: 'damage',
-                                    targetId: target.id,
-                                    health: target.health,
-                                    alive: target.health > 0,
-                                    downed: target.health <= 0
-                                });
-                            }
-                            
-                            if (target.health <= 0) {
-                                if (target.lastLife || target.character === 'iA777') {
-                                    target.alive = false;
-                                    target.spectating = true;
-                                    this.playDeathSound();
-                                } else {
-                                    target.alive = false;
-                                    target.downed = true;
-                                    target.reviveTimer = 1200;
-                                    target.beingRevived = false;
-                                }
+                        // Aplicar daño y efectos
+                        let damage = 25;
+                        if (player.rageMode && player.rageMode.active) {
+                            damage = Math.floor(damage * 1.5); // Rage mode bonus
+                        }
+                        
+                        target.health = Math.max(0, target.health - damage);
+                        this.createParticles(target.x + 15, target.y + 15, '#8B0000', 15);
+                        this.triggerJumpscare(target.id);
+                        
+                        // Cancelar auto repair
+                        if (target.autoRepairing) {
+                            target.autoRepairing = false;
+                            target.autoRepairTimer = 0;
+                        }
+                        
+                        if (target.health <= 0) {
+                            if (target.lastLife || target.character === 'iA777') {
+                                target.alive = false;
+                                target.spectating = true;
+                                this.playDeathSound();
+                            } else {
+                                target.alive = false;
+                                target.downed = true;
+                                target.reviveTimer = 1200;
+                                target.beingRevived = false;
                             }
                         }
+                        
+                        if (this.supabaseGame) {
+                            this.supabaseGame.sendAttack({
+                                type: 'damage',
+                                targetId: target.id,
+                                health: target.health,
+                                alive: target.health > 0,
+                                downed: target.health <= 0 && !target.lastLife && target.character !== 'iA777',
+                                spectating: target.health <= 0 && (target.lastLife || target.character === 'iA777'),
+                                damage: damage,
+                                attackerId: player.id,
+                                attackType: 'you_cant_run'
+                            });
+                        }
+                        
+                        // Mostrar indicador de daño local
+                        this.showDamageIndicator(target, damage, 'you_cant_run');
                     }
                 });
                 
@@ -1440,9 +1498,16 @@ class DiscordFriendsGame {
                             player.grabbedKiller = target.id;
                             player.chargeStunned = true;
                             
-                            // Stunear al killer por 7 segundos
-                            target.stunned = true;
-                            target.stunTimer = 420;
+                            // Stunear al killer por 7 segundos (solo si no está en rage mode)
+                            if (!(target.rageMode && target.rageMode.active)) {
+                                target.stunned = true;
+                                target.stunTimer = 420;
+                                
+                                // Ganar rage por ser stuneado
+                                if (target.role === 'killer' && !target.rageUsed) {
+                                    target.rageLevel = Math.min(target.maxRage, target.rageLevel + 30);
+                                }
+                            }
                             target.grabbedBy = player.id;
                             
                             this.createParticles(target.x + 15, target.y + 15, '#00FFFF', 20);
@@ -1591,8 +1656,11 @@ class DiscordFriendsGame {
                         // Incrementar contador de stuneos
                         player.punchStuns = (player.punchStuns || 0) + 1;
                         
-                        // Daño base 20, mayor si ha stuneado 3 veces
+                        // Daño base 20, mayor si ha stuneado 3 veces, boost en LMS
                         let damage = player.punchStuns >= 3 ? 35 : 20;
+                        if (player.lmsPunchBoost) {
+                            damage += 15; // +15 daño en LMS
+                        }
                         
                         // Aplicar resistencia si está activa
                         if (player.resistanceActive) {
@@ -1601,14 +1669,25 @@ class DiscordFriendsGame {
                         
                         target.health = Math.max(0, target.health - damage);
                         
-                        // Stun duration
-                        let stunDuration = player.resistanceActive ? 180 : 240; // 3s o 4s
-                        target.stunned = true;
-                        target.stunTimer = stunDuration;
+                        // Stun duration (solo si no está en rage mode)
+                        if (!(target.rageMode && target.rageMode.active)) {
+                            let stunDuration = player.resistanceActive ? 180 : 240; // 3s o 4s
+                            if (player.lmsPunchBoost) {
+                                stunDuration += 60; // +1s stun en LMS
+                            }
+                            target.stunned = true;
+                            target.stunTimer = stunDuration;
+                            
+                            // Ganar rage por ser stuneado
+                            if (target.role === 'killer' && !target.rageUsed) {
+                                target.rageLevel = Math.min(target.maxRage, target.rageLevel + 30);
+                            }
+                        }
                         
-                        // Ganar vida por acertar
+                        // Ganar vida por acertar (más en LMS)
                         if (player.id === this.myPlayerId) {
-                            player.health = Math.min(player.maxHealth, player.health + 15);
+                            const healAmount = player.lmsPunchBoost ? 25 : 15;
+                            player.health = Math.min(player.maxHealth, player.health + healAmount);
                             
                             // Activar resistencia si llega a 30 HP
                             if (player.health >= 30 && !player.resistanceActive) {
@@ -1686,6 +1765,99 @@ class DiscordFriendsGame {
         });
     }
     
+    updateAngelAbilities() {
+        Object.values(this.players).forEach(player => {
+            // Fatiga
+            if (player.fatigued) {
+                player.fatigueTimer--;
+                if (player.fatigueTimer <= 0) {
+                    player.fatigued = false;
+                }
+            }
+            
+            // Bendición angelical
+            if (player.angelBlessing) {
+                player.blessingTimer--;
+                if (player.blessingTimer <= 0) {
+                    player.angelBlessing = false;
+                }
+            }
+            
+            // Speed boost angelical
+            if (player.angelSpeedBoost) {
+                player.speedBoostTimer--;
+                if (player.speedBoostTimer <= 0) {
+                    player.angelSpeedBoost = false;
+                }
+            }
+            
+            // Dash protector
+            if (player.dashActive) {
+                player.dashTimer--;
+                if (player.dashTimer <= 0) {
+                    player.dashActive = false;
+                    player.dashProtection = false;
+                }
+            }
+            
+            // Descanso (curación)
+            if (player.restActive) {
+                player.restTimer--;
+                player.restTick++;
+                
+                // Curar cada 60 frames (1 segundo)
+                if (player.restTick >= 60) {
+                    // Curar a sí mismo (mejorado + LMS)
+                    if (player.id === this.myPlayerId && player.health < player.maxHealth) {
+                        const healAmount = player.lmsHealBoost ? 6 : 3; // 6 HP/s en LMS
+                        player.health = Math.min(player.maxHealth, player.health + healAmount);
+                        this.createParticles(player.x + 15, player.y + 15, '#98FB98', player.lmsHealBoost ? 8 : 5);
+                        
+                        if (this.supabaseGame) {
+                            this.supabaseGame.sendAttack({
+                                type: 'heal',
+                                targetId: player.id,
+                                health: player.health
+                            });
+                        }
+                    }
+                    
+                    // Curar a aliados cercanos
+                    const nearbySurvivors = Object.values(this.players).filter(target => 
+                        target.role === 'survivor' && target.alive && target.id !== player.id && !target.downed
+                    );
+                    
+                    nearbySurvivors.forEach(target => {
+                        const distance = Math.sqrt(
+                            Math.pow(target.x - player.x, 2) + 
+                            Math.pow(target.y - player.y, 2)
+                        );
+                        
+                        if (distance < 120 && target.health < target.maxHealth) { // Mayor rango
+                            const healAmount = target.angelBlessing ? 8 : 6; // Más curación
+                            target.health = Math.min(target.maxHealth, target.health + healAmount);
+                            this.createParticles(target.x + 15, target.y + 15, '#98FB98', 3);
+                            
+                            if (this.supabaseGame) {
+                                this.supabaseGame.sendAttack({
+                                    type: 'heal',
+                                    targetId: target.id,
+                                    health: target.health
+                                });
+                            }
+                        }
+                    });
+                    
+                    player.restTick = 0;
+                }
+                
+                if (player.restTimer <= 0) {
+                    player.restActive = false;
+                }
+            }
+        });
+    }
+    
     updateSelfDestruct() {
         Object.values(this.players).forEach(player => {
             // Activar canSelfDestruct cuando la vida baje a 50 o menos
@@ -1710,9 +1882,17 @@ class DiscordFriendsGame {
                     if (distance < 50 && !player.sierraHit) {
                         player.sierraHit = true;
                         
-                        // Stun por 5 segundos y empuje
-                        target.stunned = true;
-                        target.stunTimer = 300; // 5 segundos
+                        // Stun por 5-7 segundos y empuje (más en LMS) - solo si no está en rage mode
+                        if (!(target.rageMode && target.rageMode.active)) {
+                            const stunDuration = this.lastManStanding ? 420 : 300; // 7s en LMS, 5s normal
+                            target.stunned = true;
+                            target.stunTimer = stunDuration;
+                            
+                            // Ganar rage por ser stuneado
+                            if (target.role === 'killer' && !target.rageUsed) {
+                                target.rageLevel = Math.min(target.maxRage, target.rageLevel + 100);
+                            }
+                        }
                         
                         // Empuje para alejar al killer
                         const angle = Math.atan2(target.y - player.y, target.x - player.x);
@@ -1868,6 +2048,7 @@ class DiscordFriendsGame {
                 this.updateAutoRepair();
                 this.updateSelfDestruct();
                 this.updateLunaAbilities();
+                this.updateAngelAbilities();
                 this.updateReviveSystem();
                 this.updateGameTimer();
                 this.updatePing();
@@ -1918,14 +2099,24 @@ class DiscordFriendsGame {
 
         let speed = player.role === 'killer' ? 6 : (player.character === 'iA777' ? 5 : 4);
         
+        // Rage mode speed boost para killers
+        if (player.role === 'killer' && player.rageMode && player.rageMode.active) {
+            speed = 8; // Velocidad aumentada en rage mode
+        }
+        
         // iA777 speed boost en LMS
         if (player.character === 'iA777' && this.lastManStanding) {
             speed = 6; // Velocidad de killer en LMS
         }
         
         // Luna speed boost
-        if (player.character === 'luna' && player.speedBoost) {
+        if (player.character === 'luna' && (player.speedBoost || player.lmsSpeedBoost)) {
             speed = 7; // Velocidad II
+        }
+        
+        // Angel speed boost para aliados
+        if (player.angelSpeedBoost) {
+            speed = 6; // Velocidad de killer temporalmente
         }
         let moved = false;
         let newX = player.x;
@@ -2070,8 +2261,22 @@ class DiscordFriendsGame {
 
     updateCooldowns() {
         const player = this.players[this.myPlayerId];
-        // Cooldowns más rápidos para iA777 en LMS
-        const deltaTime = (player && player.character === 'iA777' && this.lastManStanding) ? 24 : 16;
+        // Cooldowns más rápidos para survivors en LMS y killers en rage mode
+        let deltaTime = 16;
+        if (player && this.lastManStanding) {
+            if (player.character === 'iA777') {
+                deltaTime = 32; // Cooldowns 2x más rápidos
+            } else if (player.character === 'luna') {
+                deltaTime = 24; // Cooldowns 1.5x más rápidos
+            } else if (player.character === 'angel') {
+                deltaTime = 28; // Cooldowns 1.75x más rápidos
+            }
+        }
+        
+        // Rage mode cooldown boost para killers
+        if (player && player.role === 'killer' && player.rageMode && player.rageMode.active) {
+            deltaTime = 32; // Cooldowns 2x más rápidos en rage mode
+        }
         
         if (this.abilities.q.cooldown > 0) {
             this.abilities.q.cooldown = Math.max(0, this.abilities.q.cooldown - deltaTime);
@@ -2227,6 +2432,20 @@ class DiscordFriendsGame {
                 this.createParticles(target.x + 15, target.y + 15, '#FF0000', 12);
             }
             
+            // Aplicar rage mode damage boost
+            if (attacker && attacker.rageMode && attacker.rageMode.active) {
+                damage = Math.floor(damage * 1.5); // 50% más daño en rage mode
+            }
+            
+            // Aplicar resistencia de LMS
+            if (target.character === 'luna' && target.lmsResistance) {
+                damage = Math.floor(damage * 0.8); // 20% menos daño
+            } else if (target.character === 'iA777' && target.lmsResistance) {
+                damage = Math.floor(damage * 0.75); // 25% menos daño
+            } else if (target.character === 'angel' && target.lmsResistance) {
+                damage = Math.floor(damage * 0.75); // 25% menos daño
+            }
+            
             target.health = Math.max(0, target.health - damage);
             
             // Cancelar auto repair
@@ -2264,10 +2483,26 @@ class DiscordFriendsGame {
             
             // Mostrar indicador de daño local
             this.showDamageIndicator(target, damage, 'basic_attack');
-        } else if (hitbox.type === 'white_orb' && target.role === 'survivor') {
+        } else if (hitbox.type === 'white_orb' && target.role === 'survivor' && !hitbox.hasHit) {
+            const attacker = this.players[hitbox.ownerId];
             let damage = 40;
             
+            // Aplicar rage mode damage boost
+            if (attacker && attacker.rageMode && attacker.rageMode.active) {
+                damage = Math.floor(damage * 1.5); // 50% más daño en rage mode
+            }
+            
+            // Aplicar resistencia de LMS
+            if (target.character === 'luna' && target.lmsResistance) {
+                damage = Math.floor(damage * 0.8); // 20% menos daño
+            } else if (target.character === 'iA777' && target.lmsResistance) {
+                damage = Math.floor(damage * 0.75); // 25% menos daño
+            } else if (target.character === 'angel' && target.lmsResistance) {
+                damage = Math.floor(damage * 0.75); // 25% menos daño
+            }
+            
             target.health = Math.max(0, target.health - damage);
+            hitbox.hasHit = true;
             
             const knockback = 100;
             const angle = Math.atan2(hitbox.vy, hitbox.vx);
@@ -2318,7 +2553,7 @@ class DiscordFriendsGame {
             // Mostrar indicador de daño local
             this.showDamageIndicator(target, damage, 'white_orb');
             
-            this.createParticles(target.x + 15, target.y + 15, '#FF8000', 8);
+            this.createParticles(target.x + 15, target.y + 15, '#FF8000', 15);
             hitbox.life = 0;
         }
     }
@@ -2390,6 +2625,14 @@ class DiscordFriendsGame {
                 this.activatePunch(player);
             } else if (ability === 'r') {
                 this.activateTaunt(player);
+            }
+        } else if (player.character === 'angel') {
+            if (ability === 'q') {
+                this.activateAngelicSacrifice(player);
+            } else if (ability === 'e') {
+                this.activateProtectiveDash(player);
+            } else if (ability === 'r') {
+                this.activateRest(player);
             }
         }
     }
@@ -2505,7 +2748,7 @@ class DiscordFriendsGame {
 
     launchDamageOrb(killer) {
         const survivors = Object.values(this.players).filter(p => 
-            p.role === 'survivor' && p.alive && p.id !== killer.id
+            p.role === 'survivor' && p.alive && p.id !== killer.id && !p.downed
         );
         
         if (survivors.length === 0) return;
@@ -2527,7 +2770,7 @@ class DiscordFriendsGame {
         if (!closestSurvivor) return;
         
         const angle = Math.atan2(closestSurvivor.y - killer.y, closestSurvivor.x - killer.x);
-        const speed = 15;
+        const speed = 12; // Velocidad más lenta para que sea esquivable
         
         const orbData = {
             type: 'white_orb',
@@ -2535,12 +2778,13 @@ class DiscordFriendsGame {
             y: killer.y + 15,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
-            radius: 30,
-            life: 120,
-            maxLife: 120,
+            radius: 25,
+            life: 180, // Más duración
+            maxLife: 180,
             ownerId: killer.id,
             color: '#FFFFFF',
-            trail: []
+            trail: [],
+            hasHit: false
         };
         
         this.hitboxes.push(orbData);
@@ -2559,18 +2803,19 @@ class DiscordFriendsGame {
     activateRageMode() {
         const player = this.players[this.myPlayerId];
         if (!player || !player.alive || player.role !== 'killer') return;
-        if (player.character !== '2019x') return;
-        if (player.rageLevel < this.maxRage || player.rageMode.active || player.rageUsed) return;
+        if (player.rageLevel < player.maxRage || player.rageMode.active || player.rageUsed) return;
         if (this.lastManStanding) return; // Deshabilitado en LMS
-        
-        // Pausar timer del juego
-        this.gameTimerPaused = true;
-        this.pausedTimer = this.gameTimer;
         
         // Activar Rage Mode
         player.rageMode = { active: true, timer: 5400 }; // 1:30 minutos
         player.rageLevel = 0;
         player.rageUsed = true; // Solo se puede usar una vez
+        
+        // Bonuses durante rage mode:
+        // - Velocidad aumentada (8 en lugar de 6)
+        // - Cooldowns reducidos a la mitad
+        // - Daño aumentado 50%
+        // - Inmunidad a stuns
         
         // Efectos visuales
         this.createParticles(player.x + 15, player.y + 15, '#FF4500', 30);
@@ -2754,6 +2999,17 @@ class DiscordFriendsGame {
                 this.ctx.shadowBlur = 10;
             }
             
+            // Aplicar efecto de rage mode
+            if (player.rageMode && player.rageMode.active) {
+                this.ctx.shadowColor = '#FF4500';
+                this.ctx.shadowBlur = 20;
+                // Efecto de parpadeo rojo
+                const flash = Math.sin(Date.now() * 0.02) > 0;
+                if (flash) {
+                    this.ctx.globalAlpha = 0.8;
+                }
+            }
+            
             // Efecto de stun
             if (player.stunned) {
                 this.ctx.save();
@@ -2769,10 +3025,21 @@ class DiscordFriendsGame {
                 
                 this.ctx.restore();
             } else {
-                // Red cube for 2019x
-                this.ctx.fillStyle = player.stealthMode ? '#4A0000' : '#FF0000';
+                // Red cube for 2019x con efectos
+                let color1 = '#FF0000';
+                let color2 = '#8B0000';
+                
+                if (player.stealthMode) {
+                    color1 = '#4A0000';
+                    color2 = '#2C0000';
+                } else if (player.rageMode && player.rageMode.active) {
+                    color1 = '#FF4500';
+                    color2 = '#FF0000';
+                }
+                
+                this.ctx.fillStyle = color1;
                 this.ctx.fillRect(player.x, player.y, size, size);
-                this.ctx.fillStyle = player.stealthMode ? '#2C0000' : '#8B0000';
+                this.ctx.fillStyle = color2;
                 this.ctx.fillRect(player.x + 3, player.y + 3, size - 6, size - 6);
             }
             
@@ -2790,7 +3057,12 @@ class DiscordFriendsGame {
                 this.ctx.globalAlpha = Math.max(0, 1 - (Date.now() % 1000) / 1000);
             }
             
-            this.ctx.fillText(player.stealthMode ? '👻' : (player.stunned ? '😵' : '🔥'), player.x + size/2, player.y + size/2 + 5);
+            let emoji = '🔥';
+            if (player.stealthMode) emoji = '👻';
+            else if (player.stunned && !(player.rageMode && player.rageMode.active)) emoji = '😵'; // Inmune a stun en rage
+            else if (player.rageMode && player.rageMode.active) emoji = '😈';
+            
+            this.ctx.fillText(emoji, player.x + size/2, player.y + size/2 + 5);
             
             // Indicador de crítico
             if (player.criticalStrike) {
@@ -2799,11 +3071,18 @@ class DiscordFriendsGame {
                 this.ctx.fillText('CRIT', player.x + size/2, player.y - 15);
             }
             
-            // Indicador de stun
-            if (player.stunned) {
+            // Indicador de stun (solo si no está en rage mode)
+            if (player.stunned && !(player.rageMode && player.rageMode.active)) {
                 this.ctx.fillStyle = '#FF69B4';
                 this.ctx.font = 'bold 10px Arial';
                 this.ctx.fillText('STUNNED', player.x + size/2, player.y - 25);
+            }
+            
+            // Indicador de rage mode
+            if (player.rageMode && player.rageMode.active) {
+                this.ctx.fillStyle = '#FF4500';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('RAGE MODE', player.x + size/2, player.y - 25);
             }
             
             this.ctx.globalAlpha = 1.0;
@@ -2883,6 +3162,11 @@ class DiscordFriendsGame {
                 this.ctx.fillStyle = '#00FFFF';
                 this.ctx.font = 'bold 10px Arial';
                 this.ctx.fillText('SPEED II', player.x + size/2, player.y - 25);
+            }
+            if (player.angelSpeedBoost) {
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('ANGEL BOOST', player.x + size/2, player.y - 35);
             }
             
             this.ctx.shadowBlur = 0;
@@ -2980,6 +3264,70 @@ class DiscordFriendsGame {
                     this.ctx.fillRect(player.x, player.y, size, size);
                     this.ctx.globalAlpha = 1.0;
                 }
+            }
+            
+            this.ctx.shadowBlur = 0;
+        } else if (player.character === 'angel') {
+            // Efectos especiales de Angel
+            if (player.restActive) {
+                this.ctx.shadowColor = '#98FB98';
+                this.ctx.shadowBlur = 15;
+            } else if (player.dashActive) {
+                this.ctx.shadowColor = '#87CEEB';
+                this.ctx.shadowBlur = 10;
+            } else if (player.fatigued) {
+                this.ctx.shadowColor = '#8B0000';
+                this.ctx.shadowBlur = 8;
+            }
+            
+            // Cubo celeste para Angel
+            let color1 = '#87CEEB';
+            let color2 = '#4682B4';
+            
+            if (player.fatigued) {
+                color1 = '#696969';
+                color2 = '#2F4F4F';
+            } else if (player.restActive) {
+                color1 = '#98FB98';
+                color2 = '#32CD32';
+            }
+            
+            this.ctx.fillStyle = color1;
+            this.ctx.fillRect(player.x, player.y, size, size);
+            this.ctx.fillStyle = color2;
+            this.ctx.fillRect(player.x + 3, player.y + 3, size - 6, size - 6);
+            
+            this.ctx.font = '16px Arial';
+            this.ctx.fillStyle = 'white';
+            this.ctx.textAlign = 'center';
+            
+            let emoji = '😇'; // Angel face
+            if (player.fatigued) emoji = '😵'; // Dizzy
+            else if (player.restActive) emoji = '✨'; // Sparkles
+            else if (player.dashActive) emoji = '💫'; // Dash
+            
+            this.ctx.fillText(emoji, player.x + size/2, player.y + size/2 + 5);
+            
+            // Indicadores de habilidades
+            if (player.fatigued) {
+                this.ctx.fillStyle = '#8B0000';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('FATIGUED', player.x + size/2, player.y - 15);
+            }
+            if (player.restActive) {
+                this.ctx.fillStyle = '#98FB98';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('HEALING', player.x + size/2, player.y - 25);
+            }
+            if (player.dashProtection) {
+                this.ctx.fillStyle = '#87CEEB';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('PROTECTED', player.x + size/2, player.y - 35);
+            }
+            if (player.lmsAngelPower) {
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('DIVINE POWER', player.x + size/2, player.y - 45);
             }
             
             this.ctx.shadowBlur = 0;
@@ -3145,7 +3493,7 @@ class DiscordFriendsGame {
         const player = this.players[this.myPlayerId];
         if (player) {
             this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
-            this.ctx.fillRect(10, 10, 250, 100);
+            this.ctx.fillRect(10, 10, 250, 120);
             
             this.ctx.fillStyle = '#7289DA';
             this.ctx.font = 'bold 14px Arial';
@@ -3154,15 +3502,51 @@ class DiscordFriendsGame {
             this.ctx.fillText(`❤️ HP: ${player.health}/${player.maxHealth}`, 15, 50);
             this.ctx.fillText(`🎯 Role: ${player.role}`, 15, 70);
             
-            // Mostrar usos de Energy Juice para Luna
-            if (player.character === 'luna') {
-                const ability = this.abilities.q;
-                this.ctx.fillText(`⚡ Energy Juice: ${ability.uses}/${ability.maxUses}`, 15, 90);
-                if (player.punchStuns) {
-                    this.ctx.fillText(`👊 Punch Stuns: ${player.punchStuns}`, 15, 110);
+            // Rage bar para killers
+            if (player.role === 'killer') {
+                const ragePercent = (player.rageLevel / player.maxRage) * 100;
+                this.ctx.fillText(`🔥 Rage: ${Math.floor(ragePercent)}%`, 15, 90);
+                
+                // Barra de rage
+                const barWidth = 200;
+                const barHeight = 8;
+                const barX = 15;
+                const barY = 95;
+                
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+                this.ctx.fillStyle = '#333';
+                this.ctx.fillRect(barX, barY, barWidth, barHeight);
+                
+                // Barra de rage con gradiente
+                const gradient = this.ctx.createLinearGradient(barX, barY, barX + barWidth, barY);
+                gradient.addColorStop(0, '#FF4500');
+                gradient.addColorStop(1, '#FF0000');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(barX, barY, (ragePercent / 100) * barWidth, barHeight);
+                
+                // Indicador de rage mode disponible
+                if (player.rageLevel >= player.maxRage && !player.rageUsed) {
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 12px Arial';
+                    this.ctx.fillText('PRESIONA C PARA RAGE MODE', 15, 115);
+                } else if (player.rageMode.active) {
+                    const timeLeft = Math.ceil(player.rageMode.timer / 60);
+                    this.ctx.fillStyle = '#FF4500';
+                    this.ctx.font = 'bold 12px Arial';
+                    this.ctx.fillText(`RAGE MODE ACTIVO: ${timeLeft}s`, 15, 115);
                 }
             } else {
-                this.ctx.fillText(`💥 Hitboxes: ${this.hitboxes.length}`, 15, 90);
+                // Mostrar usos de Energy Juice para Luna
+                if (player.character === 'luna') {
+                    const ability = this.abilities.q;
+                    this.ctx.fillText(`⚡ Energy Juice: ${ability.uses}/${ability.maxUses}`, 15, 90);
+                    if (player.punchStuns) {
+                        this.ctx.fillText(`👊 Punch Stuns: ${player.punchStuns}`, 15, 110);
+                    }
+                } else {
+                    this.ctx.fillText(`💥 Hitboxes: ${this.hitboxes.length}`, 15, 90);
+                }
             }
         
         // Mostrar prompt de revive
@@ -3185,8 +3569,8 @@ class DiscordFriendsGame {
         this.ctx.fillText('WASD: Mover', this.canvas.width - 190, this.canvas.height - 80);
         this.ctx.fillText('Q/E/R: Habilidades', this.canvas.width - 190, this.canvas.height - 60);
         this.ctx.fillText('Click/Space: Atacar', this.canvas.width - 190, this.canvas.height - 40);
-        this.ctx.fillText('C: Rage Mode (2019x)', this.canvas.width - 190, this.canvas.height - 40);
-        this.ctx.fillText('E: Revivir (cerca de downed)', this.canvas.width - 190, this.canvas.height - 20);
+        this.ctx.fillText('C: Rage Mode (Killers)', this.canvas.width - 190, this.canvas.height - 20);
+        this.ctx.fillText('E: Revivir (cerca de downed)', this.canvas.width - 190, this.canvas.height - 0);
         
         // Mostrar estado de espectador
         if (player && player.spectating) {
@@ -3254,13 +3638,21 @@ class DiscordFriendsGame {
             }
         });
         
-        // Update rage mode button for 2019x
+        // Update rage mode button for all killers
         const rageBtn = document.getElementById('abilityC');
-        if (rageBtn && player.character === '2019x') {
-            if (player.rageUsed || player.rageLevel < this.maxRage || this.lastManStanding) {
+        if (rageBtn && player.role === 'killer') {
+            if (player.rageUsed || player.rageLevel < player.maxRage || this.lastManStanding || (player.rageMode && player.rageMode.active)) {
                 rageBtn.classList.add('cooldown');
+                if (player.rageMode && player.rageMode.active) {
+                    const timeLeft = Math.ceil(player.rageMode.timer / 60);
+                    rageBtn.textContent = timeLeft + 's';
+                } else {
+                    const ragePercent = Math.floor((player.rageLevel / player.maxRage) * 100);
+                    rageBtn.textContent = ragePercent + '%';
+                }
             } else {
                 rageBtn.classList.remove('cooldown');
+                rageBtn.textContent = 'C';
             }
         }
         
@@ -3561,7 +3953,17 @@ class DiscordFriendsGame {
 
     playLMSMusic() {
         try {
-            this.lmsMusic = new Audio('assets/IA777LMS.mp3');
+            // Determinar qué música usar según el survivor
+            const lastSurvivor = Object.values(this.players).find(p => p.role === 'survivor' && !p.spectating);
+            let musicPath;
+            
+            if (lastSurvivor && lastSurvivor.character === 'iA777') {
+                musicPath = 'assets/IA777LMS.mp3';
+            } else {
+                musicPath = 'assets/SpeedofSoundRound2.mp3';
+            }
+            
+            this.lmsMusic = new Audio(musicPath);
             this.lmsMusic.volume = 0.6;
             this.lmsMusic.loop = false;
             this.lmsMusicStartTime = Date.now();
@@ -4144,10 +4546,10 @@ class DiscordFriendsGame {
         player.sierraHit = false;
         player.sierraFlash = true;
         
-        // Movimiento hacia adelante
+        // Movimiento hacia adelante (más largo en LMS)
         if (this.lastMouseX && this.lastMouseY) {
             const angle = Math.atan2(this.lastMouseY - (player.y + 15), this.lastMouseX - (player.x + 15));
-            const dashDistance = 80;
+            const dashDistance = this.lastManStanding ? 120 : 80; // Dash más largo en LMS
             const newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * dashDistance));
             const newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * dashDistance));
             
@@ -4209,6 +4611,122 @@ class DiscordFriendsGame {
         if (this.supabaseGame) {
             this.supabaseGame.sendAttack({
                 type: 'taunt_activate',
+                playerId: player.id
+            });
+        }
+    }
+    
+    activateAngelicSacrifice(player) {
+        // Buscar survivor más cercano
+        const nearbySurvivors = Object.values(this.players).filter(target => 
+            target.role === 'survivor' && target.alive && target.id !== player.id && !target.downed
+        );
+        
+        // En LMS, si no hay aliados, se convierte en auto-curación
+        if (nearbySurvivors.length === 0 && player.lmsAngelPower) {
+            // Sacrificio angelical supremo - curación masiva
+            const sacrifice = Math.floor(player.health * 0.3); // Solo 30% en LMS
+            player.health = Math.max(15, player.health - sacrifice);
+            
+            // Curación instantánea masiva después de 2 segundos
+            setTimeout(() => {
+                if (player.alive) {
+                    player.health = Math.min(player.maxHealth, player.health + sacrifice * 2);
+                    this.createParticles(player.x + 15, player.y + 15, '#FFD700', 30);
+                }
+            }, 2000);
+            
+            this.createParticles(player.x + 15, player.y + 15, '#FFD700', 25);
+            return;
+        }
+        
+        if (nearbySurvivors.length === 0) return;
+        
+        let closestSurvivor = null;
+        let minDistance = Infinity;
+        
+        nearbySurvivors.forEach(survivor => {
+            const distance = Math.sqrt(
+                Math.pow(player.x - survivor.x, 2) + 
+                Math.pow(player.y - survivor.y, 2)
+            );
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestSurvivor = survivor;
+            }
+        });
+        
+        if (!closestSurvivor) return;
+        
+        // Sacrificar 40% de vida (menos riesgo)
+        const sacrifice = Math.floor(player.health * 0.4);
+        player.health = Math.max(10, player.health - sacrifice); // Mínimo 10 HP
+        
+        // Dar vida y boost de velocidad al aliado (más generoso)
+        const healAmount = sacrifice + 15; // +15 bonus
+        closestSurvivor.health = Math.min(closestSurvivor.maxHealth, closestSurvivor.health + healAmount);
+        closestSurvivor.angelSpeedBoost = true; // Boost de velocidad
+        closestSurvivor.speedBoostTimer = 600; // 10s de velocidad
+        closestSurvivor.angelBlessing = true;
+        closestSurvivor.blessingTimer = 300; // 5s de bendición
+        
+        // Aplicar fatiga (menos tiempo)
+        player.fatigued = true;
+        player.fatigueTimer = 240; // 4 segundos
+        
+        this.createParticles(player.x + 15, player.y + 15, '#FFD700', 20);
+        this.createParticles(closestSurvivor.x + 15, closestSurvivor.y + 15, '#00FF00', 15);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'angelic_sacrifice',
+                playerId: player.id,
+                targetId: closestSurvivor.id,
+                sacrifice: sacrifice
+            });
+        }
+    }
+    
+    activateProtectiveDash(player) {
+        player.dashActive = true;
+        player.dashTimer = 60; // 1 segundo
+        player.dashProtection = true;
+        
+        // Dash hacia adelante (más distancia + LMS)
+        if (this.lastMouseX && this.lastMouseY) {
+            const angle = Math.atan2(this.lastMouseY - (player.y + 15), this.lastMouseX - (player.x + 15));
+            const dashDistance = player.lmsDashBoost ? 130 : 90; // 130 en LMS
+            const newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * dashDistance));
+            const newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * dashDistance));
+            
+            player.x = newX;
+            player.y = newY;
+            
+            if (this.supabaseGame) {
+                this.supabaseGame.sendPlayerMove(newX, newY);
+            }
+        }
+        
+        this.createParticles(player.x + 15, player.y + 15, '#87CEEB', 15);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'protective_dash',
+                playerId: player.id
+            });
+        }
+    }
+    
+    activateRest(player) {
+        player.restActive = true;
+        player.restTimer = 600; // 10 segundos
+        player.restTick = 0;
+        
+        this.createParticles(player.x + 15, player.y + 15, '#98FB98', 20);
+        
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'rest_activate',
                 playerId: player.id
             });
         }
