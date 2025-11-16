@@ -971,47 +971,53 @@ class DiscordFriendsGame {
                     Math.pow(x - this.mobileControls.joystick.x, 2) + 
                     Math.pow(y - this.mobileControls.joystick.y, 2)
                 );
-                if (joyDist < this.mobileControls.joystick.size) {
+                if (joyDist < 60) { // Joystick radius
                     this.joystickState.active = true;
                     this.joystickState.startX = this.mobileControls.joystick.x;
                     this.joystickState.startY = this.mobileControls.joystick.y;
                     this.joystickState.currentX = x;
                     this.joystickState.currentY = y;
                     this.joystickState.touchId = touch.identifier;
-                    continue;
+                    return; // Exit early
                 }
             }
             
-            // Check revive button
-            if (this.reviveButton) {
-                const reviveDist = Math.sqrt(
-                    Math.pow(x - this.reviveButton.x, 2) + 
-                    Math.pow(y - this.reviveButton.y, 2)
-                );
-                if (reviveDist < this.reviveButton.size/2) {
-                    if (this.showRevivePrompt) {
-                        const downedPlayer = this.players[this.showRevivePrompt];
-                        if (downedPlayer && downedPlayer.downed) {
-                            downedPlayer.beingRevived = true;
-                            downedPlayer.reviveProgress = 0;
-                            this.showRevivePrompt = null;
+            // Check ability buttons
+            if (this.mobileControls && this.mobileControls.abilities) {
+                for (const [key, button] of Object.entries(this.mobileControls.abilities)) {
+                    const dist = Math.sqrt(
+                        Math.pow(x - button.x, 2) + 
+                        Math.pow(y - button.y, 2)
+                    );
+                    if (dist < button.touchRadius) {
+                        if (key === 'c') {
+                            this.activateRageMode();
+                        } else {
+                            this.useAbility(key);
                         }
+                        return; // Exit early after handling ability
                     }
-                    continue;
                 }
             }
             
-            // Check attack button for killers
-            if (this.attackButton) {
-                const attackDist = Math.sqrt(
-                    Math.pow(x - this.attackButton.x, 2) + 
-                    Math.pow(y - this.attackButton.y, 2)
-                );
-                if (attackDist < this.attackButton.size/2) {
-                    this.handleAttack();
-                    continue;
-                }
+        }
+        
+        // Check for revive (anywhere on left side of screen)
+        if (this.showRevivePrompt && x < this.canvas.width * 0.3) {
+            const downedPlayer = this.players[this.showRevivePrompt];
+            if (downedPlayer && downedPlayer.downed) {
+                downedPlayer.beingRevived = true;
+                downedPlayer.reviveProgress = 0;
+                this.showRevivePrompt = null;
             }
+            return;
+        }
+        
+        // Check attack area for killers (right side of screen)
+        const player = this.players[this.myPlayerId];
+        if (player && player.role === 'killer' && x > this.canvas.width * 0.6) {
+            this.handleAttack();
+            return;
         }
     }
     
@@ -1029,11 +1035,12 @@ class DiscordFriendsGame {
                 const dy = this.joystickState.currentY - this.joystickState.startY;
                 const distance = Math.sqrt(dx*dx + dy*dy);
                 
-                if (distance > 20) {
-                    this.keys['w'] = dy < -10;
-                    this.keys['s'] = dy > 10;
-                    this.keys['a'] = dx < -10;
-                    this.keys['d'] = dx > 10;
+                const threshold = 15;
+                if (distance > threshold) {
+                    this.keys['w'] = dy < -threshold;
+                    this.keys['s'] = dy > threshold;
+                    this.keys['a'] = dx < -threshold;
+                    this.keys['d'] = dx > threshold;
                 } else {
                     this.keys['w'] = false;
                     this.keys['s'] = false;
@@ -1095,75 +1102,17 @@ class DiscordFriendsGame {
             touchId: null
         };
         
-        // Setup ability button listeners
-        this.setupMobileAbilityButtons();
-        this.setupMobileReviveButton();
+        // Reset showRevivePrompt when not near downed players
+        this.showRevivePrompt = null;
+        
+
     }
     
     activateMobileControls() {
-        const mobileControls = document.getElementById('mobileControls');
-        if (mobileControls) {
-            mobileControls.classList.add('active');
-        }
+        // Mobile controls are now drawn on canvas, no DOM needed
     }
     
-    setupMobileAbilityButtons() {
-        // Setup ability buttons with touch events
-        ['Q', 'E', 'R', 'C'].forEach(key => {
-            const btn = document.getElementById(`ability${key}`);
-            if (btn) {
-                btn.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const ability = this.abilities[key.toLowerCase()];
-                    if (!ability || ability.cooldown > 0) return;
-                    
-                    if (key === 'C') {
-                        this.activateRageMode();
-                    } else {
-                        this.useAbility(key.toLowerCase());
-                    }
-                    
-                    // Visual feedback
-                    btn.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        btn.style.transform = 'scale(1)';
-                    }, 100);
-                }, {passive: false});
-                
-                btn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                });
-            }
-        });
-    }
-    
-    setupMobileReviveButton() {
-        const reviveBtn = document.getElementById('reviveBtn');
-        if (reviveBtn) {
-            reviveBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                if (this.showRevivePrompt) {
-                    const downedPlayer = this.players[this.showRevivePrompt];
-                    if (downedPlayer && downedPlayer.downed) {
-                        downedPlayer.beingRevived = true;
-                        downedPlayer.reviveProgress = 0;
-                        this.showRevivePrompt = null;
-                    }
-                }
-                
-                // Visual feedback
-                reviveBtn.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    reviveBtn.style.transform = 'scale(1)';
-                }, 100);
-            }, {passive: false});
-        }
-    }
+
 
     handleAttack(e) {
         const player = this.players[this.myPlayerId];
@@ -2361,6 +2310,12 @@ class DiscordFriendsGame {
                     
                     if (nearbyReviver && nearbyReviver.id === this.myPlayerId) {
                         this.showRevivePrompt = player.id;
+                    } else if (this.showRevivePrompt === player.id) {
+                        // Clear prompt if no longer near
+                        const myPlayer = this.players[this.myPlayerId];
+                        if (myPlayer && Math.sqrt(Math.pow(myPlayer.x - player.x, 2) + Math.pow(myPlayer.y - player.y, 2)) >= 50) {
+                            this.showRevivePrompt = null;
+                        }
                     }
                 } else {
                     player.reviveProgress = (player.reviveProgress || 0) + 1;
@@ -3577,9 +3532,35 @@ class DiscordFriendsGame {
         // Update mobile controls UI
         const player = this.players[this.myPlayerId];
         if (player && this.isMobile()) {
-            this.updateMobileControlsUI(player);
+            this.drawMobileControls(player);
             this.drawVirtualJoystick();
-            this.drawMobileControls(player); // Solo botones de habilidades
+            
+            // Draw revive prompt for mobile
+            if (this.showRevivePrompt) {
+                this.ctx.save();
+                this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+                this.ctx.fillStyle = 'rgba(0,255,0,0.9)';
+                this.ctx.fillRect(10, this.canvas.height/2 - 30, 200, 60);
+                this.ctx.fillStyle = '#000';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText('Toca lado izquierdo', 15, this.canvas.height/2 - 5);
+                this.ctx.fillText('para revivir', 15, this.canvas.height/2 + 15);
+                this.ctx.restore();
+            }
+            
+            // Draw attack area indicator for killers
+            if (player.role === 'killer') {
+                this.ctx.save();
+                this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+                this.ctx.fillStyle = 'rgba(255,0,0,0.1)';
+                this.ctx.fillRect(this.canvas.width * 0.6, 0, this.canvas.width * 0.4, this.canvas.height);
+                this.ctx.fillStyle = 'rgba(255,0,0,0.8)';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('ATACAR', this.canvas.width * 0.8, this.canvas.height - 20);
+                this.ctx.restore();
+            }
         }
     }
     
@@ -4491,93 +4472,47 @@ class DiscordFriendsGame {
     }
 
     updateMobileControlsUI(player) {
-        // Update cooldown displays on mobile buttons
-        ['q', 'e', 'r'].forEach(key => {
-            const btn = document.getElementById(`ability${key.toUpperCase()}`);
-            const ability = this.abilities[key];
-            
-            if (btn && ability) {
-                if (ability.cooldown > 0) {
-                    btn.classList.add('cooldown');
-                    const cooldownSec = Math.ceil(ability.cooldown / 1000);
-                    btn.textContent = cooldownSec + 's';
-                } else {
-                    btn.classList.remove('cooldown');
-                    btn.textContent = key.toUpperCase();
-                }
-            }
-        });
-        
-        // Update rage mode button for all killers
-        const rageBtn = document.getElementById('abilityC');
-        if (rageBtn && player.role === 'killer') {
-            if (player.rageUsed || player.rageLevel < player.maxRage || this.lastManStanding || (player.rageMode && player.rageMode.active)) {
-                rageBtn.classList.add('cooldown');
-                if (player.rageMode && player.rageMode.active) {
-                    const timeLeft = Math.ceil(player.rageMode.timer / 60);
-                    rageBtn.textContent = timeLeft + 's';
-                } else {
-                    const ragePercent = Math.floor((player.rageLevel / player.maxRage) * 100);
-                    rageBtn.textContent = ragePercent + '%';
-                }
-            } else {
-                rageBtn.classList.remove('cooldown');
-                rageBtn.textContent = 'C';
-            }
-        }
-        
-        // Update Energy Juice uses for Luna
-        if (player.character === 'luna') {
-            const qBtn = document.getElementById('abilityQ');
-            if (qBtn) {
-                const ability = this.abilities.q;
-                if (ability.uses <= 0 && ability.cooldown > 0) {
-                    qBtn.classList.add('cooldown');
-                    const cooldownSec = Math.ceil(ability.cooldown / 1000);
-                    qBtn.textContent = cooldownSec + 's';
-                } else if (ability.uses > 0) {
-                    qBtn.classList.remove('cooldown');
-                    qBtn.textContent = `Q(${ability.uses})`;
-                } else {
-                    qBtn.classList.remove('cooldown');
-                    qBtn.textContent = 'Q';
-                }
-            }
-        }
+        // Mobile controls are now drawn directly on canvas, no DOM updates needed
     }
     
     drawVirtualJoystick() {
-        if (!this.joystickState.active) return;
+        if (!this.mobileControls || !this.mobileControls.joystick) return;
         
         this.ctx.save();
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         
-        const baseRadius = 60;
-        const knobRadius = 25;
+        const joystick = this.mobileControls.joystick;
+        const baseRadius = 50;
+        const knobRadius = 20;
         
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        this.ctx.lineWidth = 3;
+        // Draw joystick base (always visible on mobile)
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        this.ctx.lineWidth = 2;
         this.ctx.beginPath();
-        this.ctx.arc(this.joystickState.startX, this.joystickState.startY, baseRadius, 0, Math.PI * 2);
+        this.ctx.arc(joystick.x, joystick.y, baseRadius, 0, Math.PI * 2);
         this.ctx.fill();
         this.ctx.stroke();
         
-        const dx = this.joystickState.currentX - this.joystickState.startX;
-        const dy = this.joystickState.currentY - this.joystickState.startY;
-        const distance = Math.sqrt(dx*dx + dy*dy);
-        const maxDistance = baseRadius - knobRadius;
+        // Draw joystick knob
+        let knobX = joystick.x;
+        let knobY = joystick.y;
         
-        let knobX = this.joystickState.currentX;
-        let knobY = this.joystickState.currentY;
-        
-        if (distance > maxDistance) {
-            const angle = Math.atan2(dy, dx);
-            knobX = this.joystickState.startX + Math.cos(angle) * maxDistance;
-            knobY = this.joystickState.startY + Math.sin(angle) * maxDistance;
+        if (this.joystickState.active) {
+            const dx = this.joystickState.currentX - this.joystickState.startX;
+            const dy = this.joystickState.currentY - this.joystickState.startY;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            const maxDistance = baseRadius - knobRadius;
+            
+            if (distance > 0) {
+                const clampedDistance = Math.min(distance, maxDistance);
+                const angle = Math.atan2(dy, dx);
+                knobX = joystick.x + Math.cos(angle) * clampedDistance;
+                knobY = joystick.y + Math.sin(angle) * clampedDistance;
+            }
         }
         
-        this.ctx.fillStyle = 'rgba(255, 200, 0, 0.9)';
+        this.ctx.fillStyle = 'rgba(255, 200, 0, 0.8)';
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
@@ -4606,10 +4541,16 @@ class DiscordFriendsGame {
         const buttonY = canvasHeight - buttonSize * 0.8;
         const startX = canvasWidth - (buttonSize * 3 + spacing * 2) - buttonSize * 0.5;
         
-        ['Q', 'E', 'R'].forEach((key, index) => {
+        const abilities = player.role === 'killer' ? ['Q', 'E', 'R', 'C'] : ['Q', 'E', 'R'];
+        abilities.forEach((key, index) => {
             const x = startX + (buttonSize + spacing) * index;
-            const ability = this.abilities[key.toLowerCase()];
-            const onCooldown = ability && ability.cooldown > 0;
+            let onCooldown = false;
+            if (key === 'C' && player.role === 'killer') {
+                onCooldown = player.rageUsed || player.rageLevel < player.maxRage || this.lastManStanding || (player.rageMode && player.rageMode.active);
+            } else {
+                const ability = this.abilities[key.toLowerCase()];
+                onCooldown = ability && ability.cooldown > 0;
+            }
             
             this.ctx.save();
             
@@ -4647,105 +4588,58 @@ class DiscordFriendsGame {
             
             // Enhanced cooldown indicator
             if (onCooldown) {
-                const cooldownSec = Math.ceil(ability.cooldown / 1000);
+                let cooldownText;
+                if (key === 'C' && player.role === 'killer') {
+                    if (player.rageMode && player.rageMode.active) {
+                        const timeLeft = Math.ceil(player.rageMode.timer / 60);
+                        cooldownText = timeLeft + 's';
+                    } else {
+                        const ragePercent = Math.floor((player.rageLevel / player.maxRage) * 100);
+                        cooldownText = ragePercent + '%';
+                    }
+                } else {
+                    const cooldownSec = Math.ceil(ability.cooldown / 1000);
+                    cooldownText = cooldownSec + 's';
+                }
+                
                 this.ctx.fillStyle = '#fff';
                 this.ctx.font = `bold ${buttonSize * 0.25}px Arial`;
-                this.ctx.fillText(cooldownSec + 's', x, buttonY + buttonSize * 0.35);
+                this.ctx.fillText(cooldownText, x, buttonY + buttonSize * 0.35);
                 
-                // Cooldown arc
-                const progress = 1 - (ability.cooldown / ability.maxCooldown);
-                this.ctx.strokeStyle = '#00ff00';
-                this.ctx.lineWidth = 4;
-                this.ctx.beginPath();
-                this.ctx.arc(x, buttonY, buttonSize/2 - 2, -Math.PI/2, -Math.PI/2 + (progress * Math.PI * 2));
-                this.ctx.stroke();
+                // Cooldown arc (only for regular abilities)
+                if (key !== 'C' && ability) {
+                    const progress = 1 - (ability.cooldown / ability.maxCooldown);
+                    this.ctx.strokeStyle = '#00ff00';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, buttonY, buttonSize/2 - 2, -Math.PI/2, -Math.PI/2 + (progress * Math.PI * 2));
+                    this.ctx.stroke();
+                }
             }
             
             this.ctx.restore();
         });
         
-        // Enhanced attack button for killers
-        if (player.role === 'killer') {
-            const attackX = canvasWidth - buttonSize * 0.8;
-            const attackY = buttonY - buttonSize * 1.3;
-            
-            this.ctx.save();
-            
-            // Attack button shadow
-            this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
-            this.ctx.beginPath();
-            this.ctx.arc(attackX + 3, attackY + 3, buttonSize/2 + 3, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            // Attack button gradient
-            const attackGradient = this.ctx.createRadialGradient(attackX, attackY - buttonSize/4, 0, attackX, attackY, buttonSize/2);
-            attackGradient.addColorStop(0, 'rgba(255, 100, 100, 0.9)');
-            attackGradient.addColorStop(1, 'rgba(200, 0, 0, 0.9)');
-            
-            this.ctx.fillStyle = attackGradient;
-            this.ctx.beginPath();
-            this.ctx.arc(attackX, attackY, buttonSize/2, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            this.ctx.strokeStyle = '#FFFFFF';
-            this.ctx.lineWidth = 3;
-            this.ctx.stroke();
-            
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = `bold ${buttonSize * 0.5}px Arial`;
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('⚔️', attackX, attackY + buttonSize * 0.15);
-            
-            this.attackButton = {x: attackX, y: attackY, size: buttonSize};
-            this.ctx.restore();
-        }
+
         
-        // Botón de revivir (solo visible cuando hay prompt)
-        if (this.showRevivePrompt) {
-            const reviveX = buttonSize * 0.8;
-            const reviveY = canvasHeight / 2;
-            
-            this.ctx.save();
-            
-            // Revive button shadow
-            this.ctx.fillStyle = 'rgba(0,0,0,0.8)';
-            this.ctx.beginPath();
-            this.ctx.arc(reviveX + 3, reviveY + 3, buttonSize/2 + 3, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            // Revive button gradient
-            const reviveGradient = this.ctx.createRadialGradient(reviveX, reviveY - buttonSize/4, 0, reviveX, reviveY, buttonSize/2);
-            reviveGradient.addColorStop(0, 'rgba(0, 255, 0, 0.9)');
-            reviveGradient.addColorStop(1, 'rgba(0, 150, 0, 0.9)');
-            
-            this.ctx.fillStyle = reviveGradient;
-            this.ctx.beginPath();
-            this.ctx.arc(reviveX, reviveY, buttonSize/2, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            this.ctx.strokeStyle = '#FFFFFF';
-            this.ctx.lineWidth = 3;
-            this.ctx.stroke();
-            
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = `bold ${buttonSize * 0.4}px Arial`;
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('F', reviveX, reviveY + buttonSize * 0.12);
-            
-            this.reviveButton = {x: reviveX, y: reviveY, size: buttonSize};
-            this.ctx.restore();
-        }
+
         
-        // Store enhanced control positions with proper touch areas
+        // Store control positions
         this.mobileControls = {
             joystick: {x: joystickX, y: joystickY, size: buttonSize * 2},
-            abilities: {
-                q: {x: startX, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5},
-                e: {x: startX + buttonSize + spacing, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5},
-                r: {x: startX + (buttonSize + spacing) * 2, y: buttonY, size: buttonSize, touchRadius: buttonSize/2 + 5}
-            },
-            revive: this.showRevivePrompt ? {x: this.reviveButton.x, y: this.reviveButton.y, size: buttonSize, touchRadius: buttonSize/2 + 5} : null
+            abilities: {}
         };
+        
+        // Store ability button positions
+        abilities.forEach((key, index) => {
+            const x = startX + (buttonSize + spacing) * index;
+            this.mobileControls.abilities[key.toLowerCase()] = {
+                x: x,
+                y: buttonY,
+                size: buttonSize,
+                touchRadius: buttonSize/2 + 10
+            };
+        });
     }
 
     refreshLobbyList() {
