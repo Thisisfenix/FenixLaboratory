@@ -30,9 +30,10 @@ class DiscordFriendsGame {
         this.lmsActivated = false;
         this.particles = [];
         this.hitboxes = [];
-        this.mapObjects = [];
-        this.currentMap = 'discord_server';
         this.jumpscareQueue = [];
+        
+        // Initialize map system
+        this.mapSystem = new DiscordFriendsMaps(this);
         this.rageLevel = 0;
         this.maxRage = 500;
         this.rageMode = { active: false, timer: 0 };
@@ -882,7 +883,6 @@ class DiscordFriendsGame {
         this.resizeCanvas();
         
         this.setupGameEventListeners();
-        this.generateDiscordServerMap();
     }
     
     resizeCanvas() {
@@ -1443,7 +1443,7 @@ class DiscordFriendsGame {
                     const nearestSurvivor = this.findNearestSurvivor(player);
                     if (nearestSurvivor && player.id === this.myPlayerId) {
                         const angle = Math.atan2(nearestSurvivor.y - player.y, nearestSurvivor.x - player.x);
-                        const speed = 8;
+                        const speed = 6.5; // Reducido de 8 a 6.5
                         const newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * speed));
                         const newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * speed));
                         
@@ -1523,7 +1523,7 @@ class DiscordFriendsGame {
         this.resizeCanvas();
         
         this.setupGameEventListeners();
-        this.generateDiscordServerMap();
+        this.mapSystem.generateMap('discord_server');
     }
     
     startGameFromRemote() {
@@ -1977,10 +1977,10 @@ class DiscordFriendsGame {
                             player.grabbedKiller = target.id;
                             player.chargeStunned = true;
                             
-                            // Stunear al killer por 7 segundos (solo si no está en rage mode)
+                            // Stunear al killer por 5 segundos (solo si no está en rage mode)
                             if (!(target.rageMode && target.rageMode.active)) {
                                 target.stunned = true;
-                                target.stunTimer = 420;
+                                target.stunTimer = 300; // Reducido de 420 a 300 (7s a 5s)
                                 
                                 // Ganar rage por ser stuneado
                                 if (target.role === 'killer' && !target.rageUsed) {
@@ -2216,7 +2216,7 @@ class DiscordFriendsGame {
                         
                         // Aplicar efecto de pantalla nublada
                         target.screenBlurred = true;
-                        target.blurTimer = 300; // 5 segundos
+                        target.blurTimer = 180; // Reducido de 5s a 3s
                         
                         if (this.supabaseGame) {
                             this.supabaseGame.sendAttack({
@@ -2561,46 +2561,15 @@ class DiscordFriendsGame {
                     this.gameTimer = Math.max(0, totalTime - elapsed);
                     
                     // Mostrar anillo de escape a los 80 segundos (1:20)
-                    if (this.gameTimer === 80 && !this.escapeRing && !this.lastManStanding) {
-                        this.showEscapeRing();
+                    if (this.gameTimer === 80 && !this.mapSystem.escapeRing && !this.lastManStanding) {
+                        this.mapSystem.showEscapeRing();
                     }
                 }
             }
         }
     }
 
-    generateDiscordServerMap() {
-        this.mapObjects = [];
-        this.escapeRing = null;
-        
-        // Forest themed objects
-        for (let i = 0; i < 40; i++) {
-            this.mapObjects.push({
-                type: 'tree',
-                x: Math.random() * (this.worldSize.width - 80) + 40,
-                y: Math.random() * (this.worldSize.height - 80) + 40,
-                size: 60 + Math.random() * 40
-            });
-        }
-        
-        for (let i = 0; i < 25; i++) {
-            this.mapObjects.push({
-                type: 'bush',
-                x: Math.random() * (this.worldSize.width - 40) + 20,
-                y: Math.random() * (this.worldSize.height - 40) + 20,
-                size: 30 + Math.random() * 20
-            });
-        }
-        
-        for (let i = 0; i < 15; i++) {
-            this.mapObjects.push({
-                type: 'rock',
-                x: Math.random() * (this.worldSize.width - 50) + 25,
-                y: Math.random() * (this.worldSize.height - 50) + 25,
-                size: 35 + Math.random() * 25
-            });
-        }
-    }
+
 
     startGameLoop() {
         const gameLoop = () => {
@@ -2674,30 +2643,31 @@ class DiscordFriendsGame {
         // Balanced base speeds for all characters
         let speed;
         if (player.role === 'killer') {
-            speed = player.character === 'vortex' ? 5.5 : 5; // Vortex slightly faster, others 5
+            // Killers base speed: 4.2 (slower than before)
+            speed = player.character === 'vortex' ? 4.4 : 4.2;
         } else {
-            // Survivors base speed 4.5
-            speed = 4.5;
+            // Survivors base speed: 4.0 (slightly slower than killers)
+            speed = 4.0;
         }
         
-        // Rage mode speed boost para killers
+        // Rage mode speed boost para killers (moderado)
         if (player.role === 'killer' && player.rageMode && player.rageMode.active) {
-            speed = 7; // Reduced from 8 to 7
+            speed = 5.8; // Boost moderado en rage mode
         }
         
-        // iA777 speed boost en LMS
+        // iA777 speed boost en LMS (equilibrado)
         if (player.character === 'iA777' && this.lastManStanding) {
-            speed = 5.5; // Slightly reduced
+            speed = 4.8; // Boost menor en LMS
         }
         
-        // Luna speed boost
+        // Luna speed boost (equilibrado)
         if (player.character === 'luna' && (player.speedBoost || player.lmsSpeedBoost)) {
-            speed = 6; // Reduced from 7 to 6
+            speed = 5.2; // Boost moderado
         }
         
-        // Angel speed boost para aliados
+        // Angel speed boost para aliados (equilibrado)
         if (player.angelSpeedBoost) {
-            speed = 5.5; // Reduced from 6 to 5.5
+            speed = 4.8; // Boost menor para aliados
         }
         // Handle gamepad input
         this.updateGamepadInput();
@@ -2706,7 +2676,7 @@ class DiscordFriendsGame {
         let newX = player.x;
         let newY = player.y;
 
-        // You Can't Run movement override
+        // You Can't Run movement override (velocidad reducida)
         if (player.youCantRunActive) {
             if (this.lastMouseX && this.lastMouseY) {
                 const angle = Math.atan2(this.lastMouseY - (player.y + 15), this.lastMouseX - (player.x + 15));
@@ -2716,7 +2686,7 @@ class DiscordFriendsGame {
                 );
                 
                 if (distance > 10) {
-                    const moveSpeed = 8;
+                    const moveSpeed = 6.5; // Reducido de 8 a 6.5
                     newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * moveSpeed));
                     newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * moveSpeed));
                     moved = true;
@@ -2731,7 +2701,7 @@ class DiscordFriendsGame {
                 );
                 
                 if (distance > 10) {
-                    const moveSpeed = 6;
+                    const moveSpeed = 5.5; // Reducido de 6 a 5.5
                     newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * moveSpeed));
                     newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * moveSpeed));
                     moved = true;
@@ -2756,7 +2726,7 @@ class DiscordFriendsGame {
                 );
                 
                 if (distance > 10) {
-                    const moveSpeed = 7;
+                    const moveSpeed = 6.0; // Reducido de 7 a 6.0
                     newX = Math.max(0, Math.min(this.worldSize.width - 30, player.x + Math.cos(angle) * moveSpeed));
                     newY = Math.max(0, Math.min(this.worldSize.height - 30, player.y + Math.sin(angle) * moveSpeed));
                     moved = true;
@@ -3577,7 +3547,7 @@ class DiscordFriendsGame {
             if (this.lastManStanding) return;
             
             // Rage Mode para otros killers
-            player.rageMode = { active: true, timer: 5400 };
+            player.rageMode = { active: true, timer: 3600 }; // Reducido de 90s a 60s
             player.rageLevel = 0;
             player.rageUsed = true;
             
@@ -3718,7 +3688,7 @@ class DiscordFriendsGame {
         this.ctx.strokeRect(0, 0, this.worldSize.width, this.worldSize.height);
         
         // Draw map objects
-        this.drawMapObjects();
+        this.mapSystem.drawMapObjects(this.ctx, this.camera);
         
         // Draw players
         Object.values(this.players).forEach(player => {
@@ -3731,7 +3701,7 @@ class DiscordFriendsGame {
         this.ctx.restore();
         
         this.drawUI();
-        this.drawEscapeRing();
+        this.mapSystem.drawEscapeRing(this.ctx, this.camera);
         this.drawDamageIndicators();
         this.drawHitConfirmation();
         
@@ -3879,35 +3849,7 @@ class DiscordFriendsGame {
         });
     }
 
-    drawMapObjects() {
-        this.mapObjects.forEach(obj => {
-            this.ctx.save();
-            
-            if (obj.type === 'tree') {
-                // Draw tree
-                this.ctx.fillStyle = '#8B4513';
-                this.ctx.fillRect(obj.x + obj.size/3, obj.y + obj.size/2, obj.size/3, obj.size/2);
-                this.ctx.fillStyle = '#228B22';
-                this.ctx.beginPath();
-                this.ctx.arc(obj.x + obj.size/2, obj.y + obj.size/3, obj.size/3, 0, Math.PI * 2);
-                this.ctx.fill();
-            } else if (obj.type === 'bush') {
-                // Draw bush
-                this.ctx.fillStyle = '#32CD32';
-                this.ctx.beginPath();
-                this.ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2, 0, Math.PI * 2);
-                this.ctx.fill();
-            } else if (obj.type === 'rock') {
-                // Draw rock
-                this.ctx.fillStyle = '#696969';
-                this.ctx.fillRect(obj.x, obj.y, obj.size, obj.size * 0.8);
-                this.ctx.fillStyle = '#A9A9A9';
-                this.ctx.fillRect(obj.x + 3, obj.y + 3, obj.size - 6, obj.size * 0.6);
-            }
-            
-            this.ctx.restore();
-        });
-    }
+
 
     drawPlayer(player) {
         if (!player || (!player.alive && !player.downed)) return;

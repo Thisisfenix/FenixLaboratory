@@ -1,0 +1,426 @@
+class DiscordFriendsMaps {
+    constructor(game) {
+        this.game = game;
+        this.currentMap = 'discord_server';
+        this.mapObjects = [];
+        this.escapeRing = null;
+    }
+
+    generateDiscordServerMap() {
+        this.mapObjects = [];
+        this.escapeRing = null;
+        
+        // Crear clusters de objetos para mejor distribución
+        const clusters = 8;
+        const clusterSize = 200;
+        
+        for (let c = 0; c < clusters; c++) {
+            const centerX = Math.random() * (this.game.worldSize.width - clusterSize * 2) + clusterSize;
+            const centerY = Math.random() * (this.game.worldSize.height - clusterSize * 2) + clusterSize;
+            
+            // Árboles grandes (obstáculos principales)
+            for (let i = 0; i < 6; i++) {
+                this.mapObjects.push({
+                    type: 'tree',
+                    x: centerX + (Math.random() - 0.5) * clusterSize,
+                    y: centerY + (Math.random() - 0.5) * clusterSize,
+                    size: 70 + Math.random() * 50,
+                    variant: Math.floor(Math.random() * 3)
+                });
+            }
+            
+            // Arbustos (cobertura)
+            for (let i = 0; i < 4; i++) {
+                this.mapObjects.push({
+                    type: 'bush',
+                    x: centerX + (Math.random() - 0.5) * clusterSize,
+                    y: centerY + (Math.random() - 0.5) * clusterSize,
+                    size: 25 + Math.random() * 25,
+                    variant: Math.floor(Math.random() * 2)
+                });
+            }
+        }
+        
+        // Rocas dispersas
+        for (let i = 0; i < 20; i++) {
+            this.mapObjects.push({
+                type: 'rock',
+                x: Math.random() * (this.game.worldSize.width - 60) + 30,
+                y: Math.random() * (this.game.worldSize.height - 60) + 30,
+                size: 30 + Math.random() * 30,
+                variant: Math.floor(Math.random() * 3)
+            });
+        }
+        
+        // Flores decorativas
+        for (let i = 0; i < 15; i++) {
+            this.mapObjects.push({
+                type: 'flower',
+                x: Math.random() * this.game.worldSize.width,
+                y: Math.random() * this.game.worldSize.height,
+                size: 8 + Math.random() * 12,
+                color: Math.floor(Math.random() * 4)
+            });
+        }
+        
+        // Senderos
+        this.generatePaths();
+    }
+
+    drawMapObjects(ctx, camera) {
+        // Dibujar senderos primero
+        this.drawPaths(ctx);
+        
+        this.mapObjects.forEach(obj => {
+            ctx.save();
+            
+            if (obj.type === 'tree') {
+                this.drawTree(ctx, obj);
+            } else if (obj.type === 'bush') {
+                this.drawBush(ctx, obj);
+            } else if (obj.type === 'rock') {
+                this.drawRock(ctx, obj);
+            } else if (obj.type === 'flower') {
+                this.drawFlower(ctx, obj);
+            }
+            
+            ctx.restore();
+        });
+    }
+    
+    drawTree(ctx, obj) {
+        const trunkColors = ['#8B4513', '#654321', '#A0522D'];
+        const leafColors = ['#228B22', '#32CD32', '#006400'];
+        
+        // Tronco con variaciones
+        ctx.fillStyle = trunkColors[obj.variant] || trunkColors[0];
+        ctx.fillRect(obj.x + obj.size/3, obj.y + obj.size/2, obj.size/3, obj.size/2);
+        
+        // Copa del árbol con gradiente
+        const gradient = ctx.createRadialGradient(
+            obj.x + obj.size/2, obj.y + obj.size/3, 0,
+            obj.x + obj.size/2, obj.y + obj.size/3, obj.size/3
+        );
+        gradient.addColorStop(0, leafColors[obj.variant] || leafColors[0]);
+        gradient.addColorStop(1, '#1F4F1F');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(obj.x + obj.size/2, obj.y + obj.size/3, obj.size/3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Sombra
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(obj.x + obj.size/2 + 5, obj.y + obj.size, obj.size/4, obj.size/8, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    drawBush(ctx, obj) {
+        const bushColors = ['#32CD32', '#228B22'];
+        const color = bushColors[obj.variant] || bushColors[0];
+        
+        // Arbusto con textura
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Detalles más oscuros
+        ctx.fillStyle = '#1F4F1F';
+        for (let i = 0; i < 3; i++) {
+            const offsetX = (Math.random() - 0.5) * obj.size/2;
+            const offsetY = (Math.random() - 0.5) * obj.size/2;
+            ctx.beginPath();
+            ctx.arc(obj.x + obj.size/2 + offsetX, obj.y + obj.size/2 + offsetY, obj.size/8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    drawRock(ctx, obj) {
+        const rockColors = ['#696969', '#778899', '#2F4F4F'];
+        const color = rockColors[obj.variant] || rockColors[0];
+        
+        // Roca con forma irregular
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(obj.x, obj.y + obj.size/2);
+        ctx.lineTo(obj.x + obj.size/3, obj.y);
+        ctx.lineTo(obj.x + obj.size * 2/3, obj.y + obj.size/4);
+        ctx.lineTo(obj.x + obj.size, obj.y + obj.size/2);
+        ctx.lineTo(obj.x + obj.size * 3/4, obj.y + obj.size);
+        ctx.lineTo(obj.x + obj.size/4, obj.y + obj.size);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Highlight
+        ctx.fillStyle = '#A9A9A9';
+        ctx.beginPath();
+        ctx.moveTo(obj.x + 3, obj.y + obj.size/2);
+        ctx.lineTo(obj.x + obj.size/3, obj.y + 3);
+        ctx.lineTo(obj.x + obj.size/2, obj.y + obj.size/4);
+        ctx.lineTo(obj.x + obj.size/3, obj.y + obj.size/2);
+        ctx.closePath();
+        ctx.fill();
+    }
+    
+    drawFlower(ctx, obj) {
+        const flowerColors = ['#FFD700', '#FFA500', '#FF8C00', '#DAA520'];
+        const color = flowerColors[obj.color] || flowerColors[0];
+        
+        // Tallo
+        ctx.strokeStyle = '#228B22';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(obj.x + obj.size/2, obj.y + obj.size);
+        ctx.lineTo(obj.x + obj.size/2, obj.y + obj.size/2);
+        ctx.stroke();
+        
+        // Pétalos
+        ctx.fillStyle = color;
+        for (let i = 0; i < 5; i++) {
+            const angle = (i * Math.PI * 2) / 5;
+            const petalX = obj.x + obj.size/2 + Math.cos(angle) * obj.size/4;
+            const petalY = obj.y + obj.size/2 + Math.sin(angle) * obj.size/4;
+            ctx.beginPath();
+            ctx.arc(petalX, petalY, obj.size/6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Centro
+        ctx.fillStyle = '#B8860B';
+        ctx.beginPath();
+        ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/8, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    generatePaths() {
+        this.paths = [];
+        
+        // Sendero principal horizontal
+        this.paths.push({
+            type: 'horizontal',
+            y: this.game.worldSize.height / 2,
+            width: this.game.worldSize.width,
+            thickness: 60
+        });
+        
+        // Sendero vertical
+        this.paths.push({
+            type: 'vertical',
+            x: this.game.worldSize.width / 2,
+            height: this.game.worldSize.height,
+            thickness: 50
+        });
+    }
+    
+    drawPaths(ctx) {
+        if (!this.paths) return;
+        
+        ctx.fillStyle = '#8B7355';
+        this.paths.forEach(path => {
+            if (path.type === 'horizontal') {
+                ctx.fillRect(0, path.y - path.thickness/2, path.width, path.thickness);
+                
+                // Bordes del sendero
+                ctx.fillStyle = '#654321';
+                ctx.fillRect(0, path.y - path.thickness/2, path.width, 5);
+                ctx.fillRect(0, path.y + path.thickness/2 - 5, path.width, 5);
+                ctx.fillStyle = '#8B7355';
+            } else if (path.type === 'vertical') {
+                ctx.fillRect(path.x - path.thickness/2, 0, path.thickness, path.height);
+                
+                // Bordes del sendero
+                ctx.fillStyle = '#654321';
+                ctx.fillRect(path.x - path.thickness/2, 0, 5, path.height);
+                ctx.fillRect(path.x + path.thickness/2 - 5, 0, 5, path.height);
+                ctx.fillStyle = '#8B7355';
+            }
+        });
+    }
+
+    showEscapeRing() {
+        if (this.escapeRing) return;
+        
+        // Crear anillo de escape en una posición aleatoria
+        const margin = 200;
+        this.escapeRing = {
+            x: Math.random() * (this.game.worldSize.width - margin * 2) + margin,
+            y: Math.random() * (this.game.worldSize.height - margin * 2) + margin,
+            radius: 80,
+            active: true,
+            escaped: []
+        };
+        
+        console.log('🔵 Escape ring appeared at:', this.escapeRing.x, this.escapeRing.y);
+    }
+
+    drawEscapeRing(ctx, camera) {
+        if (!this.escapeRing || !this.escapeRing.active) return;
+        
+        ctx.save();
+        
+        const time = Date.now() * 0.001;
+        
+        // Anillo pulsante con múltiples capas
+        const pulse = Math.sin(time * 3) * 0.15 + 0.85;
+        const ringRadius = this.escapeRing.radius * pulse;
+        
+        // Aura exterior con colores dorados
+        const outerGradient = ctx.createRadialGradient(
+            this.escapeRing.x, this.escapeRing.y, 0,
+            this.escapeRing.x, this.escapeRing.y, ringRadius * 1.5
+        );
+        outerGradient.addColorStop(0, 'rgba(255, 215, 0, 0)');
+        outerGradient.addColorStop(0.7, 'rgba(255, 215, 0, 0.1)');
+        outerGradient.addColorStop(1, 'rgba(255, 165, 0, 0.3)');
+        
+        ctx.fillStyle = outerGradient;
+        ctx.beginPath();
+        ctx.arc(this.escapeRing.x, this.escapeRing.y, ringRadius * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Anillo principal con efecto de rotación
+        for (let i = 0; i < 3; i++) {
+            const offset = i * 0.3;
+            const currentRadius = ringRadius + Math.sin(time * 2 + offset) * 5;
+            
+            ctx.strokeStyle = `rgba(255, 215, 0, ${0.8 - i * 0.2})`;
+            ctx.lineWidth = 6 - i;
+            ctx.beginPath();
+            ctx.arc(this.escapeRing.x, this.escapeRing.y, currentRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // Partículas orbitales doradas
+        for (let i = 0; i < 8; i++) {
+            const angle = (time + i * Math.PI / 4) % (Math.PI * 2);
+            const particleRadius = ringRadius + 10;
+            const particleX = this.escapeRing.x + Math.cos(angle) * particleRadius;
+            const particleY = this.escapeRing.y + Math.sin(angle) * particleRadius;
+            
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(particleX, particleY, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Centro con gradiente dorado
+        const centerGradient = ctx.createRadialGradient(
+            this.escapeRing.x, this.escapeRing.y, 0,
+            this.escapeRing.x, this.escapeRing.y, ringRadius * 0.4
+        );
+        centerGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+        centerGradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.6)');
+        centerGradient.addColorStop(1, 'rgba(255, 165, 0, 0.2)');
+        
+        ctx.fillStyle = centerGradient;
+        ctx.beginPath();
+        ctx.arc(this.escapeRing.x, this.escapeRing.y, ringRadius * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Texto con efecto de brillo dorado
+        const textPulse = Math.sin(time * 4) * 0.3 + 0.7;
+        ctx.shadowColor = '#FFD700';
+        ctx.shadowBlur = 20 * textPulse;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('✨ ESCAPE ✨', this.escapeRing.x, this.escapeRing.y - 8);
+        ctx.fillText('🏆 ZONE 🏆', this.escapeRing.x, this.escapeRing.y + 12);
+        
+        ctx.restore();
+    }
+
+    checkEscapeRingCollision(player) {
+        if (!this.escapeRing || !this.escapeRing.active || player.role !== 'survivor' || !player.alive) return false;
+        
+        const distance = Math.sqrt(
+            Math.pow(player.x + 15 - this.escapeRing.x, 2) + 
+            Math.pow(player.y + 15 - this.escapeRing.y, 2)
+        );
+        
+        if (distance <= this.escapeRing.radius && !this.escapeRing.escaped.includes(player.id)) {
+            this.escapeRing.escaped.push(player.id);
+            player.escaped = true;
+            player.spectating = true;
+            player.alive = false;
+            
+            console.log(`🏃 ${player.name} escaped!`);
+            
+            // Crear partículas de escape
+            this.game.createParticles(player.x + 15, player.y + 15, '#00FFFF', 30);
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+    // Método para generar otros mapas en el futuro
+    generateMap(mapName) {
+        this.currentMap = mapName;
+        
+        switch(mapName) {
+            case 'discord_server':
+                this.generateDiscordServerMap();
+                break;
+            // Aquí puedes agregar más mapas
+            case 'abandoned_factory':
+                this.generateAbandonedFactoryMap();
+                break;
+            case 'haunted_mansion':
+                this.generateHauntedMansionMap();
+                break;
+            default:
+                this.generateDiscordServerMap();
+        }
+    }
+
+    // Mapas adicionales para el futuro
+    generateAbandonedFactoryMap() {
+        this.mapObjects = [];
+        
+        // Industrial themed objects
+        for (let i = 0; i < 20; i++) {
+            this.mapObjects.push({
+                type: 'machine',
+                x: Math.random() * (this.game.worldSize.width - 100) + 50,
+                y: Math.random() * (this.game.worldSize.height - 100) + 50,
+                size: 80 + Math.random() * 40
+            });
+        }
+        
+        for (let i = 0; i < 30; i++) {
+            this.mapObjects.push({
+                type: 'crate',
+                x: Math.random() * (this.game.worldSize.width - 60) + 30,
+                y: Math.random() * (this.game.worldSize.height - 60) + 30,
+                size: 40 + Math.random() * 20
+            });
+        }
+    }
+
+    generateHauntedMansionMap() {
+        this.mapObjects = [];
+        
+        // Spooky themed objects
+        for (let i = 0; i < 15; i++) {
+            this.mapObjects.push({
+                type: 'gravestone',
+                x: Math.random() * (this.game.worldSize.width - 60) + 30,
+                y: Math.random() * (this.game.worldSize.height - 60) + 30,
+                size: 50 + Math.random() * 30
+            });
+        }
+        
+        for (let i = 0; i < 25; i++) {
+            this.mapObjects.push({
+                type: 'dead_tree',
+                x: Math.random() * (this.game.worldSize.width - 80) + 40,
+                y: Math.random() * (this.game.worldSize.height - 80) + 40,
+                size: 70 + Math.random() * 50
+            });
+        }
+    }
+}

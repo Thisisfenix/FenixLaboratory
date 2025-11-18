@@ -460,9 +460,9 @@
                     <div class="character-role">Killer</div>
                     <div class="character-abilities">
                         <strong>Q - Sigilo:</strong> Invisibilidad + daño crítico (20s CD)<br>
-                        <strong>E - You Can't Run:</strong> Proyectil rastreador + jumpscare (15s CD)<br>
-                        <strong>R - Orbe de Daño:</strong> Proyectil de 40 daño (8s CD)<br>
-                        <strong>C - Rage Mode:</strong> +50% daño, +33% velocidad, inmunidad stuns (1 uso)
+                        <strong>E - You Can't Run:</strong> Proyectil rastreador + jumpscare, 20 daño (15s CD)<br>
+                        <strong>R - Orbe de Daño:</strong> Proyectil de 35 daño (8s CD)<br>
+                        <strong>C - Rage Mode:</strong> +50% daño, +33% velocidad, inmunidad stuns, 60s duración (1 uso)
                     </div>
                 </div>
 
@@ -494,12 +494,12 @@
 
                 <!-- iA777 - Survivor Robot -->
                 <div class="character-card" data-character="iA777" data-role="survivor">
-                    <div class="character-avatar">🤖</div>
+                    <div class="character-avatar"><img src="assets/icons/IA777NormalIcon.png" alt="iA777" style="width: 60px; height: 60px; border-radius: 50%;"></div>
                     <div class="character-name">iA777</div>
                     <div class="character-role">Survivor Robot</div>
                     <div class="character-abilities">
                         <em>"Durante una batalla contra los robots de Maxwell, iA777 estaba a punto de dar el golpe final cuando un portal apareció frente a él, teletransportándolo al Deadly Pursuit."</em><br><br>
-                        <strong>Q - Carga:</strong> Agarra al killer 7s, lo stunea pero pierde 4 HP (20s CD)<br>
+                        <strong>Q - Carga:</strong> Agarra al killer 5s, lo stunea pero pierde 4 HP (20s CD)<br>
                         <strong>E - Autoreparación:</strong> Regenera HP gradualmente (25s CD)<br>
                         <strong>R - Autodestrucción/Sierra:</strong> Explosión o modo sierra LMS<br>
                         <strong>Especial:</strong> 120 HP, velocidad 5, sin segunda vida
@@ -513,8 +513,8 @@
                     <div class="character-role">Survivor Fighter</div>
                     <div class="character-abilities">
                         <strong>Q - Energy Juice:</strong> Velocidad II por 10s (3 usos, 20s CD)<br>
-                        <strong>E - Punch:</strong> Golpe que da vida y stunea killers (32s CD)<br>
-                        <strong>R - Taunt:</strong> Nubla la pantalla del killer (15s CD)<br>
+                        <strong>E - Punch:</strong> Golpe que da vida y stunea killers (25s CD)<br>
+                        <strong>R - Taunt:</strong> Nubla la pantalla del killer 3s (12s CD)<br>
                         <strong>Especial:</strong> 85 HP, resistencia al llegar a 30 HP
                     </div>
                 </div>
@@ -552,6 +552,8 @@
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <button id="joinBtn" class="btn btn-primary">Unirse como Jugador</button>
                     <button id="spectateBtn" class="btn" style="background: linear-gradient(45deg, #666, #333); color: white;">👁️ Espectar Partida</button>
+                    <button id="updatesBtn" class="btn" style="background: linear-gradient(45deg, #4ecdc4, #44A08D); color: white;" onclick="window.deadlyPursuerUpdates?.showModal()">📋 Update Log</button>
+                    <button id="backToLabBtn" class="btn" style="background: linear-gradient(45deg, #ff6b35, #f7931e); color: white;" onclick="window.location.href='../index.html'">🔬 Laboratorio</button>
                 </div>
                 <div style="text-align: center; margin-top: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
                     📝 Selecciona un lobby arriba, elige tu personaje y únete a la acción<br>
@@ -579,7 +581,9 @@
     
     <!-- Game Scripts -->
     <script src="js/supabase-game.js"></script>
+    <script src="js/discord-friends-maps.js"></script>
     <script src="js/discord-friends-game.js"></script>
+    <script src="js/deadly-pursuer-updates.js"></script>
     
     <!-- Mobile Refresh Control -->
     <script>

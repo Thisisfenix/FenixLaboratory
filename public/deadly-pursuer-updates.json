@@ -1,0 +1,104 @@
+[
+    {
+        "version": "v1.5",
+        "date": "2025-11-18",
+        "type": "feature",
+        "title": "Sistema de Mapas Mejorado y Mejoras Visuales",
+        "changes": [
+            "🗺️ Sistema de generación de mapas completamente rediseñado",
+            "🌳 Distribución de objetos por clusters para mejor jugabilidad",
+            "🎨 Variedad visual mejorada con variantes de objetos y gradientes",
+            "🌸 Flores decorativas añadidas con múltiples colores",
+            "🛤️ Sistema de senderos implementado con caminos horizontales y verticales",
+            "💎 Formaciones de rocas mejoradas con formas irregulares",
+            "🌿 Texturas de arbustos mejoradas con patrones detallados",
+            "🌲 Variaciones de árboles añadidas con diferentes colores de tronco y hojas",
+            "✨ Anillo de escape rediseñado con partículas orbitales y animaciones",
+            "🎯 Mejor retroalimentación visual con efectos pulsantes y gradientes",
+            "🔧 Sistema de mapa base redundante eliminado para código más limpio",
+            "🎮 Estética general del juego e inmersión mejoradas"
+        ]
+    },
+    {
+        "version": "v1.4",
+        "date": "2025-11-18",
+        "type": "balance",
+        "title": "Actualización Mayor de Balance y Sistema de Registro",
+        "changes": [
+            "📋 Sistema de registro de actualizaciones de Deadly Pursuer añadido",
+            "🔧 Duración del Modo Rage reducida de 90s a 60s para mejor balance",
+            "🤖 Duración del stun de Carga de iA777 corregida de 7s a 5s",
+            "👊 Efecto de desenfoque de Burla de Luna reducido de 5s a 3s",
+            "⚔️ Daño de ataque básico balanceado de 30 a 25 HP",
+            "🌟 Daño del Orbe Blanco reducido de 40 a 35 HP", 
+            "🏃 Daño de You Can't Run reducido de 25 a 20 HP",
+            "⚡ Velocidad de movimiento de Warp Strike reducida para mejor contraataque",
+            "🦋 Velocidad de dash de Alas Puntiagudas ajustada para balance",
+            "🎯 Precisión de detección de hitboxes mejorada",
+            "📱 Capacidad de respuesta de controles móviles mejorada",
+            "🔄 Problemas de sincronización de lobby corregidos"
+        ]
+    },
+    {
+        "version": "v1.3",
+        "date": "2025-11-17",
+        "type": "hotfix",
+        "title": "Correcciones de Rendimiento y Estabilidad",
+        "changes": [
+            "🐛 Fugas de memoria en el sistema de partículas corregidas",
+            "📡 Estabilidad de sincronización de red mejorada",
+            "🎮 Compatibilidad de soporte para gamepad mejorada",
+            "📱 Mejor tiempo de respuesta táctil en móvil",
+            "🔄 Problemas raros de desincronización de lobby corregidos",
+            "⚡ Cálculos de cooldown de habilidades optimizados"
+        ]
+    },
+    {
+        "version": "v1.2",
+        "date": "2025-11-17",
+        "type": "feature",
+        "title": "Mejoras de LMS y Buffs de Personajes",
+        "changes": [
+            "🔥 Mecánicas de Last Man Standing mejoradas",
+            "💪 Bonuses específicos por personaje en LMS añadidos",
+            "🛡️ Resistencia al daño para survivors en LMS implementada",
+            "⚡ Cooldowns más rápidos en LMS para survivors añadidos",
+            "🎵 Sincronización de música LMS mejorada",
+            "🎮 Soporte para gamepad añadido",
+            "📱 Mejores controles táctiles para móvil",
+            "🌟 Mejoras en efectos visuales"
+        ]
+    },
+    {
+        "version": "v1.1", 
+        "date": "2025-11-16",
+        "type": "hotfix",
+        "title": "Correcciones de Bugs Críticos",
+        "changes": [
+            "🐛 Cuenta regresiva del lobby atascada corregida",
+            "🔄 Sincronización de jugadores mejorada",
+            "📡 Mejor estabilidad de red",
+            "🎯 Problemas de cooldown de habilidades corregidos",
+            "💀 Bugs del sistema de muerte/revivir resueltos",
+            "🎮 Mejoras en controles móviles"
+        ]
+    },
+    {
+        "version": "v1.0",
+        "date": "2025-11-15", 
+        "type": "major",
+        "title": "Lanzamiento de Deadly Pursuer",
+        "changes": [
+            "🎮 Lanzamiento inicial del juego multijugador Deadly Pursuer",
+            "👥 Soporte para hasta 8 jugadores por lobby",
+            "🔪 2 personajes Killer: 2019X y Vortex",
+            "🛡️ 4 personajes Survivor: iA777, Luna, Angel, Iris",
+            "🌍 Mapa temático del Servidor de Discord",
+            "⚡ Multijugador en tiempo real con Supabase",
+            "📱 Soporte para dispositivos móviles",
+            "🎵 Sistema de música dinámica",
+            "🏆 Modo Last Man Standing",
+            "💀 Sistema de revivir para survivors"
+        ]
+    }
+]
