@@ -158,28 +158,57 @@
             padding: 1.5rem;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
             min-height: 250px;
         }
         
+        .character-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,215,0,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+            opacity: 0;
+        }
+        
+        .character-card:hover::before {
+            opacity: 1;
+            animation: shine 1.5s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
         .character-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-12px) scale(1.02);
             border-color: #FFD700;
-            box-shadow: 0 20px 40px rgba(255,215,0,0.4);
+            box-shadow: 0 25px 50px rgba(255,215,0,0.5), 0 0 30px rgba(255,215,0,0.3);
         }
         
         .character-card.selected {
             border-color: #FFD700;
-            background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(0,0,0,0.9));
-            box-shadow: 0 0 40px rgba(255,215,0,0.6);
-            transform: scale(1.02);
+            background: linear-gradient(145deg, rgba(255,215,0,0.15), rgba(0,0,0,0.9));
+            box-shadow: 0 0 50px rgba(255,215,0,0.7), inset 0 0 30px rgba(255,215,0,0.1);
+            transform: scale(1.03);
+            animation: selectedPulse 2s infinite;
+        }
+        
+        @keyframes selectedPulse {
+            0%, 100% { box-shadow: 0 0 50px rgba(255,215,0,0.7), inset 0 0 30px rgba(255,215,0,0.1); }
+            50% { box-shadow: 0 0 60px rgba(255,215,0,0.9), inset 0 0 40px rgba(255,215,0,0.2); }
         }
         
         .character-avatar {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin: 0 auto 1rem;
             border-radius: 50%;
             background: linear-gradient(45deg, #333333, #111111);
@@ -188,6 +217,34 @@
             justify-content: center;
             font-size: 2.5rem;
             box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            border: 3px solid rgba(255,215,0,0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .character-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .character-card:hover .character-avatar {
+            transform: scale(1.1) rotate(5deg);
+            border-color: #FFD700;
+            box-shadow: 0 12px 35px rgba(255,215,0,0.6);
+        }
+        
+        .character-card.selected .character-avatar {
+            border-color: #FFD700;
+            box-shadow: 0 0 30px rgba(255,215,0,0.8);
+            animation: avatarGlow 2s infinite;
+        }
+        
+        @keyframes avatarGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(255,215,0,0.8); }
+            50% { box-shadow: 0 0 40px rgba(255,215,0,1); }
         }
         
         .character-name {
@@ -198,11 +255,252 @@
         }
         
         .character-role {
-            font-size: 1rem;
-            color: rgba(255,255,255,0.8);
+            display: inline-block;
+            padding: 0.4rem 1rem;
             margin-bottom: 1rem;
+            font-size: 0.85rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .character-role.killer {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255,0,0,0.4);
+        }
+        
+        .character-role.survivor {
+            background: linear-gradient(135deg, #4ecdc4, #44A08D);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(78,205,196,0.4);
+        }
+        
+        .character-card:hover .character-role {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255,215,0,0.5);
+        }
+        
+        /* Footer */
+        .game-footer {
+            background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.9));
+            border-top: 2px solid rgba(255,215,0,0.3);
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .footer-version {
+            display: inline-block;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.4);
+        }
+        
+        .footer-credits {
+            color: rgba(255,255,255,0.8);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-credits a {
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-credits a:hover {
+            color: #FFA500;
+            text-shadow: 0 0 10px rgba(255,215,0,0.6);
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .footer-link {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: #FFD700;
+        }
+        
+        /* Lobby Visual System */
+        .lobby-visual {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .lobby-status-card {
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(0,0,0,0.9));
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(255,215,0,0.3);
+        }
+        
+        .lobby-status-card.waiting {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, rgba(255,107,107,0.1), rgba(0,0,0,0.9));
+            box-shadow: 0 0 30px rgba(255,107,107,0.3);
+        }
+        
+        .lobby-status-card.ready {
+            border-color: #4ecdc4;
+            background: linear-gradient(135deg, rgba(78,205,196,0.1), rgba(0,0,0,0.9));
+            box-shadow: 0 0 30px rgba(78,205,196,0.3);
+        }
+        
+        .lobby-status-card.starting {
+            border-color: #FFD700;
+            background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(0,0,0,0.9));
+            box-shadow: 0 0 40px rgba(255,215,0,0.5);
+            animation: startingPulse 1s infinite;
+        }
+        
+        @keyframes startingPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .lobby-status-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .lobby-status-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .lobby-players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .lobby-player-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .lobby-player-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,215,0,0.5);
+            background: linear-gradient(45deg, #333, #111);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .lobby-player-avatar.filled {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 20px rgba(78,205,196,0.5);
+        }
+        
+        .lobby-player-avatar.killer {
+            border-color: #ff0000;
+            box-shadow: 0 0 20px rgba(255,0,0,0.5);
+        }
+        
+        .lobby-player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .lobby-player-name {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .lobby-player-role {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .lobby-player-role.survivor {
+            background: #4ecdc4;
+            color: #000;
+        }
+        
+        .lobby-player-role.killer {
+            background: #ff0000;
+            color: #fff;
+        }
+        
+        .lobby-map-preview {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .lobby-map-name {
+            font-size: 1.2rem;
+            color: #FFD700;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .lobby-map-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .lobby-players-grid {
+                grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            }
+            
+            .lobby-player-avatar {
+                width: 60px;
+                height: 60px;
+            }
         }
         
         .character-abilities {
@@ -433,31 +731,16 @@
         </div>
 
         <div class="game-section">
-            <h2 class="section-title">Selecciona Lobby</h2>
-            
-            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center;">
-                <select id="lobbySelect" style="padding: 0.8rem; border: 2px solid rgba(255,215,0,0.5); background: rgba(0,0,0,0.8); color: #ffffff; border-radius: 10px; font-size: 1rem; min-width: 200px;">
-                    <option value="lobby-1">Lobby 1</option>
-                    <option value="lobby-2">Lobby 2</option>
-                    <option value="lobby-3">Lobby 3</option>
-                    <option value="lobby-4">Lobby 4</option>
-                    <option value="lobby-5">Lobby 5</option>
-                </select>
-                <button id="refreshLobbies" class="btn" style="background: linear-gradient(45deg, #666, #333); color: white; padding: 0.8rem 1.5rem; min-width: auto;">🔄 Actualizar</button>
-            </div>
-            
-            <div id="lobbyInfo" style="background: rgba(0,0,0,0.6); padding: 1rem; border-radius: 10px; margin-bottom: 2rem; text-align: center; color: #fff;"></div>
-        </div>
-        
-        <div class="game-section">
             <h2 class="section-title">Selecciona tu Personaje</h2>
             
             <div class="characters-grid">
                 <!-- 2019x - Killer -->
                 <div class="character-card" data-character="2019x" data-role="killer">
-                    <div class="character-avatar">🔥</div>
+                    <div class="character-avatar">
+                        <div style="font-size: 3.5rem;">🔥</div>
+                    </div>
                     <div class="character-name">2019x</div>
-                    <div class="character-role">Killer</div>
+                    <div class="character-role killer">⚔️ Killer</div>
                     <div class="character-abilities">
                         <strong>Q - Sigilo:</strong> Invisibilidad + daño crítico (20s CD)<br>
                         <strong>E - You Can't Run:</strong> Proyectil rastreador + jumpscare, 20 daño (15s CD)<br>
@@ -468,9 +751,11 @@
 
                 <!-- Vortex - Killer -->
                 <div class="character-card" data-character="vortex" data-role="killer">
-                    <div class="character-avatar">🌀</div>
+                    <div class="character-avatar">
+                        <div style="font-size: 3.5rem;">🌀</div>
+                    </div>
                     <div class="character-name">Vortex</div>
-                    <div class="character-role">Killer</div>
+                    <div class="character-role killer">⚔️ Killer</div>
                     <div class="character-abilities">
                         <strong>Q - Warp Strike:</strong> Teleport random + movimiento teledirigido inesquivable (25s CD)<br>
                         <strong>E - Void Step:</strong> Teleport hacia survivor cercano (18s CD)<br>
@@ -481,9 +766,11 @@
 
                 <!-- Gissel - Survivor -->
                 <div class="character-card" data-character="gissel" data-role="survivor">
-                    <div class="character-avatar"><img src="assets/icons/GisselInactiveIcon.png" alt="Gissel" style="width: 60px; height: 60px; border-radius: 50%;"></div>
+                    <div class="character-avatar">
+                        <img src="assets/icons/GisselInactiveIcon.png" alt="Gissel">
+                    </div>
                     <div class="character-name">Gissel</div>
-                    <div class="character-role">Survivor</div>
+                    <div class="character-role survivor">🛡️ Survivor</div>
                     <div class="character-abilities">
                         <strong>Q - Alas Puntiagudas:</strong> Hasta 3 golpes de stun al killer (18s CD)<br>
                         <strong>Pasiva LMS:</strong> +60 HP cuando queda 1 survivor<br>
@@ -494,9 +781,11 @@
 
                 <!-- iA777 - Survivor Robot -->
                 <div class="character-card" data-character="iA777" data-role="survivor">
-                    <div class="character-avatar"><img src="assets/icons/IA777NormalIcon.png" alt="iA777" style="width: 60px; height: 60px; border-radius: 50%;"></div>
+                    <div class="character-avatar">
+                        <img src="assets/icons/IA777NormalIcon.png" alt="iA777">
+                    </div>
                     <div class="character-name">iA777</div>
-                    <div class="character-role">Survivor Robot</div>
+                    <div class="character-role survivor">🛡️ Survivor Robot</div>
                     <div class="character-abilities">
                         <em>"Durante una batalla contra los robots de Maxwell, iA777 estaba a punto de dar el golpe final cuando un portal apareció frente a él, teletransportándolo al Deadly Pursuit."</em><br><br>
                         <strong>Q - Carga:</strong> Agarra al killer 5s, lo stunea pero pierde 4 HP (20s CD)<br>
@@ -508,9 +797,11 @@
 
                 <!-- Luna - Survivor Fighter -->
                 <div class="character-card" data-character="luna" data-role="survivor">
-                    <div class="character-avatar"><img src="assets/icons/LunaNormalIcon.png" alt="Luna" style="width: 60px; height: 60px; border-radius: 50%;"></div>
+                    <div class="character-avatar">
+                        <img src="assets/icons/LunaNormalIcon.png" alt="Luna">
+                    </div>
                     <div class="character-name">Luna</div>
-                    <div class="character-role">Survivor Fighter</div>
+                    <div class="character-role survivor">🛡️ Survivor Fighter</div>
                     <div class="character-abilities">
                         <strong>Q - Energy Juice:</strong> Velocidad II por 10s (3 usos, 20s CD)<br>
                         <strong>E - Punch:</strong> Golpe que da vida y stunea killers (25s CD)<br>
@@ -521,9 +812,11 @@
 
                 <!-- Angel - Survivor Support -->
                 <div class="character-card" data-character="angel" data-role="survivor">
-                    <div class="character-avatar">😇</div>
+                    <div class="character-avatar">
+                        <img src="assets/icons/AngelNormalIcon.png" alt="Angel" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;font-size: 3.5rem;&quot;>😇</div>';">
+                    </div>
                     <div class="character-name">Angel</div>
-                    <div class="character-role">Survivor Support</div>
+                    <div class="character-role survivor">🛡️ Survivor Support</div>
                     <div class="character-abilities">
                         <strong>Q - Sacrificio Angelical:</strong> 40% vida por curación + speed boost aliados (35s CD)<br>
                         <strong>E - Dash Protector:</strong> 90-130 unidades con negación de ataques (40s CD)<br>
@@ -534,9 +827,11 @@
 
                 <!-- Iris - Survivor Telekinetic -->
                 <div class="character-card" data-character="iris" data-role="survivor">
-                    <div class="character-avatar">🔮</div>
+                    <div class="character-avatar">
+                        <img src="assets/icons/IrisNormalIcon.png" alt="Iris" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;font-size: 3.5rem;&quot;>🔮</div>';">
+                    </div>
                     <div class="character-name">Iris</div>
-                    <div class="character-role">Survivor Telekinetic</div>
+                    <div class="character-role survivor">🛡️ Survivor Telekinetic</div>
                     <div class="character-abilities">
                         <em>"Ella estaba ayudando a iA777 a derrotar a un robot de Maxwell, hasta que vio como se metía a un portal iA, sin darse cuenta que ella también iba a ser teletransportada."</em><br><br>
                         <strong>Q - Curación:</strong> Se cura 10-20 HP, cura aliados 15 HP/3s por 20s (20s CD)<br>
@@ -552,6 +847,7 @@
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <button id="joinBtn" class="btn btn-primary">Unirse como Jugador</button>
                     <button id="spectateBtn" class="btn" style="background: linear-gradient(45deg, #666, #333); color: white;">👁️ Espectar Partida</button>
+                    <button id="sandboxBtn" class="btn" style="background: linear-gradient(45deg, #ff9500, #ff6b00); color: white;">🔧 Modo Sandbox</button>
                     <button id="updatesBtn" class="btn" style="background: linear-gradient(45deg, #4ecdc4, #44A08D); color: white;" onclick="window.deadlyPursuerUpdates?.showModal()">📋 Update Log</button>
                     <button id="backToLabBtn" class="btn" style="background: linear-gradient(45deg, #ff6b35, #f7931e); color: white;" onclick="window.location.href='../index.html'">🔬 Laboratorio</button>
                 </div>
@@ -562,8 +858,105 @@
             </div>
         </div>
         
-        <!-- Lobby Status -->
-        <div id="lobbyStatus"></div>
+        <div class="game-section">
+            <h2 class="section-title">Estado del Lobby</h2>
+            
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center;">
+                <select id="lobbySelect" style="padding: 0.8rem; border: 2px solid rgba(255,215,0,0.5); background: rgba(0,0,0,0.8); color: #ffffff; border-radius: 10px; font-size: 1rem; min-width: 200px;">
+                    <option value="lobby-1">Lobby 1</option>
+                    <option value="lobby-2">Lobby 2</option>
+                    <option value="lobby-3">Lobby 3</option>
+                    <option value="lobby-4">Lobby 4</option>
+                    <option value="lobby-5">Lobby 5</option>
+                </select>
+                <button id="refreshLobbies" class="btn" style="background: linear-gradient(45deg, #666, #333); color: white; padding: 0.8rem 1.5rem; min-width: auto;">🔄 Actualizar</button>
+            </div>
+            
+            <div id="lobbyInfo" class="lobby-visual">
+                <div id="lobbyStatusCard" class="lobby-status-card waiting">
+                    <div class="lobby-status-icon">⏳</div>
+                    <div class="lobby-status-text">Esperando jugadores...</div>
+                    <div style="font-size: 1.2rem; color: rgba(255,255,255,0.8);">0/8 jugadores</div>
+                </div>
+                
+                <div style="background: rgba(0,0,0,0.6); border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; padding: 1rem;">
+                    <h3 style="color: #FFD700; margin-bottom: 1rem; text-align: center;">👥 Jugadores en Lobby</h3>
+                    <div id="lobbyPlayersGrid" class="lobby-players-grid">
+                        <div class="lobby-player-slot">
+                            <div class="lobby-player-avatar">
+                                <span style="font-size: 2rem; opacity: 0.3;">❓</span>
+                            </div>
+                            <div class="lobby-player-name" style="opacity: 0.5;">Vacío</div>
+                        </div>
+                        <div class="lobby-player-slot">
+                            <div class="lobby-player-avatar">
+                                <span style="font-size: 2rem; opacity: 0.3;">❓</span>
+                            </div>
+                            <div class="lobby-player-name" style="opacity: 0.5;">Vacío</div>
+                        </div>
+                        <div class="lobby-player-slot">
+                            <div class="lobby-player-avatar">
+                                <span style="font-size: 2rem; opacity: 0.3;">❓</span>
+                            </div>
+                            <div class="lobby-player-name" style="opacity: 0.5;">Vacío</div>
+                        </div>
+                        <div class="lobby-player-slot">
+                            <div class="lobby-player-avatar">
+                                <span style="font-size: 2rem; opacity: 0.3;">❓</span>
+                            </div>
+                            <div class="lobby-player-name" style="opacity: 0.5;">Vacío</div>
+                        </div>
+                        <div class="lobby-player-slot">
+                            <div class="lobby-player-avatar">
+                                <span style="font-size: 2rem; opacity: 0.3;">❓</span>
+                            </div>
+                            <div class="lobby-player-name" style="opacity: 0.5;">Vacío</div>
+                        </div>
+                        <div class="lobby-player-slot">
+                            <div class="lobby-player-avatar">
+                                <span style="font-size: 2rem; opacity: 0.3;">❓</span>
+                            </div>
+                            <div class="lobby-player-name" style="opacity: 0.5;">Vacío</div>
+                        </div>
+                        <div class="lobby-player-slot">
+                            <div class="lobby-player-avatar">
+                                <span style="font-size: 2rem; opacity: 0.3;">❓</span>
+                            </div>
+                            <div class="lobby-player-name" style="opacity: 0.5;">Vacío</div>
+                        </div>
+                        <div class="lobby-player-slot">
+                            <div class="lobby-player-avatar">
+                                <span style="font-size: 2rem; opacity: 0.3;">❓</span>
+                            </div>
+                            <div class="lobby-player-name" style="opacity: 0.5;">Vacío</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lobby-map-preview">
+                    <div class="lobby-map-icon">🗺️</div>
+                    <div class="lobby-map-name" id="lobbyMapName">Mapa Aleatorio</div>
+                    <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">El mapa se seleccionará al iniciar la partida</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="game-footer">
+            <div class="footer-content">
+                <div class="footer-version">v0.1</div>
+                <div class="footer-credits">
+                    Desarrollado por <a href="https://github.com/thisisfenix" target="_blank" rel="noopener noreferrer">ThisIsFenix</a>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/thisisfenix" target="_blank" rel="noopener noreferrer" class="footer-link">👨‍💻 GitHub</a>
+                    <span style="color: rgba(255,255,255,0.3);">|</span>
+                    <a href="../index.html" class="footer-link">🔬 Laboratorio</a>
+                    <span style="color: rgba(255,255,255,0.3);">|</span>
+                    <span class="footer-link" style="cursor: default;">© 2024 Discord Friends</span>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Game Screen -->

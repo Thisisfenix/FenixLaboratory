@@ -82,10 +82,17 @@ class DiscordFriendsMaps {
                 this.drawRock(ctx, obj);
             } else if (obj.type === 'flower') {
                 this.drawFlower(ctx, obj);
+            } else if (obj.type === 'pillar') {
+                this.drawPillar(ctx, obj);
             }
             
             ctx.restore();
         });
+        
+        // Dibujar marcadores de spawn en modo sandbox
+        if (this.currentMap === 'sandbox') {
+            this.drawSpawnMarkers(ctx);
+        }
     }
     
     drawTree(ctx, obj) {
@@ -192,6 +199,85 @@ class DiscordFriendsMaps {
         ctx.beginPath();
         ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/8, 0, Math.PI * 2);
         ctx.fill();
+    }
+    
+    drawPillar(ctx, obj) {
+        // Pilar de piedra para sandbox
+        const gradient = ctx.createLinearGradient(obj.x, obj.y, obj.x + obj.size, obj.y + obj.size);
+        gradient.addColorStop(0, '#A9A9A9');
+        gradient.addColorStop(0.5, '#696969');
+        gradient.addColorStop(1, '#2F4F4F');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
+        
+        // Bordes más claros
+        ctx.strokeStyle = '#D3D3D3';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(obj.x, obj.y, obj.size, obj.size);
+        
+        // Sombra
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(obj.x + 3, obj.y + 3, obj.size, obj.size);
+    }
+    
+    drawSpawnMarkers(ctx) {
+        if (!this.spawnMarkers || this.currentMap !== 'sandbox') return;
+        
+        this.spawnMarkers.forEach(marker => {
+            ctx.save();
+            
+            if (marker.type === 'player') {
+                // Marcador del jugador - azul
+                ctx.fillStyle = 'rgba(0, 100, 255, 0.3)';
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 40, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#0064FF';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('PLAYER', marker.x, marker.y + 5);
+            } else if (marker.type === 'dummy') {
+                // Marcador de dummy - rojo
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 35, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('DUMMY', marker.x, marker.y + 4);
+            } else if (marker.type === 'downed') {
+                // Marcador de dummy caído - naranja
+                ctx.fillStyle = 'rgba(255, 165, 0, 0.3)';
+                ctx.beginPath();
+                ctx.arc(marker.x, marker.y, 35, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#FFA500';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('DOWNED', marker.x, marker.y + 4);
+            }
+            
+            ctx.restore();
+        });
     }
     
     generatePaths() {
@@ -365,6 +451,9 @@ class DiscordFriendsMaps {
             case 'discord_server':
                 this.generateDiscordServerMap();
                 break;
+            case 'sandbox':
+                this.generateSandboxMap();
+                break;
             // Aquí puedes agregar más mapas
             case 'abandoned_factory':
                 this.generateAbandonedFactoryMap();
@@ -375,6 +464,51 @@ class DiscordFriendsMaps {
             default:
                 this.generateDiscordServerMap();
         }
+    }
+    
+    generateSandboxMap() {
+        this.mapObjects = [];
+        this.escapeRing = null;
+        
+        // Mapa plano con obstáculos mínimos para testing
+        // Solo algunos obstáculos básicos para probar mecánicas
+        
+        // 4 pilares en las esquinas para delimitar área de combate
+        const pillarPositions = [
+            {x: 300, y: 300},
+            {x: this.game.worldSize.width - 300, y: 300},
+            {x: 300, y: this.game.worldSize.height - 300},
+            {x: this.game.worldSize.width - 300, y: this.game.worldSize.height - 300}
+        ];
+        
+        pillarPositions.forEach(pos => {
+            this.mapObjects.push({
+                type: 'pillar',
+                x: pos.x,
+                y: pos.y,
+                size: 60
+            });
+        });
+        
+        // Algunas rocas pequeñas para cobertura básica
+        for (let i = 0; i < 8; i++) {
+            this.mapObjects.push({
+                type: 'rock',
+                x: Math.random() * (this.game.worldSize.width - 200) + 100,
+                y: Math.random() * (this.game.worldSize.height - 200) + 100,
+                size: 40 + Math.random() * 20,
+                variant: Math.floor(Math.random() * 3)
+            });
+        }
+        
+        // Marcadores de spawn para testing
+        this.spawnMarkers = [
+            {x: this.game.worldSize.width / 2, y: 200, type: 'player'},
+            {x: 400, y: 600, type: 'dummy'},
+            {x: 800, y: 600, type: 'dummy'},
+            {x: 1200, y: 600, type: 'dummy'},
+            {x: 600, y: 400, type: 'downed', label: 'DOWNED'}
+        ];
     }
 
     // Mapas adicionales para el futuro
