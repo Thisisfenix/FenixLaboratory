@@ -25,7 +25,8 @@ class DiscordFriendsMaps {
                     x: centerX + (Math.random() - 0.5) * clusterSize,
                     y: centerY + (Math.random() - 0.5) * clusterSize,
                     size: 70 + Math.random() * 50,
-                    variant: Math.floor(Math.random() * 3)
+                    variant: Math.floor(Math.random() * 3),
+                    hasCollision: true
                 });
             }
             
@@ -36,7 +37,8 @@ class DiscordFriendsMaps {
                     x: centerX + (Math.random() - 0.5) * clusterSize,
                     y: centerY + (Math.random() - 0.5) * clusterSize,
                     size: 25 + Math.random() * 25,
-                    variant: Math.floor(Math.random() * 2)
+                    variant: Math.floor(Math.random() * 2),
+                    hasCollision: false
                 });
             }
         }
@@ -48,7 +50,8 @@ class DiscordFriendsMaps {
                 x: Math.random() * (this.game.worldSize.width - 60) + 30,
                 y: Math.random() * (this.game.worldSize.height - 60) + 30,
                 size: 30 + Math.random() * 30,
-                variant: Math.floor(Math.random() * 3)
+                variant: Math.floor(Math.random() * 3),
+                hasCollision: true
             });
         }
         
@@ -59,7 +62,8 @@ class DiscordFriendsMaps {
                 x: Math.random() * this.game.worldSize.width,
                 y: Math.random() * this.game.worldSize.height,
                 size: 8 + Math.random() * 12,
-                color: Math.floor(Math.random() * 4)
+                color: Math.floor(Math.random() * 4),
+                hasCollision: false
             });
         }
         
@@ -84,6 +88,22 @@ class DiscordFriendsMaps {
                 this.drawFlower(ctx, obj);
             } else if (obj.type === 'pillar') {
                 this.drawPillar(ctx, obj);
+            } else if (obj.type === 'machine') {
+                this.drawMachine(ctx, obj);
+            } else if (obj.type === 'crate') {
+                this.drawCrate(ctx, obj);
+            } else if (obj.type === 'barrel') {
+                this.drawBarrel(ctx, obj);
+            } else if (obj.type === 'pipe') {
+                this.drawPipe(ctx, obj);
+            } else if (obj.type === 'gravestone') {
+                this.drawGravestone(ctx, obj);
+            } else if (obj.type === 'dead_tree') {
+                this.drawDeadTree(ctx, obj);
+            } else if (obj.type === 'statue') {
+                this.drawStatue(ctx, obj);
+            } else if (obj.type === 'fog') {
+                this.drawFog(ctx, obj);
             }
             
             ctx.restore();
@@ -486,7 +506,8 @@ class DiscordFriendsMaps {
                 type: 'pillar',
                 x: pos.x,
                 y: pos.y,
-                size: 60
+                size: 60,
+                hasCollision: true
             });
         });
         
@@ -497,7 +518,8 @@ class DiscordFriendsMaps {
                 x: Math.random() * (this.game.worldSize.width - 200) + 100,
                 y: Math.random() * (this.game.worldSize.height - 200) + 100,
                 size: 40 + Math.random() * 20,
-                variant: Math.floor(Math.random() * 3)
+                variant: Math.floor(Math.random() * 3),
+                hasCollision: true
             });
         }
         
@@ -511,50 +533,286 @@ class DiscordFriendsMaps {
         ];
     }
 
-    // Mapas adicionales para el futuro
     generateAbandonedFactoryMap() {
         this.mapObjects = [];
+        this.escapeRing = null;
         
-        // Industrial themed objects
-        for (let i = 0; i < 20; i++) {
+        // Máquinas industriales grandes
+        const machinePositions = [
+            {x: 400, y: 300}, {x: 1200, y: 300}, {x: 2000, y: 300},
+            {x: 400, y: 800}, {x: 1200, y: 800}, {x: 2000, y: 800},
+            {x: 400, y: 1300}, {x: 1200, y: 1300}, {x: 2000, y: 1300}
+        ];
+        
+        machinePositions.forEach(pos => {
             this.mapObjects.push({
                 type: 'machine',
+                x: pos.x,
+                y: pos.y,
+                size: 100 + Math.random() * 40,
+                hasCollision: true
+            });
+        });
+        
+        // Cajas apiladas
+        for (let i = 0; i < 35; i++) {
+            this.mapObjects.push({
+                type: 'crate',
                 x: Math.random() * (this.game.worldSize.width - 100) + 50,
                 y: Math.random() * (this.game.worldSize.height - 100) + 50,
-                size: 80 + Math.random() * 40
+                size: 45 + Math.random() * 25,
+                hasCollision: true
             });
         }
         
-        for (let i = 0; i < 30; i++) {
+        // Barriles de aceite
+        for (let i = 0; i < 20; i++) {
             this.mapObjects.push({
-                type: 'crate',
-                x: Math.random() * (this.game.worldSize.width - 60) + 30,
-                y: Math.random() * (this.game.worldSize.height - 60) + 30,
-                size: 40 + Math.random() * 20
+                type: 'barrel',
+                x: Math.random() * (this.game.worldSize.width - 80) + 40,
+                y: Math.random() * (this.game.worldSize.height - 80) + 40,
+                size: 35 + Math.random() * 15,
+                hasCollision: true
+            });
+        }
+        
+        // Tuberías
+        for (let i = 0; i < 8; i++) {
+            this.mapObjects.push({
+                type: 'pipe',
+                x: Math.random() * (this.game.worldSize.width - 150) + 75,
+                y: Math.random() * (this.game.worldSize.height - 150) + 75,
+                size: 120 + Math.random() * 60,
+                hasCollision: false
             });
         }
     }
 
     generateHauntedMansionMap() {
         this.mapObjects = [];
+        this.escapeRing = null;
         
-        // Spooky themed objects
-        for (let i = 0; i < 15; i++) {
-            this.mapObjects.push({
-                type: 'gravestone',
-                x: Math.random() * (this.game.worldSize.width - 60) + 30,
-                y: Math.random() * (this.game.worldSize.height - 60) + 30,
-                size: 50 + Math.random() * 30
-            });
+        // Lápidas en clusters
+        const clusters = 6;
+        for (let c = 0; c < clusters; c++) {
+            const centerX = Math.random() * (this.game.worldSize.width - 400) + 200;
+            const centerY = Math.random() * (this.game.worldSize.height - 400) + 200;
+            
+            for (let i = 0; i < 8; i++) {
+                this.mapObjects.push({
+                    type: 'gravestone',
+                    x: centerX + (Math.random() - 0.5) * 200,
+                    y: centerY + (Math.random() - 0.5) * 200,
+                    size: 40 + Math.random() * 30,
+                    variant: Math.floor(Math.random() * 3),
+                    hasCollision: true
+                });
+            }
         }
         
-        for (let i = 0; i < 25; i++) {
+        // Árboles muertos
+        for (let i = 0; i < 30; i++) {
             this.mapObjects.push({
                 type: 'dead_tree',
-                x: Math.random() * (this.game.worldSize.width - 80) + 40,
-                y: Math.random() * (this.game.worldSize.height - 80) + 40,
-                size: 70 + Math.random() * 50
+                x: Math.random() * (this.game.worldSize.width - 100) + 50,
+                y: Math.random() * (this.game.worldSize.height - 100) + 50,
+                size: 80 + Math.random() * 60,
+                hasCollision: true
             });
         }
+        
+        // Estatuas
+        for (let i = 0; i < 12; i++) {
+            this.mapObjects.push({
+                type: 'statue',
+                x: Math.random() * (this.game.worldSize.width - 120) + 60,
+                y: Math.random() * (this.game.worldSize.height - 120) + 60,
+                size: 70 + Math.random() * 40,
+                hasCollision: true
+            });
+        }
+        
+        // Niebla decorativa
+        for (let i = 0; i < 15; i++) {
+            this.mapObjects.push({
+                type: 'fog',
+                x: Math.random() * this.game.worldSize.width,
+                y: Math.random() * this.game.worldSize.height,
+                size: 100 + Math.random() * 80,
+                hasCollision: false
+            });
+        }
+    }
+    
+    drawMachine(ctx, obj) {
+        const gradient = ctx.createLinearGradient(obj.x, obj.y, obj.x + obj.size, obj.y + obj.size);
+        gradient.addColorStop(0, '#4A4A4A');
+        gradient.addColorStop(0.5, '#2F2F2F');
+        gradient.addColorStop(1, '#1A1A1A');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(obj.x, obj.y, obj.size, obj.size * 0.8);
+        
+        // Detalles metálicos
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(obj.x + obj.size * 0.1, obj.y + obj.size * 0.2, obj.size * 0.8, obj.size * 0.1);
+        
+        ctx.fillStyle = '#FF0000';
+        ctx.beginPath();
+        ctx.arc(obj.x + obj.size * 0.8, obj.y + obj.size * 0.15, 8, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    drawCrate(ctx, obj) {
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
+        
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(obj.x, obj.y, obj.size, obj.size);
+        
+        // Líneas de madera
+        ctx.strokeStyle = '#5C3317';
+        ctx.lineWidth = 2;
+        for (let i = 1; i < 4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(obj.x, obj.y + (obj.size / 4) * i);
+            ctx.lineTo(obj.x + obj.size, obj.y + (obj.size / 4) * i);
+            ctx.stroke();
+        }
+    }
+    
+    drawBarrel(ctx, obj) {
+        const gradient = ctx.createRadialGradient(
+            obj.x + obj.size/2, obj.y + obj.size/2, 0,
+            obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2
+        );
+        gradient.addColorStop(0, '#696969');
+        gradient.addColorStop(1, '#2F2F2F');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Aros metálicos
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/3, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+    
+    drawPipe(ctx, obj) {
+        ctx.fillStyle = '#708090';
+        ctx.fillRect(obj.x, obj.y + obj.size/3, obj.size, obj.size/3);
+        
+        ctx.strokeStyle = '#4F4F4F';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(obj.x, obj.y + obj.size/3, obj.size, obj.size/3);
+    }
+    
+    drawGravestone(ctx, obj) {
+        const stoneColors = ['#696969', '#808080', '#A9A9A9'];
+        ctx.fillStyle = stoneColors[obj.variant] || stoneColors[0];
+        
+        // Forma de lápida
+        ctx.beginPath();
+        ctx.moveTo(obj.x + obj.size/2, obj.y);
+        ctx.lineTo(obj.x + obj.size, obj.y + obj.size/3);
+        ctx.lineTo(obj.x + obj.size, obj.y + obj.size);
+        ctx.lineTo(obj.x, obj.y + obj.size);
+        ctx.lineTo(obj.x, obj.y + obj.size/3);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Cruz
+        ctx.strokeStyle = '#2F2F2F';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(obj.x + obj.size/2, obj.y + obj.size * 0.3);
+        ctx.lineTo(obj.x + obj.size/2, obj.y + obj.size * 0.7);
+        ctx.moveTo(obj.x + obj.size * 0.3, obj.y + obj.size * 0.45);
+        ctx.lineTo(obj.x + obj.size * 0.7, obj.y + obj.size * 0.45);
+        ctx.stroke();
+    }
+    
+    drawDeadTree(ctx, obj) {
+        ctx.strokeStyle = '#3D2817';
+        ctx.lineWidth = obj.size/8;
+        
+        // Tronco retorcido
+        ctx.beginPath();
+        ctx.moveTo(obj.x + obj.size/2, obj.y + obj.size);
+        ctx.lineTo(obj.x + obj.size/2 + 10, obj.y + obj.size * 0.6);
+        ctx.lineTo(obj.x + obj.size/2 - 5, obj.y + obj.size * 0.3);
+        ctx.lineTo(obj.x + obj.size/2, obj.y);
+        ctx.stroke();
+        
+        // Ramas
+        ctx.lineWidth = obj.size/15;
+        ctx.beginPath();
+        ctx.moveTo(obj.x + obj.size/2, obj.y + obj.size * 0.4);
+        ctx.lineTo(obj.x + obj.size * 0.2, obj.y + obj.size * 0.2);
+        ctx.moveTo(obj.x + obj.size/2, obj.y + obj.size * 0.5);
+        ctx.lineTo(obj.x + obj.size * 0.8, obj.y + obj.size * 0.3);
+        ctx.stroke();
+    }
+    
+    drawStatue(ctx, obj) {
+        const gradient = ctx.createLinearGradient(obj.x, obj.y, obj.x, obj.y + obj.size);
+        gradient.addColorStop(0, '#D3D3D3');
+        gradient.addColorStop(1, '#696969');
+        
+        // Base
+        ctx.fillStyle = '#4F4F4F';
+        ctx.fillRect(obj.x + obj.size * 0.2, obj.y + obj.size * 0.8, obj.size * 0.6, obj.size * 0.2);
+        
+        // Cuerpo
+        ctx.fillStyle = gradient;
+        ctx.fillRect(obj.x + obj.size * 0.3, obj.y + obj.size * 0.3, obj.size * 0.4, obj.size * 0.5);
+        
+        // Cabeza
+        ctx.beginPath();
+        ctx.arc(obj.x + obj.size/2, obj.y + obj.size * 0.2, obj.size * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    drawFog(ctx, obj) {
+        const gradient = ctx.createRadialGradient(
+            obj.x + obj.size/2, obj.y + obj.size/2, 0,
+            obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2
+        );
+        gradient.addColorStop(0, 'rgba(200, 200, 200, 0.3)');
+        gradient.addColorStop(1, 'rgba(200, 200, 200, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    checkCollision(x, y, size = 30) {
+        for (let obj of this.mapObjects) {
+            if (!obj.hasCollision) continue;
+            
+            const objCenterX = obj.x + obj.size/2;
+            const objCenterY = obj.y + obj.size/2;
+            const objRadius = obj.size/2;
+            
+            const playerCenterX = x + size/2;
+            const playerCenterY = y + size/2;
+            const playerRadius = size/2;
+            
+            const distance = Math.sqrt(
+                Math.pow(playerCenterX - objCenterX, 2) + 
+                Math.pow(playerCenterY - objCenterY, 2)
+            );
+            
+            if (distance < objRadius + playerRadius) {
+                return true;
+            }
+        }
+        return false;
     }
 }

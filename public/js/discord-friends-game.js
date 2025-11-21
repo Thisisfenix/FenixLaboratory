@@ -34,6 +34,11 @@ class DiscordFriendsGame {
         
         // Initialize map system
         this.mapSystem = new DiscordFriendsMaps(this);
+        
+        // Initialize game modes system
+        this.gameModeSystem = new DiscordFriendsGameModes(this);
+        this.selectedGameMode = 'classic';
+        
         this.rageLevel = 0;
         this.maxRage = 500;
         this.rageMode = { active: false, timer: 0 };
@@ -1634,7 +1639,18 @@ class DiscordFriendsGame {
         this.resizeCanvas();
         
         this.setupGameEventListeners();
-        this.mapSystem.generateMap('discord_server');
+        
+        // Randomizar modo de juego
+        const gameModes = ['classic', 'escape', 'deathmatch', 'infection', 'juggernaut', 'hide_and_seek'];
+        const randomMode = gameModes[Math.floor(Math.random() * gameModes.length)];
+        console.log(`🎮 Modo de juego seleccionado: ${randomMode}`);
+        this.gameModeSystem.initializeMode(randomMode);
+        
+        // Randomizar mapa
+        const maps = ['discord_server', 'abandoned_factory', 'haunted_mansion'];
+        const randomMap = maps[Math.floor(Math.random() * maps.length)];
+        console.log(`🗺️ Mapa seleccionado: ${randomMap}`);
+        this.mapSystem.generateMap(randomMap);
     }
     
     startGameFromRemote() {

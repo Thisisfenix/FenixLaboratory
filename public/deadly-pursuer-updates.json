@@ -1,7 +1,33 @@
 [
     {
+        "version": "v1.6.1",
+        "date": "2025-11-21",
+        "type": "feature",
+        "title": "Sistema de Mapas y Modos de Juego Aleatorios",
+        "changes": [
+            "🗺️ 3 mapas nuevos con selección aleatoria por partida",
+            "🏭 Abandoned Factory - Mapa industrial con máquinas, cajas y barriles",
+            "👻 Haunted Mansion - Mapa tenebroso con lápidas, árboles muertos y estatuas",
+            "🎲 Discord Server - Mapa clásico con naturaleza y senderos",
+            "💥 Sistema de colisiones implementado en estructuras",
+            "🚫 Árboles, rocas, máquinas, cajas, barriles, lápidas y estatuas bloquean movimiento",
+            "🍃 Arbustos, flores, tuberías y niebla son decorativos sin colisión",
+            "🎮 6 modos de juego con selección aleatoria",
+            "⚔️ Clásico - Survivors vs Killer estándar",
+            "🏃 Escape - Survivors deben escapar por anillo dorado (aparece a los 2 min)",
+            "💀 Deathmatch - Todos contra todos, último en pie gana",
+            "🦠 Infección - Survivors muertos se convierten en killers",
+            "👹 Juggernaut - 1 Killer super poderoso (2.5x HP, 1.5x daño, 1.2x velocidad)",
+            "🙈 Escondidas - 30s para esconderse, killer con visión limitada",
+            "🎲 Indicador visual de modo aleatorio en lobby",
+            "📊 Sistema de estadísticas por modo (kills, escapes, infecciones)",
+            "🎨 UI personalizada para cada modo de juego",
+            "🏆 Condiciones de victoria únicas por modo"
+        ]
+    },
+    {
         "version": "v1.6",
-        "date": "2025-01-20",
+        "date": "2025-11-21",
         "type": "feature",
         "title": "Sistema de Lobby Visual, Rediseño de HUD y Mejoras de Personajes",
         "changes": [
