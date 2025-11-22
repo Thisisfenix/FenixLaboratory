@@ -585,6 +585,10 @@ class DiscordFriendsGame {
                 player.mollyChargeActive = true;
                 player.mollyChargeTimer = 60;
                 player.mollyImmune = true;
+            } else if (data.type === 'survivor_escaped' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.escaped = true;
+                player.alive = false;
             }
         };
         
@@ -651,7 +655,7 @@ class DiscordFriendsGame {
         };
         
         this.supabaseGame.handleEscapeRing = (data) => {
-            if (data.playerId !== this.myPlayerId) {
+            if (data.playerId !== this.myPlayerId && !this.mapSystem.escapeRing) {
                 console.log('📡 Received escape ring position:', data.x, data.y);
                 this.mapSystem.showEscapeRing(data.x, data.y);
             }
@@ -1555,6 +1559,24 @@ class DiscordFriendsGame {
                             player.warpStrikeHit = true;
                             player.warpStrikeActive = false;
                             
+                            // Iris dodge mechanic for warp strike
+                            if (nearestSurvivor.character === 'iris' && nearestSurvivor.dodgeBar > 0) {
+                                nearestSurvivor.dodgeHits++;
+                                if (nearestSurvivor.dodgeHits <= 2) {
+                                    nearestSurvivor.dodgeBar = Math.max(0, nearestSurvivor.dodgeBar - 37.5);
+                                    this.createParticles(nearestSurvivor.x + 15, nearestSurvivor.y + 15, '#00BFFF', 15);
+                                    this.showDamageIndicator(nearestSurvivor, 0, 'dodged');
+                                    if (this.supabaseGame) {
+                                        this.supabaseGame.sendAttack({
+                                            type: 'dodge_regen',
+                                            playerId: nearestSurvivor.id,
+                                            dodgeBar: nearestSurvivor.dodgeBar
+                                        });
+                                    }
+                                    return;
+                                }
+                            }
+                            
                             let damage = 35;
                             if (player.powerSurge && player.powerSurge.active) {
                                 damage = Math.floor(damage * 1.5);
@@ -1941,7 +1963,9 @@ class DiscordFriendsGame {
         this.clearOldPlayers();
         
         const config = window.GAME_CONFIG || {};
-        this.gameTimer = config.GAME_TIMER || 180;
+        const baseTimer = config.GAME_TIMER || 180;
+        const survivorCount = Object.values(this.players).filter(p => p.role === 'survivor' && !p.spectating).length;
+        this.gameTimer = baseTimer + (survivorCount * 100);
         this.lastManStanding = false;
         this.lmsActivated = false;
         this.particles = [];
@@ -2798,12 +2822,19 @@ class DiscordFriendsGame {
                     const totalTime = config.GAME_TIMER || 180;
                     this.gameTimer = Math.max(0, totalTime - elapsed);
                     
-                    // Mostrar anillo de escape a los 80 segundos (1:20) - solo el host
+                    // Mostrar anillo de escape a los 80 segundos - solo el host
                     if (this.gameTimer === 80 && !this.mapSystem.escapeRing && !this.lastManStanding) {
-                        // Solo el primer jugador (host) genera el anillo
                         const sortedPlayers = Object.values(this.players).sort((a, b) => a.id.localeCompare(b.id));
                         if (sortedPlayers.length > 0 && sortedPlayers[0].id === this.myPlayerId) {
                             this.mapSystem.showEscapeRing();
+                            if (this.supabaseGame && this.mapSystem.escapeRing) {
+                                this.supabaseGame.sendAttack({
+                                    type: 'escape_ring',
+                                    playerId: this.myPlayerId,
+                                    x: this.mapSystem.escapeRing.x,
+                                    y: this.mapSystem.escapeRing.y
+                                });
+                            }
                         }
                     }
                 }
@@ -3235,6 +3266,26 @@ class DiscordFriendsGame {
 
     applyHitboxEffect(hitbox, target) {
         if (hitbox.type === 'you_cant_run' && target.role === 'survivor' && !hitbox.hasHit) {
+            // Iris dodge mechanic for you can't run
+            if (target.character === 'iris' && target.dodgeBar > 0) {
+                target.dodgeHits++;
+                if (target.dodgeHits <= 2) {
+                    target.dodgeBar = Math.max(0, target.dodgeBar - 37.5);
+                    this.createParticles(target.x + 15, target.y + 15, '#00BFFF', 15);
+                    this.showDamageIndicator(target, 0, 'dodged');
+                    if (target.id === this.myPlayerId && this.supabaseGame) {
+                        this.supabaseGame.sendAttack({
+                            type: 'dodge_regen',
+                            playerId: target.id,
+                            dodgeBar: target.dodgeBar
+                        });
+                    }
+                    hitbox.hasHit = true;
+                    hitbox.life = 0;
+                    return;
+                }
+            }
+            
             target.health = Math.max(0, target.health - 25);
             this.createParticles(target.x + 15, target.y + 15, '#8B0000', 15);
             this.triggerJumpscare(target.id);
@@ -3497,6 +3548,24 @@ class DiscordFriendsGame {
                         );
                         
                         if (explosionDistance <= 80) {
+                            // Iris dodge mechanic for phantom orb
+                            if (nearbyTarget.character === 'iris' && nearbyTarget.dodgeBar > 0) {
+                                nearbyTarget.dodgeHits++;
+                                if (nearbyTarget.dodgeHits <= 2) {
+                                    nearbyTarget.dodgeBar = Math.max(0, nearbyTarget.dodgeBar - 37.5);
+                                    this.createParticles(nearbyTarget.x + 15, nearbyTarget.y + 15, '#00BFFF', 15);
+                                    this.showDamageIndicator(nearbyTarget, 0, 'dodged');
+                                    if (this.supabaseGame) {
+                                        this.supabaseGame.sendAttack({
+                                            type: 'dodge_regen',
+                                            playerId: nearbyTarget.id,
+                                            dodgeBar: nearbyTarget.dodgeBar
+                                        });
+                                    }
+                                    return;
+                                }
+                            }
+                            
                             const attacker = this.players[hitbox.ownerId];
                             let damage = 35;
                             
@@ -6048,17 +6117,16 @@ class DiscordFriendsGame {
         console.log('🧹 Database cleanup handled by Supabase');
     }
     
-    showEscapeRing() {
-        // Crear anillo de escape en posición aleatoria
+    showEscapeRing(x, y) {
         this.escapeRing = {
-            x: Math.random() * (this.worldSize.width - 200) + 100,
-            y: Math.random() * (this.worldSize.height - 200) + 100,
+            x: x || Math.random() * (this.worldSize.width - 200) + 100,
+            y: y || Math.random() * (this.worldSize.height - 200) + 100,
             radius: 80,
             glowRadius: 100,
             active: true,
             pulseTimer: 0,
             showIndicator: true,
-            indicatorTimer: 300 // 5 segundos de indicador
+            indicatorTimer: 300
         };
         
         // Cargar imagen de Meowl
@@ -6210,9 +6278,16 @@ class DiscordFriendsGame {
     
     survivorEscaped(player) {
         player.escaped = true;
+        player.alive = false;
         this.escapeRing.active = false;
         
-        // Efectos visuales
+        if (this.supabaseGame) {
+            this.supabaseGame.sendAttack({
+                type: 'survivor_escaped',
+                playerId: player.id
+            });
+        }
+        
         this.createParticles(player.x + 15, player.y + 15, '#FFD700', 30);
         
         // Mensaje de escape

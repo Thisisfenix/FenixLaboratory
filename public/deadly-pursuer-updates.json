@@ -1,5 +1,18 @@
 [
     {
+        "version": "v1.6.3",
+        "date": "2025-11-21",
+        "type": "hotfix",
+        "title": "Corrección del Anillo de Escape",
+        "changes": [
+            "🔧 Anillo de escape ahora aparece correctamente a los 80 segundos (1:20)",
+            "🎯 Flecha indicadora del anillo ahora se sincroniza entre todos los jugadores",
+            "👻 Survivors ahora desaparecen correctamente al escapar por el anillo",
+            "📡 Sincronización del escape mejorada vía Supabase",
+            "✅ Todos los jugadores ven cuando alguien escapa en tiempo real"
+        ]
+    },
+    {
         "version": "v1.6.2",
         "date": "2025-11-21",
         "type": "hotfix",

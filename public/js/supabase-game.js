@@ -22,7 +22,15 @@ class SupabaseGame {
                 throw new Error('Supabase configuration not found');
             }
             
-            this.supabase = createClient(supabaseUrl, supabaseKey);
+            this.supabase = createClient(supabaseUrl, supabaseKey, {
+                realtime: {
+                    params: {
+                        eventsPerSecond: 10
+                    },
+                    heartbeatIntervalMs: 15000,
+                    timeout: 60000
+                }
+            });
             
             this.myPlayerId = 'player_' + Math.random().toString(36).substr(2, 9);
             await this.setupRealtimeChannel();
@@ -37,7 +45,12 @@ class SupabaseGame {
     
     async setupRealtimeChannel(lobbyId = 'lobby-1') {
         return new Promise((resolve) => {
-            this.channel = this.supabase.channel(`deadly-pursuit-${lobbyId}`)
+            this.channel = this.supabase.channel(`deadly-pursuit-${lobbyId}`, {
+                config: {
+                    broadcast: { self: true },
+                    presence: { key: this.myPlayerId }
+                }
+            })
                 .on('broadcast', { event: 'player-move' }, (payload) => {
                     console.log('Received player-move:', payload.payload);
                     this.updatePlayerPosition(payload.payload);

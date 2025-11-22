@@ -403,8 +403,8 @@
             <div class="step">
                 <span class="step-number">3</span>
                 <div style="display:inline-block;vertical-align:top;width:calc(100% - 60px);">
-                    <div class="step-title">Habilidad Especial</div>
-                    <div class="step-desc">Describe la habilidad única que hará especial a tu personaje</div>
+                    <div class="step-title">Habilidades (Q, E, R)</div>
+                    <div class="step-desc">Describe las 3 habilidades únicas de tu personaje</div>
                 </div>
             </div>
 
@@ -476,8 +476,18 @@
             </div>
 
             <div class="form-group">
-                <label for="characterAbility">Habilidad Principal *</label>
-                <textarea id="characterAbility" required placeholder="Describe la habilidad especial del personaje..."></textarea>
+                <label for="abilityQ">Habilidad Q *</label>
+                <textarea id="abilityQ" required placeholder="Describe la habilidad Q..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="abilityE">Habilidad E *</label>
+                <textarea id="abilityE" required placeholder="Describe la habilidad E..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="abilityR">Habilidad R *</label>
+                <textarea id="abilityR" required placeholder="Describe la habilidad R..."></textarea>
             </div>
 
             <div class="form-group">
@@ -581,7 +591,11 @@
                     name: document.getElementById('characterName').value.trim(),
                     type: document.getElementById('characterType').value,
                     icons: icons,
-                    ability: document.getElementById('characterAbility').value.trim(),
+                    abilities: {
+                        q: document.getElementById('abilityQ').value.trim(),
+                        e: document.getElementById('abilityE').value.trim(),
+                        r: document.getElementById('abilityR').value.trim()
+                    },
                     description: document.getElementById('characterDescription').value.trim(),
                     submitter: document.getElementById('submitterName').value.trim() || 'Anónimo',
                     timestamp: Date.now(),

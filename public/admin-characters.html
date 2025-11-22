@@ -369,8 +369,17 @@
                         </div>
                         
                         <div class="suggestion-info">
-                            <div class="info-label">Habilidad:</div>
-                            <div class="info-text">${data.ability}</div>
+                            ${data.abilities ? `
+                                <div class="info-label">Habilidad Q:</div>
+                                <div class="info-text">${data.abilities.q}</div>
+                                <div class="info-label">Habilidad E:</div>
+                                <div class="info-text">${data.abilities.e}</div>
+                                <div class="info-label">Habilidad R:</div>
+                                <div class="info-text">${data.abilities.r}</div>
+                            ` : `
+                                <div class="info-label">Habilidad:</div>
+                                <div class="info-text">${data.ability || 'No especificada'}</div>
+                            `}
                             
                             ${data.description ? `
                                 <div class="info-label">Descripción:</div>
