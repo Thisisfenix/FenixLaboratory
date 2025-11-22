@@ -744,7 +744,7 @@
                     <div class="character-abilities">
                         <strong>Q - Sigilo:</strong> Invisibilidad + daño crítico (20s CD)<br>
                         <strong>E - You Can't Run:</strong> Proyectil rastreador + jumpscare, 20 daño (15s CD)<br>
-                        <strong>R - Orbe de Daño:</strong> Proyectil de 35 daño (8s CD)<br>
+                        <strong>R - Orbe Blanco:</strong> Proyectil con knockback, 35 daño (8s CD)<br>
                         <strong>C - Rage Mode:</strong> +50% daño, +33% velocidad, inmunidad stuns, 60s duración (1 uso)
                     </div>
                 </div>
@@ -772,7 +772,7 @@
                     <div class="character-name">Gissel</div>
                     <div class="character-role survivor">🛡️ Survivor</div>
                     <div class="character-abilities">
-                        <strong>Q - Alas Puntiagudas:</strong> Hasta 3 golpes de stun al killer (18s CD)<br>
+                        <strong>Q - Alas Puntiagudas:</strong> 3 golpes que empujan y stunean al killer (18s CD)<br>
                         <strong>Pasiva LMS:</strong> +60 HP cuando queda 1 survivor<br>
                         <strong>Velocidad:</strong> Movimiento ágil para escapar<br>
                         <strong>Resistencia:</strong> 100 HP base, 160 HP en LMS
@@ -788,9 +788,9 @@
                     <div class="character-role survivor">🛡️ Survivor Robot</div>
                     <div class="character-abilities">
                         <em>"Durante una batalla contra los robots de Maxwell, iA777 estaba a punto de dar el golpe final cuando un portal apareció frente a él, teletransportándolo al Deadly Pursuit."</em><br><br>
-                        <strong>Q - Carga:</strong> Agarra al killer 5s, lo stunea pero pierde 4 HP (20s CD)<br>
+                        <strong>Q - Carga:</strong> Agarra y mueve al killer 5s, lo stunea pero pierde 4 HP (20s CD)<br>
                         <strong>E - Autoreparación:</strong> Regenera HP gradualmente (25s CD)<br>
-                        <strong>R - Autodestrucción/Sierra:</strong> Explosión o modo sierra LMS<br>
+                        <strong>R - Autodestrucción/Sierra:</strong> Explosión stun o sierra que empuja en LMS<br>
                         <strong>Especial:</strong> 120 HP, velocidad 5, sin segunda vida
                     </div>
                 </div>
@@ -804,7 +804,7 @@
                     <div class="character-role survivor">🛡️ Survivor Fighter</div>
                     <div class="character-abilities">
                         <strong>Q - Energy Juice:</strong> Velocidad II por 10s (3 usos, 20s CD)<br>
-                        <strong>E - Punch:</strong> Golpe que da vida y stunea killers (25s CD)<br>
+                        <strong>E - Punch:</strong> Golpe que da vida y stunea al killer (25s CD)<br>
                         <strong>R - Taunt:</strong> Nubla la pantalla del killer 3s (12s CD)<br>
                         <strong>Especial:</strong> 85 HP, resistencia al llegar a 30 HP
                     </div>
@@ -835,9 +835,24 @@
                     <div class="character-abilities">
                         <em>"Ella estaba ayudando a iA777 a derrotar a un robot de Maxwell, hasta que vio como se metía a un portal iA, sin darse cuenta que ella también iba a ser teletransportada."</em><br><br>
                         <strong>Q - Curación:</strong> Se cura 10-20 HP, cura aliados 15 HP/3s por 20s (20s CD)<br>
-                        <strong>E - Telekinesis:</strong> Empuja al killer si está a 0.5m, dura 5s (25s CD)<br>
-                        <strong>R - Dash:</strong> Se aleja del killer, lo stunea 2s y recarga 25 de esquive<br>
+                        <strong>E - Telekinesis:</strong> Empuja al killer si está cerca, dura 5s (25s CD)<br>
+                        <strong>R - Dash:</strong> Se aleja del killer, lo stunea 2s y recarga 25 de esquive (15s CD)<br>
                         <strong>Pasiva:</strong> Barra de esquive de 75 que aguanta 2 golpes
+                    </div>
+                </div>
+
+                <!-- Molly - Survivor Brawler -->
+                <div class="character-card" data-character="molly" data-role="survivor">
+                    <div class="character-avatar">
+                        <img src="assets/icons/MollyNormalIcon.png" alt="Molly" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;font-size: 3.5rem;&quot;>🥪</div>';">
+                    </div>
+                    <div class="character-name">Molly</div>
+                    <div class="character-role survivor">🛡️ Survivor Brawler</div>
+                    <div class="character-abilities">
+                        <strong>Q - Charge:</strong> Dash con inmunidad que empuja al killer 120 unidades (20s CD)<br>
+                        <strong>E - Cookie:</strong> Come una galleta y se cura 20 HP (25s CD)<br>
+                        <strong>R - Uppercut:</strong> Golpe que stunea al killer 3s con efecto visual (18s CD)<br>
+                        <strong>Especial:</strong> 95 HP, peleadora cuerpo a cuerpo, no da rage al killer con Charge
                     </div>
                 </div>
             </div>
@@ -848,6 +863,7 @@
                     <button id="joinBtn" class="btn btn-primary">Unirse como Jugador</button>
                     <button id="spectateBtn" class="btn" style="background: linear-gradient(45deg, #666, #333); color: white;">👁️ Espectar Partida</button>
                     <button id="sandboxBtn" class="btn" style="background: linear-gradient(45deg, #ff9500, #ff6b00); color: white;">🔧 Modo Sandbox</button>
+                    <button id="suggestCharBtn" class="btn" style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white;" onclick="window.location.href='suggest-character.html'">🎨 Sugerir Personaje</button>
                     <button id="updatesBtn" class="btn" style="background: linear-gradient(45deg, #4ecdc4, #44A08D); color: white;" onclick="window.deadlyPursuerUpdates?.showModal()">📋 Update Log</button>
                     <button id="backToLabBtn" class="btn" style="background: linear-gradient(45deg, #ff6b35, #f7931e); color: white;" onclick="window.location.href='../index.html'">🔬 Laboratorio</button>
                 </div>

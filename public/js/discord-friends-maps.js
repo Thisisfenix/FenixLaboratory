@@ -345,20 +345,41 @@ class DiscordFriendsMaps {
         });
     }
 
-    showEscapeRing() {
+    showEscapeRing(x = null, y = null) {
         if (this.escapeRing) return;
         
-        // Crear anillo de escape en una posición aleatoria
         const margin = 200;
-        this.escapeRing = {
-            x: Math.random() * (this.game.worldSize.width - margin * 2) + margin,
-            y: Math.random() * (this.game.worldSize.height - margin * 2) + margin,
-            radius: 80,
-            active: true,
-            escaped: []
-        };
         
-        console.log('🔵 Escape ring appeared at:', this.escapeRing.x, this.escapeRing.y);
+        // Si se proporcionan coordenadas, usarlas (recibidas de Supabase)
+        if (x !== null && y !== null) {
+            this.escapeRing = {
+                x: x,
+                y: y,
+                radius: 80,
+                active: true,
+                escaped: []
+            };
+            console.log('🔵 Escape ring received at:', x, y);
+        } else {
+            // Solo el host genera la posición y la envía
+            const ringX = Math.random() * (this.game.worldSize.width - margin * 2) + margin;
+            const ringY = Math.random() * (this.game.worldSize.height - margin * 2) + margin;
+            
+            this.escapeRing = {
+                x: ringX,
+                y: ringY,
+                radius: 80,
+                active: true,
+                escaped: []
+            };
+            
+            console.log('🔵 Escape ring generated at:', ringX, ringY);
+            
+            // Enviar posición a otros jugadores
+            if (this.game.supabaseGame) {
+                this.game.supabaseGame.sendEscapeRingPosition(ringX, ringY);
+            }
+        }
     }
 
     drawEscapeRing(ctx, camera) {

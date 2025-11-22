@@ -580,6 +580,11 @@ class DiscordFriendsGame {
                 const player = this.players[data.playerId];
                 player.powerSurge = data.powerSurge;
                 player.powerSurgeUsed = data.powerSurgeUsed;
+            } else if (data.type === 'molly_charge' && data.playerId !== this.myPlayerId && this.players[data.playerId]) {
+                const player = this.players[data.playerId];
+                player.mollyChargeActive = true;
+                player.mollyChargeTimer = 60;
+                player.mollyImmune = true;
             }
         };
         
@@ -644,6 +649,31 @@ class DiscordFriendsGame {
                 this.updateLobbyInfo();
             }
         };
+        
+        this.supabaseGame.handleEscapeRing = (data) => {
+            if (data.playerId !== this.myPlayerId) {
+                console.log('📡 Received escape ring position:', data.x, data.y);
+                this.mapSystem.showEscapeRing(data.x, data.y);
+            }
+        };
+        
+        this.supabaseGame.handleGameConfig = (data) => {
+            if (data.playerId !== this.myPlayerId) {
+                console.log('📡 Received game config - Mode:', data.mode, 'Map:', data.map);
+                this.selectedGameMode = data.mode;
+                this.selectedMap = data.map;
+                this.gameModeSystem.initializeMode(data.mode);
+                this.mapSystem.generateMap(data.map);
+            }
+        };
+        
+        this.supabaseGame.handleGrabbedPlayerMove = (data) => {
+            if (data.grabbedPlayerId && this.players[data.grabbedPlayerId]) {
+                const grabbedPlayer = this.players[data.grabbedPlayerId];
+                grabbedPlayer.x = data.x;
+                grabbedPlayer.y = data.y;
+            }
+        };
     }
 
     async joinGame() {
@@ -684,8 +714,8 @@ class DiscordFriendsGame {
             alive: !this.gameStarted && !this.spectatorMode,
             character: this.spectatorMode ? 'spectator' : this.selectedCharacter,
             role: this.spectatorMode ? 'spectator' : this.selectedRole,
-            health: this.spectatorMode ? 0 : (this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : (this.selectedCharacter === 'iris' ? 100 : 100)))) : (this.selectedCharacter === 'vortex' ? 700 : 600)),
-            maxHealth: this.spectatorMode ? 0 : (this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : (this.selectedCharacter === 'iris' ? 100 : 100)))) : (this.selectedCharacter === 'vortex' ? 700 : 600)),
+            health: this.spectatorMode ? 0 : (this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : (this.selectedCharacter === 'iris' ? 100 : (this.selectedCharacter === 'molly' ? 95 : 100))))) : (this.selectedCharacter === 'vortex' ? 700 : 600)),
+            maxHealth: this.spectatorMode ? 0 : (this.selectedRole === 'survivor' ? (this.selectedCharacter === 'iA777' ? 120 : (this.selectedCharacter === 'luna' ? 85 : (this.selectedCharacter === 'angel' ? 90 : (this.selectedCharacter === 'iris' ? 100 : (this.selectedCharacter === 'molly' ? 95 : 100))))) : (this.selectedCharacter === 'vortex' ? 700 : 600)),
             // Iris passive - dodge bar
             dodgeBar: this.selectedCharacter === 'iris' ? 75 : 0,
             maxDodgeBar: this.selectedCharacter === 'iris' ? 75 : 0,
@@ -879,6 +909,10 @@ class DiscordFriendsGame {
             this.abilities.q = { cooldown: 0, maxCooldown: 20000 }; // Curación - 20s
             this.abilities.e = { cooldown: 0, maxCooldown: 25000 }; // Telekinesis - 25s
             this.abilities.r = { cooldown: 0, maxCooldown: 15000 }; // Dash - 15s
+        } else if (this.selectedCharacter === 'molly') {
+            this.abilities.q = { cooldown: 0, maxCooldown: 20000 };
+            this.abilities.e = { cooldown: 0, maxCooldown: 25000 };
+            this.abilities.r = { cooldown: 0, maxCooldown: 18000 };
         }
         this.abilities.basicAttack = { cooldown: 0, maxCooldown: 1500 };
     }
@@ -1640,17 +1674,33 @@ class DiscordFriendsGame {
         
         this.setupGameEventListeners();
         
-        // Randomizar modo de juego
-        const gameModes = ['classic', 'escape', 'deathmatch', 'infection', 'juggernaut', 'hide_and_seek'];
-        const randomMode = gameModes[Math.floor(Math.random() * gameModes.length)];
-        console.log(`🎮 Modo de juego seleccionado: ${randomMode}`);
-        this.gameModeSystem.initializeMode(randomMode);
+        // Solo el host selecciona modo y mapa, luego los sincroniza
+        const sortedPlayers = Object.values(this.players).sort((a, b) => a.id.localeCompare(b.id));
+        const isHost = sortedPlayers.length > 0 && sortedPlayers[0].id === this.myPlayerId;
         
-        // Randomizar mapa
-        const maps = ['discord_server', 'abandoned_factory', 'haunted_mansion'];
-        const randomMap = maps[Math.floor(Math.random() * maps.length)];
-        console.log(`🗺️ Mapa seleccionado: ${randomMap}`);
-        this.mapSystem.generateMap(randomMap);
+        if (isHost) {
+            // Host selecciona modo y mapa aleatorios
+            const gameModes = ['classic', 'escape', 'deathmatch', 'infection', 'juggernaut', 'hide_and_seek'];
+            const randomMode = gameModes[Math.floor(Math.random() * gameModes.length)];
+            
+            const maps = ['discord_server', 'abandoned_factory', 'haunted_mansion'];
+            const randomMap = maps[Math.floor(Math.random() * maps.length)];
+            
+            console.log(`🎮 [HOST] Modo seleccionado: ${randomMode}`);
+            console.log(`🗺️ [HOST] Mapa seleccionado: ${randomMap}`);
+            
+            this.selectedGameMode = randomMode;
+            this.selectedMap = randomMap;
+            
+            // Enviar a otros jugadores
+            if (this.supabaseGame) {
+                this.supabaseGame.sendGameConfig(randomMode, randomMap);
+            }
+            
+            this.gameModeSystem.initializeMode(randomMode);
+            this.mapSystem.generateMap(randomMap);
+        }
+        // Los demás jugadores esperan recibir la configuración del host
     }
     
     startGameFromRemote() {
@@ -1972,7 +2022,7 @@ class DiscordFriendsGame {
                         target.y = newY;
                         
                         if (this.supabaseGame) {
-                            this.supabaseGame.sendPlayerMove(newX, newY);
+                            this.supabaseGame.sendGrabbedPlayerMove(target.id, newX, newY);
                             this.supabaseGame.sendAttack({
                                 type: 'stun',
                                 targetId: target.id,
@@ -2657,7 +2707,7 @@ class DiscordFriendsGame {
                         target.y = newY;
                         
                         if (this.supabaseGame) {
-                            this.supabaseGame.sendPlayerMove(newX, newY);
+                            this.supabaseGame.sendGrabbedPlayerMove(target.id, newX, newY);
                             this.supabaseGame.sendAttack({
                                 type: 'sierra_hit',
                                 targetId: target.id,
@@ -2748,9 +2798,13 @@ class DiscordFriendsGame {
                     const totalTime = config.GAME_TIMER || 180;
                     this.gameTimer = Math.max(0, totalTime - elapsed);
                     
-                    // Mostrar anillo de escape a los 80 segundos (1:20)
+                    // Mostrar anillo de escape a los 80 segundos (1:20) - solo el host
                     if (this.gameTimer === 80 && !this.mapSystem.escapeRing && !this.lastManStanding) {
-                        this.mapSystem.showEscapeRing();
+                        // Solo el primer jugador (host) genera el anillo
+                        const sortedPlayers = Object.values(this.players).sort((a, b) => a.id.localeCompare(b.id));
+                        if (sortedPlayers.length > 0 && sortedPlayers[0].id === this.myPlayerId) {
+                            this.mapSystem.showEscapeRing();
+                        }
                     }
                 }
             }
@@ -2779,6 +2833,7 @@ class DiscordFriendsGame {
                 this.updateLunaAbilities();
                 this.updateAngelAbilities();
                 this.updateIrisAbilities();
+                this.updateMollyAbilities();
                 this.updateReviveSystem();
                 this.updateGameTimer();
                 this.updatePing();
@@ -2931,8 +2986,9 @@ class DiscordFriendsGame {
                     killer.x = newX;
                     killer.y = newY;
                     
-                    if (this.supabaseGame && killer.id !== this.myPlayerId) {
-                        this.supabaseGame.sendPlayerMove(killer.x, killer.y);
+                    // Sincronizar posición del killer agarrado
+                    if (this.supabaseGame) {
+                        this.supabaseGame.sendGrabbedPlayerMove(killer.id, killer.x, killer.y);
                     }
                 }
             }
@@ -3560,6 +3616,14 @@ class DiscordFriendsGame {
                 this.activateTelekinesis(player);
             } else if (ability === 'r') {
                 this.activateIrisDash(player);
+            }
+        } else if (player.character === 'molly') {
+            if (ability === 'q') {
+                this.activateMollyCharge(player);
+            } else if (ability === 'e') {
+                this.activateCookie(player);
+            } else if (ability === 'r') {
+                this.activateUppercut(player);
             }
         }
     }
@@ -4499,6 +4563,10 @@ class DiscordFriendsGame {
                 this.ctx.fillStyle = '#00FFFF';
                 this.ctx.font = 'bold 10px Arial';
                 this.ctx.fillText('CHARGING', player.x + size/2, player.y - 15);
+            } else if (player.grabbedBy) {
+                this.ctx.fillStyle = '#FF00FF';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('GRABBED!', player.x + size/2, player.y - 15);
             } else if (player.autoRepairing) {
                 this.ctx.fillStyle = '#00FF00';
                 this.ctx.font = 'bold 10px Arial';
@@ -4645,6 +4713,27 @@ class DiscordFriendsGame {
                 this.ctx.fillText('TELEKINESIS', player.x + size/2, player.y - 25);
             }
             
+            this.ctx.shadowBlur = 0;
+        } else if (player.character === 'molly') {
+            if (player.mollyChargeActive) {
+                this.ctx.shadowColor = '#FFA500';
+                this.ctx.shadowBlur = 15;
+            }
+            this.ctx.fillStyle = '#FFA500';
+            this.ctx.fillRect(player.x, player.y, size, size);
+            this.ctx.fillStyle = '#FF8C00';
+            this.ctx.fillRect(player.x + 3, player.y + 3, size - 6, size - 6);
+            this.ctx.font = '16px Arial';
+            this.ctx.fillStyle = 'white';
+            this.ctx.textAlign = 'center';
+            let emoji = '🥪';
+            if (player.mollyChargeActive) emoji = '⚡';
+            this.ctx.fillText(emoji, player.x + size/2, player.y + size/2 + 5);
+            if (player.mollyImmune) {
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.font = 'bold 10px Arial';
+                this.ctx.fillText('IMMUNE', player.x + size/2, player.y - 15);
+            }
             this.ctx.shadowBlur = 0;
         } else if (player.character === 'spectator') {
             this.ctx.fillStyle = '#666666';
@@ -6705,7 +6794,7 @@ class DiscordFriendsGame {
                 this.createParticles(target.x + 15, target.y + 15, '#9370DB', 20);
                 
                 if (this.supabaseGame) {
-                    this.supabaseGame.sendPlayerMove(newX, newY);
+                    this.supabaseGame.sendGrabbedPlayerMove(target.id, newX, newY);
                     this.supabaseGame.sendAttack({
                         type: 'telekinesis_hit',
                         targetId: target.id,
@@ -6853,10 +6942,18 @@ class DiscordFriendsGame {
             this.camera.y = Math.max(0, Math.min(Math.max(0, this.worldSize.height - canvasHeight), this.camera.y));
         }
     }
-    startSandboxMode(){const e=document.getElementById('playerName').value.trim();if(!e)return alert('Por favor ingresa tu nombre');if(!this.selectedCharacter)return alert('Selecciona un personaje');this.sandboxMode=!0,this.gameStarted=!0,this.myPlayerId='sandbox_player';const t={id:this.myPlayerId,name:e,x:400,y:300,alive:!0,character:this.selectedCharacter,role:this.selectedRole,health:this.selectedRole==='survivor'?(this.selectedCharacter==='iA777'?120:this.selectedCharacter==='luna'?85:this.selectedCharacter==='angel'?90:this.selectedCharacter==='iris'?100:100):(this.selectedCharacter==='vortex'?700:600),maxHealth:this.selectedRole==='survivor'?(this.selectedCharacter==='iA777'?120:this.selectedCharacter==='luna'?85:this.selectedCharacter==='angel'?90:this.selectedCharacter==='iris'?100:100):(this.selectedCharacter==='vortex'?700:600),dodgeBar:this.selectedCharacter==='iris'?75:0,maxDodgeBar:this.selectedCharacter==='iris'?75:0,spectating:!1};this.players[this.myPlayerId]=t,this.createSandboxDummies(),this.setupAbilities(),this.showGameScreen()}
-createSandboxDummies(){const e=this.players[this.myPlayerId],t=e.role==='killer'?'survivor':'killer',s=t==='killer'?['2019x','vortex']:['gissel','iA777','luna','angel','iris'];for(let i=0;i<3;i++){const a=s[i%s.length],r=`dummy_${i}`;this.players[r]={id:r,name:`Dummy ${a}`,x:200+i*300,y:500+i*100,alive:!0,character:a,role:t,health:t==='survivor'?(a==='iA777'?120:a==='luna'?85:a==='angel'?90:a==='iris'?100:100):(a==='vortex'?700:600),maxHealth:t==='survivor'?(a==='iA777'?120:a==='luna'?85:a==='angel'?90:a==='iris'?100:100):(a==='vortex'?700:600),dodgeBar:a==='iris'?75:0,maxDodgeBar:a==='iris'?75:0,spectating:!1,isDummy:!0,aiMovement:{moveTimer:0,direction:Math.random()*Math.PI*2}}}if(e.role==='survivor'){const d='gissel';this.players.dummy_downed={id:'dummy_downed',name:'Downed Dummy',x:600,y:400,alive:!1,downed:!0,reviveTimer:1200,beingRevived:!1,character:d,role:t,health:0,maxHealth:100,spectating:!1,isDummy:!0}}}
+    startSandboxMode(){const e=document.getElementById('playerName').value.trim();if(!e)return alert('Por favor ingresa tu nombre');if(!this.selectedCharacter)return alert('Selecciona un personaje');this.sandboxMode=!0,this.gameStarted=!0,this.myPlayerId='sandbox_player';const t={id:this.myPlayerId,name:e,x:400,y:300,alive:!0,character:this.selectedCharacter,role:this.selectedRole,health:this.selectedRole==='survivor'?(this.selectedCharacter==='iA777'?120:this.selectedCharacter==='luna'?85:this.selectedCharacter==='angel'?90:this.selectedCharacter==='iris'?100:this.selectedCharacter==='molly'?95:100):(this.selectedCharacter==='vortex'?700:600),maxHealth:this.selectedRole==='survivor'?(this.selectedCharacter==='iA777'?120:this.selectedCharacter==='luna'?85:this.selectedCharacter==='angel'?90:this.selectedCharacter==='iris'?100:this.selectedCharacter==='molly'?95:100):(this.selectedCharacter==='vortex'?700:600),dodgeBar:this.selectedCharacter==='iris'?75:0,maxDodgeBar:this.selectedCharacter==='iris'?75:0,spectating:!1};this.players[this.myPlayerId]=t,this.createSandboxDummies(),this.setupAbilities(),this.showGameScreen()}
+createSandboxDummies(){const e=this.players[this.myPlayerId],t=e.role==='killer'?'survivor':'killer',s=t==='killer'?['2019x','vortex']:['gissel','iA777','luna','angel','iris','molly'];for(let i=0;i<3;i++){const a=s[i%s.length],r=`dummy_${i}`;this.players[r]={id:r,name:`Dummy ${a}`,x:200+i*300,y:500+i*100,alive:!0,character:a,role:t,health:t==='survivor'?(a==='iA777'?120:a==='luna'?85:a==='angel'?90:a==='iris'?100:a==='molly'?95:100):(a==='vortex'?700:600),maxHealth:t==='survivor'?(a==='iA777'?120:a==='luna'?85:a==='angel'?90:a==='iris'?100:a==='molly'?95:100):(a==='vortex'?700:600),dodgeBar:a==='iris'?75:0,maxDodgeBar:a==='iris'?75:0,spectating:!1,isDummy:!0,aiMovement:{moveTimer:0,direction:Math.random()*Math.PI*2}}}if(e.role==='survivor'){const d='gissel';this.players.dummy_downed={id:'dummy_downed',name:'Downed Dummy',x:600,y:400,alive:!1,downed:!0,reviveTimer:1200,beingRevived:!1,character:d,role:t,health:0,maxHealth:100,spectating:!1,isDummy:!0}}}
 updateSandboxDummies(){if(!this.sandboxMode)return;Object.values(this.players).forEach(e=>{if(!e.isDummy||!e.alive)return;e.aiMovement.moveTimer++,e.aiMovement.moveTimer>=180&&(e.aiMovement.direction=Math.random()*Math.PI*2,e.aiMovement.moveTimer=0);const t=Math.max(50,Math.min(this.worldSize.width-80,e.x+Math.cos(e.aiMovement.direction)*2)),s=Math.max(50,Math.min(this.worldSize.height-80,e.y+Math.sin(e.aiMovement.direction)*2));e.x=t,e.y=s,(e.x<=50||e.x>=this.worldSize.width-80||e.y<=50||e.y>=this.worldSize.height-80)&&(e.aiMovement.direction+=Math.PI)})}
 exitSandbox(){this.sandboxMode=!1,this.gameStarted=!1,this.players={},this.particles=[],this.hitboxes=[],document.getElementById('lobby').classList.add('active'),document.getElementById('game').classList.remove('active')}
+
+    activateMollyCharge(player){const k=Object.values(this.players).find(p=>p.role==='killer'&&p.alive&&p.id!==player.id);if(!k)return;const angle=Math.atan2(k.y-player.y,k.x-player.x),dist=100,newX=Math.max(0,Math.min(this.worldSize.width-30,player.x+Math.cos(angle)*dist)),newY=Math.max(0,Math.min(this.worldSize.height-30,player.y+Math.sin(angle)*dist));player.x=newX,player.y=newY,player.mollyChargeActive=!0,player.mollyChargeTimer=60,player.mollyImmune=!0;const d=Math.sqrt(Math.pow(k.x-newX,2)+Math.pow(k.y-newY,2));if(d<50){const pAngle=Math.atan2(k.y-player.y,k.x-player.x),pDist=120,kX=Math.max(0,Math.min(this.worldSize.width-30,k.x+Math.cos(pAngle)*pDist)),kY=Math.max(0,Math.min(this.worldSize.height-30,k.y+Math.sin(pAngle)*pDist));k.x=kX,k.y=kY,this.supabaseGame&&this.supabaseGame.sendGrabbedPlayerMove(k.id,kX,kY),this.createParticles(k.x+15,k.y+15,'#FFA500',20)}this.supabaseGame&&(this.supabaseGame.sendPlayerMove(newX,newY),this.supabaseGame.sendAttack({type:'molly_charge',playerId:player.id})),this.createParticles(player.x+15,player.y+15,'#FFA500',15)}
+
+    activateCookie(player){const heal=20;player.health=Math.min(player.maxHealth,player.health+heal),this.createParticles(player.x+15,player.y+15,'#FFD700',12),this.supabaseGame&&this.supabaseGame.sendAttack({type:'heal',targetId:player.id,health:player.health})}
+
+    activateUppercut(player){const k=Object.values(this.players).find(p=>p.role==='killer'&&p.alive&&p.id!==player.id);if(!k)return;const d=Math.sqrt(Math.pow(k.x-player.x,2)+Math.pow(k.y-player.y,2));d<60&&(!(k.rageMode&&k.rageMode.active)&&(k.stunned=!0,k.stunTimer=180,k.role==='killer'&&!k.rageUsed&&(k.rageLevel=Math.min(k.maxRage,k.rageLevel+30))),player.y=Math.max(0,player.y-10),this.createParticles(k.x+15,k.y+15,'#FF6347',20),this.supabaseGame&&(this.supabaseGame.sendAttack({type:'stun',targetId:k.id,stunDuration:180}),this.supabaseGame.sendPlayerMove(player.x,player.y))),this.createParticles(player.x+15,player.y+15,'#FF6347',15)}
+
+    updateMollyAbilities(){Object.values(this.players).forEach(p=>{p.mollyChargeActive&&(p.mollyChargeTimer--,p.mollyChargeTimer<=0&&(p.mollyChargeActive=!1,p.mollyImmune=!1))})}
 }
 
 // Initialize when DOM is loaded

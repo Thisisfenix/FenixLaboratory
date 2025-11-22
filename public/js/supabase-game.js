@@ -78,6 +78,15 @@ class SupabaseGame {
                 .on('broadcast', { event: 'lobby-list' }, (payload) => {
                     this.handleLobbyList(payload.payload);
                 })
+                .on('broadcast', { event: 'escape-ring' }, (payload) => {
+                    this.handleEscapeRing(payload.payload);
+                })
+                .on('broadcast', { event: 'game-config' }, (payload) => {
+                    this.handleGameConfig(payload.payload);
+                })
+                .on('broadcast', { event: 'grabbed-player-move' }, (payload) => {
+                    this.handleGrabbedPlayerMove(payload.payload);
+                })
                 .subscribe((status) => {
                     console.log('Supabase subscription status:', status);
                     if (status === 'SUBSCRIBED') {
@@ -317,6 +326,57 @@ class SupabaseGame {
     }
     
     handleLobbyList(data) {
+        // This will be overridden by the main game
+    }
+    
+    sendEscapeRingPosition(x, y) {
+        console.log('📡 Sending escape ring position:', x, y);
+        this.channel.send({
+            type: 'broadcast',
+            event: 'escape-ring',
+            payload: {
+                playerId: this.myPlayerId,
+                x: x,
+                y: y
+            }
+        });
+    }
+    
+    handleEscapeRing(data) {
+        // This will be overridden by the main game
+    }
+    
+    sendGameConfig(mode, map) {
+        console.log('📡 Sending game config - Mode:', mode, 'Map:', map);
+        this.channel.send({
+            type: 'broadcast',
+            event: 'game-config',
+            payload: {
+                playerId: this.myPlayerId,
+                mode: mode,
+                map: map
+            }
+        });
+    }
+    
+    handleGameConfig(data) {
+        // This will be overridden by the main game
+    }
+    
+    sendGrabbedPlayerMove(grabbedPlayerId, x, y) {
+        this.channel.send({
+            type: 'broadcast',
+            event: 'grabbed-player-move',
+            payload: {
+                playerId: this.myPlayerId,
+                grabbedPlayerId: grabbedPlayerId,
+                x: Math.round(x),
+                y: Math.round(y)
+            }
+        });
+    }
+    
+    handleGrabbedPlayerMove(data) {
         // This will be overridden by the main game
     }
     

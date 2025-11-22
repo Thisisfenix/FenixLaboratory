@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Sugerencias de Personajes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0000 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #FFD700;
+            margin-bottom: 2rem;
+        }
+
+        .suggestions-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .suggestion-card {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 0 30px rgba(255,215,0,0.3);
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .suggestion-name {
+            font-size: 1.5rem;
+            color: #FFD700;
+            font-weight: 700;
+        }
+
+        .suggestion-type {
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .type-survivor {
+            background: #4ecdc4;
+            color: #000;
+        }
+
+        .type-killer {
+            background: #ff0000;
+            color: #fff;
+        }
+
+        .icons-row {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .icon-preview {
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            flex: 1;
+        }
+
+        .icon-preview-img {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .icon-preview-img img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .icon-preview-img img:hover {
+            transform: scale(1.1);
+        }
+
+        .icon-preview-label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .suggestion-info {
+            margin: 1rem 0;
+        }
+
+        .info-label {
+            color: #FFD700;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .info-text {
+            color: rgba(255,255,255,0.9);
+            margin-top: 0.3rem;
+        }
+
+        .suggestion-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,215,0,0.3);
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: rgba(255,215,0,0.2);
+            color: #FFD700;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: #FFD700;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: #FFD700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #FFA500;
+        }
+
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0000 100%);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #FFD700;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-box h2 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 10px;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 50px;
+            color: #000;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .error-login {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <h2>🔒 Admin Access</h2>
+            <input type="password" id="adminPassword" placeholder="Contraseña">
+            <button onclick="checkAdmin()">🔑 Entrar</button>
+            <div class="error-login" id="errorLogin">❌ Contraseña incorrecta</div>
+        </div>
+    </div>
+
+    <div class="container" style="display:none;" id="adminPanel">
+        <a href="suggest-character.html" class="back-link">← Volver al formulario</a>
+        <h1>📋 Sugerencias de Personajes</h1>
+        
+        <div id="loading" class="loading">Cargando sugerencias...</div>
+        <div id="suggestionsContainer" class="suggestions-grid"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKcKNLC_nuO3n6KFW2BjSx1fP-Z59sFFs",
+            authDomain: "deadly-pursuit.firebaseapp.com",
+            projectId: "deadly-pursuit",
+            storageBucket: "deadly-pursuit.firebasestorage.app",
+            messagingSenderId: "319698892964",
+            appId: "1:319698892964:web:9f69432a6a507bd7d38e31"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        const sessionId = localStorage.getItem('adminSessionId');
+        if (sessionId) {
+            verifySession(sessionId);
+        }
+        
+        async function verifySession(sessionId) {
+            try {
+                const sessionDoc = await getDoc(doc(db, 'admin-sessions', sessionId));
+                if (sessionDoc.exists() && sessionDoc.data().valid === true) {
+                    showAdminPanel();
+                } else {
+                    localStorage.removeItem('adminSessionId');
+                }
+            } catch (error) {
+                localStorage.removeItem('adminSessionId');
+            }
+        }
+        
+        async function checkAdmin() {
+            const password = document.getElementById('adminPassword').value;
+            const sessionId = 'session_' + Date.now();
+            
+            try {
+                await setDoc(doc(db, 'admin-sessions', sessionId), {
+                    password: password,
+                    valid: true,
+                    timestamp: Date.now(),
+                    browser: navigator.userAgent.substring(0, 100)
+                });
+                
+                localStorage.setItem('adminSessionId', sessionId);
+                showAdminPanel();
+            } catch (error) {
+                document.getElementById('errorLogin').textContent = '❌ Contraseña incorrecta';
+                document.getElementById('errorLogin').style.display = 'block';
+            }
+        }
+        
+        function showAdminPanel() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminPanel').style.display = 'block';
+            loadSuggestions();
+        }
+        
+        function renderIcon(iconValue, label) {
+            if (!iconValue) return '❓';
+            if (iconValue.startsWith('data:image') || iconValue.startsWith('http')) {
+                return `<img src="${iconValue}" alt="icon" onclick="downloadImage('${iconValue}', '${label}')" title="Click para descargar">`;
+            }
+            return iconValue;
+        }
+
+        function downloadImage(dataUrl, label) {
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `icon-${label}-${Date.now()}.png`;
+            link.click();
+        }
+
+        window.downloadImage = downloadImage;
+
+        function formatDate(timestamp) {
+            return new Date(timestamp).toLocaleString('es-ES');
+        }
+
+        async function loadSuggestions() {
+            try {
+                const q = query(collection(db, 'character-suggestions'), orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                const container = document.getElementById('suggestionsContainer');
+                const loading = document.getElementById('loading');
+                
+                if (querySnapshot.empty) {
+                    loading.textContent = 'No hay sugerencias aún';
+                    return;
+                }
+
+                loading.style.display = 'none';
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'suggestion-card';
+                    
+                    card.innerHTML = `
+                        <div class="suggestion-header">
+                            <div class="suggestion-name">${data.name}</div>
+                            <div class="suggestion-type type-${data.type}">${data.type === 'survivor' ? 'Sobreviviente' : 'Asesino'}</div>
+                        </div>
+                        
+                        <div class="icons-row">
+                            <div class="icon-preview">
+                                <div class="icon-preview-img">${renderIcon(data.icons?.normal, 'normal')}</div>
+                                <div class="icon-preview-label">Normal</div>
+                            </div>
+                            <div class="icon-preview">
+                                <div class="icon-preview-img">${renderIcon(data.icons?.danger, 'danger')}</div>
+                                <div class="icon-preview-label">Peligro</div>
+                            </div>
+                            <div class="icon-preview">
+                                <div class="icon-preview-img">${renderIcon(data.icons?.dead, 'dead')}</div>
+                                <div class="icon-preview-label">Muerto</div>
+                            </div>
+                        </div>
+                        
+                        <div class="suggestion-info">
+                            <div class="info-label">Habilidad:</div>
+                            <div class="info-text">${data.ability}</div>
+                            
+                            ${data.description ? `
+                                <div class="info-label">Descripción:</div>
+                                <div class="info-text">${data.description}</div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="suggestion-meta">
+                            <span>Por: ${data.submitter}</span>
+                            <span>${formatDate(data.timestamp)}</span>
+                            <span class="status-badge status-${data.status}">${data.status}</span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').textContent = '❌ Error al cargar sugerencias';
+            }
+        }
+        
+        window.checkAdmin = checkAdmin;
+    </script>
+</body>
+</html>

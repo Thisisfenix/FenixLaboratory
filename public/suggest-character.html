@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugerir Personaje - Deadly Pursuer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0000 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #FFD700;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 0 40px rgba(255,215,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95%;
+                padding: 1.5rem;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #FFD700;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #FFD700;
+            font-weight: 600;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.4);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 50px;
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255,215,0,0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .success-msg {
+            background: rgba(78,205,196,0.2);
+            border: 2px solid #4ecdc4;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-msg {
+            background: rgba(255,107,107,0.2);
+            border: 2px solid #ff6b6b;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #FFD700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #FFA500;
+        }
+
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .icon-selector {
+                gap: 0.75rem;
+            }
+        }
+
+        .icon-option {
+            background: rgba(255,255,255,0.05);
+            border: 3px solid rgba(255,215,0,0.3);
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .icon-option {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        .icon-option:hover {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.1);
+            transform: translateY(-3px);
+        }
+
+        .icon-option.selected {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.2);
+            box-shadow: 0 0 20px rgba(255,215,0,0.4);
+        }
+
+        .icon-emoji {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-emoji img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .icon-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: 600;
+        }
+
+        .icon-input-group {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .icon-file-input {
+            display: none;
+        }
+
+        .icon-file-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(255,215,0,0.2);
+            border: 1px solid rgba(255,215,0,0.5);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .icon-file-btn:hover {
+            background: rgba(255,215,0,0.3);
+        }
+
+        .intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0000 100%);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .intro-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .steps-container {
+            max-width: 650px;
+            width: 100%;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        .step {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #FFD700;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @media (min-width: 768px) {
+            .step {
+                padding: 2rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        .step:nth-child(1) { animation-delay: 0.2s; }
+        .step:nth-child(2) { animation-delay: 0.4s; }
+        .step:nth-child(3) { animation-delay: 0.6s; }
+        .step:nth-child(4) { animation-delay: 0.8s; }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #FFD700;
+            color: #000;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: 700;
+            margin-right: 1rem;
+        }
+
+        .step-title {
+            color: #FFD700;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .step-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        .step-desc {
+            color: rgba(255,255,255,0.8);
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 50px;
+            color: #000;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .container {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .container.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="intro-screen" id="introScreen">
+        <div class="steps-container">
+            <h1 style="text-align:center;color:#FFD700;margin-bottom:2rem;font-size:2.5rem;">🎮 Cómo Sugerir un Personaje</h1>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <div style="display:inline-block;vertical-align:top;width:calc(100% - 60px);">
+                    <div class="step-title">Nombre y Tipo</div>
+                    <div class="step-desc">Elige un nombre único y decide si será Sobreviviente o Asesino</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <div style="display:inline-block;vertical-align:top;width:calc(100% - 60px);">
+                    <div class="step-title">Iconos del Personaje</div>
+                    <div class="step-desc">Sube 3 iconos (Normal, Peligro, Muerto) - Puedes usar emojis o imágenes</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <div style="display:inline-block;vertical-align:top;width:calc(100% - 60px);">
+                    <div class="step-title">Habilidad Especial</div>
+                    <div class="step-desc">Describe la habilidad única que hará especial a tu personaje</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <div style="display:inline-block;vertical-align:top;width:calc(100% - 60px);">
+                    <div class="step-title">Detalles Finales</div>
+                    <div class="step-desc">Añade una descripción y tu nombre (opcional)</div>
+                </div>
+            </div>
+
+            <button class="start-btn" onclick="document.getElementById('introScreen').classList.add('hidden'); document.querySelector('.container').classList.add('visible');">¡Empezar a Crear! 🚀</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>🎮 Sugerir Personaje</h1>
+        <p class="subtitle">¿Tienes una idea para un nuevo personaje? ¡Compártela!</p>
+
+        <form id="characterForm">
+            <div class="form-group">
+                <label for="characterName">Nombre del Personaje *</label>
+                <input type="text" id="characterName" required placeholder="Ej: Shadow Hunter">
+            </div>
+
+            <div class="form-group">
+                <label for="characterType">Tipo *</label>
+                <select id="characterType" required style="color: #fff;">
+                    <option value="" style="color: rgba(255,255,255,0.5);">Selecciona...</option>
+                    <option value="survivor" style="color: #fff;">Sobreviviente</option>
+                    <option value="killer" style="color: #fff;">Asesino</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Iconos del Personaje *</label>
+                <div class="icon-selector">
+                    <div class="icon-option" data-state="normal">
+                        <div class="icon-emoji">😊</div>
+                        <div class="icon-label">Normal</div>
+                        <div class="icon-input-group">
+                            <input type="text" placeholder="Emoji/URL" style="flex:1;text-align:center;">
+                            <label class="icon-file-btn">📁
+                                <input type="file" class="icon-file-input" accept="image/*">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="icon-option" data-state="danger">
+                        <div class="icon-emoji">😰</div>
+                        <div class="icon-label">Peligro</div>
+                        <div class="icon-input-group">
+                            <input type="text" placeholder="Emoji/URL" style="flex:1;text-align:center;">
+                            <label class="icon-file-btn">📁
+                                <input type="file" class="icon-file-input" accept="image/*">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="icon-option" data-state="dead">
+                        <div class="icon-emoji">💀</div>
+                        <div class="icon-label">Muerto</div>
+                        <div class="icon-input-group">
+                            <input type="text" placeholder="Emoji/URL" style="flex:1;text-align:center;">
+                            <label class="icon-file-btn">📁
+                                <input type="file" class="icon-file-input" accept="image/*">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="characterAbility">Habilidad Principal *</label>
+                <textarea id="characterAbility" required placeholder="Describe la habilidad especial del personaje..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="characterDescription">Descripción</label>
+                <textarea id="characterDescription" placeholder="Historia o detalles adicionales del personaje..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="submitterName">Tu Nombre (opcional)</label>
+                <input type="text" id="submitterName" placeholder="Anónimo">
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">Enviar Sugerencia</button>
+        </form>
+
+        <div class="success-msg" id="successMsg">
+            ✅ ¡Sugerencia enviada! Gracias por tu aporte 🎉
+        </div>
+
+        <div class="error-msg" id="errorMsg">
+            ❌ Error al enviar. Intenta de nuevo.
+        </div>
+
+        <a href="view-suggestions.html" class="back-link" style="display:inline-block;margin-right:1rem;">👁️ Ver Sugerencias</a>
+        <a href="index.html" class="back-link">← Volver al inicio</a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKcKNLC_nuO3n6KFW2BjSx1fP-Z59sFFs",
+            authDomain: "deadly-pursuit.firebaseapp.com",
+            databaseURL: "https://deadly-pursuit-default-rtdb.firebaseio.com",
+            projectId: "deadly-pursuit",
+            storageBucket: "deadly-pursuit.firebasestorage.app",
+            messagingSenderId: "319698892964",
+            appId: "1:319698892964:web:9f69432a6a507bd7d38e31",
+            measurementId: "G-ESG6BB90P1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Icon text input handlers
+        document.querySelectorAll('.icon-option input[type="text"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value.trim();
+                const display = e.target.closest('.icon-option').querySelector('.icon-emoji');
+                
+                if (!value) return;
+                
+                if (value.startsWith('http://') || value.startsWith('https://')) {
+                    display.innerHTML = `<img src="${value}" alt="icon">`;
+                } else {
+                    display.textContent = value;
+                }
+            });
+        });
+
+        // Icon file input handlers
+        document.querySelectorAll('.icon-file-input').forEach(fileInput => {
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64 = event.target.result;
+                    const display = e.target.closest('.icon-option').querySelector('.icon-emoji');
+                    const textInput = e.target.closest('.icon-option').querySelector('input[type="text"]');
+                    
+                    display.innerHTML = `<img src="${base64}" alt="icon">`;
+                    textInput.value = base64;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        document.getElementById('characterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successMsg = document.getElementById('successMsg');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+
+            try {
+                const icons = {
+                    normal: document.querySelector('[data-state="normal"] input[type="text"]').value || '😊',
+                    danger: document.querySelector('[data-state="danger"] input[type="text"]').value || '😰',
+                    dead: document.querySelector('[data-state="dead"] input[type="text"]').value || '💀'
+                };
+
+                const suggestion = {
+                    name: document.getElementById('characterName').value.trim(),
+                    type: document.getElementById('characterType').value,
+                    icons: icons,
+                    ability: document.getElementById('characterAbility').value.trim(),
+                    description: document.getElementById('characterDescription').value.trim(),
+                    submitter: document.getElementById('submitterName').value.trim() || 'Anónimo',
+                    timestamp: Date.now(),
+                    status: 'pending'
+                };
+
+                await addDoc(collection(db, 'character-suggestions'), suggestion);
+                
+                successMsg.style.display = 'block';
+                document.getElementById('characterForm').reset();
+                document.querySelectorAll('.icon-emoji').forEach((el, i) => {
+                    el.textContent = ['😊', '😰', '💀'][i];
+                });
+                
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 5000);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                errorMsg.style.display = 'block';
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 5000);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enviar Sugerencia';
+            }
+        });
+    </script>
+</body>
+</html>
