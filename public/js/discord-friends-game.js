@@ -997,8 +997,8 @@ class DiscordFriendsGame {
                         downedPlayer.reviveProgress = 0;
                         this.showRevivePrompt = null;
                     }
-                } else if (this.survivorInteractions && player && player.role === 'survivor') {
-                    // Interacción manual entre survivors
+                } else if (this.survivorInteractions && player && player.role === 'survivor' && player.alive && !player.downed) {
+                    // Interacción manual entre survivors (solo si está vivo y no downed)
                     this.survivorInteractions.manualInteraction(player);
                 }
             }

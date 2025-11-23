@@ -92,7 +92,8 @@ class GamepadController {
                     downedPlayer.reviveProgress = 0;
                     this.game.showRevivePrompt = null;
                 }
-            } else if (this.game.survivorInteractions && player && player.role === 'survivor') {
+            } else if (this.game.survivorInteractions && player && player.role === 'survivor' && player.alive && !player.downed) {
+                // Solo interactuar si está vivo y no downed
                 this.game.survivorInteractions.manualInteraction(player);
             }
         }

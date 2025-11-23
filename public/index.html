@@ -836,6 +836,7 @@
                     <button id="sandboxBtn" class="btn" style="background: linear-gradient(45deg, #ff9500, #ff6b00); color: white;">🔧 Modo Sandbox</button>
                     <button id="suggestCharBtn" class="btn" style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white;" onclick="window.location.href='suggest-character.html'">🎨 Sugerir Personaje</button>
                     <button id="updatesBtn" class="btn" style="background: linear-gradient(45deg, #4ecdc4, #44A08D); color: white;" onclick="window.deadlyPursuerUpdates?.showModal()">📋 Update Log</button>
+                    <button id="classifiedBtn" class="btn" style="background: linear-gradient(45deg, #8b0000, #4a0000); color: white; display: none;" onclick="enterStrangeOnce()">📜 Archivos Clasificados</button>
                     <button id="backToLabBtn" class="btn" style="background: linear-gradient(45deg, #ff6b35, #f7931e); color: white;" onclick="window.location.href='../index.html'">🔬 Laboratorio</button>
                 </div>
                 <div style="text-align: center; margin-top: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
@@ -973,6 +974,21 @@
     
     <!-- Mobile Refresh Control -->
     <script>
+        // Check if strange.html was completed
+        if(localStorage.getItem('strangeCompleted') === 'true') {
+            document.getElementById('classifiedBtn').style.display = 'inline-block';
+        }
+
+        // Three-time access to strange.html
+        function enterStrangeOnce() {
+            const visits = parseInt(localStorage.getItem('strangeVisits') || '0');
+            if(visits >= 3) {
+                alert('Has agotado tus 3 visitas a los Archivos Clasificados.');
+                return;
+            }
+            window.location.href = 'html/strange.html';
+        }
+
         document.getElementById('mobileRefresh').addEventListener('click', function() {
             // Limpiar caché agresivamente
             if ('caches' in window) {
