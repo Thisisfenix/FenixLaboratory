@@ -650,10 +650,10 @@ class DiscordFriendsGame {
             }
         };
         
-        this.supabaseGame.handleEscapeRing = (data) => {
-            if (data.playerId !== this.myPlayerId && !this.mapSystem.escapeRing) {
-                console.log('📡 Received escape ring position:', data.x, data.y);
-                this.mapSystem.showEscapeRing(data.x, data.y);
+        this.supabaseGame.handleEscapeDoor = (data) => {
+            if (data.playerId !== this.myPlayerId && !this.mapSystem.escapeDoor) {
+                console.log('📡 Received escape door position:', data.x, data.y);
+                this.mapSystem.showEscapeDoor(data.x, data.y);
             }
         };
         
@@ -1452,7 +1452,8 @@ class DiscordFriendsGame {
             height: 60,
             life: 30,
             ownerId: player.id,
-            color: '#FF0000'
+            color: '#FF0000',
+            hasHit: false
         };
         
         this.hitboxes.push(hitboxData);
@@ -1595,10 +1596,7 @@ class DiscordFriendsGame {
                                     this.playDeathSound();
                                     this.gameTimer += 15;
                                 } else {
-                                    nearestSurvivor.alive = false;
-                                    nearestSurvivor.downed = true;
-                                    nearestSurvivor.reviveTimer = 1200;
-                                    nearestSurvivor.beingRevived = false;
+                                    this.setPlayerDowned(nearestSurvivor);
                                     this.gameTimer += 10;
                                 }
                             }
@@ -2123,10 +2121,7 @@ class DiscordFriendsGame {
                                 target.spectating = true;
                                 this.playDeathSound();
                             } else {
-                                target.alive = false;
-                                target.downed = true;
-                                target.reviveTimer = 1200;
-                                target.beingRevived = false;
+                                this.setPlayerDowned(target);
                             }
                         }
                         
@@ -2763,6 +2758,22 @@ class DiscordFriendsGame {
                     this.playDeathSound();
                     // Increase timer by 15 seconds on death
                     this.gameTimer += 15;
+                    
+                    // En sandbox: un dummy revive a otro cuando muere
+                    if (this.sandboxMode && player.role === 'survivor' && player.id !== this.myPlayerId) {
+                        const otherDummies = Object.values(this.players).filter(p => 
+                            p.id !== this.myPlayerId && p.id !== player.id && p.role === 'survivor' && p.alive && !p.downed
+                        );
+                        if (otherDummies.length > 0) {
+                            const reviver = otherDummies[0];
+                            reviver.beingRevived = false;
+                            player.alive = true;
+                            player.downed = false;
+                            player.health = 60;
+                            player.lastLife = true;
+                            this.createParticles(player.x + 15, player.y + 15, '#00FF00', 20);
+                        }
+                    }
                 }
                 
                 // Verificar si otro survivor está cerca para revivir
@@ -2822,16 +2833,16 @@ class DiscordFriendsGame {
                     this.gameTimer = Math.max(0, totalTime - elapsed);
                     
                     // Mostrar anillo de escape a los 80 segundos - solo el host
-                    if (this.gameTimer === 80 && !this.mapSystem.escapeRing && !this.lastManStanding) {
+                    if (this.gameTimer === 80 && !this.mapSystem.escapeDoor && !this.lastManStanding) {
                         const sortedPlayers = Object.values(this.players).sort((a, b) => a.id.localeCompare(b.id));
                         if (sortedPlayers.length > 0 && sortedPlayers[0].id === this.myPlayerId) {
-                            this.mapSystem.showEscapeRing();
-                            if (this.supabaseGame && this.mapSystem.escapeRing) {
+                            this.mapSystem.showEscapeDoor();
+                            if (this.supabaseGame && this.mapSystem.escapeDoor) {
                                 this.supabaseGame.sendAttack({
-                                    type: 'escape_ring',
+                                    type: 'escape_door',
                                     playerId: this.myPlayerId,
-                                    x: this.mapSystem.escapeRing.x,
-                                    y: this.mapSystem.escapeRing.y
+                                    x: this.mapSystem.escapeDoor.x,
+                                    y: this.mapSystem.escapeDoor.y
                                 });
                             }
                         }
@@ -3195,6 +3206,14 @@ class DiscordFriendsGame {
         });
     }
 
+    setPlayerDowned(target) {
+        target.downed = true;
+        target.alive = true;
+        target.reviveTimer = 1200;
+        target.beingRevived = false;
+        this.gameTimer += 10;
+    }
+
     checkHitboxCollisions(hitbox) {
         Object.values(this.players).forEach(target => {
             if (!target.alive || target.id === hitbox.ownerId) return;
@@ -3267,10 +3286,7 @@ class DiscordFriendsGame {
                     // Increase timer by 15 seconds on death
                     this.gameTimer += 15;
                 } else {
-                    target.alive = false;
-                    target.downed = true;
-                    target.reviveTimer = 1200;
-                    target.beingRevived = false;
+                    this.setPlayerDowned(target);
                     // Increase timer by 10 seconds on down
                     this.gameTimer += 10;
                 }
@@ -3292,9 +3308,11 @@ class DiscordFriendsGame {
             
             // Mostrar indicador de daño local
             this.showDamageIndicator(target, 25, 'you_cant_run');
-        } else if (hitbox.type === 'basic_attack' && target.role === 'survivor') {
+        } else if (hitbox.type === 'basic_attack' && target.role === 'survivor' && !hitbox.hasHit) {
             const attacker = this.players[hitbox.ownerId];
             let damage = 30;
+            hitbox.hasHit = true;
+            hitbox.life = 0;
             
             if (attacker && attacker.stealthMode && attacker.stealthHits < attacker.maxStealthHits) {
                 damage = 50;
@@ -3362,23 +3380,23 @@ class DiscordFriendsGame {
                     // Increase timer by 15 seconds on death
                     this.gameTimer += 15;
                 } else {
-                    target.alive = false;
-                    target.downed = true;
-                    target.reviveTimer = 1200;
-                    target.beingRevived = false;
+                    this.setPlayerDowned(target);
                     // Increase timer by 10 seconds on down
                     this.gameTimer += 10;
                 }
             }
             
             if (this.supabaseGame) {
+                const isDowned = target.health <= 0 && !target.lastLife && target.character !== 'iA777';
+                const isDead = target.health <= 0 && (target.lastLife || target.character === 'iA777');
+                
                 this.supabaseGame.sendAttack({
                     type: 'damage',
                     targetId: target.id,
                     health: target.health,
-                    alive: target.health > 0,
-                    downed: target.health <= 0 && !target.lastLife && target.character !== 'iA777',
-                    spectating: target.health <= 0 && (target.lastLife || target.character === 'iA777'),
+                    alive: isDowned ? true : target.health > 0,
+                    downed: isDowned,
+                    spectating: isDead,
                     damage: damage,
                     attackerId: hitbox.ownerId,
                     attackType: 'basic_attack'
@@ -3456,10 +3474,7 @@ class DiscordFriendsGame {
                     // Increase timer by 15 seconds on death
                     this.gameTimer += 15;
                 } else {
-                    target.alive = false;
-                    target.downed = true;
-                    target.reviveTimer = 1200;
-                    target.beingRevived = false;
+                    this.setPlayerDowned(target);
                     // Increase timer by 10 seconds on down
                     this.gameTimer += 10;
                 }
@@ -3540,9 +3555,7 @@ class DiscordFriendsGame {
                                     nearbyTarget.alive = false;
                                     nearbyTarget.spectating = true;
                                 } else {
-                                    nearbyTarget.alive = false;
-                                    nearbyTarget.downed = true;
-                                    nearbyTarget.reviveTimer = 1200;
+                                    this.setPlayerDowned(nearbyTarget);
                                 }
                             }
                             
@@ -4207,11 +4220,11 @@ class DiscordFriendsGame {
     }
     
     isMobile() {
-        const isTouchDevice = 'ontouchstart' in window;
-        const isSmallScreen = Math.min(screen.width, screen.height) <= 1024;
         const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         
-        return isTouchDevice || isSmallScreen || isMobileUA;
+        // Solo es móvil si tiene UA móvil Y pantalla táctil
+        return isMobileUA && hasTouchScreen;
     }
 
     drawHitboxes() {
@@ -5242,6 +5255,79 @@ class DiscordFriendsGame {
             this.ctx.fillText('Click/Space: Atacar', this.canvas.width - 190, this.canvas.height - 40);
             this.ctx.fillText('C: Rage Mode (Killers)', this.canvas.width - 190, this.canvas.height - 20);
             this.ctx.fillText('F: Revivir (cerca de downed)', this.canvas.width - 190, this.canvas.height - 0);
+            
+            // Cooldowns de habilidades - Estilo móvil
+            const abilities = player.role === 'killer' ? ['q', 'e', 'r', 'c'] : ['q', 'e', 'r', 'f'];
+            const abilityColors = {
+                'q': { ready: '#FF4444', glow: '#FF0000', dark: '#8B0000' },
+                'e': { ready: '#4444FF', glow: '#0000FF', dark: '#00008B' },
+                'r': { ready: '#FF8800', glow: '#FF6600', dark: '#CC5500' },
+                'c': { ready: '#FF0066', glow: '#FF0044', dark: '#CC0044' },
+                'f': { ready: '#00FF88', glow: '#00FF66', dark: '#00AA55' }
+            };
+            
+            const startX = this.canvas.width - 200;
+            const startY = this.canvas.height - 150;
+            const buttonSize = 40;
+            const spacing = 5;
+            
+            this.ctx.fillStyle = 'rgba(20, 20, 30, 0.95)';
+            this.ctx.fillRect(startX, startY, 190, buttonSize + 10);
+            
+            abilities.forEach((key, i) => {
+                const ability = this.abilities[key];
+                const x = startX + 10 + (i * (buttonSize + spacing));
+                const y = startY + 5;
+                const isReady = !ability || ability.cooldown <= 0;
+                const colors = abilityColors[key];
+                
+                // Fondo oscuro
+                this.ctx.fillStyle = 'rgba(20, 20, 30, 0.95)';
+                this.ctx.fillRect(x, y, buttonSize, buttonSize);
+                
+                // Borde brillante
+                if (isReady) {
+                    const pulse = Math.sin(Date.now() * 0.005) * 0.3 + 0.7;
+                    this.ctx.strokeStyle = colors.glow;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.shadowColor = colors.glow;
+                    this.ctx.shadowBlur = 10 * pulse;
+                    this.ctx.strokeRect(x, y, buttonSize, buttonSize);
+                    this.ctx.shadowBlur = 0;
+                } else {
+                    this.ctx.strokeStyle = 'rgba(80, 80, 90, 0.6)';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(x, y, buttonSize, buttonSize);
+                }
+                
+                // Gradiente interior
+                const gradient = this.ctx.createRadialGradient(x + buttonSize/2, y + buttonSize/3, 0, x + buttonSize/2, y + buttonSize/2, buttonSize/2);
+                if (isReady) {
+                    gradient.addColorStop(0, colors.ready + '40');
+                    gradient.addColorStop(1, colors.dark + '20');
+                } else {
+                    gradient.addColorStop(0, 'rgba(60, 60, 70, 0.3)');
+                    gradient.addColorStop(1, 'rgba(30, 30, 40, 0.5)');
+                }
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(x + 2, y + 2, buttonSize - 4, buttonSize - 4);
+                
+                // Letra de la tecla
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(key.toUpperCase(), x + buttonSize/2, y + buttonSize/2);
+                this.ctx.textBaseline = 'alphabetic';
+                
+                // Cooldown en segundos
+                if (!isReady) {
+                    const cd = Math.ceil(ability.cooldown / 1000);
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.font = 'bold 10px Arial';
+                    this.ctx.fillText(cd + 's', x + buttonSize/2, y + buttonSize - 5);
+                }
+            });
         }
         
         // Mostrar estado de espectador con controles
@@ -6215,78 +6301,62 @@ class DiscordFriendsGame {
         console.log('🧹 Database cleanup handled by Supabase');
     }
     
-    showEscapeRing(x, y) {
-        this.escapeRing = {
+    showEscapeDoor(x, y) {
+        this.escapeDoor = {
             x: x || Math.random() * (this.worldSize.width - 200) + 100,
             y: y || Math.random() * (this.worldSize.height - 200) + 100,
-            radius: 80,
-            glowRadius: 100,
+            width: 60,
+            height: 90,
             active: true,
             pulseTimer: 0,
             showIndicator: true,
             indicatorTimer: 300
         };
         
-        // Cargar imagen de Meowl
-        if (!this.meowlImage) {
-            this.meowlImage = new Image();
-            this.meowlImage.src = 'assets/Meowl.png';
-        }
-        
-        console.log('🌟 Escape ring appeared!');
+        console.log('🚪 Escape door appeared!');
     }
     
-    drawEscapeRing() {
-        if (!this.escapeRing || !this.escapeRing.active) return;
+    drawEscapeDoor() {
+        if (!this.escapeDoor || !this.escapeDoor.active) return;
         
         this.ctx.save();
         
         // Efecto de pulso
-        this.escapeRing.pulseTimer += 0.1;
-        const pulse = Math.sin(this.escapeRing.pulseTimer) * 0.2 + 1;
+        this.escapeDoor.pulseTimer += 0.1;
+        const pulse = Math.sin(this.escapeDoor.pulseTimer) * 0.2 + 1;
         
         // Indicador en el minimapa/UI si está activo
-        if (this.escapeRing.showIndicator && this.escapeRing.indicatorTimer > 0) {
-            this.escapeRing.indicatorTimer--;
-            this.drawEscapeRingIndicator();
+        if (this.escapeDoor.showIndicator && this.escapeDoor.indicatorTimer > 0) {
+            this.escapeDoor.indicatorTimer--;
+            this.drawEscapeDoorIndicator();
             
-            if (this.escapeRing.indicatorTimer <= 0) {
-                this.escapeRing.showIndicator = false;
+            if (this.escapeDoor.indicatorTimer <= 0) {
+                this.escapeDoor.showIndicator = false;
             }
         }
         
         // Glow exterior
-        this.ctx.shadowColor = '#FFD700';
-        this.ctx.shadowBlur = 30;
-        this.ctx.strokeStyle = '#FFD700';
-        this.ctx.lineWidth = 8 * pulse;
+        this.ctx.shadowColor = '#00FF00';
+        this.ctx.shadowBlur = 40 * pulse;
+        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
         this.ctx.globalAlpha = 0.6;
-        this.ctx.beginPath();
-        this.ctx.arc(this.escapeRing.x, this.escapeRing.y, this.escapeRing.glowRadius * pulse, 0, Math.PI * 2);
-        this.ctx.stroke();
+        this.ctx.fillRect(this.escapeDoor.x - this.escapeDoor.width/2 - 10, this.escapeDoor.y - this.escapeDoor.height/2 - 10, this.escapeDoor.width + 20, this.escapeDoor.height + 20);
         
-        // Anillo principal
+        // Marco de la puerta
         this.ctx.shadowBlur = 15;
-        this.ctx.strokeStyle = '#FFA500';
-        this.ctx.lineWidth = 6;
-        this.ctx.globalAlpha = 0.8;
-        this.ctx.beginPath();
-        this.ctx.arc(this.escapeRing.x, this.escapeRing.y, this.escapeRing.radius, 0, Math.PI * 2);
-        this.ctx.stroke();
+        this.ctx.fillStyle = '#8B4513';
+        this.ctx.globalAlpha = 1;
+        this.ctx.fillRect(this.escapeDoor.x - this.escapeDoor.width/2, this.escapeDoor.y - this.escapeDoor.height/2, this.escapeDoor.width, this.escapeDoor.height);
         
-        // Imagen de Meowl en el centro
-        if (this.meowlImage && this.meowlImage.complete) {
-            this.ctx.globalAlpha = 1;
-            this.ctx.shadowBlur = 0;
-            const imageSize = 60;
-            this.ctx.drawImage(
-                this.meowlImage,
-                this.escapeRing.x - imageSize/2,
-                this.escapeRing.y - imageSize/2,
-                imageSize,
-                imageSize
-            );
-        }
+        // Puerta interior (verde brillante)
+        this.ctx.fillStyle = '#00FF00';
+        this.ctx.fillRect(this.escapeDoor.x - this.escapeDoor.width/2 + 5, this.escapeDoor.y - this.escapeDoor.height/2 + 5, this.escapeDoor.width - 10, this.escapeDoor.height - 10);
+        
+        // Manija de la puerta
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.beginPath();
+        this.ctx.arc(this.escapeDoor.x + this.escapeDoor.width/4, this.escapeDoor.y, 5, 0, Math.PI * 2);
+        this.ctx.fill();
         
         // Texto "ESCAPE"
         this.ctx.globalAlpha = 1;
@@ -6295,21 +6365,21 @@ class DiscordFriendsGame {
         this.ctx.fillStyle = '#FFD700';
         this.ctx.font = 'bold 16px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText('ESCAPE', this.escapeRing.x, this.escapeRing.y + 50);
+        this.ctx.fillText('ESCAPE', this.escapeDoor.x, this.escapeDoor.y + this.escapeDoor.height/2 + 20);
         
         this.ctx.restore();
         
-        // Verificar si algún survivor está en el anillo
-        this.checkEscapeRingCollision();
+        // Verificar si algún survivor está en la puerta
+        this.checkEscapeDoorCollision();
     }
     
-    drawEscapeRingIndicator() {
+    drawEscapeDoorIndicator() {
         const player = this.players[this.myPlayerId];
         if (!player || player.role !== 'survivor') return;
         
-        // Calcular dirección hacia el anillo
-        const dx = this.escapeRing.x - (player.x + 15);
-        const dy = this.escapeRing.y - (player.y + 15);
+        // Calcular dirección hacia la puerta
+        const dx = this.escapeDoor.x - (player.x + 15);
+        const dy = this.escapeDoor.y - (player.y + 15);
         const distance = Math.sqrt(dx*dx + dy*dy);
         const angle = Math.atan2(dy, dx);
         
@@ -6354,17 +6424,17 @@ class DiscordFriendsGame {
         this.ctx.fillText(`${Math.floor(distance)}m`, indicatorX, indicatorY + 25);
     }
     
-    checkEscapeRingCollision() {
-        if (!this.escapeRing || !this.escapeRing.active) return;
+    checkEscapeDoorCollision() {
+        if (!this.escapeDoor || !this.escapeDoor.active) return;
         
         Object.values(this.players).forEach(player => {
             if (player.role === 'survivor' && player.alive) {
-                const distance = Math.sqrt(
-                    Math.pow(player.x + 15 - this.escapeRing.x, 2) + 
-                    Math.pow(player.y + 15 - this.escapeRing.y, 2)
-                );
+                const inDoor = player.x + 15 >= this.escapeDoor.x - this.escapeDoor.width/2 &&
+                               player.x + 15 <= this.escapeDoor.x + this.escapeDoor.width/2 &&
+                               player.y + 15 >= this.escapeDoor.y - this.escapeDoor.height/2 &&
+                               player.y + 15 <= this.escapeDoor.y + this.escapeDoor.height/2;
                 
-                if (distance <= this.escapeRing.radius) {
+                if (inDoor) {
                     // Survivor escapó
                     if (player.id === this.myPlayerId) {
                         this.survivorEscaped(player);
@@ -6377,7 +6447,7 @@ class DiscordFriendsGame {
     survivorEscaped(player) {
         player.escaped = true;
         player.alive = false;
-        this.escapeRing.active = false;
+        this.escapeDoor.active = false;
         
         if (this.supabaseGame) {
             this.supabaseGame.sendAttack({
@@ -6994,9 +7064,9 @@ class DiscordFriendsGame {
                 this.createParticles(target.x + 15, target.y + 15, '#9370DB', 20);
                 
                 if (this.supabaseGame) {
-                    this.supabaseGame.sendGrabbedPlayerMove(target.id, newX, newY);
                     this.supabaseGame.sendAttack({
                         type: 'telekinesis_hit',
+                        playerId: player.id,
                         targetId: target.id,
                         knockbackX: newX,
                         knockbackY: newY
@@ -7143,7 +7213,7 @@ class DiscordFriendsGame {
         }
     }
     startSandboxMode(){const e=document.getElementById('playerName').value.trim();if(!e)return alert('Por favor ingresa tu nombre');if(!this.selectedCharacter)return alert('Selecciona un personaje');this.sandboxMode=!0,this.gameStarted=!0,this.myPlayerId='sandbox_player';const t={id:this.myPlayerId,name:e,x:400,y:300,alive:!0,character:this.selectedCharacter,role:this.selectedRole,health:this.selectedRole==='survivor'?(this.selectedCharacter==='iA777'?120:this.selectedCharacter==='luna'?85:this.selectedCharacter==='angel'?90:this.selectedCharacter==='iris'?100:this.selectedCharacter==='molly'?95:100):(this.selectedCharacter==='vortex'?700:600),maxHealth:this.selectedRole==='survivor'?(this.selectedCharacter==='iA777'?120:this.selectedCharacter==='luna'?85:this.selectedCharacter==='angel'?90:this.selectedCharacter==='iris'?100:this.selectedCharacter==='molly'?95:100):(this.selectedCharacter==='vortex'?700:600),dodgeBar:this.selectedCharacter==='iris'?75:0,maxDodgeBar:this.selectedCharacter==='iris'?75:0,spectating:!1};this.players[this.myPlayerId]=t,this.createSandboxDummies(),this.setupAbilities(),this.showGameScreen()}
-createSandboxDummies(){const e=this.players[this.myPlayerId],t=e.role==='killer'?'survivor':'killer',s=t==='killer'?['2019x','vortex']:['gissel','iA777','luna','angel','iris','molly'];for(let i=0;i<3;i++){const a=s[i%s.length],r=`dummy_${i}`;this.players[r]={id:r,name:`Dummy ${a}`,x:200+i*300,y:500+i*100,alive:!0,character:a,role:t,health:t==='survivor'?(a==='iA777'?120:a==='luna'?85:a==='angel'?90:a==='iris'?100:a==='molly'?95:100):(a==='vortex'?700:600),maxHealth:t==='survivor'?(a==='iA777'?120:a==='luna'?85:a==='angel'?90:a==='iris'?100:a==='molly'?95:100):(a==='vortex'?700:600),dodgeBar:a==='iris'?75:0,maxDodgeBar:a==='iris'?75:0,spectating:!1,isDummy:!0,aiMovement:{moveTimer:0,direction:Math.random()*Math.PI*2}}}if(e.role==='survivor'){const d='gissel';this.players.dummy_downed={id:'dummy_downed',name:'Downed Dummy',x:600,y:400,alive:!1,downed:!0,reviveTimer:1200,beingRevived:!1,character:d,role:t,health:0,maxHealth:100,spectating:!1,isDummy:!0}}}
+createSandboxDummies(){const e=this.players[this.myPlayerId],t=e.role==='killer'?'survivor':'killer',s=t==='killer'?['2019x','vortex']:['gissel','iA777','luna','angel','iris','molly'];for(let i=0;i<3;i++){const a=s[i%s.length],r=`dummy_${i}`;this.players[r]={id:r,name:`Dummy ${a}`,x:200+i*300,y:500+i*100,alive:!0,character:a,role:t,health:t==='survivor'?(a==='iA777'?120:a==='luna'?85:a==='angel'?90:a==='iris'?100:a==='molly'?95:100):(a==='vortex'?700:600),maxHealth:t==='survivor'?(a==='iA777'?120:a==='luna'?85:a==='angel'?90:a==='iris'?100:a==='molly'?95:100):(a==='vortex'?700:600),dodgeBar:a==='iris'?75:0,maxDodgeBar:a==='iris'?75:0,spectating:!1,isDummy:!0,aiMovement:{moveTimer:0,direction:Math.random()*Math.PI*2}}}if(e.role==='survivor'){const d='gissel';this.players.dummy_downed={id:'dummy_downed',name:'Downed Dummy',x:600,y:400,alive:!0,downed:!0,reviveTimer:1200,beingRevived:!1,character:d,role:t,health:0,maxHealth:100,spectating:!1,isDummy:!0}}}
 updateSandboxDummies(){if(!this.sandboxMode)return;Object.values(this.players).forEach(e=>{if(!e.isDummy||!e.alive)return;e.aiMovement.moveTimer++,e.aiMovement.moveTimer>=180&&(e.aiMovement.direction=Math.random()*Math.PI*2,e.aiMovement.moveTimer=0);const t=Math.max(50,Math.min(this.worldSize.width-80,e.x+Math.cos(e.aiMovement.direction)*2)),s=Math.max(50,Math.min(this.worldSize.height-80,e.y+Math.sin(e.aiMovement.direction)*2));e.x=t,e.y=s,(e.x<=50||e.x>=this.worldSize.width-80||e.y<=50||e.y>=this.worldSize.height-80)&&(e.aiMovement.direction+=Math.PI)})}
 exitSandbox(){this.sandboxMode=!1,this.gameStarted=!1,this.players={},this.particles=[],this.hitboxes=[],document.getElementById('lobby').classList.add('active'),document.getElementById('game').classList.remove('active')}
 
@@ -7160,3 +7230,5 @@ exitSandbox(){this.sandboxMode=!1,this.gameStarted=!1,this.players={},this.parti
 window.addEventListener('DOMContentLoaded', () => {
     new DiscordFriendsGame();
 });
+
+

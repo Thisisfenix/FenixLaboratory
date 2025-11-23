@@ -91,8 +91,8 @@ class SupabaseGame {
                 .on('broadcast', { event: 'lobby-list' }, (payload) => {
                     this.handleLobbyList(payload.payload);
                 })
-                .on('broadcast', { event: 'escape-ring' }, (payload) => {
-                    this.handleEscapeRing(payload.payload);
+                .on('broadcast', { event: 'escape-door' }, (payload) => {
+                    this.handleEscapeDoor(payload.payload);
                 })
                 .on('broadcast', { event: 'game-config' }, (payload) => {
                     this.handleGameConfig(payload.payload);
@@ -105,6 +105,11 @@ class SupabaseGame {
                     if (status === 'SUBSCRIBED') {
                         console.log('✅ Supabase channel subscribed');
                         resolve();
+                    } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+                        console.warn('⚠️ Connection lost, reconnecting...');
+                        setTimeout(() => {
+                            this.reconnect(lobbyId);
+                        }, 2000);
                     }
                 });
         });
@@ -342,11 +347,11 @@ class SupabaseGame {
         // This will be overridden by the main game
     }
     
-    sendEscapeRingPosition(x, y) {
-        console.log('📡 Sending escape ring position:', x, y);
+    sendEscapeDoorPosition(x, y) {
+        console.log('📡 Sending escape door position:', x, y);
         this.channel.send({
             type: 'broadcast',
-            event: 'escape-ring',
+            event: 'escape-door',
             payload: {
                 playerId: this.myPlayerId,
                 x: x,
@@ -355,7 +360,7 @@ class SupabaseGame {
         });
     }
     
-    handleEscapeRing(data) {
+    handleEscapeDoor(data) {
         // This will be overridden by the main game
     }
     
@@ -398,5 +403,19 @@ class SupabaseGame {
             this.channel.unsubscribe();
         }
         return this.setupRealtimeChannel(newLobbyId);
+    }
+    
+    async reconnect(lobbyId = 'lobby-1') {
+        console.log('🔄 Reconnecting to Supabase...');
+        try {
+            if (this.channel) {
+                await this.channel.unsubscribe();
+            }
+            await this.setupRealtimeChannel(lobbyId);
+            console.log('✅ Reconnected successfully');
+        } catch (error) {
+            console.error('❌ Reconnection failed:', error);
+            setTimeout(() => this.reconnect(lobbyId), 5000);
+        }
     }
 }
