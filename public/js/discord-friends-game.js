@@ -39,6 +39,9 @@ class DiscordFriendsGame {
         this.gameModeSystem = new DiscordFriendsGameModes(this);
         this.selectedGameMode = 'classic';
         
+        // Initialize survivor interactions system
+        this.survivorInteractions = window.SurvivorInteractions ? new SurvivorInteractions(this) : null;
+        
         this.rageLevel = 0;
         this.maxRage = 500;
         this.rageMode = { active: false, timer: 0 };
@@ -54,8 +57,7 @@ class DiscordFriendsGame {
         this.mobileControls = null;
         this.ping = 0;
         this.lastPingTime = 0;
-        this.gamepadIndex = null;
-        this.gamepadButtons = {};
+        this.gamepadController = null;
         
         this.init();
     }
@@ -230,16 +232,10 @@ class DiscordFriendsGame {
             }
         });
         
-        // Gamepad support
-        window.addEventListener('gamepadconnected', (e) => {
-            console.log('🎮 Gamepad connected:', e.gamepad.id);
-            this.gamepadIndex = e.gamepad.index;
-        });
-        
-        window.addEventListener('gamepaddisconnected', (e) => {
-            console.log('🎮 Gamepad disconnected');
-            this.gamepadIndex = null;
-        });
+        // Initialize gamepad controller
+        if (window.GamepadController) {
+            this.gamepadController = new GamepadController(this);
+        }
     }
 
     setupSupabaseEvents() {
@@ -1001,6 +997,9 @@ class DiscordFriendsGame {
                         downedPlayer.reviveProgress = 0;
                         this.showRevivePrompt = null;
                     }
+                } else if (this.survivorInteractions && player && player.role === 'survivor') {
+                    // Interacción manual entre survivors
+                    this.survivorInteractions.manualInteraction(player);
                 }
             }
             if (key === 'r') this.useAbility('r');
@@ -2866,6 +2865,7 @@ class DiscordFriendsGame {
                 this.updateIrisAbilities();
                 this.updateMollyAbilities();
                 this.updateReviveSystem();
+                if (this.survivorInteractions) this.survivorInteractions.update();
                 this.updateGameTimer();
                 this.updatePing();
                 this.updateDamageIndicators();
@@ -2944,7 +2944,9 @@ class DiscordFriendsGame {
             speed = 4.8; // Boost menor para aliados
         }
         // Handle gamepad input
-        this.updateGamepadInput();
+        if (this.gamepadController) {
+            this.gamepadController.update();
+        }
         
         let moved = false;
         let newX = player.x;
@@ -3054,49 +3056,7 @@ class DiscordFriendsGame {
         }
     }
 
-    updateGamepadInput() {
-        if (this.gamepadIndex === null) return;
-        
-        const gamepad = navigator.getGamepads()[this.gamepadIndex];
-        if (!gamepad) return;
-        
-        // Left stick movement (axes 0,1)
-        const deadzone = 0.2;
-        const leftX = Math.abs(gamepad.axes[0]) > deadzone ? gamepad.axes[0] : 0;
-        const leftY = Math.abs(gamepad.axes[1]) > deadzone ? gamepad.axes[1] : 0;
-        
-        this.keys['a'] = leftX < -deadzone;
-        this.keys['d'] = leftX > deadzone;
-        this.keys['w'] = leftY < -deadzone;
-        this.keys['s'] = leftY > deadzone;
-        
-        // Buttons
-        const buttons = {
-            0: 'space', // A button - attack
-            1: 'q',     // B button - Q ability
-            2: 'e',     // X button - E ability
-            3: 'r',     // Y button - R ability
-            4: 'c',     // LB - C ability
-            9: 'escape' // Start - pause/menu
-        };
-        
-        Object.keys(buttons).forEach(buttonIndex => {
-            const button = gamepad.buttons[buttonIndex];
-            const key = buttons[buttonIndex];
-            const wasPressed = this.gamepadButtons[buttonIndex];
-            const isPressed = button && button.pressed;
-            
-            if (isPressed && !wasPressed) {
-                if (key === 'space') this.handleAttack();
-                else if (key === 'q') this.useAbility('q');
-                else if (key === 'e') this.useAbility('e');
-                else if (key === 'r') this.useAbility('r');
-                else if (key === 'c') this.activateRageMode();
-            }
-            
-            this.gamepadButtons[buttonIndex] = isPressed;
-        });
-    }
+
     
     updateRemotePlayerInterpolation() {
         Object.values(this.players).forEach(player => {
@@ -5150,6 +5110,22 @@ class DiscordFriendsGame {
                 if (this.isImageValid(this.irisIcons[hudIconSrc])) {
                     this.ctx.drawImage(this.irisIcons[hudIconSrc], iconX + 10, iconY + 10, iconSize - 20, iconSize - 20);
                 }
+            } else if (player.character === 'molly') {
+                if (player.alive && player.health > 50) {
+                    hudIconSrc = 'assets/icons/MollyNormalIcon.png';
+                } else if (player.alive && player.health <= 50) {
+                    hudIconSrc = 'assets/icons/MollyDangerIcon.png';
+                } else {
+                    hudIconSrc = 'assets/icons/MollyDeadIcon.png';
+                }
+                if (!this.mollyIcons) this.mollyIcons = {};
+                if (!this.mollyIcons[hudIconSrc]) {
+                    this.mollyIcons[hudIconSrc] = new Image();
+                    this.mollyIcons[hudIconSrc].src = hudIconSrc;
+                }
+                if (this.isImageValid(this.mollyIcons[hudIconSrc])) {
+                    this.ctx.drawImage(this.mollyIcons[hudIconSrc], iconX + 10, iconY + 10, iconSize - 20, iconSize - 20);
+                }
             } else {
                 // Fallback para personajes sin icono
                 this.ctx.fillStyle = '#FFFFFF';
@@ -5398,13 +5374,135 @@ class DiscordFriendsGame {
         this.ctx.fillText(`${this.ping}ms`, this.canvas.width - 55, 30);
         
         // Gamepad indicator
-        if (this.gamepadIndex !== null) {
+        if (this.gamepadController && this.gamepadController.isConnected()) {
             this.ctx.fillStyle = 'rgba(0,255,0,0.8)';
             this.ctx.fillRect(this.canvas.width - 100, 45, 90, 25);
             this.ctx.fillStyle = '#000';
             this.ctx.font = 'bold 12px Arial';
             this.ctx.fillText('🎮 Controller', this.canvas.width - 55, 62);
         }
+        
+        // Players panel (derecha, debajo del ping)
+        this.drawPlayersPanel();
+    }
+    
+    drawPlayersPanel() {
+        const alivePlayers = Object.values(this.players).filter(p => p.alive && !p.spectating);
+        if (alivePlayers.length === 0) return;
+        
+        const panelX = this.canvas.width - 180;
+        const startY = (this.gamepadController && this.gamepadController.isConnected()) ? 80 : 50;
+        const slotHeight = 50;
+        const slotWidth = 170;
+        const iconSize = 40;
+        
+        alivePlayers.forEach((p, index) => {
+            const slotY = startY + (index * (slotHeight + 5));
+            
+            // Fondo del slot
+            this.ctx.fillStyle = 'rgba(20, 20, 30, 0.9)';
+            this.ctx.fillRect(panelX, slotY, slotWidth, slotHeight);
+            
+            // Borde
+            this.ctx.strokeStyle = p.role === 'killer' ? '#FF0000' : '#7289DA';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(panelX, slotY, slotWidth, slotHeight);
+            
+            // Icono del personaje
+            const iconX = panelX + 5;
+            const iconY = slotY + 5;
+            
+            let iconSrc = null;
+            if (p.character === 'gissel') {
+                iconSrc = 'assets/icons/GisselInactiveIcon.png';
+            } else if (p.character === 'luna') {
+                iconSrc = p.health > 50 ? 'assets/icons/LunaNormalIcon.png' : 'assets/icons/LunaDangerIcon.png';
+            } else if (p.character === 'iA777') {
+                iconSrc = p.health > 60 ? 'assets/icons/IA777NormalIcon.png' : 'assets/icons/IA777DangerIcon.png';
+            } else if (p.character === 'angel') {
+                iconSrc = p.health > 50 ? 'assets/icons/AngelNormalIcon.png' : 'assets/icons/AngelDangerIcon.png';
+            } else if (p.character === 'iris') {
+                iconSrc = p.health > 50 ? 'assets/icons/IrisNormalIcon.png' : 'assets/icons/IrisDangerIcon.png';
+            } else if (p.character === 'molly') {
+                iconSrc = p.health > 50 ? 'assets/icons/MollyNormalIcon.png' : 'assets/icons/MollyDangerIcon.png';
+            }
+            
+            if (iconSrc) {
+                if (!this[`${p.character}PanelIcons`]) this[`${p.character}PanelIcons`] = {};
+                if (!this[`${p.character}PanelIcons`][iconSrc]) {
+                    this[`${p.character}PanelIcons`][iconSrc] = new Image();
+                    this[`${p.character}PanelIcons`][iconSrc].src = iconSrc;
+                }
+                if (this.isImageValid(this[`${p.character}PanelIcons`][iconSrc])) {
+                    this.ctx.drawImage(this[`${p.character}PanelIcons`][iconSrc], iconX, iconY, iconSize, iconSize);
+                }
+            } else {
+                // Emoji fallback
+                this.ctx.fillStyle = '#FFF';
+                this.ctx.font = '24px Arial';
+                this.ctx.textAlign = 'center';
+                const emoji = p.character === '2019x' ? '🔥' : p.character === 'vortex' ? '🌀' : '👤';
+                this.ctx.fillText(emoji, iconX + iconSize/2, iconY + iconSize/2 + 8);
+            }
+            
+            // Nombre
+            this.ctx.fillStyle = '#FFF';
+            this.ctx.font = 'bold 11px Arial';
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(p.name.substring(0, 10), iconX + iconSize + 5, slotY + 12);
+            
+            // Healthbar
+            const hpBarX = iconX + iconSize + 5;
+            const hpBarY = slotY + 20;
+            const hpBarWidth = slotWidth - iconSize - 15;
+            const hpBarHeight = 12;
+            
+            // Fondo barra
+            this.ctx.fillStyle = '#1a1a1a';
+            this.ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+            
+            // Barra HP
+            const healthPercent = p.health / p.maxHealth;
+            const healthWidth = healthPercent * hpBarWidth;
+            
+            if (healthWidth > 0) {
+                if (p.health > 100) {
+                    this.ctx.fillStyle = '#9370DB';
+                } else if (healthPercent >= 0.7) {
+                    this.ctx.fillStyle = '#32CD32';
+                } else if (healthPercent >= 0.3) {
+                    this.ctx.fillStyle = '#FFA500';
+                } else {
+                    this.ctx.fillStyle = '#DC143C';
+                }
+                this.ctx.fillRect(hpBarX, hpBarY, healthWidth, hpBarHeight);
+            }
+            
+            // Borde barra
+            this.ctx.strokeStyle = '#FFF';
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+            
+            // Texto HP
+            this.ctx.fillStyle = '#FFF';
+            this.ctx.font = 'bold 10px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(`${p.health}/${p.maxHealth}`, hpBarX + hpBarWidth/2, hpBarY + hpBarHeight - 2);
+            
+            // Estado adicional
+            this.ctx.font = '9px Arial';
+            this.ctx.textAlign = 'left';
+            if (p.downed) {
+                this.ctx.fillStyle = '#FF0000';
+                this.ctx.fillText('DOWNED', hpBarX, slotY + 42);
+            } else if (p.stunned) {
+                this.ctx.fillStyle = '#FF69B4';
+                this.ctx.fillText('STUNNED', hpBarX, slotY + 42);
+            } else if (p.character === 'iA777' && p.autoRepairing) {
+                this.ctx.fillStyle = '#00FF00';
+                this.ctx.fillText('REPAIR', hpBarX, slotY + 42);
+            }
+        });
     }
     
     updatePing() {
@@ -6509,6 +6607,15 @@ class DiscordFriendsGame {
         const startX = canvasWidth - (abilities.length * (buttonSize + spacing)) - 20;
         const buttonY = canvasHeight - buttonSize - 20;
         
+        // Mapeo de teclas a botones de gamepad
+        const gamepadButtons = {
+            'q': { label: 'B', color: '#E74C3C' },  // B/Circle - Rojo
+            'e': { label: 'X', color: '#3498DB' },  // X/Square - Azul
+            'r': { label: 'Y', color: '#F39C12' },  // Y/Triangle - Amarillo
+            'c': { label: 'LB', color: '#9B59B6' }, // LB/L1 - Morado
+            'f': { label: 'RB', color: '#2ECC71' }  // RB/R1 - Verde
+        };
+        
         const abilityColors = {
             'q': { ready: '#FF4444', glow: '#FF0000', dark: '#8B0000' },
             'e': { ready: '#4444FF', glow: '#0000FF', dark: '#00008B' },
@@ -6582,28 +6689,46 @@ class DiscordFriendsGame {
             this.ctx.arc(centerX, centerY, radius - 4, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // Letra con efecto
-            this.ctx.fillStyle = isReady ? '#FFFFFF' : 'rgba(120, 120, 130, 0.7)';
-            this.ctx.font = `bold ${buttonSize * 0.45}px 'Courier New', monospace`;
+            // Botón de gamepad con círculo de color
+            const btnInfo = gamepadButtons[key];
+            const btnRadius = buttonSize * 0.25;
+            const btnY = centerY - radius * 0.15;
+            
+            // Círculo de color del botón
+            this.ctx.fillStyle = isReady ? btnInfo.color : 'rgba(80, 80, 90, 0.5)';
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, btnY, btnRadius, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Borde del círculo
+            this.ctx.strokeStyle = isReady ? '#FFFFFF' : 'rgba(120, 120, 130, 0.5)';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, btnY, btnRadius, 0, Math.PI * 2);
+            this.ctx.stroke();
+            
+            // Letra del botón
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.font = `bold ${buttonSize * 0.25}px Arial`;
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             
             if (isReady) {
-                this.ctx.shadowColor = colors.glow;
-                this.ctx.shadowBlur = 8;
+                this.ctx.shadowColor = '#000';
+                this.ctx.shadowBlur = 3;
             }
             
-            this.ctx.fillText(key.toUpperCase(), centerX, centerY - (isReady ? 0 : radius * 0.15));
+            this.ctx.fillText(btnInfo.label, centerX, btnY);
             this.ctx.shadowBlur = 0;
             
             // Para Luna Q: mostrar contador de usos Y cooldown
             if (key === 'q' && this.selectedCharacter === 'luna' && cooldown && cooldown.uses !== undefined) {
-                // Contador de usos arriba
+                // Contador de usos arriba del botón
                 this.ctx.fillStyle = '#FFD700';
-                this.ctx.font = `bold ${buttonSize * 0.25}px Arial`;
+                this.ctx.font = `bold ${buttonSize * 0.22}px Arial`;
                 this.ctx.shadowColor = '#000';
                 this.ctx.shadowBlur = 4;
-                this.ctx.fillText(`x${cooldown.uses}`, centerX - radius * 0.5, centerY - radius * 0.3);
+                this.ctx.fillText(`x${cooldown.uses}`, centerX, centerY - radius * 0.65);
                 this.ctx.shadowBlur = 0;
                 
                 // Cooldown abajo si está activo
