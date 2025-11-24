@@ -2650,43 +2650,50 @@
                 canInteract = false;
                 canInteractDoor = false;
                 canInteractPainting = false;
+                let interactText = '';
                 
                 // Verificar linterna
                 if(!hasFlashlight && flashlight) {
                     const dist = camera.position.distanceTo(flashlight.position);
                     if(dist < 2) {
                         canInteract = true;
-                        document.getElementById('interact').textContent = 'Presiona E para tomar linterna';
-                    }
-                }
-                // Verificar cuadro
-                else if(inStartRoom && gisselPainting && !paintingInteracted) {
-                    const dist = camera.position.distanceTo(gisselPainting.position);
-                    if(dist < 3) {
-                        canInteractPainting = true;
-                        document.getElementById('interact').textContent = 'Presiona E para observar el cuadro';
-                    }
-                }
-                // Verificar puerta misteriosa
-                else if(mysteryDoor && !doorBroken) {
-                    const dist = camera.position.distanceTo(mysteryDoor.position);
-                    if(dist < 3) {
-                        canInteractDoor = true;
-                        document.getElementById('interact').textContent = 'Presiona E para abrir puerta';
-                    }
-                }
-                // Verificar cofre
-                else if(chest) {
-                    const dist = camera.position.distanceTo(chest.position);
-                    if(dist < 5) {
-                        canInteract = true;
-                        document.getElementById('interact').textContent = 'Presiona E para abrir cofre';
+                        interactText = 'Presiona E para tomar linterna';
                     }
                 }
                 
-                document.getElementById('interact').style.display = (canInteract || canInteractDoor || canInteractPainting) ? 'block' : 'none';
+                // Verificar cuadro
+                if(inStartRoom && gisselPainting && !paintingInteracted) {
+                    const dist = camera.position.distanceTo(gisselPainting.position);
+                    if(dist < 3) {
+                        canInteractPainting = true;
+                        interactText = 'Presiona E para observar el cuadro';
+                    }
+                }
+                
+                // Verificar puerta misteriosa
+                if(mysteryDoor && !doorBroken) {
+                    const dist = camera.position.distanceTo(mysteryDoor.position);
+                    if(dist < 3) {
+                        canInteractDoor = true;
+                        interactText = 'Presiona E para abrir puerta';
+                    }
+                }
+                
+                // Verificar cofre
+                if(chest) {
+                    const dist = camera.position.distanceTo(chest.position);
+                    if(dist < 5) {
+                        canInteract = true;
+                        interactText = 'Presiona E para abrir cofre';
+                    }
+                }
+                
+                const showInteract = canInteract || canInteractDoor || canInteractPainting;
+                document.getElementById('interact').style.display = showInteract ? 'block' : 'none';
+                if(showInteract) document.getElementById('interact').textContent = interactText;
+                
                 if(isMobile) {
-                    document.getElementById('interactBtn').style.display = (canInteract || canInteractDoor || canInteractPainting) ? 'flex' : 'none';
+                    document.getElementById('interactBtn').style.display = showInteract ? 'flex' : 'none';
                 }
             }
 
