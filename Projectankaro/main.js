@@ -12,13 +12,84 @@ const currentPlayersEl = document.getElementById('currentPlayers');
 const statusEl = document.getElementById('status');
 const micBtn = document.getElementById('micBtn');
 const micIcon = document.getElementById('micIcon');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const fullscreenIcon = document.getElementById('fullscreenIcon');
+
+// Loading screen
+function updateLoadingProgress(percent, text) {
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+    if (loadingBar) loadingBar.style.width = percent + '%';
+    if (loadingText) loadingText.textContent = text;
+}
+
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.style.opacity = '0';
+        loadingScreen.style.transition = 'opacity 1s';
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+        }, 1000);
+    }
+}
 
 // Init
 function init() {
-    engine.init();
-    lobby.create();
-    animate();
+    console.log('Initializing game...');
+    updateLoadingProgress(10, 'Verificando THREE.js...');
+    
+    // Verificar que THREE.js esté cargado
+    if (typeof THREE === 'undefined') {
+        console.error('THREE.js not loaded!');
+        updateLoadingProgress(0, '❌ Error: THREE.js no cargado');
+        return;
+    }
+    
+    updateLoadingProgress(30, 'Inicializando motor 3D...');
+    
+    try {
+        const engineInit = engine.init();
+        if (!engineInit) {
+            throw new Error('Engine initialization failed');
+        }
+        console.log('Engine initialized successfully');
+        updateLoadingProgress(60, 'Creando lobby...');
+        
+        if (typeof lobby !== 'undefined' && lobby.create) {
+            lobby.create();
+            console.log('Lobby created');
+        }
+        
+        updateLoadingProgress(90, 'Iniciando...');
+        
+        animate();
+        console.log('Animation loop started');
+        
+        updateLoadingProgress(100, '✔️ Listo!');
+        setTimeout(hideLoadingScreen, 500);
+    } catch (error) {
+        console.error('Init error:', error);
+        updateLoadingProgress(0, '❌ Error: ' + error.message);
+    }
 }
+
+// Fullscreen button
+fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            fullscreenIcon.textContent = '⬜';
+            updateStatus('📺 Pantalla completa activada', '#00ff00');
+        }).catch(err => {
+            console.error('Fullscreen error:', err);
+            updateStatus('⚠️ No se pudo activar pantalla completa', '#ff0000');
+        });
+    } else {
+        document.exitFullscreen();
+        fullscreenIcon.textContent = '⛶';
+        updateStatus('📺 Pantalla completa desactivada', '#ffd700');
+    }
+});
 
 // Create room button
 createRoomBtn.addEventListener('click', async () => {
@@ -296,5 +367,26 @@ function animate() {
     engine.render();
 }
 
-// Start
-window.addEventListener('load', init);
+// Start - Esperar a que todo cargue
+let loadAttempts = 0;
+const maxAttempts = 10;
+
+function tryInit() {
+    loadAttempts++;
+    
+    if (typeof THREE !== 'undefined') {
+        console.log('THREE.js loaded, initializing...');
+        init();
+    } else if (loadAttempts < maxAttempts) {
+        console.log(`Waiting for THREE.js... (${loadAttempts}/${maxAttempts})`);
+        setTimeout(tryInit, 500);
+    } else {
+        console.error('Failed to load THREE.js after multiple attempts');
+        updateStatus('❌ Error: No se pudo cargar THREE.js', '#ff0000');
+    }
+}
+
+window.addEventListener('load', () => {
+    console.log('Window loaded, starting initialization...');
+    tryInit();
+});

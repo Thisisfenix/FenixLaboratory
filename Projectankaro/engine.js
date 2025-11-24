@@ -10,36 +10,54 @@ class Engine {
     }
 
     init() {
-        // Scene
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x0a0a0a);
-        this.scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
+        console.log('Initializing engine...');
+        
+        try {
+            // Scene
+            this.scene = new THREE.Scene();
+            this.scene.background = new THREE.Color(0x0a0a0a);
+            this.scene.fog = new THREE.Fog(0x0a0a0a, 10, 50);
+            console.log('Scene created');
 
-        // Camera
-        this.camera = new THREE.PerspectiveCamera(
-            75,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            1000
-        );
-        this.camera.position.set(0, 5, 10);
-        this.camera.lookAt(0, 0, 0);
+            // Camera
+            this.camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            this.camera.position.set(0, 5, 10);
+            this.camera.lookAt(0, 0, 0);
+            console.log('Camera created');
 
-        // Renderer
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.body.appendChild(this.renderer.domElement);
+            // Renderer
+            this.renderer = new THREE.WebGLRenderer({ antialias: true });
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.renderer.shadowMap.enabled = true;
+            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Asegurar que el canvas se agregue al body
+            const existingCanvas = document.querySelector('canvas');
+            if (existingCanvas) {
+                existingCanvas.remove();
+            }
+            document.body.appendChild(this.renderer.domElement);
+            console.log('Renderer created and canvas added to DOM');
 
-        // Lights
-        this.addAmbientLight(0x404040, 0.5);
-        this.addDirectionalLight(0xffffff, 0.8, 10, 10, 10);
+            // Lights
+            this.addAmbientLight(0x404040, 0.5);
+            this.addDirectionalLight(0xffffff, 0.8, 10, 10, 10);
+            console.log('Lights added');
 
-        // Resize
-        window.addEventListener('resize', () => this.onResize());
+            // Resize
+            window.addEventListener('resize', () => this.onResize());
 
-        console.log('Engine initialized');
+            console.log('Engine initialized successfully');
+            return true;
+        } catch (error) {
+            console.error('Engine initialization error:', error);
+            return false;
+        }
     }
 
     addAmbientLight(color, intensity) {

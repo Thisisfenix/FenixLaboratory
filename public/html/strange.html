@@ -539,6 +539,7 @@
         </div>
         <button onclick="saveProgress()">💾 Guardar Progreso</button>
         <button onclick="loadProgress()">📂 Cargar Progreso</button>
+        <button onclick="toggleFullscreen()">⛶ Pantalla Completa</button>
     </div>
     
     <div id="mobileControls">
@@ -1472,33 +1473,60 @@
             scene.add(floor2);
             platforms.push(floor2);
             
-            // Techo del pasillo
+            // Techo del pasillo (antes de zona de pasto: 0-1000m)
             const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 1, metalness: 0, flatShading: true });
-            const ceiling = new THREE.Mesh(
-                new THREE.PlaneGeometry(10, hallLength),
+            const ceiling1 = new THREE.Mesh(
+                new THREE.PlaneGeometry(10, 1000),
                 ceilingMat
             );
-            ceiling.rotation.x = Math.PI / 2;
-            ceiling.position.y = 4;
-            ceiling.position.z = hallLength / 2;
-            scene.add(ceiling);
+            ceiling1.rotation.x = Math.PI / 2;
+            ceiling1.position.y = 4;
+            ceiling1.position.z = 500;
+            scene.add(ceiling1);
+            
+            // Techo después de zona de pasto (1800-2500m)
+            const ceiling2 = new THREE.Mesh(
+                new THREE.PlaneGeometry(10, 700),
+                ceilingMat
+            );
+            ceiling2.rotation.x = Math.PI / 2;
+            ceiling2.position.y = 4;
+            ceiling2.position.z = 2150;
+            scene.add(ceiling2);
 
-            // Paredes
-            const wallLeft = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 4, hallLength),
+            // Paredes antes de zona de pasto (0-1000m)
+            const wallLeft1 = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 4, 1000),
                 wallMat
             );
-            wallLeft.position.set(-5, 2, hallLength / 2);
-            wallLeft.castShadow = true;
-            scene.add(wallLeft);
+            wallLeft1.position.set(-5, 2, 500);
+            wallLeft1.castShadow = true;
+            scene.add(wallLeft1);
 
-            const wallRight = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 4, hallLength),
+            const wallRight1 = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 4, 1000),
                 wallMat
             );
-            wallRight.position.set(5, 2, hallLength / 2);
-            wallRight.castShadow = true;
-            scene.add(wallRight);
+            wallRight1.position.set(5, 2, 500);
+            wallRight1.castShadow = true;
+            scene.add(wallRight1);
+            
+            // Paredes después de zona de pasto (1800-2500m)
+            const wallLeft2 = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 4, 700),
+                wallMat
+            );
+            wallLeft2.position.set(-5, 2, 2150);
+            wallLeft2.castShadow = true;
+            scene.add(wallLeft2);
+
+            const wallRight2 = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 4, 700),
+                wallMat
+            );
+            wallRight2.position.set(5, 2, 2150);
+            wallRight2.castShadow = true;
+            scene.add(wallRight2);
 
             // Paredes bajas que interrumpen el camino (antes de la persecución)
             createParkourWalls(50, obstacleMat);
@@ -1924,7 +1952,7 @@
             group.add(lock);
 
             group.position.set(x, y, z);
-            group.rotation.y = 0; // Mirando hacia el inicio (hacia -Z)
+            group.rotation.y = Math.PI; // Mirando hacia el jugador (hacia +Z)
             scene.add(group);
             chest = group;
 
@@ -2096,6 +2124,19 @@
         function toggleSettings() {
             const panel = document.getElementById('settingsPanel');
             panel.style.display = panel.style.display === 'none' || !panel.style.display ? 'block' : 'none';
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    showMonologue('📺 Pantalla completa activada');
+                }).catch(err => {
+                    showMonologue('⚠️ No se pudo activar pantalla completa');
+                });
+            } else {
+                document.exitFullscreen();
+                showMonologue('📺 Pantalla completa desactivada');
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -2605,36 +2646,42 @@
 
             // Interacción
             if(!escaped) {
+                // Resetear estados
+                canInteract = false;
+                canInteractDoor = false;
+                canInteractPainting = false;
+                
+                // Verificar linterna
                 if(!hasFlashlight && flashlight) {
                     const dist = camera.position.distanceTo(flashlight.position);
-                    canInteract = dist < 2;
-                    canInteractDoor = false;
-                    canInteractPainting = false;
-                    document.getElementById('interact').textContent = 'Presiona E para tomar linterna';
-                } else if(inStartRoom && gisselPainting && !paintingInteracted) {
+                    if(dist < 2) {
+                        canInteract = true;
+                        document.getElementById('interact').textContent = 'Presiona E para tomar linterna';
+                    }
+                }
+                // Verificar cuadro
+                else if(inStartRoom && gisselPainting && !paintingInteracted) {
                     const dist = camera.position.distanceTo(gisselPainting.position);
-                    canInteractPainting = dist < 3;
-                    canInteract = false;
-                    canInteractDoor = false;
-                    if(canInteractPainting) {
+                    if(dist < 3) {
+                        canInteractPainting = true;
                         document.getElementById('interact').textContent = 'Presiona E para observar el cuadro';
                     }
-                } else if(mysteryDoor && !doorBroken) {
+                }
+                // Verificar puerta misteriosa
+                else if(mysteryDoor && !doorBroken) {
                     const dist = camera.position.distanceTo(mysteryDoor.position);
-                    canInteractDoor = dist < 3;
-                    canInteract = false;
-                    if(canInteractDoor) {
+                    if(dist < 3) {
+                        canInteractDoor = true;
                         document.getElementById('interact').textContent = 'Presiona E para abrir puerta';
                     }
-                } else if(chest) {
+                }
+                // Verificar cofre
+                else if(chest) {
                     const dist = camera.position.distanceTo(chest.position);
-                    canInteract = dist < 4;
-                    canInteractDoor = false;
-                    document.getElementById('interact').textContent = 'Presiona E para abrir';
-                } else {
-                    canInteract = false;
-                    canInteractDoor = false;
-                    canInteractPainting = false;
+                    if(dist < 5) {
+                        canInteract = true;
+                        document.getElementById('interact').textContent = 'Presiona E para abrir cofre';
+                    }
                 }
                 
                 document.getElementById('interact').style.display = (canInteract || canInteractDoor || canInteractPainting) ? 'block' : 'none';
@@ -2983,12 +3030,36 @@
         }
 
         function openLore() {
-            document.getElementById('lore').style.display = 'block';
-            document.exitPointerLock();
-            localStorage.setItem('strangeCompleted', 'true');
+            if(!chest) return;
+            
+            // Animación de apertura del cofre
+            const lid = chest.children[1];
+            if(lid) {
+                let rotation = 0;
+                const openInterval = setInterval(() => {
+                    rotation += 0.05;
+                    lid.rotation.x = -rotation;
+                    lid.position.z = Math.sin(rotation) * 0.3;
+                    lid.position.y = 0.55 + Math.sin(rotation) * 0.2;
+                    
+                    if(rotation >= Math.PI / 2) {
+                        clearInterval(openInterval);
+                    }
+                }, 16);
+            }
+            
+            // Mostrar panel de lore después de la animación
+            setTimeout(() => {
+                document.getElementById('lore').style.display = 'block';
+                document.exitPointerLock();
+                localStorage.setItem('strangeCompleted', 'true');
+            }, 500);
             
             // Vibración al abrir el cofre
             vibrateGamepad(300, 0.5, 0.5);
+            
+            // Remover interacción
+            canInteract = false;
         }
 
         function closeLore() {

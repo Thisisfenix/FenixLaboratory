@@ -1,7 +1,21 @@
 [
     {
+        "version": "v0.1.1",
+        "date": "2025-11-24",
+        "type": "patch",
+        "title": "🔧 Correcciones de Pantalla y Controles",
+        "changes": [
+            "🖥️ Agregado botón de pantalla completa",
+            "📊 Pantalla de carga con barra de progreso",
+            "🔄 Sistema de reintentos para carga de THREE.js",
+            "📱 Corregida deformación de controles en horizontal móvil",
+            "🎮 Optimización de controles táctiles en landscape",
+            "🐛 Mejorada estabilidad de carga inicial"
+        ]
+    },
+    {
         "version": "v0.1",
-        "date": "2025-01-20",
+        "date": "2025-11-23",
         "type": "major",
         "title": "🎮 Lanzamiento Inicial de Ankaro",
         "changes": [

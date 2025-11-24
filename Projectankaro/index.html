@@ -25,6 +25,15 @@
         </div>
     </div>
     
+    <div id="loadingScreen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999;">
+        <div style="color: #ff0000; font-size: 48px; margin-bottom: 20px; text-shadow: 0 0 20px #ff0000;">PROJECT ANKARO</div>
+        <div style="color: #fff; font-size: 20px; margin-bottom: 30px;">Cargando...</div>
+        <div style="width: 300px; height: 20px; background: #222; border: 2px solid #ff0000; border-radius: 10px; overflow: hidden;">
+            <div id="loadingBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff0000, #ff6666); transition: width 0.3s;"></div>
+        </div>
+        <div id="loadingText" style="color: #fff; margin-top: 20px; font-size: 14px;">Inicializando...</div>
+    </div>
+    
     <div id="status">Esperando jugadores...</div>
     
     <div id="controls">
@@ -39,6 +48,10 @@
     
     <button id="micBtn" class="mic-btn" style="display: none;">
         <span id="micIcon">🎤</span>
+    </button>
+    
+    <button id="fullscreenBtn" class="fullscreen-btn">
+        <span id="fullscreenIcon">⛶</span>
     </button>
     
     <!-- Mobile Controls -->
