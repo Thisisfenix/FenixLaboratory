@@ -153,28 +153,51 @@ class Gameplay {
         const speed = (this.isRunning && this.stamina > 0) ? this.runSpeed : this.moveSpeed;
         this.isMoving = false;
         
+        // Movimiento relativo a la cámara (estilo Roblox)
+        let moveX = 0;
+        let moveZ = 0;
+        
         if (this.keys['KeyW']) {
-            this.velocity.z -= speed;
+            moveZ -= 1;
             this.isMoving = true;
         }
         if (this.keys['KeyS']) {
-            this.velocity.z += speed;
+            moveZ += 1;
             this.isMoving = true;
         }
         if (this.keys['KeyA']) {
-            this.velocity.x -= speed;
+            moveX -= 1;
             this.isMoving = true;
         }
         if (this.keys['KeyD']) {
-            this.velocity.x += speed;
+            moveX += 1;
             this.isMoving = true;
         }
         
         // Joystick (móvil/gamepad)
         if (Math.abs(this.joystickX) > 0.1 || Math.abs(this.joystickY) > 0.1) {
-            this.velocity.x += this.joystickX * speed;
-            this.velocity.z += this.joystickY * speed;
+            moveX += this.joystickX;
+            moveZ += this.joystickY;
             this.isMoving = true;
+        }
+        
+        // Aplicar rotación de cámara al movimiento (dirección exacta de la cámara)
+        if (this.isMoving) {
+            const forward = new THREE.Vector3(
+                Math.sin(this.cameraRotation.y),
+                -Math.sin(this.cameraRotation.x),
+                Math.cos(this.cameraRotation.y)
+            ).normalize();
+            
+            const right = new THREE.Vector3(
+                Math.cos(this.cameraRotation.y),
+                0,
+                -Math.sin(this.cameraRotation.y)
+            ).normalize();
+            
+            this.velocity.x = (right.x * moveX + forward.x * -moveZ) * speed;
+            this.velocity.y = (forward.y * -moveZ) * speed;
+            this.velocity.z = (right.z * moveX + forward.z * -moveZ) * speed;
         }
 
         // Stamina

@@ -188,31 +188,26 @@ class Lobby {
         // Movimiento del jugador local
         if (this.canMove && playerManager.localPlayer) {
             this.velocity.set(0, 0, 0);
-            let moved = false;
+            let moveX = 0;
+            let moveZ = 0;
             
             // Teclado
-            if (this.keys['KeyW']) {
-                this.velocity.z -= this.moveSpeed;
-                moved = true;
-            }
-            if (this.keys['KeyS']) {
-                this.velocity.z += this.moveSpeed;
-                moved = true;
-            }
-            if (this.keys['KeyA']) {
-                this.velocity.x -= this.moveSpeed;
-                moved = true;
-            }
-            if (this.keys['KeyD']) {
-                this.velocity.x += this.moveSpeed;
-                moved = true;
-            }
+            if (this.keys['KeyW']) moveZ -= 1;
+            if (this.keys['KeyS']) moveZ += 1;
+            if (this.keys['KeyA']) moveX -= 1;
+            if (this.keys['KeyD']) moveX += 1;
             
             // Joystick (móvil/gamepad)
             if (Math.abs(this.joystickX) > 0.1 || Math.abs(this.joystickY) > 0.1) {
-                this.velocity.x += this.joystickX * this.moveSpeed;
-                this.velocity.z += this.joystickY * this.moveSpeed;
-                moved = true;
+                moveX += this.joystickX;
+                moveZ += this.joystickY;
+            }
+            
+            // Aplicar rotación de cámara
+            if (moveX !== 0 || moveZ !== 0) {
+                const angle = this.cameraRotation.y;
+                this.velocity.x = (moveX * Math.cos(angle) + moveZ * Math.sin(angle)) * this.moveSpeed;
+                this.velocity.z = (-moveX * Math.sin(angle) + moveZ * Math.cos(angle)) * this.moveSpeed;
             }
             
             const player = playerManager.localPlayer;
