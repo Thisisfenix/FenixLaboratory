@@ -31,10 +31,13 @@ class Engine {
             console.log('Camera created');
 
             // Renderer
-            this.renderer = new THREE.WebGLRenderer({ antialias: true });
+            this.renderer = new THREE.WebGLRenderer({ 
+                antialias: false,
+                powerPreference: 'high-performance'
+            });
             this.renderer.setSize(window.innerWidth, window.innerHeight);
             this.renderer.shadowMap.enabled = true;
-            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            this.renderer.shadowMap.type = THREE.BasicShadowMap;
             
             // Asegurar que el canvas se agregue al body
             const existingCanvas = document.querySelector('canvas');

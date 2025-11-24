@@ -139,10 +139,19 @@ class Lobby {
         engine.createBox(0.5, 5, 20, 0x2a2a2a, -10, 2.5, 0);
         engine.createBox(0.5, 5, 20, 0x2a2a2a, 10, 2.5, 0);
 
-        // Plataformas de spawn con colores
+        // Plataformas de spawn con colores (sin luces individuales)
         this.spawnPoints.forEach((pos, i) => {
-            engine.createBox(1.5, 0.2, 1.5, this.playerColors[i], pos.x, 0.1, pos.z);
-            engine.addPointLight(this.playerColors[i], 0.8, 8, pos.x, 3, pos.z);
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: this.playerColors[i],
+                emissive: this.playerColors[i],
+                emissiveIntensity: 0.3
+            });
+            const geo = new THREE.BoxGeometry(1.5, 0.2, 1.5);
+            const box = new THREE.Mesh(geo, mat);
+            box.position.set(pos.x, 0.1, pos.z);
+            box.castShadow = true;
+            box.receiveShadow = true;
+            engine.addObject(box);
         });
 
         // Decoración

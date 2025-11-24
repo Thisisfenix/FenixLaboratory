@@ -54,6 +54,21 @@
         <span id="fullscreenIcon">⛶</span>
     </button>
     
+    <!-- Game HUD -->
+    <div id="gameHUD" style="display: none;">
+        <div id="timer" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 2px solid #ff0000; padding: 15px 30px; color: #fff; font-size: 24px; z-index: 100; border-radius: 5px;">
+            ⏱️ <span id="timerText">0:00</span>
+        </div>
+        <div id="missionsPanel" style="position: fixed; top: 80px; right: 20px; background: rgba(0,0,0,0.9); border: 2px solid #8b0000; padding: 20px; width: 280px; color: #fff; z-index: 100; border-radius: 5px;">
+            <h3 style="color: #ff4444; margin: 0 0 15px 0; font-size: 18px; text-align: center;">📋 MISIONES</h3>
+            <div id="missionsList" style="font-size: 14px; line-height: 1.8;">
+                <div class="mission">🔧 Herramientas: <span id="toolsCount">0</span>/5</div>
+                <div class="mission">⚡ Generadores: <span id="gensCount">0</span>/3</div>
+                <div class="mission">🚪 Escapar por la puerta</div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Mobile Controls -->
     <div id="mobileControls" style="display: none;">
         <div id="joystick">

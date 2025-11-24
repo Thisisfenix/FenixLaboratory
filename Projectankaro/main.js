@@ -115,9 +115,11 @@ createRoomBtn.addEventListener('click', async () => {
     
     // Spawn jugador local con color asignado
     const playerData = room.players[0];
-    const playerIndex = room.players.length - 1;
+    const playerIndex = 0;
     playerData.color = lobby.playerColors[playerIndex];
+    playerData.isLocal = true;
     lobby.spawnPlayer(playerData, playerIndex);
+    lobby.canMove = true;
     
     playerNameInput.disabled = true;
     roomCodeInput.disabled = true;
@@ -169,9 +171,11 @@ joinBtn.addEventListener('click', async () => {
     
     // Spawn jugador local con color asignado
     const playerData = room.players.find(p => p.name === name);
-    const playerIndex = room.players.length - 1;
+    const playerIndex = room.players.findIndex(p => p.name === name);
     playerData.color = lobby.playerColors[playerIndex];
+    playerData.isLocal = true;
     lobby.spawnPlayer(playerData, playerIndex);
+    lobby.canMove = true;
     
     playerNameInput.disabled = true;
     roomCodeInput.disabled = true;
@@ -287,35 +291,66 @@ function listenToRoomChanges(roomCode) {
 
 // Start game
 function startGame() {
-    gameState = 'game';
-    document.getElementById('ui').style.display = 'none';
-    document.getElementById('controls').style.display = 'none';
-    document.getElementById('status').style.display = 'none';
+    // Mostrar pantalla de carga
+    const loadingScreen = document.getElementById('loadingScreen');
+    loadingScreen.style.display = 'flex';
+    loadingScreen.style.opacity = '1';
+    updateLoadingProgress(0, 'Preparando mapa...');
     
-    // Mantener botón de mic visible
-    if (voiceChat.isEnabled) {
-        micBtn.style.bottom = '80px';
-    }
-    
-    // Limpiar lobby
-    lobby.destroy();
-    
-    // Iniciar juego
-    game.init();
-    
-    // Iniciar gameplay
-    const localPlayer = playerManager.localPlayer;
-    if (localPlayer) {
-        gameplay.init(localPlayer);
-        localPlayer.userData.tools = 0;
+    setTimeout(() => {
+        updateLoadingProgress(20, 'Limpiando lobby...');
         
-        // Cambiar cámara a tercera persona
-        engine.camera.position.copy(localPlayer.position);
-        engine.camera.position.y += 5;
-        engine.camera.position.z += 8;
-    }
-    
-    console.log('Game started');
+        // Ocultar UI del lobby
+        document.getElementById('ui').style.display = 'none';
+        document.getElementById('controls').style.display = 'none';
+        document.getElementById('status').style.display = 'none';
+        
+        // Mantener botón de mic visible
+        if (voiceChat.isEnabled) {
+            micBtn.style.bottom = '80px';
+        }
+        
+        setTimeout(() => {
+            updateLoadingProgress(40, 'Destruyendo lobby...');
+            lobby.destroy();
+            
+            setTimeout(() => {
+                updateLoadingProgress(60, 'Generando mapa...');
+                game.init();
+                
+                setTimeout(() => {
+                    updateLoadingProgress(80, 'Iniciando gameplay...');
+                    
+                    const localPlayer = playerManager.localPlayer;
+                    if (localPlayer) {
+                        gameplay.init(localPlayer);
+                        localPlayer.userData.tools = 0;
+                        
+                        // Cambiar cámara a tercera persona
+                        engine.camera.position.copy(localPlayer.position);
+                        engine.camera.position.y += 5;
+                        engine.camera.position.z += 8;
+                    }
+                    
+                    setTimeout(() => {
+                        updateLoadingProgress(100, '✔️ ¡Listo!');
+                        gameState = 'game';
+                        
+                        // Mostrar HUD del juego
+                        document.getElementById('gameHUD').style.display = 'block';
+                        
+                        // Iniciar contador
+                        startGameTimer();
+                        
+                        setTimeout(() => {
+                            hideLoadingScreen();
+                            console.log('Game started');
+                        }, 500);
+                    }, 300);
+                }, 300);
+            }, 300);
+        }, 300);
+    }, 100);
 }
 
 // Animation loop
@@ -336,6 +371,9 @@ function animate() {
         gameplay.update(delta);
         playerManager.update(delta);
         game.update(delta);
+        
+        // Actualizar UI de misiones
+        updateMissionsUI();
         
         // Interacción con items
         if (playerManager.localPlayer) {
@@ -383,6 +421,42 @@ function tryInit() {
     } else {
         console.error('Failed to load THREE.js after multiple attempts');
         updateStatus('❌ Error: No se pudo cargar THREE.js', '#ff0000');
+    }
+}
+
+// Game timer
+let gameTimer = 0;
+let gameTimerInterval = null;
+
+function startGameTimer() {
+    gameTimer = 0;
+    if (gameTimerInterval) clearInterval(gameTimerInterval);
+    
+    gameTimerInterval = setInterval(() => {
+        gameTimer++;
+        const minutes = Math.floor(gameTimer / 60);
+        const seconds = gameTimer % 60;
+        document.getElementById('timerText').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+function stopGameTimer() {
+    if (gameTimerInterval) {
+        clearInterval(gameTimerInterval);
+        gameTimerInterval = null;
+    }
+}
+
+// Update missions UI
+function updateMissionsUI() {
+    if (playerManager.localPlayer) {
+        const tools = playerManager.localPlayer.userData.tools || 0;
+        document.getElementById('toolsCount').textContent = tools;
+    }
+    
+    if (game.generators) {
+        const repaired = game.generators.filter(g => g.userData.repaired).length;
+        document.getElementById('gensCount').textContent = repaired;
     }
 }
 

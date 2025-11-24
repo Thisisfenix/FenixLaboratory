@@ -3224,17 +3224,40 @@
                 // Remover linterna de la escena si ya la tiene
                 if(hasFlashlight && flashlight) {
                     scene.remove(flashlight);
+                    flashlight = null;
                 }
                 
                 // Apagar luz de techo si no está en habitación inicial
                 if(!inStartRoom && ceilingLight) {
                     ceilingLight.intensity = 0;
+                    scene.children.find(c => c instanceof THREE.AmbientLight).intensity = 0;
+                }
+                
+                // Remover puerta misteriosa si ya fue rota
+                if(doorBroken && mysteryDoor) {
+                    scene.remove(mysteryDoor);
+                    mysteryDoor = null;
+                }
+                
+                // Cargar zonas según posición
+                if(camera.position.z >= 50 && !hallwayLoaded) {
+                    loadHallwayZone();
+                }
+                if(camera.position.z >= 900 && !grassZoneLoaded) {
+                    loadGrassZone();
+                }
+                
+                // Actualizar monólogo según distancia
+                const distance = Math.floor(camera.position.z);
+                while(currentMonologue < monologues.length && distance >= monologues[currentMonologue].dist) {
+                    currentMonologue++;
                 }
                 
                 showMonologue('✔️ Progreso cargado');
                 toggleSettings();
             } catch(e) {
                 showMonologue('❌ Error al cargar');
+                console.error('Error cargando progreso:', e);
             }
         }
 
