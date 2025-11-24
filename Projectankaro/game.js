@@ -162,11 +162,26 @@ class Game {
         eye2.position.set(0.25, 1.6, 0.5);
         group.add(eye2);
         
-        group.position.set(0, 1.25, -40);
+        // Spawn más lejos de los jugadores
+        group.position.set(-45, 1.25, -45);
         engine.addObject(group);
         
         this.entity = group;
         this.entityActive = true;
+        
+        // Inicializar sistema de patrullaje
+        this.entity.userData.patrolWaypoints = [
+            { x: -40, z: -40 },
+            { x: 40, z: -40 },
+            { x: 40, z: 40 },
+            { x: -40, z: 40 },
+            { x: 0, z: -40 },
+            { x: 40, z: 0 },
+            { x: 0, z: 40 },
+            { x: -40, z: 0 }
+        ];
+        this.entity.userData.currentWaypoint = 0;
+        this.entity.userData.patrolTarget = null;
     }
 
     createUI() {
@@ -228,23 +243,36 @@ class Game {
             // Rotar hacia el objetivo
             this.entity.lookAt(this.entityTarget.position);
             
-            // Animación de persecución
-            this.entity.position.y = 1.25 + Math.sin(Date.now() * 0.01) * 0.3;
+            // Animación de persecución (más agresiva)
+            this.entity.position.y = 1.25 + Math.sin(Date.now() * 0.015) * 0.4;
+            this.entity.rotation.y += Math.sin(Date.now() * 0.01) * 0.02;
         } else {
-            // Patrullar aleatoriamente
-            if (!this.entity.userData.patrolTarget || Math.random() < 0.01) {
-                this.entity.userData.patrolTarget = new THREE.Vector3(
-                    (Math.random() - 0.5) * 80,
-                    1.25,
-                    (Math.random() - 0.5) * 80
-                );
+            // Patrullar por waypoints
+            if (!this.entity.userData.patrolTarget) {
+                const waypoint = this.entity.userData.patrolWaypoints[this.entity.userData.currentWaypoint];
+                this.entity.userData.patrolTarget = new THREE.Vector3(waypoint.x, 1.25, waypoint.z);
             }
             
             const direction = new THREE.Vector3()
                 .subVectors(this.entity.userData.patrolTarget, this.entity.position)
                 .normalize();
             
-            this.entity.position.add(direction.multiplyScalar(this.entitySpeed));
+            const distToWaypoint = this.entity.position.distanceTo(this.entity.userData.patrolTarget);
+            
+            // Si llegó al waypoint, ir al siguiente
+            if (distToWaypoint < 2) {
+                this.entity.userData.currentWaypoint = (this.entity.userData.currentWaypoint + 1) % this.entity.userData.patrolWaypoints.length;
+                this.entity.userData.patrolTarget = null;
+            } else {
+                this.entity.position.add(direction.multiplyScalar(this.entitySpeed));
+                
+                // Rotar suavemente hacia el waypoint
+                const targetRotation = Math.atan2(direction.x, direction.z);
+                this.entity.rotation.y += (targetRotation - this.entity.rotation.y) * 0.05;
+            }
+            
+            // Animación de patrullaje (más calmada)
+            this.entity.position.y = 1.25 + Math.sin(Date.now() * 0.005) * 0.15;
         }
 
         // Verificar captura

@@ -329,12 +329,14 @@ function startGame() {
                     updateLoadingProgress(80, 'Iniciando gameplay...');
                     
                     const localPlayer = playerManager.localPlayer;
-                    if (localPlayer) {
+                    if (localPlayer && localPlayer.userData) {
                         gameplay.init(localPlayer);
                         localPlayer.userData.tools = 0;
                         
                         // Resetear rotación de cámara del gameplay
                         gameplay.cameraRotation = { x: 0, y: 0 };
+                    } else {
+                        console.error('Local player not found or userData missing');
                     }
                     
                     setTimeout(() => {
