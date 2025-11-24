@@ -10,11 +10,12 @@ class VoiceChat {
 
     async init(playerId) {
         try {
-            // Crear peer con ID único
+            // Crear peer con servidor público alternativo
             this.peer = new Peer(playerId, {
-                host: 'peerjs-server.herokuapp.com',
+                host: '0.peerjs.com',
                 secure: true,
-                port: 443
+                port: 443,
+                path: '/'
             });
 
             this.peer.on('open', (id) => {
@@ -26,7 +27,10 @@ class VoiceChat {
             });
 
             this.peer.on('error', (err) => {
-                console.error('Peer error:', err);
+                // Ignorar errores de conexión no críticos
+                if (err.type !== 'network' && err.type !== 'peer-unavailable') {
+                    console.error('Peer error:', err);
+                }
             });
 
             return true;

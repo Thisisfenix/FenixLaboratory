@@ -93,7 +93,10 @@ class SupabaseNetwork {
         
         this.channel = supabase.channel(`room:${this.roomCode}`, {
             config: {
-                broadcast: { self: false }
+                broadcast: { 
+                    self: false,
+                    ack: false
+                }
             }
         })
         .on('broadcast', { event: 'player_move' }, (payload) => {
@@ -102,7 +105,7 @@ class SupabaseNetwork {
         .on('broadcast', { event: 'game_start' }, () => {
             this.onGameStart();
         })
-        .subscribe((status) => {
+        .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
                 console.log('Realtime channel connected');
             }
