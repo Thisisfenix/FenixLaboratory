@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Ankaro - Multiplayer Horror Game</title>
+    <link rel="icon" type="image/png" href="../public/assets/icons/ankush.png">
+    
+    <!-- Discord/Social Media Embeds -->
+    <meta property="og:title" content="Project Ankaro - Multiplayer Horror Game">
+    <meta property="og:description" content="🎮 Juego multijugador 3D de horror en desarrollo | Voz en tiempo real | Mecánicas de supervivencia | Soporte móvil/gamepad">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Project Ankaro">
+    <meta name="theme-color" content="#ff0000">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- UI Overlay -->
+    <div id="ui">
+        <div class="title">PROJECT ANKARO</div>
+        <div class="room-info">
+            <div>Sala: <span id="roomCode">----</span></div>
+            <div><span id="currentPlayers">0</span>/8 Jugadores</div>
+        </div>
+    </div>
+    
+    <div id="status">Esperando jugadores...</div>
+    
+    <div id="controls">
+        <input type="text" id="playerName" placeholder="Tu nombre" maxlength="15">
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <input type="text" id="roomCodeInput" placeholder="Código de sala (opcional)" maxlength="6" style="flex: 1;">
+            <button id="createRoomBtn" class="btn btn-create">Crear Sala</button>
+        </div>
+        <button id="joinBtn" class="btn btn-join">Unirse a Sala</button>
+        <button id="startBtn" class="btn btn-start" disabled>Iniciar Juego</button>
+    </div>
+    
+    <button id="micBtn" class="mic-btn" style="display: none;">
+        <span id="micIcon">🎤</span>
+    </button>
+    
+    <!-- Mobile Controls -->
+    <div id="mobileControls" style="display: none;">
+        <div id="joystick">
+            <div id="stick"></div>
+        </div>
+        <button id="jumpBtnMobile">⬆️</button>
+        <button id="sprintBtnMobile">🏃</button>
+    </div>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- PeerJS for Voice -->
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <!-- Engine Core -->
+    <script src="engine.js"></script>
+    
+    <!-- Game Modules -->
+    <script src="supabase.js"></script>
+    <script src="voice.js"></script>
+    <script src="audio.js"></script>
+    <script src="player.js"></script>
+    <script src="lobby.js"></script>
+    <script src="network.js"></script>
+    <script src="gameplay.js"></script>
+    <script src="game.js"></script>
+    
+    <!-- Init -->
+    <script src="main.js"></script>
+</body>
+</html>

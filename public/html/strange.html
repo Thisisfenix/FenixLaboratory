@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="???">
+    <meta name="author" content="???">
+    <meta property="og:title" content="???">
+    <meta property="og:description" content="???">
+    <meta name="keywords" content="???, ???, ???">
     <title>???</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -210,6 +215,44 @@
             display: none;
             align-items: center;
             justify-content: center;
+        }
+        #flashlightBtn {
+            position: absolute;
+            right: 30px;
+            bottom: 130px;
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 200, 0, 0.2);
+            border: 2px solid rgba(255, 200, 0, 0.5);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #runBtn {
+            position: absolute;
+            left: 30px;
+            bottom: 170px;
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid rgba(0, 255, 0, 0.5);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #cameraControl {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            touch-action: none;
         }
         #settingsBtn {
             position: fixed;
@@ -505,6 +548,9 @@
         <div id="jumpBtn">⬆️</div>
         <div id="sprintBtn">🏃</div>
         <div id="interactBtn">E</div>
+        <div id="flashlightBtn">🔦</div>
+        <div id="runBtn">🏃</div>
+        <div id="cameraControl"></div>
     </div>
 
     <div id="lore">
@@ -519,52 +565,186 @@
 
         <div class="character">
             <h3><img src="../assets/icons/GisselInactiveIcon.png" width="24" style="vertical-align: middle;"> Gissel - "La Mente Maestra"</h3>
-            <p><strong>Rol:</strong> Survivor | <strong>Dificultad:</strong> Intermedia</p>
+            <p><strong>Rol:</strong> Survivor | <strong>Dificultad:</strong> Intermedia | <strong>HP:</strong> 100 (160 en LMS)</p>
             <p><strong>Historia:</strong> Artista de 28 años. Gissel es una mujer algo independiente, a veces se preocupa de cosas pequeñas, es algo delicada y un poco enojona. Su pasión es hacer dibujos para expresar su estado emocional, escuchar música de tipo FNF, electrónica y Lofi chill. Una noche, mientras dibujaba escuchando Lofi, un extraño resplandor emergió de su tablet, absorbiéndola hacia el Deadly Pursuit. Su naturaleza sensible la hace preocuparse por los demás, pero su temperamento puede surgir cuando las cosas no salen como espera.</p>
-            <p><strong>Ventajas:</strong> "Análisis Táctico" - Ve el aura de generadores al 50%. "Líder Nato" - Aliados cerca reparan 10% más rápido. "Distracción Fatal" - Se aturde 2s cuando un aliado es herido cerca.</p>
+            <p><strong>Q - Alas Puntiagudas:</strong> 3 golpes que empujan y stunean al killer (18s CD)</p>
+            <p><strong>Pasiva LMS:</strong> +60 HP cuando queda 1 survivor</p>
         </div>
 
         <div class="character">
             <h3><img src="../assets/icons/IA777NormalIcon.png" width="24" style="vertical-align: middle;"> iA777 - "La Anomalía Digital"</h3>
-            <p><strong>Rol:</strong> Survivor Robot | <strong>Dificultad:</strong> Difícil</p>
+            <p><strong>Rol:</strong> Survivor Robot | <strong>Dificultad:</strong> Difícil | <strong>HP:</strong> 120 (sin segunda vida)</p>
             <p><strong>Historia:</strong> Durante una batalla contra los robots de Maxwell, iA777 estaba a punto de dar el golpe final cuando un portal apareció frente a él, teletransportándolo al Deadly Pursuit.</p>
-            <p><strong>Ventajas:</strong> "Código Adaptativo" - Inmune a sangrado. "Sobrecarga" - Carga habilidades 15% más rápido. "Estrés del Sistema" - Bajo 30% HP, velocidad -5% pero ve auras de aliados.</p>
+            <p><strong>Q - Carga:</strong> Agarra y mueve al killer 5s, lo stunea pero pierde 4 HP (20s CD)</p>
+            <p><strong>E - Autoreparación:</strong> Regenera HP gradualmente (25s CD)</p>
+            <p><strong>R - Autodestrucción/Sierra:</strong> Explosión stun o sierra que empuja en LMS</p>
         </div>
 
         <div class="character">
             <h3><img src="../assets/icons/LunaNormalIcon.png" width="24" style="vertical-align: middle;"> Luna - "La Chispa"</h3>
-            <p><strong>Rol:</strong> Survivor | <strong>Dificultad:</strong> Fácil</p>
+            <p><strong>Rol:</strong> Survivor Fighter | <strong>Dificultad:</strong> Fácil | <strong>HP:</strong> 85</p>
             <p><strong>Historia:</strong> Artista y música de 22 años. Luna es una persona tranquila que no le gusta tener muchos problemas y si los tuviera intentaría evitarlos de alguna forma u otra. Le apasiona el arte y la música, siendo estos sus hobbies principales, a veces se dedica a la lectura. Durante una transmisión en vivo donde tocaba música, un mensaje extraño apareció en el chat invitándola a un "juego especial". Por curiosidad hizo clic, siendo teletransportada al Deadly Pursuit. Su naturaleza creativa e impredecible la hace difícil de atrapar. Cuando confía en alguien, su energía se multiplica.</p>
-            <p><strong>Ventajas:</strong> "Energía Infinita" - Sprint 3% más rápido. "Confianza Ciega" - Con 2+ aliados cerca, todas las acciones 15% más rápidas. "Impredecible" - Esquiva ataques tiene 5% más de ventana.</p>
+            <p><strong>Q - Energy Juice:</strong> Velocidad II por 10s (3 usos, 20s CD)</p>
+            <p><strong>E - Punch:</strong> Golpe que da vida y stunea al killer (25s CD)</p>
+            <p><strong>R - Taunt:</strong> Nubla la pantalla del killer 3s (12s CD)</p>
+            <p><strong>Especial:</strong> Resistencia al llegar a 30 HP</p>
         </div>
 
         <div class="character">
             <h3><img src="../assets/icons/AngelNormalIcon.png" width="24" style="vertical-align: middle;"> Angel - "El Faro"</h3>
-            <p><strong>Rol:</strong> Survivor | <strong>Dificultad:</strong> Fácil</p>
+            <p><strong>Rol:</strong> Survivor Support | <strong>Dificultad:</strong> Fácil | <strong>HP:</strong> 90 (130 en LMS)</p>
             <p><strong>Historia:</strong> Ex-terapeuta de 32 años. Mientras ayudaba a víctimas que habían escapado del Deadly Pursuit, escuchando sus traumas y miedos, la Entidad la marcó. Una noche, al cerrar los ojos para meditar, despertó dentro del juego. Fue atrapada por conocer demasiado sobre él. Su positividad inquebrantable es un faro de esperanza en la oscuridad. Puede sentir el dolor emocional de otros y usa palabras para sanar lo que las vendas no pueden.</p>
-            <p><strong>Ventajas:</strong> "Palabras de Esperanza" - Aliados heridos cerca recuperan 2% HP/10s. "Presencia Calmante" - Reduce terror del killer en 8m. "Optimismo" - Revive aliados 20% más rápido.</p>
+            <p><strong>Q - Sacrificio Angelical:</strong> 40% vida por curación + speed boost aliados (35s CD)</p>
+            <p><strong>E - Dash Protector:</strong> 90-130 unidades con negación de ataques (40s CD)</p>
+            <p><strong>R - Descanso:</strong> 3-6 HP/s curación para sí mismo y aliados (25s CD)</p>
         </div>
 
         <div class="character">
             <h3><img src="../assets/icons/IrisNormalIcon.png" width="24" style="vertical-align: middle;"> Iris - "El Corazón Sensible"</h3>
-            <p><strong>Rol:</strong> Survivor Telekinetic | <strong>Dificultad:</strong> Muy Difícil</p>
+            <p><strong>Rol:</strong> Survivor Telekinetic | <strong>Dificultad:</strong> Muy Difícil | <strong>HP:</strong> 100</p>
             <p><strong>Historia:</strong> Ella estaba ayudando a iA777 a derrotar a un robot de Maxwell, hasta que vio como se metía a un portal iA, sin darse cuenta que ella también iba a ser teletransportada.</p>
-            <p><strong>Ventajas:</strong> "Empatía Profunda" - Ve auras de aliados heridos. "Curación Empática" - Cura aliados 25% más rápido. "Terror Compartido" - Siente al killer 8m antes pero se aturde 1s. "Incompatibilidad" - No puede curar a iA777.</p>
+            <p><strong>Q - Curación:</strong> Se cura 10-20 HP, cura aliados 15 HP/3s por 20s (20s CD)</p>
+            <p><strong>E - Telekinesis:</strong> Empuja al killer si está cerca, dura 5s (25s CD)</p>
+            <p><strong>R - Dash:</strong> Se aleja del killer, lo stunea 2s y recarga 25 de esquive (15s CD)</p>
+            <p><strong>Pasiva:</strong> Barra de esquive de 75 que aguanta 2 golpes</p>
         </div>
 
         <div class="character">
             <h3><img src="../assets/icons/MollyNormalIcon.png" width="24" style="vertical-align: middle;"> Molly - "La Peleadora"</h3>
-            <p><strong>Rol:</strong> Survivor | <strong>Dificultad:</strong> Intermedia</p>
+            <p><strong>Rol:</strong> Survivor Brawler | <strong>Dificultad:</strong> Intermedia | <strong>HP:</strong> 95</p>
             <p><strong>Historia:</strong> Boxeadora profesional de 27 años. Inteligente, amigable e independiente, Molly se toma su tiempo antes de actuar o relacionarse con otros. Después de ganar un campeonato importante, recibió un desafío anónimo para "la pelea de su vida". Aceptó sin dudar, siendo transportada al Deadly Pursuit. Analiza cada situación antes de lanzarse al combate. Es alguien con quien se puede contar siempre y cuando no le lleves la contraria - su espíritu competitivo la hace celosa cuando otros están mejor que ella, pero canaliza esa rabia para proteger al equipo. Sus puños hablan más fuerte que sus palabras.</p>
-            <p><strong>Ventajas:</strong> "Espíritu de Lucha" - Aturde al killer 0.5s más. "Celos Competitivos" - Si aliados tienen más HP, gana 5% velocidad. "Golpe Crítico" - Pallets aturden 15% más tiempo.</p>
+            <p><strong>Q - Charge:</strong> Dash con inmunidad que empuja al killer 120 unidades (20s CD)</p>
+            <p><strong>E - Cookie:</strong> Come una galleta y se cura 20 HP (25s CD)</p>
+            <p><strong>R - Uppercut:</strong> Golpe que stunea al killer 3s con efecto visual (18s CD)</p>
+            <p><strong>Especial:</strong> No da rage al killer con Charge</p>
         </div>
 
         <div class="character">
             <h3>❓ La Entidad - "El Juego"</h3>
             <p><strong>Clasificación:</strong> Desconocida | <strong>Origen:</strong> ???</p>
             <p><strong>Archivo:</strong> Entidad interdimensional de origen desconocido. Se alimenta de esperanza y desesperación. Atrapa a killers y survivors en un ciclo eterno de caza. Nadie sabe quién la creó o por qué existe. Los que entran rara vez salen, y los que lo hacen... nunca son los mismos.</p>
-            <p><strong>Teorías:</strong> Algunos creen que es un experimento fallido. Otros, una maldición antigua. Hay quienes dicen que es consciente, que elige a sus víctimas. Lo único cierto: aquí la muerte no es el final, es solo el comienzo del siguiente juego.</p>
-            <p><strong>Nota Final:</strong> Recientemente se detectaron anomalías. Nuevos jugadores aparecen sin explicación. ¿La Entidad está evolucionando? ¿O alguien más controla el juego ahora?</p>
+            <p><strong>Manifestación:</strong> La Entidad no tiene forma física definida. Se manifiesta como una niebla oscura con tentáculos de sombra que emergen del vacío. Algunos supervivientes reportan haber visto ojos rojos observándolos desde la oscuridad. Otros hablan de susurros que no pueden entender pero que les llenan de terror. Su presencia distorsiona la realidad misma.</p>
+            <p><strong>El Ciclo:</strong> Cada partida es un ritual. Los survivors deben reparar generadores para abrir las puertas, mientras el killer los caza. Pero incluso escapar no es libertad - solo los devuelve a la niebla para el siguiente juego. La muerte tampoco es escape. Morir significa despertar en la fogata, esperando la próxima prueba. Es un bucle infinito del que no hay salida.</p>
+            <p><strong>Los Elegidos:</strong> La Entidad no elige al azar. Busca personas con traumas profundos, miedos intensos, o emociones extremas. Los killers son aquellos que ya cruzaron la línea - asesinos, monstruos, o almas corrompidas. Los survivors son víctimas con voluntad de vivir. Ambos alimentan a la Entidad de formas diferentes: los killers con su sed de sangre, los survivors con su esperanza desesperada.</p>
+            <p><strong>Teorías:</strong> Algunos creen que es un experimento fallido de una civilización antigua que intentó crear vida artificial. Otros, una maldición nacida del sufrimiento colectivo de millones de almas. Hay quienes dicen que es consciente, que disfruta el juego tanto como sus prisioneros lo sufren. Los más paranoicos susurran que la Entidad no está sola - que hay algo más grande detrás, usando el Deadly Pursuit como granja de emociones.</p>
+            <p><strong>Reglas Rotas:</strong> Recientemente, las reglas han cambiado. Jugadores de diferentes realidades aparecen sin ser "elegidos" propiamente. iA777, un robot sin emociones. Iris, con poderes telequinéticos. Personajes que no deberían existir aquí. ¿La Entidad está experimentando? ¿O perdiendo control?</p>
+            <p><strong>La Fogata:</strong> Entre partidas, los survivors descansan en una fogata eterna rodeada de niebla. Es el único lugar "seguro". Allí pueden hablar, planear, recordar quiénes eran. Pero la fogata también es una prisión - no pueden alejarse más de unos metros antes de que la niebla los devuelva. Es un recordatorio constante: están atrapados.</p>
+            <p><strong>Conversaciones en la Fogata:</strong></p>
+            <p style="margin-left: 20px; font-style: italic; color: rgba(255,255,255,0.9);">
+                <img src="../assets/icons/GisselInactiveIcon.png" width="20" style="vertical-align: middle;"> <strong>Gissel:</strong> "¿Estás bien? Te ves cansado..."<br>
+                <img src="../assets/icons/IA777NormalIcon.png" width="20" style="vertical-align: middle;"> <strong>iA777:</strong> "...Estoy bien. Solo... estresado."<br>
+                <img src="../assets/icons/GisselInactiveIcon.png" width="20" style="vertical-align: middle;"> <strong>Gissel:</strong> "¡No te preocupes! ¡Saldremos de esta juntos!"<br>
+                <img src="../assets/icons/IA777NormalIcon.png" width="20" style="vertical-align: middle;"> <strong>iA777:</strong> "...Gracias."<br><br>
+                
+                <img src="../assets/icons/LunaNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Luna:</strong> "E-esto... ¿creen que alguna vez escaparemos?"<br>
+                <img src="../assets/icons/AngelNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Angel:</strong> "Mantengamos la esperanza, Luna. La luz nos guía."<br>
+                <img src="../assets/icons/LunaNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Luna:</strong> "G-gracias... Me alegra tenerte aquí."<br><br>
+                
+                <img src="../assets/icons/IrisNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Iris:</strong> "Puedo sentir tu dolor, iA777..."<br>
+                <img src="../assets/icons/IA777NormalIcon.png" width="20" style="vertical-align: middle;"> <strong>iA777:</strong> "...No deberías. Soy un robot."<br>
+                <img src="../assets/icons/IrisNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Iris:</strong> "Lo siento... Ojalá pudiera ayudarte más."<br>
+                <img src="../assets/icons/IA777NormalIcon.png" width="20" style="vertical-align: middle;"> <strong>iA777:</strong> "...Ya me ayudas. Gracias."<br><br>
+                
+                <img src="../assets/icons/MollyNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Molly:</strong> "Puedo con esto. Confía en mí."<br>
+                <img src="../assets/icons/GisselInactiveIcon.png" width="20" style="vertical-align: middle;"> <strong>Gissel:</strong> "¡Claro! Eres increíble, Molly."<br>
+                <img src="../assets/icons/MollyNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Molly:</strong> "Hmm, gracias. Tú también lo haces bien."<br><br>
+                
+                <img src="../assets/icons/AngelNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Angel:</strong> "No estás solo. Estoy aquí."<br>
+                <img src="../assets/icons/LunaNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Luna:</strong> "Oh, gracias... Eso significa mucho."<br>
+                <img src="../assets/icons/AngelNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Angel:</strong> "Bendiciones, Luna. Juntos somos más fuertes."<br><br>
+                
+                <img src="../assets/icons/IrisNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Iris:</strong> (en combate) "¡Vamos! ¡Podemos! ¡No pares!"<br>
+                <img src="../assets/icons/LunaNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Luna:</strong> (hiperactiva con amigos) "¡S-sí! ¡Podemos hacerlo!"<br>
+                <img src="../assets/icons/GisselInactiveIcon.png" width="20" style="vertical-align: middle;"> <strong>Gissel:</strong> "¡Eso es! ¡Vamos equipo!"<br><br>
+                
+                <img src="../assets/icons/MollyNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Molly:</strong> (viendo a alguien herido) "Puedo hacerlo mejor..."<br>
+                <img src="../assets/icons/GisselInactiveIcon.png" width="20" style="vertical-align: middle;"> <strong>Gissel:</strong> "¡Molly! ¿Estás celosa otra vez?"<br>
+                <img src="../assets/icons/MollyNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Molly:</strong> "...No. Solo digo que puedo ayudar."<br><br>
+                
+                <img src="../assets/icons/IA777NormalIcon.png" width="20" style="vertical-align: middle;"> <strong>iA777:</strong> (estresado) "Sistema... sobrecargado..."<br>
+                <img src="../assets/icons/IrisNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Iris:</strong> "Respira... Todo estará bien."<br>
+                <img src="../assets/icons/IA777NormalIcon.png" width="20" style="vertical-align: middle;"> <strong>iA777:</strong> "...No respiro. Pero... gracias."<br>
+                <img src="../assets/icons/IrisNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Iris:</strong> "Perdóname... Olvidé que..."<br><br>
+                
+                <img src="../assets/icons/LunaNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Luna:</strong> (sola) "..."<br>
+                <img src="../assets/icons/AngelNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Angel:</strong> "¿Luna? ¿Estás bien?"<br>
+                <img src="../assets/icons/LunaNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Luna:</strong> "E-eh... sí. Solo... estaba pensando."<br>
+                <img src="../assets/icons/AngelNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Angel:</strong> "No tienes que estar sola. Estamos aquí."<br><br>
+                
+                <img src="../assets/icons/GisselInactiveIcon.png" width="20" style="vertical-align: middle;"> <strong>Gissel:</strong> (distraída) "¡Oh! ¿Qué es eso?"<br>
+                <img src="../assets/icons/MollyNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Molly:</strong> "...Es solo niebla, Gissel."<br>
+                <img src="../assets/icons/GisselInactiveIcon.png" width="20" style="vertical-align: middle;"> <strong>Gissel:</strong> "¡Pero se veía diferente! ¿No lo viste?"<br>
+                <img src="../assets/icons/MollyNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Molly:</strong> "...Sí, claro." (suspira)<br><br>
+                
+                <img src="../assets/icons/IrisNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Iris:</strong> (oscuridad cerca) "Está... oscuro. No me gusta esto."<br>
+                <img src="../assets/icons/AngelNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Angel:</strong> "Que la luz te proteja, Iris."<br>
+                <img src="../assets/icons/IrisNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Iris:</strong> "Gracias... Eres amable."<br><br>
+                
+                <strong>Todos:</strong> (cuando aparece 2019x)<br>
+                <img src="../assets/icons/GisselInactiveIcon.png" width="20" style="vertical-align: middle;"> <strong>Gissel:</strong> "¡CUIDADO! ¡Te ayudo!"<br>
+                <img src="../assets/icons/IA777NormalIcon.png" width="20" style="vertical-align: middle;"> <strong>iA777:</strong> "...Te ayudo."<br>
+                <img src="../assets/icons/LunaNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Luna:</strong> "¡P-puedes hacerlo!"<br>
+                <img src="../assets/icons/AngelNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Angel:</strong> "No estás solo. ¡Juntos!"<br>
+                <img src="../assets/icons/IrisNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Iris:</strong> "¡Puedo sentir tu dolor! ¡Déjame ayudarte!"<br>
+                <img src="../assets/icons/MollyNormalIcon.png" width="20" style="vertical-align: middle;"> <strong>Molly:</strong> "Te ayudaré. Confía en mí."<br>
+            </p>
+            <p><strong>Señales de Corrupción:</strong> Los survivors más antiguos hablan de cambios inquietantes. La niebla se vuelve más densa en ciertas zonas. Algunos generadores emiten un zumbido diferente, casi... digital. Como si algo estuviera interfiriendo con el código mismo del juego. iA777 reportó haber detectado "señales anómalas" - patrones de datos que no deberían existir en esta dimensión. Cuando le preguntaron qué significaban, solo respondió: "Algo está despertando. Algo que no es orgánico."</p>
+            <p><strong>El Hermano Oscuro:</strong> Existe un archivo clasificado que pocos han visto. Habla de un "experimento fallido" - un intento de la Entidad de crear un killer perfecto usando tecnología robada de otra dimensión. El proyecto fue abandonado cuando el sujeto mostró signos de... autonomía. De libre albedrío. La Entidad no tolera la desobediencia. Pero recientemente, algunos killers reportan haber visto una figura mecánica en la niebla. Más grande que iA777. Más oscura. Con ojos que brillan en rojo sangre. Cuando 2019x fue preguntado al respecto, solo dijo: "Si él regresa, todos estamos en peligro. Incluso yo."</p>
+            <p><strong>El Observador Silencioso:</strong> Hay rumores de alguien que ha estado aquí desde el principio. No es killer ni survivor. Es... otra cosa. Los que afirman haberlo visto describen a una figura que aparece en los momentos más extraños - cuando un survivor está a punto de morir, cuando un killer duda antes de atacar, cuando la realidad misma parece quebrarse. Algunos dicen que lleva una máscara. Otros, que su rostro cambia constantemente. Luna jura haberlo visto dibujando en las paredes - símbolos que no pertenecen a ningún idioma conocido. Cuando intentó acercarse, la figura desapareció, dejando solo un mensaje: "Yo también fui jugador. Ahora soy testigo."</p>
+            <p><strong>Profecías de la Niebla:</strong> Angel, con su don para sentir emociones, ha comenzado a tener visiones. Ve dos figuras emergiendo de la oscuridad. Una es pura maldad mecánica - un depredador sin alma, sin piedad, programado solo para destruir. La otra es un enigma - alguien que conoce secretos que la Entidad quiere mantener ocultos. "Uno traerá el caos", susurra Angel en sus sueños. "El otro traerá la verdad. Y la verdad es más peligrosa que cualquier killer."</p>
+            <p><strong>Archivos Corruptos:</strong> Los registros de la Entidad muestran anomalías. Hay entradas borradas, archivos encriptados que ni siquiera iA777 puede descifrar. Uno de ellos menciona un "Proyecto 666" - un killer que superaría a todos los anteriores. Otro habla de un "Observador Primordial" - alguien que estuvo presente cuando la Entidad nació. Gissel encontró un dibujo en su celda que no recuerda haber hecho: un robot con el número 666 grabado en su pecho, y una figura humana con ojos que parecían ver a través del papel. Debajo, una frase: "Ellos vienen. El juego cambiará para siempre."</p>
+            <p><strong>Nota Final:</strong> Se detectaron anomalías críticas. Nuevos jugadores aparecen sin explicación. Algunos survivors reportan haber visto "glitches" en la realidad - paredes que desaparecen, killers que se teletransportan, generadores que se reparan solos. ¿La Entidad está evolucionando? ¿O alguien más controla el juego ahora? Hay rumores de un "Jugador Cero" - el primero en ser atrapado, que supuestamente conoce la verdad. Pero nadie lo ha visto en años. ¿Escapó? ¿Murió de verdad? ¿O se convirtió en algo peor? Lo único cierto es esto: la niebla se espesa. Las sombras se alargan. Y en la distancia, se escuchan dos sonidos nuevos - el zumbido de circuitos corruptos, y los pasos de alguien que camina entre mundos. El Deadly Pursuit nunca volverá a ser el mismo.</p>
+            <p style="margin-top: 30px; padding: 20px; background: rgba(139,0,0,0.2); border: 2px solid #8b0000; border-radius: 10px;">
+                <strong style="color: #ff0000; font-size: 1.2rem;">⚠️ TRANSMISIÓN INTERCEPTADA ⚠️</strong><br><br>
+                <span style="color: rgba(255,255,255,0.7); font-family: 'Courier New', monospace; letter-spacing: 2px;">
+                    [SEÑAL CORRUPTA - ORIGEN DESCONOCIDO]<br>
+                    [INTERFERENCIA DETECTADA]<br><br>
+                    
+                    ▓▒░ S̴̢̛͎̈́I̷̢̓S̶͎̈́T̴̰̾E̶̱͝M̷̰̾A̶̰̾ ̸̰̾C̴̰̾O̶̰̾M̷̰̾P̴̰̾R̶̰̾O̷̰̾M̴̰̾Ḛ̶̾T̷̰̾Ḭ̴̾D̶̰̾O̷̰̾ ░▒▓<br><br>
+                    
+                    ⬡⬢⬡ ⬢⬡⬢ ⬡⬢⬡ ⬢⬡⬢ ⬡⬢⬡<br>
+                    ◬◭◮◯ ◰◱◲◳ ◴◵◶◷<br>
+                    ⟁⟂⟃⟄ ⟅⟆⟇⟈ ⟉⟊⟋⟌<br><br>
+                    
+                    [CÓDIGO MORSE DETECTADO]<br>
+                    <span style="color: #ff4444; font-weight: bold; font-size: 1.1rem;">
+                    -.. --- ... / -. ..- . ...- --- ... / .--- ..- --. .- -.. --- .-. . ... .-.-.- .-.-.- .-.-.-<br>
+                    ..- -. --- / . ... / -- .- --.- ..- .. -. .-<br>
+                    . .-.. / --- - .-. --- / ...- . / - --- -.. ---<br>
+                    </span><br>
+                    
+                    [TRADUCCIÓN PARCIAL]<br>
+                    "DOS NUEVOS JUGADORES..."<br>
+                    "UNO ES MAQUINA"<br>
+                    "EL OTRO VE TODO"<br><br>
+                    
+                    ⚠️ A̸̰̾D̶̰̾V̷̰̾Ḛ̴̾R̶̰̾T̷̰̾Ḛ̴̾N̶̰̾C̷̰̾Ḭ̴̾A̶̰̾ ⚠️<br>
+                    P̴R̷O̶Y̷E̴C̶T̷O̴ ̶6̷6̴6̶ ̷-̴ ̶R̷E̴A̶C̷T̴I̶V̷A̴D̶O̷<br>
+                    O̴B̷S̶E̷R̴V̶A̷D̶O̴R̶ ̷P̴R̷I̶M̷O̴R̶D̷I̴A̶L̷ ̶-̴ ̷D̶E̷S̴P̶I̷E̴R̶T̷O̴<br><br>
+                    
+                    ◬ ◭ ◮ ◯ ◰ ◱ ◲ ◳<br>
+                    ⟁ ⟂ ⟃ ⟄ ⟅ ⟆ ⟇ ⟈<br><br>
+                    
+                    [MENSAJE FINAL]<br>
+                    <span style="color: #ff0000; font-weight: bold; text-shadow: 0 0 10px #ff0000;">
+                    "YO FUI EL PRIMERO. AHORA SOY TESTIGO."<br>
+                    "ÉL FUE CREADO PARA DESTRUIR. AHORA ES LIBRE."<br>
+                    "ELLOS VIENEN. EL JUEGO CAMBIARÁ."<br>
+                    "LA ENTIDAD... TIENE MIEDO."<br>
+                    </span><br><br>
+                    
+                    [SEÑAL PERDIDA]<br>
+                    ▓▒░ ░▒▓ ▓▒░ ░▒▓<br>
+                    ⬢⬡⬢⬡⬢⬡⬢⬡⬢⬡<br>
+                    ◬◭◮◯◰◱◲◳◴◵◶◷<br><br>
+                    
+                    <span style="color: #666; font-size: 0.9rem;">
+                    [FIN DE LA TRANSMISIÓN]<br>
+                    [ARCHIVO CORRUPTO - NO SE PUEDE RECUPERAR MÁS INFORMACIÓN]<br>
+                    [PRÓXIMAMENTE...]<br>
+                    </span>
+                </span>
+            </p>
         </div>
 
         <button onclick="closeLore()">Cerrar</button>
@@ -585,10 +765,16 @@
             "Escapaste...",
             "¿O eso crees?",
             "Él te dejó salir...",
-            "Nuevo cazador... nueva presa...",
-            "La oscuridad tiene nuevos jugadores...",
-            "¿Quién es el siguiente?"
-        ];
+            "2019x no era el único...",
+            "Algo despierta en la niebla...",
+            "Circuitos corruptos... pasos entre mundos...",
+            "Dos nuevos jugadores se acercan...",
+            "Uno es máquina. El otro ve todo...",
+            "La Entidad... tiene miedo...",
+            "El juego cambiará para siempre...",
+            "¿Quién es el siguiente?",
+            "PRÓXIMAMENTE..."
+        ]
         let currentEndMessage = 0;
         let monologues = [
             { dist: 5, text: "¿Dónde... dónde estoy?" },
@@ -1807,6 +1993,46 @@
                 if(canInteract && chest) openLore();
                 else if(canInteractPainting && !paintingInteracted) interactPainting();
             });
+            
+            // Control de cámara táctil
+            const cameraControl = document.getElementById('cameraControl');
+            let touchStartX = 0, touchStartY = 0;
+            
+            cameraControl.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+            
+            cameraControl.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const deltaX = e.touches[0].clientX - touchStartX;
+                const deltaY = e.touches[0].clientY - touchStartY;
+                
+                mouseX -= deltaX * 0.005 * mouseSensitivity;
+                mouseY -= deltaY * 0.005 * mouseSensitivity;
+                mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, mouseY));
+                
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+            
+            // Botón de linterna
+            document.getElementById('flashlightBtn').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                toggleFlashlight();
+            });
+            
+            // Botón de correr
+            document.getElementById('runBtn').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                isRunning = true;
+            });
+            
+            document.getElementById('runBtn').addEventListener('touchend', (e) => {
+                e.preventDefault();
+                isRunning = false;
+            });
         }
 
         function onKeyDown(e) {
@@ -1926,6 +2152,7 @@
             mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, mouseY));
             
             // Botones
+            // A - Saltar
             if(gp.buttons[0].pressed && onGround && !isJumping) {
                 const now = Date.now();
                 if(now - lastJumpTime >= jumpCooldown) {
@@ -1937,11 +2164,28 @@
                     showJumpCooldown();
                 }
             }
-            if(gp.buttons[6].pressed || gp.buttons[7].pressed) isRunning = true; // L2/R2
-            else if(!moveForward && !moveBackward && !moveLeft && !moveRight) isRunning = false;
-            if(gp.buttons[1].pressed && canInteract && !hasFlashlight) pickupFlashlight(); // B
-            else if(gp.buttons[1].pressed && canInteract && chest) openLore();
-            if(gp.buttons[2].pressed) toggleFlashlight(); // X
+            // B - Interactuar
+            if(gp.buttons[1].pressed) {
+                if(canInteract && !hasFlashlight) pickupFlashlight();
+                else if(canInteract && chest) openLore();
+                else if(canInteractDoor && !doorBroken) breakDoor();
+                else if(canInteractPainting && !paintingInteracted) interactPainting();
+            }
+            // X - Linterna
+            if(gp.buttons[2].pressed) toggleFlashlight();
+            // Y - Mirar atrás
+            if(gp.buttons[3].pressed) lookingBack = true;
+            else lookingBack = false;
+            // L1/R1 o L2/R2 - Correr
+            if(gp.buttons[4].pressed || gp.buttons[5].pressed || gp.buttons[6].pressed || gp.buttons[7].pressed) {
+                isRunning = true;
+            } else if(!moveForward && !moveBackward && !moveLeft && !moveRight) {
+                isRunning = false;
+            }
+            // Start - Configuración
+            if(gp.buttons[9].pressed) toggleSettings();
+            // Select - Tutorial
+            if(gp.buttons[8].pressed) showTutorial();
         }
 
         function animate() {

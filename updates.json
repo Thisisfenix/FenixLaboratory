@@ -7,21 +7,56 @@
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.1.3",
-    "fecha": "2025-01-15",
+    "numero": "2.1.4",
+    "fecha": "2025-01-20",
     "tipo": "major",
     "estado": "estable",
     "cambios_principales": [
-      "Nuevo killer Vortex con habilidades únicas",
-      "Nuevo survivor Iris con mecánicas telequinéticas",
-      "Soporte completo para gamepad/controller",
-      "Música LMS personalizada para Iris",
-      "Chase theme específico para Vortex",
-      "Sistema de Power Surge alternativo a Rage Mode"
+      "Proyecto Ankaro añadido al laboratorio",
+      "Nuevo juego multijugador 3D de horror",
+      "Soporte para hasta 8 jugadores simultáneos",
+      "Sistema de código de sala para jugar con amigos",
+      "8 colores únicos por jugador",
+      "Sistema de voz en tiempo real con PeerJS"
     ]
   },
   
   "updates": [
+    {
+      "version": "2.1.4",
+      "date": "2025-01-20",
+      "title": "🎮 Proyecto Ankaro - Lanzamiento Inicial",
+      "type": "major",
+      "features": [
+        "🎮 Proyecto Ankaro añadido al laboratorio",
+        "🎯 Nuevo juego multijugador 3D de horror",
+        "👥 Soporte para hasta 8 jugadores simultáneos",
+        "🎨 8 colores únicos por jugador (Rojo, Verde, Azul, Amarillo, Magenta, Cyan, Naranja, Morado)",
+        "📊 Sistema de actualizaciones para Ankaro (v0.1)",
+        "🔗 Enlace directo desde el laboratorio principal",
+        "🔑 Sistema de código de sala para jugar con amigos",
+        "🎮 Lobby 3D con spawn points personalizados",
+        "🎵 Sistema de voz en tiempo real con PeerJS",
+        "🎮 Controles para PC, móvil y gamepad",
+        "🔦 Mecánicas de supervivencia y exploración",
+        "🛠️ Sistema de items y generadores",
+        "🌍 Sincronización en tiempo real con Supabase"
+      ],
+      "ankaro_features": [
+        "👥 Máximo 8 jugadores por sala",
+        "🎨 Cada jugador tiene color y spawn point único",
+        "🔑 Crear sala con código compartible",
+        "🚪 Unirse a sala con código de 4-6 caracteres",
+        "🎮 Lobby 3D interactivo con movimiento libre",
+        "🎵 Chat de voz con push-to-talk (tecla V)",
+        "🔇 Botón de mutear micrófono",
+        "📱 Controles móviles con joystick virtual",
+        "🎮 Soporte completo para gamepad",
+        "📍 Cámara tercera persona con rotación libre",
+        "🔦 Sistema de iluminación dinámica por jugador",
+        "🌐 Sincronización de posiciones en tiempo real"
+      ]
+    },
     {
       "version": "2.1.3",
       "date": "2025-11-16",

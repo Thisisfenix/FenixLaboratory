@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#ff6b35">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FenixLab v2.0.9">
+  <meta name="apple-mobile-web-app-title" content="FenixLab v2.1.4">
   <link rel="apple-touch-icon" href="favicon.svg">
   <!-- Discord/Social Media Embeds -->
   <meta property="og:title" content="🔬 FenixLaboratory - Experimentos raros y proyectos random">
@@ -1973,7 +1973,7 @@
           </li>
           <li class="nav-item">
             <button id="updates-btn" class="nav-link" aria-label="Ver actualizaciones">
-              <i class="bi bi-arrow-up-circle me-1"></i> v2.1.0
+              <i class="bi bi-arrow-up-circle me-1"></i> v2.1.4
             </button>
           </li>
         </ul>
@@ -2774,6 +2774,24 @@
     function displayRepos(repos, page = 1) {
       const container = document.getElementById('repos-container');
       container.innerHTML = '';
+
+      // Project Ankaro card
+      if (page === 1) {
+        const ankaroCard = document.createElement('div');
+        ankaroCard.className = 'card';
+        ankaroCard.style.border = '2px solid var(--primary)';
+        ankaroCard.innerHTML = `
+          <div class="card-img-top" style="background: linear-gradient(135deg, #1a1a2e, #16213e); height: 180px; display: flex; align-items: center; justify-content: center; font-size: 4rem;">🎮</div>
+          <div class="card-body">
+            <h3 class="card-title">Project Ankaro</h3>
+            <p class="card-text">Juego multijugador 3D de horror con voz en tiempo real, mecánicas de supervivencia y soporte para móvil/gamepad.</p>
+            <div class="btn-group">
+              <a href="Projectankaro/index.html" class="btn btn-outline-neon"><i class="bi bi-joystick me-1"></i> Jugar</a>
+            </div>
+          </div>
+        `;
+        container.appendChild(ankaroCard);
+      }
 
       const startIndex = (page - 1) * reposPerPage;
       const endIndex = startIndex + reposPerPage;

@@ -1,0 +1,20 @@
+[
+    {
+        "version": "v0.1",
+        "date": "2025-01-20",
+        "type": "major",
+        "title": "🎮 Lanzamiento Inicial de Ankaro",
+        "changes": [
+            "🎮 Primer lanzamiento del juego Ankaro",
+            "🎯 Mecánicas básicas de juego implementadas",
+            "🎨 Interfaz de usuario inicial",
+            "📱 Soporte para dispositivos móviles",
+            "🖥️ Soporte para escritorio",
+            "🎵 Sistema de audio básico",
+            "🎮 Controles de teclado y mouse",
+            "📊 Sistema de puntuación",
+            "🏆 Mecánicas de victoria/derrota",
+            "✨ Efectos visuales básicos"
+        ]
+    }
+]

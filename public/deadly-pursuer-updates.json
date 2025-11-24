@@ -1,5 +1,30 @@
 [
     {
+        "version": "v1.7.2",
+        "date": "2025-01-20",
+        "type": "major",
+        "title": "❓ ??? - Lore Expandido y Pistas",
+        "changes": [
+            "📜 Lore de ??? expandido con 8 nuevas secciones",
+            "🗣️ 12+ conversaciones entre ??? con iconos de personajes",
+            "📡 Transmisión interceptada con código morse y símbolos",
+            "⚠️ Pistas sobre 2 nuevos jugadores: '??? ???' y '??? ???'",
+            "🤖 '??? ??? ???' - figura mecánica más grande que ???",
+            "👁️ '??? ??? ???' - testigo desde el principio",
+            "📡 Código morse: '??? ??? ???... ??? ??? ???... ??? ??? ??? ???'",
+            "🔥 Mensajes finales actualizados con 12 líneas misteriosas",
+            "💬 Conversaciones basadas en personalidades del sistema de interacciones",
+            "🎭 Diálogos de ??? (preocupada), ??? (estresado), ??? (tímida)",
+            "👼 Diálogos de ??? (altruista), ??? (empática), ??? (distante)",
+            "👻 Conversaciones sobre ??? y situaciones de combate",
+            "🔍 Señales de Corrupción - ??? detecta anomalías digitales",
+            "📝 Profecías de ??? sobre los nuevos jugadores",
+            "📊 Archivos Corruptos con dibujos de ???",
+            "🔥 '??? tiene miedo' - mensaje final críptico",
+            "❓ Metatags misteriosos añadidos al HTML (???, ???, ???)"
+        ]
+    },
+    {
         "version": "v1.7.1",
         "date": "2025-11-23",
         "type": "feature",
