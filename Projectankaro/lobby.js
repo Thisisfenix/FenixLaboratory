@@ -240,7 +240,20 @@ class Lobby {
 
     destroy() {
         this.isActive = false;
-        playerManager.clear();
+        this.canMove = false;
+        
+        // Limpiar escena
+        while(engine.scene.children.length > 0) { 
+            engine.scene.remove(engine.scene.children[0]);
+        }
+        
+        // Re-agregar luces
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 5);
+        light.castShadow = true;
+        engine.scene.add(light);
+        engine.scene.add(new THREE.AmbientLight(0x404040, 0.5));
+        
         if (document.pointerLockElement) document.exitPointerLock();
     }
 }

@@ -24,6 +24,23 @@ class Game {
         this.spawnEntity();
         this.createUI();
         this.startTimer();
+        
+        // Posicionar jugadores en el mapa
+        const spawnPositions = [
+            { x: -20, z: -20 },
+            { x: 20, z: -20 },
+            { x: -20, z: 20 },
+            { x: 20, z: 20 },
+            { x: 0, z: -25 },
+            { x: 0, z: 25 },
+            { x: -25, z: 0 },
+            { x: 25, z: 0 }
+        ];
+        
+        playerManager.players.forEach((player, i) => {
+            const pos = spawnPositions[i] || spawnPositions[0];
+            player.setPosition(pos.x, 1, pos.z);
+        });
     }
 
     createMap() {

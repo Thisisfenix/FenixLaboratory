@@ -333,10 +333,8 @@ function startGame() {
                         gameplay.init(localPlayer);
                         localPlayer.userData.tools = 0;
                         
-                        // Cambiar cámara a tercera persona
-                        engine.camera.position.copy(localPlayer.position);
-                        engine.camera.position.y += 5;
-                        engine.camera.position.z += 8;
+                        // Resetear rotación de cámara del gameplay
+                        gameplay.cameraRotation = { x: 0, y: 0 };
                     }
                     
                     setTimeout(() => {
