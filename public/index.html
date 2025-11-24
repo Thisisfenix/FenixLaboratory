@@ -979,13 +979,8 @@
             document.getElementById('classifiedBtn').style.display = 'inline-block';
         }
 
-        // Three-time access to strange.html
+        // Access to strange.html
         function enterStrangeOnce() {
-            const visits = parseInt(localStorage.getItem('strangeVisits') || '0');
-            if(visits >= 3) {
-                alert('Has agotado tus 3 visitas a los Archivos Clasificados.');
-                return;
-            }
             window.location.href = 'html/strange.html';
         }
 

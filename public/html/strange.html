@@ -211,6 +211,161 @@
             align-items: center;
             justify-content: center;
         }
+        #settingsBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        #settingsBtn:hover {
+            background: rgba(50, 50, 50, 0.9);
+        }
+        #settingsPanel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #fff;
+            padding: 20px;
+            display: none;
+            z-index: 100;
+            min-width: 250px;
+        }
+        #settingsPanel h3 {
+            color: #fff;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        .setting-item {
+            margin-bottom: 15px;
+        }
+        .setting-item label {
+            color: #fff;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .setting-item input[type="range"] {
+            width: 100%;
+        }
+        .setting-value {
+            color: #ffd700;
+            font-size: 12px;
+        }
+        #killerIndicator {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff0000;
+            padding: 10px 20px;
+            display: none;
+            z-index: 100;
+        }
+        #killerBar {
+            width: 300px;
+            height: 20px;
+            background: #222;
+            border: 1px solid #ff0000;
+            position: relative;
+            overflow: hidden;
+        }
+        #killerFill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff6666);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #killerText {
+            color: #fff;
+            text-align: center;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        #staminaBar {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+            height: 15px;
+            background: #222;
+            border: 2px solid #00ff00;
+            z-index: 100;
+        }
+        #staminaFill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #88ff88);
+            width: 100%;
+            transition: width 0.1s;
+        }
+        #vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 90;
+        }
+        #distortion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 85;
+            transition: opacity 0.2s;
+        }
+        #tutorial {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd700;
+            padding: 30px;
+            color: #fff;
+            display: none;
+            z-index: 200;
+            max-width: 500px;
+            text-align: center;
+        }
+        #tutorial h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        #tutorial p {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        #tutorial button {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: #ffd700;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+        }
     </style>
 </head>
 <body>
@@ -230,7 +385,7 @@
         <div class="intro-text" style="animation-delay: 16s; font-size: 20px; color: #ffd700;">• Busca la linterna en la habitación</div>
         <div class="intro-text" style="animation-delay: 20s; font-size: 20px; color: #ffd700;">• Encuentra el cofre en el pasillo</div>
         <div class="intro-text" style="animation-delay: 24s; font-size: 20px; color: #ffd700;">• Llega a la puerta de salida</div>
-        <div class="intro-text" style="animation-delay: 28s; font-size: 28px; color: #00ff00;">Usa WASD para moverte, F para la linterna, E para interactuar</div>
+        <div class="intro-text" style="animation-delay: 28s; font-size: 28px; color: #00ff00;">WASD - Mover | ESPACIO - Saltar | F - Linterna | E - Interactuar</div>
     </div>
     
     <div id="location">
@@ -239,18 +394,55 @@
     </div>
     
     <div id="ui">
-        <div>WASD/Stick - Mover</div>
-        <div>F/X - Linterna</div>
+        <div>WASD - Mover | ESPACIO - Saltar | SHIFT - Correr</div>
+        <div>F/X - Linterna | C - Mirar Atrás</div>
         <div>E/B - Interactuar</div>
         <div id="distance" style="margin-top: 10px; color: #ffd700;">Distancia: 0m</div>
     </div>
     <div id="interact">Presiona E para tomar linterna</div>
     
+    <div id="killerIndicator">
+        <div id="killerBar"><div id="killerFill"></div></div>
+        <div id="killerText">2019x: 0m</div>
+    </div>
+    
+    <div id="staminaBar">
+        <div id="staminaFill"></div>
+    </div>
+    
+    <div id="vignette"></div>
+    <canvas id="distortion"></canvas>
+    
+    <div id="tutorial">
+        <h2>📖 TUTORIAL</h2>
+        <p><strong>WASD</strong> - Moverte</p>
+        <p><strong>ESPACIO</strong> - Saltar obstáculos</p>
+        <p><strong>SHIFT</strong> - Correr (consume stamina)</p>
+        <p><strong>F</strong> - Encender/Apagar linterna</p>
+        <p><strong>C</strong> - Mirar atrás</p>
+        <p><strong>E</strong> - Interactuar con objetos</p>
+        <p style="color: #ff4444; margin-top: 20px;">⚠️ Administra tu stamina sabiamente</p>
+        <button onclick="closeTutorial()">Entendido</button>
+    </div>
+    
+    <div id="settingsBtn" onclick="toggleSettings()">⚙️</div>
+    <div id="settingsPanel">
+        <h3>⚙️ CONFIGURACIÓN</h3>
+        <div class="setting-item">
+            <label>Sensibilidad del Mouse: <span class="setting-value" id="sensitivityValue">1.0x</span></label>
+            <input type="range" id="sensitivitySlider" min="0.1" max="3" step="0.1" value="1">
+        </div>
+        <div class="setting-item">
+            <label>Brillo de Pantalla: <span class="setting-value" id="brightnessValue">100%</span></label>
+            <input type="range" id="brightnessSlider" min="0.3" max="1" step="0.1" value="1">
+        </div>
+    </div>
+    
     <div id="mobileControls">
         <div id="joystick">
             <div id="stick"></div>
         </div>
-        <div id="jumpBtn">💡</div>
+        <div id="jumpBtn">⬆️</div>
         <div id="interactBtn">E</div>
     </div>
 
@@ -319,19 +511,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Verificar visitas restantes
-        const visits = parseInt(localStorage.getItem('strangeVisits') || '0');
-        if(visits >= 3) {
-            alert('Has agotado tus 3 visitas a los Archivos Clasificados.');
-            window.location.href = '../index.html';
-        } else {
-            // Incrementar contador de visitas
-            localStorage.setItem('strangeVisits', (visits + 1).toString());
-            const remaining = 3 - (visits + 1);
-            if(remaining > 0) {
-                console.log(`Visitas restantes: ${remaining}`);
-            }
-        }
         let scene, camera, renderer, lamp, chest, flashlight, table, door, exitDoor, ceilingLight, mysteryDoor, gisselPainting, platforms = [], obstacles = [], doorFragments = [];
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
         let velocity = new THREE.Vector3();
@@ -339,6 +518,8 @@
         let playerY = 1.6;
         let mouseX = 0, mouseY = 0;
         let inStartRoom = true;
+        let isJumping = false, jumpVelocity = 0, onGround = true;
+        const JUMP_FORCE = 0.15, GRAVITY = 0.008, GROUND_Y = 1.6;
         let endMessages = [
             "Escapaste...",
             "¿O eso crees?",
@@ -371,9 +552,22 @@
             { dist: 760, text: "Debo creer que sí..." },
             { dist: 800, text: "O me volveré loco." },
             { dist: 840, text: "Espera... ¿qué es eso?" },
-            { dist: 880, text: "Una puerta..." },
-            { dist: 920, text: "¡Una salida!" },
-            { dist: 960, text: "Casi... casi llego..." }
+            { dist: 880, text: "Algo se acerca..." },
+            { dist: 920, text: "Siento una presencia..." },
+            { dist: 960, text: "No puedo parar ahora..." },
+            { dist: 1050, text: "¡SALTA LOS OBSTÁCULOS!" },
+            { dist: 1100, text: "¡LO ESCUCHO DETRÁS!" },
+            { dist: 1150, text: "No puedo parar... no puedo..." },
+            { dist: 1200, text: "¡NO TE TROPIECES!" },
+            { dist: 1250, text: "¡ESTÁ CADA VEZ MÁS CERCA!" },
+            { dist: 1300, text: "Mis piernas... no aguantan..." },
+            { dist: 1350, text: "¡CASI LLEGAS!" },
+            { dist: 1400, text: "¡UN POCO MÁS!" },
+            { dist: 1450, text: "¡AHÍ ESTÁ LA SALIDA!" },
+            { dist: 1550, text: "Ya pasó... pero sigue adelante..." },
+            { dist: 1700, text: "La salida debe estar cerca..." },
+            { dist: 1850, text: "No puedo rendirme ahora..." },
+            { dist: 1950, text: "¡AHÍ ESTÁ!" }
         ];
         let currentMonologue = 0;
 
@@ -381,24 +575,45 @@
         let joystickActive = false, joystickX = 0, joystickY = 0;
         let isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
         let introShown = false, locationShown = false;
+        let mouseSensitivity = 1.0;
+        let screenBrightness = 1.0;
 
         // Audio System
-        let audioContext, ambientSound, breathingSound, footstepAudio, flashlightAudio, hallwayAudio, cineAudio, doorBreakAudio, objectFallAudio;
+        let audioContext, ambientSound, breathingSound, footstepAudio, flashlightAudio, hallwayAudio, cineAudio, doorBreakAudio, objectFallAudio, jumpAudio, chaseAudio, runAudio, exhaustedAudio, gunshotAudio;
         let audioInitialized = false;
         let footstepTimer = 0;
         let footstepInterval = 1000; // ms entre pasos
+        let runAudioPlaying = false;
         let hallwayAudioPlaying = false;
         let cineAudioPlaying = false;
         let doorBroken = false;
         let canInteractDoor = false;
         let fallingObjects = [];
-        let objectFallTriggers = [100, 250, 380, 550, 700, 850];
+        let objectFallTriggers = [100, 250, 380, 550, 700, 850, 1600, 1750, 1900];
         let triggeredFalls = new Set();
+        let gunshotTriggers = [150, 320, 480, 620, 780, 920, 1550, 1700, 1850];
+        let triggeredGunshots = new Set();
         let characterIcons = [];
         let lastFootstepVibration = 0;
         let loadingProgress = 0;
-        let totalAssets = 7; // Three.js + 6 audios + 1 textura
+        let totalAssets = 10; // Three.js + 9 audios + 1 textura
         let loadedAssets = 0;
+        let killerSpawned = false, killerChasing = false;
+        let killerCatchDistance = 30; // Distancia para ser atrapado
+        let killerPosition = 0; // Posición de 2019x
+        let isCaught = false; // Si fue atrapado
+        let stamina = 100; // Stamina del jugador
+        let maxStamina = 100;
+        let isRunning = false;
+        let staminaExhausted = false; // Si se agotó completamente
+        let lookingBack = false;
+        let heartbeatAudio;
+        let heartbeatInterval;
+        let lastJumpTime = 0;
+        let jumpCooldown = 800;
+        let killer2019x;
+        let tutorialShown = false;
+        let distortionCanvas, distortionCtx;
 
         // Loading system
         function updateLoading(asset) {
@@ -411,6 +626,7 @@
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('intro').style.display = 'flex';
+                    hideIntro();
                 }, 500);
             }
         }
@@ -418,6 +634,17 @@
         // Detectar carga de Three.js
         if(typeof THREE !== 'undefined') {
             updateLoading('Three.js cargado');
+        }
+
+        function showTutorial() {
+            if(tutorialShown) return;
+            tutorialShown = true;
+            document.getElementById('tutorial').style.display = 'block';
+            document.exitPointerLock();
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorial').style.display = 'none';
         }
 
         function initAudio() {
@@ -462,7 +689,85 @@
             objectFallAudio.volume = 0.5;
             objectFallAudio.addEventListener('canplaythrough', () => updateLoading('Audio: Objetos'), { once: true });
             
+            // Jump audio
+            jumpAudio = new Audio('stuff/salto.mp3');
+            jumpAudio.volume = 0.4;
+            jumpAudio.addEventListener('canplaythrough', () => updateLoading('Audio: Salto'), { once: true });
+            
+            // Chase audio
+            chaseAudio = new Audio('stuff/2019chase.mp3');
+            chaseAudio.volume = 0.7;
+            chaseAudio.loop = true;
+            chaseAudio.addEventListener('canplaythrough', () => updateLoading('Audio: Persecución'), { once: true });
+            chaseAudio.addEventListener('ended', () => {
+                if(killerChasing) chaseAudio.play();
+            });
+            
+            // Run audio
+            runAudio = new Audio('stuff/correr.mp3');
+            runAudio.volume = 0.4;
+            runAudio.loop = true;
+            
+            // Exhausted audio
+            exhaustedAudio = new Audio('stuff/exhausted.mp3');
+            exhaustedAudio.volume = 0.5;
+            
+            // Gunshot audio
+            gunshotAudio = new Audio('stuff/disparo.mp3');
+            gunshotAudio.volume = 0.6;
+            gunshotAudio.addEventListener('canplaythrough', () => updateLoading('Audio: Disparo'), { once: true });
+            
+            // Heartbeat audio (sintetizado)
+            createHeartbeatSound();
+            
             audioInitialized = true;
+            initFootstepPool();
+        }
+
+        function createHeartbeatSound() {
+            if(!audioContext) return;
+            heartbeatAudio = {
+                play: function(rate = 1.0) {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = 80;
+                    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioContext.currentTime + 0.1);
+                },
+                stop: function() {
+                    if(heartbeatInterval) clearInterval(heartbeatInterval);
+                }
+            };
+        }
+
+        function startHeartbeat(distance) {
+            if(heartbeatInterval) return;
+            const baseRate = 800; // ms entre latidos
+            const rate = Math.max(300, baseRate - (distance * 10)); // Más rápido cuando está cerca
+            
+            heartbeatInterval = setInterval(() => {
+                if(heartbeatAudio && killerChasing) {
+                    heartbeatAudio.play();
+                    setTimeout(() => heartbeatAudio.play(), 150); // Doble latido
+                }
+            }, rate);
+        }
+
+        function stopHeartbeat() {
+            if(heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+        }
+
+        function updateHeartbeatRate(distance) {
+            if(!killerChasing) return;
+            stopHeartbeat();
+            startHeartbeat(distance);
         }
 
         function createDroneSound(frequency, volume) {
@@ -495,15 +800,19 @@
             
             oscillator.start();
             
-            // Breathing pattern
-            setInterval(() => {
-                if(!audioContext) return;
-                const now = audioContext.currentTime;
-                gainNode.gain.cancelScheduledValues(now);
-                gainNode.gain.setValueAtTime(0, now);
-                gainNode.gain.linearRampToValueAtTime(0.08, now + 1.5);
-                gainNode.gain.linearRampToValueAtTime(0, now + 3);
-            }, 3000);
+            let breathingInterval;
+            function startBreathing() {
+                if(breathingInterval) clearInterval(breathingInterval);
+                breathingInterval = setInterval(() => {
+                    if(!audioContext) return;
+                    const now = audioContext.currentTime;
+                    gainNode.gain.cancelScheduledValues(now);
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.08, now + 1.5);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 3);
+                }, 3000);
+            }
+            startBreathing();
             
             return { oscillator, gainNode };
         }
@@ -515,13 +824,37 @@
             flashlightAudio.play().catch(() => {});
         }
 
+        let footstepPool = [];
+        let poolIndex = 0;
+        
+        function initFootstepPool() {
+            for(let i = 0; i < 3; i++) {
+                const audio = new Audio('stuff/stepsound.mp3');
+                audio.volume = 0.25;
+                footstepPool.push(audio);
+            }
+        }
+        
         function playFootstepSound() {
-            if(!footstepAudio) return;
-            
-            // Clonar el audio para permitir múltiples reproducciones simultáneas
-            const step = footstepAudio.cloneNode();
-            step.volume = 0.25;
+            if(footstepPool.length === 0) return;
+            const step = footstepPool[poolIndex];
+            step.currentTime = 0;
             step.play().catch(() => {});
+            poolIndex = (poolIndex + 1) % footstepPool.length;
+        }
+
+        function playJumpSound() {
+            if(!jumpAudio) return;
+            
+            jumpAudio.currentTime = 0;
+            jumpAudio.play().catch(() => {});
+        }
+
+        function startChase() {
+            if(!chaseAudio || killerChasing) return;
+            killerChasing = true;
+            chaseAudio.currentTime = 0;
+            chaseAudio.play().catch(() => {});
         }
 
         function playWhisper() {
@@ -560,7 +893,9 @@
                 { start: 150, end: 220, near: 0.5, far: 15 },
                 { start: 350, end: 420, near: 0.3, far: 12 },
                 { start: 600, end: 680, near: 0.4, far: 10 },
-                { start: 800, end: 900, near: 0.2, far: 8 }
+                { start: 800, end: 900, near: 0.2, far: 8 },
+                { start: 1000, end: 1500, near: 0.1, far: 6 },
+                { start: 1700, end: 1850, near: 0.3, far: 10 }
             ];
             
             let inDenseZone = false;
@@ -588,6 +923,55 @@
                     break;
                 }
             }
+        }
+
+        function checkGunshots(distance) {
+            for(let trigger of gunshotTriggers) {
+                if(distance >= trigger && !triggeredGunshots.has(trigger)) {
+                    triggeredGunshots.add(trigger);
+                    playGunshot();
+                    showMonologue('*BANG*');
+                    vibrateGamepad(200, 0.7, 0.7);
+                    break;
+                }
+            }
+        }
+
+        function playGunshot() {
+            if(!gunshotAudio || !audioContext) return;
+            
+            // Crear source desde el audio
+            const source = audioContext.createMediaElementSource(gunshotAudio.cloneNode());
+            
+            // Crear delay para eco
+            const delay = audioContext.createDelay();
+            delay.delayTime.value = 0.3; // 300ms de delay
+            
+            const feedback = audioContext.createGain();
+            feedback.gain.value = 0.5; // 50% feedback para múltiples ecos
+            
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 1500; // Filtro para eco más realista
+            
+            const dryGain = audioContext.createGain();
+            dryGain.gain.value = 0.8; // Sonido original
+            
+            const wetGain = audioContext.createGain();
+            wetGain.gain.value = 0.6; // Sonido con eco
+            
+            // Conexiones
+            source.connect(dryGain);
+            source.connect(delay);
+            delay.connect(filter);
+            filter.connect(feedback);
+            feedback.connect(delay);
+            filter.connect(wetGain);
+            
+            dryGain.connect(audioContext.destination);
+            wetGain.connect(audioContext.destination);
+            
+            source.mediaElement.play().catch(() => {});
         }
 
         function checkCharacterIcons(distance) {
@@ -670,14 +1054,16 @@
             }, 57000); // 60s - 3s fade out
         }
 
-        // Mostrar intro
-        setTimeout(() => {
-            document.getElementById('intro').classList.add('hidden');
+        // Ocultar intro después de que termine
+        function hideIntro() {
             setTimeout(() => {
-                document.getElementById('intro').style.display = 'none';
-                introShown = true;
-            }, 2000);
-        }, 32000);
+                document.getElementById('intro').classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('intro').style.display = 'none';
+                    introShown = true;
+                }, 2000);
+            }, 32000);
+        }
 
         // Inicializar audio con interacción del usuario
         document.addEventListener('click', initAudio, { once: true });
@@ -695,7 +1081,7 @@
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.shadowMap.type = THREE.PCFShadowMap; // Menos costoso que PCFSoft
             document.body.appendChild(renderer.domElement);
 
             // Crear habitación inicial
@@ -713,8 +1099,8 @@
             lamp.position.copy(camera.position);
             lamp.target.position.set(0, 0, -1);
             lamp.castShadow = true;
-            lamp.shadow.mapSize.width = 4096;
-            lamp.shadow.mapSize.height = 4096;
+            lamp.shadow.mapSize.width = 1024;
+            lamp.shadow.mapSize.height = 1024;
             lamp.shadow.camera.near = 0.1;
             lamp.shadow.camera.far = 30;
             lamp.shadow.bias = -0.0001;
@@ -746,7 +1132,7 @@
             const wallMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.9 });
             const obstacleMat = new THREE.MeshStandardMaterial({ color: 0x4a0000, roughness: 0.6 });
             
-            const hallLength = 1000;
+            const hallLength = 2000;
             
             // Suelo del pasillo
             const floor = new THREE.Mesh(
@@ -776,12 +1162,20 @@
             wallRight.castShadow = true;
             scene.add(wallRight);
 
-            // Laberintos y obstáculos complejos
-            createMaze(50, obstacleMat);
-            createMaze(200, obstacleMat);
-            createMaze(400, obstacleMat);
-            createMaze(600, obstacleMat);
-            createMaze(800, obstacleMat);
+            // Paredes bajas que interrumpen el camino (antes de la persecución)
+            createParkourWalls(50, obstacleMat);
+            createParkourWalls(200, obstacleMat);
+            createParkourWalls(400, obstacleMat);
+            createParkourWalls(600, obstacleMat);
+            createParkourWalls(800, obstacleMat);
+            
+            // Obstáculos de persecución (1000-1500m) - Variados
+            createChaseObstacles(obstacleMat);
+            createVariedChaseObstacles(obstacleMat);
+            
+            // Paredes después de la persecución
+            createParkourWalls(1600, obstacleMat);
+            createParkourWalls(1800, obstacleMat);
 
             // Obstáculos adicionales
             const obstaclePositions = [
@@ -789,7 +1183,9 @@
                 { z: 320, type: 'pillars' },
                 { z: 520, type: 'narrow' },
                 { z: 720, type: 'boxes' },
-                { z: 900, type: 'pillars' }
+                { z: 900, type: 'pillars' },
+                { z: 1620, type: 'boxes' },
+                { z: 1820, type: 'pillars' }
             ];
 
             obstaclePositions.forEach(obs => {
@@ -800,7 +1196,8 @@
                             obstacleMat
                         );
                         box.position.set((Math.random() - 0.5) * 6, 0.75, obs.z + (Math.random() - 0.5) * 15);
-                        box.castShadow = true;
+                        // Solo sombras en objetos cercanos
+                        if(Math.abs(obs.z) < 100) box.castShadow = true;
                         scene.add(box);
                         obstacles.push(box);
                     }
@@ -865,23 +1262,23 @@
             // Iconos de personajes en las paredes
             createCharacterIcons();
 
-            // Cofre justo antes de la salida
-            createChest(0, 0.5, hallLength - 50);
+            // Cofre en 1950m
+            createChest(0, 0.5, 1950);
 
-            // Puerta de salida al final
-            createExitDoor(0, hallLength - 20);
+            // Puerta de salida en 2000m
+            createExitDoor(0, 1980);
         }
 
-        function createMaze(startZ, material) {
-            const mazeWalls = [
-                { x: -3, z: startZ + 10, w: 1, h: 3, d: 20 },
-                { x: 3, z: startZ + 20, w: 1, h: 3, d: 15 },
-                { x: -2, z: startZ + 35, w: 1, h: 3, d: 10 },
-                { x: 2, z: startZ + 45, w: 1, h: 3, d: 12 },
-                { x: 0, z: startZ + 25, w: 4, h: 3, d: 1 }
+        function createParkourWalls(startZ, material) {
+            // Paredes bajas que cruzan el pasillo
+            const walls = [
+                { x: 0, z: startZ + 5, w: 8, h: 1.2, d: 0.5 },
+                { x: -2, z: startZ + 15, w: 4, h: 1.2, d: 0.5 },
+                { x: 2, z: startZ + 25, w: 4, h: 1.2, d: 0.5 },
+                { x: 0, z: startZ + 35, w: 6, h: 1.2, d: 0.5 }
             ];
 
-            mazeWalls.forEach(w => {
+            walls.forEach(w => {
                 const wall = new THREE.Mesh(
                     new THREE.BoxGeometry(w.w, w.h, w.d),
                     material
@@ -890,6 +1287,86 @@
                 wall.castShadow = true;
                 scene.add(wall);
                 obstacles.push(wall);
+                
+                // Luz roja sobre la pared
+                const light = new THREE.PointLight(0xff0000, 0.5, 8);
+                light.position.set(w.x, w.h + 0.5, w.z);
+                scene.add(light);
+            });
+        }
+
+        function createVariedChaseObstacles(material) {
+            // Cilindros
+            for(let i = 0; i < 5; i++) {
+                const cyl = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.4, 0.4, 0.8, 8),
+                    material
+                );
+                cyl.position.set((Math.random() - 0.5) * 4, 0.4, 1030 + i * 80);
+                cyl.castShadow = true;
+                scene.add(cyl);
+                obstacles.push(cyl);
+            }
+            
+            // Conos
+            for(let i = 0; i < 4; i++) {
+                const cone = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.5, 0.8, 8),
+                    material
+                );
+                cone.position.set((Math.random() - 0.5) * 4, 0.4, 1100 + i * 90);
+                cone.castShadow = true;
+                scene.add(cone);
+                obstacles.push(cone);
+            }
+            
+            // Esferas
+            for(let i = 0; i < 3; i++) {
+                const sphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.5, 8, 8),
+                    material
+                );
+                sphere.position.set((Math.random() - 0.5) * 4, 0.5, 1200 + i * 100);
+                sphere.castShadow = true;
+                scene.add(sphere);
+                obstacles.push(sphere);
+            }
+        }
+
+        function createChaseObstacles(material) {
+            // Obstáculos en el suelo durante la persecución (1000-1500m)
+            const chaseObstacles = [
+                { x: 0, z: 1020, w: 6, h: 0.8, d: 2 },
+                { x: -2, z: 1050, w: 3, h: 0.8, d: 2 },
+                { x: 2, z: 1080, w: 3, h: 0.8, d: 2 },
+                { x: 0, z: 1110, w: 7, h: 0.8, d: 2 },
+                { x: -1, z: 1140, w: 4, h: 0.8, d: 2 },
+                { x: 1, z: 1170, w: 4, h: 0.8, d: 2 },
+                { x: 0, z: 1200, w: 5, h: 0.8, d: 2 },
+                { x: -2, z: 1230, w: 3, h: 0.8, d: 2 },
+                { x: 2, z: 1260, w: 3, h: 0.8, d: 2 },
+                { x: 0, z: 1290, w: 6, h: 0.8, d: 2 },
+                { x: -1, z: 1320, w: 4, h: 0.8, d: 2 },
+                { x: 1, z: 1350, w: 4, h: 0.8, d: 2 },
+                { x: 0, z: 1380, w: 7, h: 0.8, d: 2 },
+                { x: -2, z: 1410, w: 3, h: 0.8, d: 2 },
+                { x: 2, z: 1440, w: 3, h: 0.8, d: 2 }
+            ];
+
+            chaseObstacles.forEach(w => {
+                const obstacle = new THREE.Mesh(
+                    new THREE.BoxGeometry(w.w, w.h, w.d),
+                    material
+                );
+                obstacle.position.set(w.x, w.h / 2, w.z);
+                obstacle.castShadow = true;
+                scene.add(obstacle);
+                obstacles.push(obstacle);
+                
+                // Luz roja intensa sobre el obstáculo
+                const light = new THREE.PointLight(0xff0000, 1.0, 10);
+                light.position.set(w.x, w.h + 1, w.z);
+                scene.add(light);
             });
         }
 
@@ -900,7 +1377,9 @@
                 { path: '../assets/icons/LunaNormalIcon.png', z: 500, side: 'left', text: '¡Hola! Si ves esto... corre!' },
                 { path: '../assets/icons/AngelNormalIcon.png', z: 650, side: 'right', text: 'No estás solo...' },
                 { path: '../assets/icons/MollyNormalIcon.png', z: 750, side: 'left', text: 'Pelea o huye' },
-                { path: '../assets/icons/IrisNormalIcon.png', z: 870, side: 'right', text: 'Él viene... lo siento...' }
+                { path: '../assets/icons/IrisNormalIcon.png', z: 870, side: 'right', text: 'Él viene... lo siento...' },
+                { path: '../assets/icons/GisselInactiveIcon.png', z: 1650, side: 'left', text: 'Sobreviviste... sigue...' },
+                { path: '../assets/icons/LunaNormalIcon.png', z: 1850, side: 'right', text: 'Ya casi... resiste...' }
             ];
             
             icons.forEach(icon => {
@@ -1128,7 +1607,14 @@
 
             document.getElementById('jumpBtn').addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                toggleFlashlight();
+                const now = Date.now();
+                if(onGround && !isJumping && now - lastJumpTime >= jumpCooldown) {
+                    isJumping = true;
+                    jumpVelocity = JUMP_FORCE;
+                    onGround = false;
+                    lastJumpTime = now;
+                    playJumpSound();
+                }
             });
 
             document.getElementById('interactBtn').addEventListener('touchstart', (e) => {
@@ -1144,6 +1630,23 @@
                 case 'KeyS': moveBackward = true; break;
                 case 'KeyA': moveLeft = true; break;
                 case 'KeyD': moveRight = true; break;
+                case 'ShiftLeft':
+                case 'ShiftRight':
+                    isRunning = true;
+                    break;
+                case 'KeyC':
+                    lookingBack = true;
+                    break;
+                case 'Space':
+                    const now = Date.now();
+                    if(onGround && !isJumping && now - lastJumpTime >= jumpCooldown) {
+                        isJumping = true;
+                        jumpVelocity = JUMP_FORCE;
+                        onGround = false;
+                        lastJumpTime = now;
+                        playJumpSound();
+                    }
+                    break;
                 case 'KeyE': 
                     if(canInteract && !hasFlashlight) pickupFlashlight();
                     else if(canInteract && chest) openLore();
@@ -1160,17 +1663,46 @@
                 case 'KeyS': moveBackward = false; break;
                 case 'KeyA': moveLeft = false; break;
                 case 'KeyD': moveRight = false; break;
-
+                case 'ShiftLeft':
+                case 'ShiftRight':
+                    isRunning = false;
+                    break;
+                case 'KeyC':
+                    lookingBack = false;
+                    break;
             }
         }
 
         function onMouseMove(e) {
             if(document.pointerLockElement) {
-                mouseX -= e.movementX * 0.002;
-                mouseY -= e.movementY * 0.002;
+                mouseX -= e.movementX * 0.002 * mouseSensitivity;
+                mouseY -= e.movementY * 0.002 * mouseSensitivity;
                 mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, mouseY));
             }
         }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.style.display = panel.style.display === 'none' || !panel.style.display ? 'block' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sensitivitySlider = document.getElementById('sensitivitySlider');
+            const brightnessSlider = document.getElementById('brightnessSlider');
+            const sensitivityValue = document.getElementById('sensitivityValue');
+            const brightnessValue = document.getElementById('brightnessValue');
+
+            sensitivitySlider.addEventListener('input', (e) => {
+                mouseSensitivity = parseFloat(e.target.value);
+                sensitivityValue.textContent = mouseSensitivity.toFixed(1) + 'x';
+            });
+
+            brightnessSlider.addEventListener('input', (e) => {
+                screenBrightness = parseFloat(e.target.value);
+                brightnessValue.textContent = Math.round(screenBrightness * 100) + '%';
+                renderer.domElement.style.filter = `brightness(${screenBrightness})`;
+            });
+        });
 
         function onResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -1208,6 +1740,16 @@
             mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, mouseY));
             
             // Botones
+            if(gp.buttons[0].pressed && onGround && !isJumping) {
+                const now = Date.now();
+                if(now - lastJumpTime >= jumpCooldown) {
+                    isJumping = true;
+                    jumpVelocity = JUMP_FORCE;
+                    onGround = false;
+                    lastJumpTime = now;
+                    playJumpSound();
+                }
+            }
             if(gp.buttons[1].pressed && canInteract && !hasFlashlight) pickupFlashlight(); // B
             else if(gp.buttons[1].pressed && canInteract && chest) openLore();
             if(gp.buttons[2].pressed) toggleFlashlight(); // X
@@ -1218,11 +1760,56 @@
 
             updateGamepad();
 
+            // Sistema de stamina
+            if(isRunning && stamina > 0 && !staminaExhausted && (moveForward || moveBackward || moveLeft || moveRight)) {
+                const staminaDrain = killerChasing ? 0.2 : 0.5;
+                stamina -= staminaDrain;
+                
+                // Si se agota completamente
+                if(stamina <= 0) {
+                    stamina = 0;
+                    staminaExhausted = true;
+                    isRunning = false;
+                    
+                    // Reproducir sonido de agotamiento
+                    if(exhaustedAudio) {
+                        exhaustedAudio.currentTime = 0;
+                        exhaustedAudio.play().catch(() => {});
+                    }
+                }
+            } else if(stamina < maxStamina) {
+                stamina += 0.2;
+                
+                // Solo puede volver a correr cuando se llena completamente
+                if(stamina >= maxStamina) {
+                    stamina = maxStamina;
+                    staminaExhausted = false;
+                }
+            }
+            
+            document.getElementById('staminaFill').style.width = (stamina / maxStamina * 100) + '%';
+            
+            // Cambiar color según estado
+            if(staminaExhausted) {
+                document.getElementById('staminaBar').style.borderColor = '#ff0000';
+                document.getElementById('staminaFill').style.background = 'linear-gradient(90deg, #ff0000, #ff8888)';
+            } else if(stamina < 30) {
+                document.getElementById('staminaBar').style.borderColor = '#ffaa00';
+                document.getElementById('staminaFill').style.background = 'linear-gradient(90deg, #ffaa00, #ffdd88)';
+            } else {
+                document.getElementById('staminaBar').style.borderColor = '#00ff00';
+                document.getElementById('staminaFill').style.background = 'linear-gradient(90deg, #00ff00, #88ff88)';
+            }
+
             // Movimiento
             velocity.x = 0;
             velocity.z = 0;
 
-            const speed = 0.06;
+            let baseSpeed = 0.06;
+            if(isRunning && stamina > 0 && !staminaExhausted) baseSpeed = 0.10;
+            if(killerChasing) baseSpeed = isRunning && stamina > 0 && !staminaExhausted ? 0.12 : 0.09;
+            
+            const speed = baseSpeed;
             const isMoving = moveForward || moveBackward || moveLeft || moveRight || Math.abs(joystickX) > 0.1 || Math.abs(joystickY) > 0.1;
             
             if(moveForward || joystickY < -0.1) velocity.z -= speed;
@@ -1230,13 +1817,25 @@
             if(moveLeft || joystickX < -0.1) velocity.x -= speed;
             if(moveRight || joystickX > 0.1) velocity.x += speed;
 
-            // Footsteps con timing regular
-            if(isMoving) {
-                footstepTimer += 16; // ~16ms por frame a 60fps
+            // Audio de correr
+            if(isRunning && isMoving && stamina > 0 && !staminaExhausted) {
+                if(!runAudioPlaying) {
+                    runAudioPlaying = true;
+                    if(runAudio) runAudio.play().catch(() => {});
+                }
+            } else {
+                if(runAudioPlaying) {
+                    runAudioPlaying = false;
+                    if(runAudio) runAudio.pause();
+                }
+            }
+            
+            // Footsteps solo cuando NO está corriendo
+            if(isMoving && !isRunning) {
+                footstepTimer += 16;
                 if(footstepTimer >= footstepInterval) {
                     playFootstepSound();
                     
-                    // Vibración sutil al caminar
                     const now = Date.now();
                     if(now - lastFootstepVibration > 500) {
                         vibrateGamepad(50, 0.1, 0.1);
@@ -1245,13 +1844,17 @@
                     
                     footstepTimer = 0;
                 }
-            } else {
+            } else if(!isMoving) {
                 footstepTimer = 0;
             }
 
-            // Rotación
+            // Rotación (mirar atrás)
             camera.rotation.order = 'YXZ';
-            camera.rotation.y = mouseX;
+            if(lookingBack) {
+                camera.rotation.y = mouseX + Math.PI;
+            } else {
+                camera.rotation.y = mouseX;
+            }
             camera.rotation.x = mouseY;
 
             // Dirección
@@ -1266,18 +1869,36 @@
             camera.position.addScaledVector(direction, -velocity.z);
             camera.position.addScaledVector(right, -velocity.x);
 
-            // Mantener en el suelo
-            playerY = 1.6;
+            // Sistema de salto y gravedad
+            if(isJumping || !onGround) {
+                playerY += jumpVelocity;
+                jumpVelocity -= GRAVITY;
+                
+                // Aterrizar
+                if(playerY <= GROUND_Y) {
+                    playerY = GROUND_Y;
+                    isJumping = false;
+                    onGround = true;
+                    jumpVelocity = 0;
+                }
+            } else {
+                playerY = GROUND_Y;
+            }
 
-            // Colisión con obstáculos
+            // Colisión con obstáculos (solo cercanos)
+            const playerBox = new THREE.Box3(
+                new THREE.Vector3(camera.position.x - 0.3, playerY - 1.6, camera.position.z - 0.3),
+                new THREE.Vector3(camera.position.x + 0.3, playerY, camera.position.z + 0.3)
+            );
+            
             for(let obstacle of obstacles) {
+                // Solo verificar obstáculos cercanos
+                const dist = Math.abs(obstacle.position.z - camera.position.z);
+                if(dist > 10) continue;
+                
                 const box = new THREE.Box3().setFromObject(obstacle);
-                const playerBox = new THREE.Box3(
-                    new THREE.Vector3(camera.position.x - 0.3, playerY - 1.6, camera.position.z - 0.3),
-                    new THREE.Vector3(camera.position.x + 0.3, playerY, camera.position.z + 0.3)
-                );
                 if(playerBox.intersectsBox(box)) {
-                    // Empujar hacia atrás
+                    if(playerY > box.max.y) continue;
                     camera.position.addScaledVector(direction, velocity.z * 2);
                     camera.position.addScaledVector(right, velocity.x * 2);
                 }
@@ -1303,11 +1924,66 @@
                 }
             } else {
                 camera.position.x = Math.max(-4.5, Math.min(4.5, camera.position.x));
-                camera.position.z = Math.max(1, Math.min(1050, camera.position.z));
+                camera.position.z = Math.max(1, Math.min(2050, camera.position.z));
+            }
+
+            // Spawn de 2019x en 1000m
+            if(!killerSpawned && camera.position.z >= 1000) {
+                killerSpawned = true;
+                killerPosition = 1000;
+                spawn2019x();
+                showMonologue('¡ÉL ESTÁ AQUÍ! ¡CORRE!');
+                startChase();
+                vibrateGamepad(1000, 1.0, 1.0);
+            }
+
+            // 2019x persigue al jugador
+            if(killerChasing && !isCaught) {
+                killerPosition += 0.08; // 2019x se mueve más lento que el jugador corriendo
+                
+                // Actualizar posición del modelo 3D
+                if(killer2019x) {
+                    killer2019x.position.z = killerPosition;
+                    // Animación de flotación
+                    killer2019x.position.y = 1.5 + Math.sin(Date.now() * 0.005) * 0.2;
+                    killer2019x.rotation.y += 0.02;
+                }
+                
+                const distanceToKiller = camera.position.z - killerPosition;
+                
+                // Actualizar indicador visual
+                document.getElementById('killerIndicator').style.display = 'block';
+                const percentage = Math.max(0, Math.min(100, (1 - distanceToKiller / 100) * 100));
+                document.getElementById('killerFill').style.width = percentage + '%';
+                document.getElementById('killerText').textContent = `2019x: ${Math.floor(distanceToKiller)}m`;
+                
+                // Heartbeat basado en distancia
+                if(distanceToKiller < 80) {
+                    if(!heartbeatInterval) startHeartbeat(distanceToKiller);
+                    else updateHeartbeatRate(distanceToKiller);
+                }
+                
+                // Si 2019x alcanza al jugador
+                if(distanceToKiller < killerCatchDistance) {
+                    isCaught = true;
+                    catchPlayer();
+                }
+            } else {
+                document.getElementById('killerIndicator').style.display = 'none';
+            }
+
+            // Fin de la persecución en 1500m
+            if(killerChasing && camera.position.z >= 1500) {
+                killerChasing = false;
+                if(chaseAudio) chaseAudio.pause();
+                stopHeartbeat();
+                document.getElementById('killerIndicator').style.display = 'none';
+                if(killer2019x) scene.remove(killer2019x);
+                showMonologue('Lo... lo logré... se detuvo...');
             }
 
             // Verificar si llegó a la puerta de salida
-            if(!escaped && exitDoor && camera.position.z > 1000) {
+            if(!escaped && exitDoor && camera.position.z > 1980) {
                 escaped = true;
                 showEndSequence();
             }
@@ -1340,63 +2016,69 @@
                 lamp.intensity = 0;
             }
 
-            // Monólogo
+            // Monólogo (optimizado)
             if(!inStartRoom) {
                 const distance = Math.floor(camera.position.z);
                 
-                // Actualizar HUD de distancia
-                document.getElementById('distance').textContent = `Distancia: ${distance}m`;
+                // Actualizar HUD cada 5 frames
+                if(Date.now() % 5 === 0) {
+                    document.getElementById('distance').textContent = `Distancia: ${distance}m`;
+                }
                 
                 if(currentMonologue < monologues.length && distance >= monologues[currentMonologue].dist) {
                     showMonologue(monologues[currentMonologue].text);
                     currentMonologue++;
                 }
                 
-                // Actualizar intensidad del ambiente
-                updateAmbientIntensity(distance);
+                // Actualizar ambiente cada 3 frames
+                if(Date.now() % 3 === 0) {
+                    updateAmbientIntensity(distance);
+                    updateFogDensity(distance);
+                }
                 
-                // Cambios de niebla según distancia
-                updateFogDensity(distance);
-                
-                // Objetos cayendo en puntos específicos
                 checkObjectFalls(distance);
+                checkGunshots(distance);
                 
-                // Mostrar texto de iconos cuando el jugador pasa cerca
-                checkCharacterIcons(distance);
+                // Iconos cada 10 frames
+                if(Date.now() % 10 === 0) checkCharacterIcons(distance);
                 
-                // Susurros aleatorios
-                if(Math.random() > 0.998) {
+                // Susurros muy ocasionales
+                if(Math.random() > 0.9998) {
                     playWhisper();
                 }
             }
             
-            // Actualizar objetos cayendo
-            for(let i = fallingObjects.length - 1; i >= 0; i--) {
-                const obj = fallingObjects[i];
-                obj.velocity.y -= 0.015;
-                obj.mesh.position.add(obj.velocity);
-                obj.mesh.rotation.x += obj.angularVel.x;
-                obj.mesh.rotation.y += obj.angularVel.y;
-                obj.mesh.rotation.z += obj.angularVel.z;
-                
-                if(obj.mesh.position.y < 0) {
-                    scene.remove(obj.mesh);
-                    fallingObjects.splice(i, 1);
+            // Actualizar objetos cayendo (solo si hay objetos)
+            if(fallingObjects.length > 0) {
+                for(let i = fallingObjects.length - 1; i >= 0; i--) {
+                    const obj = fallingObjects[i];
+                    obj.velocity.y -= 0.015;
+                    obj.mesh.position.add(obj.velocity);
+                    obj.mesh.rotation.x += obj.angularVel.x;
+                    obj.mesh.rotation.y += obj.angularVel.y;
+                    obj.mesh.rotation.z += obj.angularVel.z;
+                    
+                    if(obj.mesh.position.y < 0) {
+                        scene.remove(obj.mesh);
+                        fallingObjects.splice(i, 1);
+                    }
                 }
             }
 
-            // Actualizar fragmentos de puerta
-            for(let i = doorFragments.length - 1; i >= 0; i--) {
-                const frag = doorFragments[i];
-                frag.velocity.y -= 0.01; // Gravedad
-                frag.position.add(frag.velocity);
-                frag.rotation.x += frag.angularVelocity.x;
-                frag.rotation.y += frag.angularVelocity.y;
-                frag.rotation.z += frag.angularVelocity.z;
-                
-                if(frag.position.y < 0) {
-                    scene.remove(frag);
-                    doorFragments.splice(i, 1);
+            // Actualizar fragmentos de puerta (solo si hay fragmentos)
+            if(doorFragments.length > 0) {
+                for(let i = doorFragments.length - 1; i >= 0; i--) {
+                    const frag = doorFragments[i];
+                    frag.velocity.y -= 0.01;
+                    frag.position.add(frag.velocity);
+                    frag.rotation.x += frag.angularVelocity.x;
+                    frag.rotation.y += frag.angularVelocity.y;
+                    frag.rotation.z += frag.angularVelocity.z;
+                    
+                    if(frag.position.y < 0) {
+                        scene.remove(frag);
+                        doorFragments.splice(i, 1);
+                    }
                 }
             }
 
@@ -1459,7 +2141,119 @@
                 }
             }
 
+            // Efectos visuales
+            updateVisualEffects();
+
             renderer.render(scene, camera);
+        }
+
+        function spawn2019x() {
+            const group = new THREE.Group();
+            
+            // Cuerpo oscuro
+            const body = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.4, 0.3, 2, 8),
+                new THREE.MeshStandardMaterial({ color: 0x0a0a0a, emissive: 0x330000, emissiveIntensity: 0.5 })
+            );
+            group.add(body);
+            
+            // Cabeza/máscara
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(0.5, 8, 8),
+                new THREE.MeshStandardMaterial({ color: 0x1a0000, emissive: 0xff0000, emissiveIntensity: 0.8 })
+            );
+            head.position.y = 1.3;
+            group.add(head);
+            
+            // Ojos rojos
+            const eye1 = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0xff0000 })
+            );
+            eye1.position.set(-0.2, 1.4, 0.4);
+            group.add(eye1);
+            
+            const eye2 = eye1.clone();
+            eye2.position.set(0.2, 1.4, 0.4);
+            group.add(eye2);
+            
+            // Luz roja
+            const light = new THREE.PointLight(0xff0000, 2, 15);
+            light.position.y = 1.5;
+            group.add(light);
+            
+            group.position.set(0, 0, killerPosition);
+            scene.add(group);
+            killer2019x = group;
+        }
+
+        function updateVisualEffects() {
+            const vignetteEl = document.getElementById('vignette');
+            
+            // Viñeta oscura cuando stamina baja
+            if(vignetteEl) {
+                if(stamina < 30) {
+                    const intensity = 1 - (stamina / 30);
+                    vignetteEl.style.opacity = intensity * 0.8;
+                } else {
+                    vignetteEl.style.opacity = '0';
+                }
+            }
+            
+            // Distorsión cuando 2019x está cerca
+            if(killerChasing && !isCaught) {
+                const distanceToKiller = camera.position.z - killerPosition;
+                if(distanceToKiller < 50) {
+                    const intensity = 1 - (distanceToKiller / 50);
+                    applyDistortion(intensity);
+                } else {
+                    const distEl = document.getElementById('distortion');
+                    if(distEl) distEl.style.opacity = '0';
+                }
+            } else {
+                const distEl = document.getElementById('distortion');
+                if(distEl) distEl.style.opacity = '0';
+            }
+        }
+
+        function applyDistortion(intensity) {
+            if(!distortionCanvas) {
+                distortionCanvas = document.getElementById('distortion');
+                if(!distortionCanvas) return;
+                distortionCanvas.width = window.innerWidth;
+                distortionCanvas.height = window.innerHeight;
+                distortionCtx = distortionCanvas.getContext('2d');
+            }
+            
+            distortionCanvas.style.opacity = Math.min(intensity * 0.8, 0.8);
+            distortionCtx.clearRect(0, 0, distortionCanvas.width, distortionCanvas.height);
+            
+            // Fondo rojo semi-transparente
+            distortionCtx.fillStyle = `rgba(255, 0, 0, ${intensity * 0.1})`;
+            distortionCtx.fillRect(0, 0, distortionCanvas.width, distortionCanvas.height);
+            
+            // Líneas de distorsión horizontales
+            distortionCtx.strokeStyle = `rgba(255, 0, 0, ${intensity * 0.8})`;
+            distortionCtx.lineWidth = 4;
+            
+            for(let i = 0; i < 20; i++) {
+                const y = (i / 20) * distortionCanvas.height;
+                const offset = Math.sin(Date.now() * 0.005 + i) * 50 * intensity;
+                distortionCtx.beginPath();
+                distortionCtx.moveTo(0, y);
+                distortionCtx.lineTo(distortionCanvas.width, y + offset);
+                distortionCtx.stroke();
+            }
+            
+            // Bloques de glitch
+            for(let i = 0; i < 5; i++) {
+                const x = Math.random() * distortionCanvas.width;
+                const y = Math.random() * distortionCanvas.height;
+                const w = Math.random() * 200 + 50;
+                const h = Math.random() * 50 + 10;
+                distortionCtx.fillStyle = `rgba(255, 0, 0, ${intensity * 0.5})`;
+                distortionCtx.fillRect(x, y, w, h);
+            }
         }
 
         function showMonologue(text) {
@@ -1596,6 +2390,9 @@
             scene.remove(flashlight);
             canInteract = false;
             
+            // Mostrar tutorial
+            setTimeout(() => showTutorial(), 1000);
+            
             // Vibración al tomar la linterna
             vibrateGamepad(150, 0.3, 0.3);
             
@@ -1658,6 +2455,60 @@
                     setTimeout(showProximamente, 2000);
                 }
             }, 3000);
+        }
+
+        function catchPlayer() {
+            // Detener movimiento
+            moveForward = moveBackward = moveLeft = moveRight = false;
+            velocity.set(0, 0, 0);
+            
+            // Detener audio de persecución
+            if(chaseAudio) chaseAudio.pause();
+            
+            // Vibración intensa
+            vibrateGamepad(1500, 1.0, 1.0);
+            
+            // Pantalla roja
+            const redOverlay = document.createElement('div');
+            redOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 0, 0, 0.8);
+                z-index: 500;
+                opacity: 0;
+                transition: opacity 0.5s;
+            `;
+            document.body.appendChild(redOverlay);
+            setTimeout(() => redOverlay.style.opacity = '1', 50);
+            
+            // Mensaje de captura
+            showMonologue('¡TE ATRAPÓ!');
+            
+            // Animación de knockeo
+            setTimeout(() => {
+                // Fade a negro
+                redOverlay.style.background = 'rgba(0, 0, 0, 1)';
+                
+                setTimeout(() => {
+                    // Teletransportar a 950m
+                    camera.position.z = 950;
+                    killerPosition = 1000;
+                    isCaught = false;
+                    
+                    // Mensaje de despertar
+                    showMonologue('¿Qué... qué pasó?');
+                    
+                    // Fade out del overlay
+                    redOverlay.style.opacity = '0';
+                    setTimeout(() => redOverlay.remove(), 1000);
+                    
+                    // Reanudar persecución
+                    if(chaseAudio) chaseAudio.play().catch(() => {});
+                }, 2000);
+            }, 1500);
         }
 
         function showProximamente() {
