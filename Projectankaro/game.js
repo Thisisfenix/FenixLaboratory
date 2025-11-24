@@ -36,8 +36,8 @@ class Game {
         engine.createBox(1, 5, 100, 0x2a2a2a, -50, 2.5, 0);
         engine.createBox(1, 5, 100, 0x2a2a2a, 50, 2.5, 0);
 
-        // Obstáculos/edificios
-        for (let i = 0; i < 15; i++) {
+        // Obstáculos/edificios (reducido a 8)
+        for (let i = 0; i < 8; i++) {
             const x = (Math.random() - 0.5) * 80;
             const z = (Math.random() - 0.5) * 80;
             const w = Math.random() * 5 + 3;
@@ -46,35 +46,36 @@ class Game {
             engine.createBox(w, h, d, 0x3a3a3a, x, h/2, z);
         }
 
-        // Luces
-        engine.addPointLight(0xff0000, 1, 30, 0, 5, 0);
-        for (let i = 0; i < 4; i++) {
-            const angle = (i / 4) * Math.PI * 2;
-            const x = Math.cos(angle) * 30;
-            const z = Math.sin(angle) * 30;
-            engine.addPointLight(0xffffff, 0.5, 20, x, 4, z);
-        }
+        // Solo 1 luz central (optimizado)
+        engine.addPointLight(0xff0000, 1.5, 40, 0, 8, 0);
     }
 
     spawnItems() {
-        // Items para recoger (herramientas)
+        // Items para recoger (herramientas) - sin luces individuales
         for (let i = 0; i < 8; i++) {
             const x = (Math.random() - 0.5) * 70;
             const z = (Math.random() - 0.5) * 70;
             
-            const item = engine.createBox(0.5, 0.5, 0.5, 0xffd700, x, 0.5, z);
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: 0xffd700,
+                emissive: 0xffd700,
+                emissiveIntensity: 0.5
+            });
+            const geo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+            const item = new THREE.Mesh(geo, mat);
+            item.position.set(x, 0.5, z);
+            item.castShadow = false;
+            item.receiveShadow = false;
             item.userData.type = 'tool';
             item.userData.collected = false;
-            
-            const light = engine.addPointLight(0xffd700, 0.8, 5, x, 1, z);
-            item.userData.light = light;
+            engine.addObject(item);
             
             this.items.push(item);
         }
     }
 
     spawnGenerators() {
-        // Generadores para reparar
+        // Generadores para reparar - sin luces individuales
         const positions = [
             { x: -30, z: -30 },
             { x: 30, z: -30 },
@@ -84,14 +85,21 @@ class Game {
         ];
 
         positions.forEach((pos, i) => {
-            const gen = engine.createBox(2, 1.5, 1, 0x444444, pos.x, 0.75, pos.z);
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: 0x444444,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.3
+            });
+            const geo = new THREE.BoxGeometry(2, 1.5, 1);
+            const gen = new THREE.Mesh(geo, mat);
+            gen.position.set(pos.x, 0.75, pos.z);
+            gen.castShadow = false;
+            gen.receiveShadow = true;
             gen.userData.type = 'generator';
             gen.userData.repaired = false;
             gen.userData.progress = 0;
             gen.userData.requiredTools = 2;
-            
-            const light = engine.addPointLight(0xff0000, 1, 8, pos.x, 2, pos.z);
-            gen.userData.light = light;
+            engine.addObject(gen);
             
             this.generators.push(gen);
         });
@@ -100,20 +108,21 @@ class Game {
     spawnEntity() {
         const group = new THREE.Group();
         
-        // Cuerpo oscuro
+        // Cuerpo oscuro (geometría simplificada)
         const body = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.5, 0.4, 2.5, 8),
+            new THREE.CylinderGeometry(0.5, 0.4, 2.5, 6),
             new THREE.MeshStandardMaterial({ 
                 color: 0x0a0a0a, 
                 emissive: 0x330000,
                 emissiveIntensity: 0.5
             })
         );
+        body.castShadow = false;
         group.add(body);
         
-        // Cabeza
+        // Cabeza (geometría simplificada)
         const head = new THREE.Mesh(
-            new THREE.SphereGeometry(0.6, 8, 8),
+            new THREE.SphereGeometry(0.6, 6, 6),
             new THREE.MeshStandardMaterial({ 
                 color: 0xff0000,
                 emissive: 0xff0000,
@@ -121,11 +130,12 @@ class Game {
             })
         );
         head.position.y = 1.5;
+        head.castShadow = false;
         group.add(head);
         
-        // Ojos
+        // Ojos (geometría simplificada)
         const eye1 = new THREE.Mesh(
-            new THREE.SphereGeometry(0.15, 6, 6),
+            new THREE.SphereGeometry(0.15, 4, 4),
             new THREE.MeshBasicMaterial({ color: 0xffff00 })
         );
         eye1.position.set(-0.25, 1.6, 0.5);
@@ -135,11 +145,6 @@ class Game {
         eye2.position.set(0.25, 1.6, 0.5);
         group.add(eye2);
         
-        // Luz roja
-        const light = new THREE.PointLight(0xff0000, 2, 15);
-        light.position.y = 1.5;
-        group.add(light);
-        
         group.position.set(0, 1.25, -40);
         engine.addObject(group);
         
@@ -148,103 +153,39 @@ class Game {
     }
 
     createUI() {
-        // Timer
-        const timer = document.createElement('div');
-        timer.id = 'gameTimer';
-        timer.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 72px;
-            color: #ff0000;
-            text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            z-index: 100;
-            pointer-events: none;
-        `;
-        document.body.appendChild(timer);
-
-        // Progreso
-        const progress = document.createElement('div');
-        progress.id = 'gameProgress';
-        progress.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00;
-            font-family: 'Courier New', monospace;
-            z-index: 100;
-        `;
-        progress.textContent = `Generadores: 0/${this.totalGenerators}`;
-        document.body.appendChild(progress);
-
-        // Inventario
-        const inventory = document.createElement('div');
-        inventory.id = 'inventory';
-        inventory.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 20px;
-            color: #ffd700;
-            text-shadow: 0 0 10px #ffd700;
-            font-family: 'Courier New', monospace;
-            z-index: 100;
-        `;
-        inventory.textContent = '🔧 Herramientas: 0';
-        document.body.appendChild(inventory);
+        // UI ya está en el HTML (gameHUD)
     }
 
     startTimer() {
         this.isRunning = true;
-        
-        setInterval(() => {
-            if (!this.isRunning) return;
-            
-            this.timeRemaining--;
-            
-            const minutes = Math.floor(this.timeRemaining / 60);
-            const seconds = this.timeRemaining % 60;
-            const timerEl = document.getElementById('gameTimer');
-            
-            if (timerEl) {
-                timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
-                // Cambiar color según tiempo
-                if (this.timeRemaining < 60) {
-                    timerEl.style.color = '#ff0000';
-                    timerEl.style.animation = 'pulse 1s infinite';
-                } else if (this.timeRemaining < 180) {
-                    timerEl.style.color = '#ff6600';
-                }
-            }
-            
-            if (this.timeRemaining <= 0) {
-                this.gameOver(false);
-            }
-        }, 1000);
+        // Timer manejado por main.js
     }
 
     updateEntity(delta) {
         if (!this.entity || !this.entityActive) return;
 
-        // Buscar jugador más cercano
-        let closestPlayer = null;
-        let closestDist = Infinity;
+        // Buscar jugador más cercano (optimizado - solo cada 5 frames)
+        if (!this.entity.userData.updateCounter) this.entity.userData.updateCounter = 0;
+        this.entity.userData.updateCounter++;
+        
+        if (this.entity.userData.updateCounter % 5 === 0) {
+            let closestPlayer = null;
+            let closestDist = Infinity;
 
-        playerManager.players.forEach(player => {
-            const dist = this.entity.position.distanceTo(player.position);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closestPlayer = player;
-            }
-        });
+            playerManager.players.forEach(player => {
+                const dist = this.entity.position.distanceTo(player.position);
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestPlayer = player;
+                }
+            });
+            
+            this.entity.userData.cachedClosestPlayer = closestPlayer;
+            this.entity.userData.cachedClosestDist = closestDist;
+        }
+        
+        const closestPlayer = this.entity.userData.cachedClosestPlayer;
+        const closestDist = this.entity.userData.cachedClosestDist || Infinity;
 
         if (!closestPlayer) return;
 

@@ -231,8 +231,13 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
-// Start button
+// Start button (solo host)
 startBtn.addEventListener('click', () => {
+    if (!supabaseNetwork.isHost) {
+        updateStatus('⚠️ Solo el host puede iniciar', '#ff6600');
+        return;
+    }
+    
     updateStatus('🎮 Iniciando juego...', '#00ff00');
     
     // Broadcast a todos los jugadores
@@ -247,10 +252,12 @@ startBtn.addEventListener('click', () => {
 function updatePlayerCount(count) {
     currentPlayersEl.textContent = count;
     
-    // Habilitar botón si hay al menos 2 jugadores
-    if (count >= 2) {
+    // Habilitar botón solo si es host y hay al menos 2 jugadores
+    if (count >= 2 && supabaseNetwork.isHost) {
         startBtn.disabled = false;
         updateStatus(`✔️ ${count}/8 jugadores - Listos para comenzar!`, '#00ff00');
+    } else if (count >= 2 && !supabaseNetwork.isHost) {
+        updateStatus(`✔️ ${count}/8 jugadores - Esperando al host...`, '#ffd700');
     }
 }
 
@@ -335,6 +342,10 @@ function startGame() {
                     setTimeout(() => {
                         updateLoadingProgress(100, '✔️ ¡Listo!');
                         gameState = 'game';
+                        
+                        // Ocultar completamente UI del lobby
+                        const uiEl = document.getElementById('ui');
+                        if (uiEl) uiEl.style.display = 'none';
                         
                         // Mostrar HUD del juego
                         document.getElementById('gameHUD').style.display = 'block';
@@ -424,19 +435,36 @@ function tryInit() {
     }
 }
 
-// Game timer
-let gameTimer = 0;
+// Game timer (10 minutos regresivo)
+let gameTimer = 600; // 10 minutos en segundos
 let gameTimerInterval = null;
 
 function startGameTimer() {
-    gameTimer = 0;
+    gameTimer = 600;
     if (gameTimerInterval) clearInterval(gameTimerInterval);
     
+    const timerEl = document.getElementById('timer');
+    
     gameTimerInterval = setInterval(() => {
-        gameTimer++;
+        gameTimer--;
         const minutes = Math.floor(gameTimer / 60);
         const seconds = gameTimer % 60;
         document.getElementById('timerText').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Cambiar color según tiempo restante
+        if (gameTimer <= 60) {
+            timerEl.style.borderColor = '#ff0000';
+            timerEl.querySelector('#timerText').style.color = '#ff0000';
+        } else if (gameTimer <= 180) {
+            timerEl.style.borderColor = '#ff6600';
+            timerEl.querySelector('#timerText').style.color = '#ff6600';
+        }
+        
+        // Game over si se acaba el tiempo
+        if (gameTimer <= 0) {
+            stopGameTimer();
+            game.gameOver(false);
+        }
     }, 1000);
 }
 

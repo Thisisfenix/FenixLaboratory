@@ -15,6 +15,7 @@ class SupabaseNetwork {
     async createRoom(playerName) {
         this.roomCode = this.generateRoomCode();
         this.localPlayerId = Date.now().toString();
+        this.isHost = true;
 
         const { data, error } = await supabase
             .from('rooms')
@@ -44,6 +45,7 @@ class SupabaseNetwork {
     async joinRoom(roomCode, playerName) {
         this.roomCode = roomCode;
         this.localPlayerId = Date.now().toString();
+        this.isHost = false;
 
         const { data: room, error } = await supabase
             .from('rooms')
@@ -85,14 +87,26 @@ class SupabaseNetwork {
     }
 
     setupRealtimeChannel() {
-        this.channel = supabase.channel(`room:${this.roomCode}`)
-            .on('broadcast', { event: 'player_move' }, (payload) => {
-                this.onPlayerMove(payload);
-            })
-            .on('broadcast', { event: 'game_start' }, () => {
-                this.onGameStart();
-            })
-            .subscribe();
+        if (this.channel) {
+            this.channel.unsubscribe();
+        }
+        
+        this.channel = supabase.channel(`room:${this.roomCode}`, {
+            config: {
+                broadcast: { self: false }
+            }
+        })
+        .on('broadcast', { event: 'player_move' }, (payload) => {
+            this.onPlayerMove(payload);
+        })
+        .on('broadcast', { event: 'game_start' }, () => {
+            this.onGameStart();
+        })
+        .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                console.log('Realtime channel connected');
+            }
+        });
     }
 
     broadcastPosition(position) {
@@ -103,9 +117,9 @@ class SupabaseNetwork {
             event: 'player_move',
             payload: {
                 playerId: this.localPlayerId,
-                position: position
+                position: { x: position.x, y: position.y, z: position.z }
             }
-        });
+        }).catch(() => {});
     }
 
     broadcastGameStart() {
@@ -114,8 +128,8 @@ class SupabaseNetwork {
         this.channel.send({
             type: 'broadcast',
             event: 'game_start',
-            payload: {}
-        });
+            payload: { hostId: this.localPlayerId }
+        }).catch(() => {});
     }
 
     onPlayerMove(payload) {
