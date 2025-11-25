@@ -55,6 +55,7 @@ canvas { display: block; }
     border-radius: 5px;
     font-size: 14px;
     z-index: 10;
+    transition: opacity 0.5s;
 }
 
 #controls {
@@ -186,6 +187,30 @@ canvas { display: block; }
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
 }
 
+.dummy-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 180px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #00ffff;
+    background: rgba(0, 255, 255, 0.2);
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dummy-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
 #mobileControls {
     position: fixed;
     bottom: 0;
@@ -219,7 +244,7 @@ canvas { display: block; }
     transition: all 0.1s;
 }
 
-#jumpBtnMobile, #sprintBtnMobile {
+#jumpBtnMobile, #sprintBtnMobile, #flashlightBtnMobile, #hideBtnMobile {
     position: absolute;
     width: 70px;
     height: 70px;
@@ -247,6 +272,49 @@ canvas { display: block; }
     bottom: 30px;
     border-color: rgba(0, 255, 0, 0.5);
     background: rgba(0, 255, 0, 0.2);
+}
+
+#flashlightBtnMobile {
+    right: 30px;
+    bottom: 120px;
+    border-color: rgba(255, 255, 0, 0.5);
+    background: rgba(255, 255, 0, 0.2);
+}
+
+#hideBtnMobile {
+    right: 120px;
+    bottom: 120px;
+    border-color: rgba(139, 69, 19, 0.5);
+    background: rgba(139, 69, 19, 0.2);
+}
+
+#specLeftBtn, #specRightBtn {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#specLeftBtn {
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#specRightBtn {
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 @media (max-width: 768px) {
@@ -296,7 +364,7 @@ canvas { display: block; }
         top: 25px;
     }
     
-    #jumpBtnMobile, #sprintBtnMobile {
+    #jumpBtnMobile, #sprintBtnMobile, #flashlightBtnMobile, #hideBtnMobile {
         width: 55px;
         height: 55px;
         font-size: 20px;
@@ -310,6 +378,30 @@ canvas { display: block; }
     #sprintBtnMobile {
         right: 85px;
         bottom: 15px;
+    }
+    
+    #flashlightBtnMobile {
+        right: 15px;
+        bottom: 80px;
+    }
+    
+    #hideBtnMobile {
+        right: 85px;
+        bottom: 80px;
+    }
+    
+    #specLeftBtn, #specRightBtn {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    #specLeftBtn {
+        left: 15px;
+    }
+    
+    #specRightBtn {
+        right: 15px;
     }
     
     .fullscreen-btn {

@@ -8,11 +8,19 @@ class Game {
         this.generators = [];
         this.generatorsRepaired = 0;
         this.totalGenerators = 5;
+        this.fusesCollected = 0;
+        this.totalFuses = 3;
+        this.leversActivated = 0;
+        this.totalLevers = 2;
+        this.exitDoorOpen = false;
+        this.fuses = [];
+        this.levers = [];
+        this.exitDoor = null;
         this.entity = null;
         this.entityActive = false;
         this.entityTarget = null;
-        this.entitySpeed = 0.06;
-        this.entityChaseSpeed = 0.12;
+        this.entitySpeed = 0.04;
+        this.entityChaseSpeed = 0.08;
         this.entityVisionRange = 15;
         this.entityLoseRange = 25;
     }
@@ -21,6 +29,9 @@ class Game {
         this.createMap();
         this.spawnItems();
         this.spawnGenerators();
+        this.spawnFuses();
+        this.spawnLevers();
+        this.spawnExitDoor();
         this.spawnEntity();
         this.createUI();
         this.startTimer();
@@ -37,39 +48,74 @@ class Game {
             { x: 25, z: 0 }
         ];
         
-        playerManager.players.forEach((player, i) => {
+        let i = 0;
+        playerManager.players.forEach((player) => {
             const pos = spawnPositions[i] || spawnPositions[0];
             player.setPosition(pos.x, 1, pos.z);
+            
+            // Re-crear mesh si no existe o no es visible
+            if (!player.mesh || !player.mesh.visible) {
+                if (player.mesh) engine.removeObject(player.mesh);
+                player.create();
+                player.setPosition(pos.x, 1, pos.z);
+            }
+            
+            // Asegurar userData
+            if (!player.userData) {
+                player.userData = {};
+            }
+            
+            i++;
         });
+        
+        // Asegurar que el jugador local esté visible
+        if (playerManager.localPlayer) {
+            if (!playerManager.localPlayer.userData) {
+                playerManager.localPlayer.userData = {};
+            }
+            if (playerManager.localPlayer.mesh) {
+                playerManager.localPlayer.mesh.visible = true;
+            }
+        }
     }
 
     createMap() {
-        // Suelo grande
-        engine.createFloor(100, 0x1a1a1a);
+        // Suelo
+        engine.createFloor(120, 0x0a0a0a);
 
         // Paredes exteriores
-        engine.createBox(100, 5, 1, 0x2a2a2a, 0, 2.5, -50);
-        engine.createBox(100, 5, 1, 0x2a2a2a, 0, 2.5, 50);
-        engine.createBox(1, 5, 100, 0x2a2a2a, -50, 2.5, 0);
-        engine.createBox(1, 5, 100, 0x2a2a2a, 50, 2.5, 0);
+        engine.createBox(120, 8, 1, 0x1a1a1a, 0, 4, -60);
+        engine.createBox(120, 8, 1, 0x1a1a1a, 0, 4, 60);
+        engine.createBox(1, 8, 120, 0x1a1a1a, -60, 4, 0);
+        engine.createBox(1, 8, 120, 0x1a1a1a, 60, 4, 0);
 
-        // Obstáculos/edificios (reducido a 8)
-        for (let i = 0; i < 8; i++) {
-            const x = (Math.random() - 0.5) * 80;
-            const z = (Math.random() - 0.5) * 80;
-            const w = Math.random() * 5 + 3;
-            const h = Math.random() * 4 + 2;
-            const d = Math.random() * 5 + 3;
-            engine.createBox(w, h, d, 0x3a3a3a, x, h/2, z);
+        // Edificios grandes
+        engine.createBox(15, 6, 15, 0x2a2a2a, -30, 3, -30);
+        engine.createBox(12, 8, 12, 0x2a2a2a, 35, 4, -35);
+        engine.createBox(18, 5, 10, 0x2a2a2a, -35, 2.5, 30);
+        engine.createBox(10, 7, 20, 0x2a2a2a, 30, 3.5, 25);
+        
+        // Paredes interiores
+        engine.createBox(30, 4, 1, 0x2a2a2a, 0, 2, -15);
+        engine.createBox(1, 4, 25, 0x2a2a2a, -20, 2, 10);
+        engine.createBox(25, 4, 1, 0x2a2a2a, 15, 2, 0);
+        
+        // Columnas
+        for (let i = 0; i < 12; i++) {
+            const x = (Math.random() - 0.5) * 100;
+            const z = (Math.random() - 0.5) * 100;
+            engine.createBox(2, 5, 2, 0x3a3a3a, x, 2.5, z);
         }
 
-        // Solo 1 luz central (optimizado)
-        engine.addPointLight(0xff0000, 1.5, 40, 0, 8, 0);
+        // Luces ambientales
+        engine.addPointLight(0xff0000, 1, 30, 0, 6, 0);
+        engine.addPointLight(0xff4444, 0.5, 25, -30, 4, -30);
+        engine.addPointLight(0xff4444, 0.5, 25, 30, 4, 30);
     }
 
     spawnItems() {
         // Items para recoger (herramientas) - sin luces individuales
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 6; i++) {
             const x = (Math.random() - 0.5) * 70;
             const z = (Math.random() - 0.5) * 70;
             
@@ -120,6 +166,78 @@ class Game {
             
             this.generators.push(gen);
         });
+    }
+    
+    spawnFuses() {
+        // Fusibles para recoger
+        const positions = [
+            { x: -45, z: 0 },
+            { x: 45, z: 0 },
+            { x: 0, z: -45 }
+        ];
+        
+        positions.forEach(pos => {
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: 0x00ffff,
+                emissive: 0x00ffff,
+                emissiveIntensity: 0.6
+            });
+            const geo = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 8);
+            const fuse = new THREE.Mesh(geo, mat);
+            fuse.position.set(pos.x, 0.5, pos.z);
+            fuse.rotation.z = Math.PI / 2;
+            fuse.castShadow = false;
+            fuse.receiveShadow = false;
+            fuse.userData.type = 'fuse';
+            fuse.userData.collected = false;
+            engine.addObject(fuse);
+            
+            this.fuses.push(fuse);
+        });
+    }
+    
+    spawnLevers() {
+        // Palancas para activar
+        const positions = [
+            { x: -50, z: -30 },
+            { x: 50, z: 30 }
+        ];
+        
+        positions.forEach(pos => {
+            const base = engine.createBox(0.5, 1.5, 0.5, 0x555555, pos.x, 0.75, pos.z);
+            
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.4
+            });
+            const geo = new THREE.BoxGeometry(0.3, 0.8, 0.2);
+            const lever = new THREE.Mesh(geo, mat);
+            lever.position.set(pos.x, 1.5, pos.z);
+            lever.userData.type = 'lever';
+            lever.userData.activated = false;
+            engine.addObject(lever);
+            
+            this.levers.push(lever);
+        });
+    }
+    
+    spawnExitDoor() {
+        // Puerta de salida
+        const doorFrame = engine.createBox(4, 6, 0.5, 0x8b4513, 0, 3, 58);
+        
+        const mat = new THREE.MeshStandardMaterial({ 
+            color: 0x654321,
+            emissive: 0xff0000,
+            emissiveIntensity: 0.3
+        });
+        const geo = new THREE.BoxGeometry(3.5, 5.5, 0.3);
+        const door = new THREE.Mesh(geo, mat);
+        door.position.set(0, 2.75, 58);
+        door.userData.type = 'exitdoor';
+        engine.addObject(door);
+        
+        this.exitDoor = door;
     }
 
     spawnEntity() {
@@ -284,7 +402,19 @@ class Game {
     capturePlayer(player) {
         console.log('Player captured!');
         audioManager.playDeath();
-        this.gameOver(false);
+        
+        if (player.isLocal) {
+            gameplay.enableSpectatorMode();
+        } else {
+            player.isDead = true;
+            if (player.mesh) player.mesh.visible = false;
+        }
+        
+        // Verificar si todos murieron
+        const alivePlayers = Array.from(playerManager.players.values()).filter(p => !p.isDead);
+        if (alivePlayers.length === 0) {
+            this.gameOver(false);
+        }
     }
 
     collectItem(player, item) {
@@ -329,6 +459,76 @@ class Game {
         if (inv) inv.textContent = `🔧 Herramientas: ${player.userData.tools}`;
         
         if (this.generatorsRepaired >= this.totalGenerators) {
+            this.checkWinCondition();
+        }
+    }
+    
+    collectFuse(player, fuse) {
+        if (fuse.userData.collected) return;
+        
+        fuse.userData.collected = true;
+        engine.removeObject(fuse);
+        
+        this.fusesCollected++;
+        
+        const status = document.getElementById('status');
+        if (status) {
+            status.textContent = `⚡ Fusible recogido ${this.fusesCollected}/${this.totalFuses}`;
+            status.style.opacity = 1;
+        }
+    }
+    
+    activateLever(player, lever) {
+        if (lever.userData.activated) return;
+        
+        lever.userData.activated = true;
+        lever.material.color.setHex(0x00ff00);
+        lever.material.emissive.setHex(0x00ff00);
+        lever.rotation.x = Math.PI / 4;
+        
+        this.leversActivated++;
+        
+        const status = document.getElementById('status');
+        if (status) {
+            status.textContent = `🔧 Palanca activada ${this.leversActivated}/${this.totalLevers}`;
+            status.style.opacity = 1;
+        }
+        
+        this.checkWinCondition();
+    }
+    
+    checkWinCondition() {
+        if (this.generatorsRepaired >= this.totalGenerators && 
+            this.fusesCollected >= this.totalFuses && 
+            this.leversActivated >= this.totalLevers) {
+            this.openExitDoor();
+        }
+    }
+    
+    openExitDoor() {
+        if (this.exitDoorOpen) return;
+        
+        this.exitDoorOpen = true;
+        
+        if (this.exitDoor) {
+            this.exitDoor.material.color.setHex(0x00ff00);
+            this.exitDoor.material.emissive.setHex(0x00ff00);
+            this.exitDoor.material.emissiveIntensity = 0.6;
+        }
+        
+        const status = document.getElementById('status');
+        if (status) {
+            status.textContent = '🚪 ¡PUERTA ABIERTA! Escapa para ganar';
+            status.style.opacity = 1;
+            status.style.background = 'rgba(0, 255, 0, 0.8)';
+        }
+    }
+    
+    checkEscape(player) {
+        if (!this.exitDoorOpen) return;
+        
+        const dist = player.position.distanceTo(new THREE.Vector3(0, 1, 58));
+        if (dist < 3) {
             this.gameOver(true);
         }
     }
@@ -364,7 +564,16 @@ class Game {
         
         const btn = document.createElement('button');
         btn.textContent = 'Volver al Lobby';
-        btn.className = 'btn btn-join';
+        btn.style.cssText = `
+            padding: 15px 40px;
+            font-size: 20px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        `;
         btn.onclick = () => location.reload();
         overlay.appendChild(btn);
         

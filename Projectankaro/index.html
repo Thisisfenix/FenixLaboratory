@@ -62,8 +62,10 @@
         <div id="missionsPanel" style="position: fixed; top: 80px; right: 20px; background: rgba(0,0,0,0.9); border: 2px solid #8b0000; padding: 20px; width: 280px; color: #fff; z-index: 100; border-radius: 5px;">
             <h3 style="color: #ff4444; margin: 0 0 15px 0; font-size: 18px; text-align: center;">📋 MISIONES</h3>
             <div id="missionsList" style="font-size: 14px; line-height: 1.8;">
-                <div class="mission">🔧 Herramientas: <span id="toolsCount">0</span>/5</div>
-                <div class="mission">⚡ Generadores: <span id="gensCount">0</span>/3</div>
+                <div class="mission">🔧 Herramientas: <span id="toolsCount">0</span>/6</div>
+                <div class="mission">⚡ Generadores: <span id="gensCount">0</span>/5</div>
+                <div class="mission">🔋 Fusibles: <span id="fusesCount">0</span>/3</div>
+                <div class="mission">🔧 Palancas: <span id="leversCount">0</span>/2</div>
                 <div class="mission">🚪 Escapar por la puerta</div>
             </div>
         </div>
@@ -76,6 +78,10 @@
         </div>
         <button id="jumpBtnMobile">⬆️</button>
         <button id="sprintBtnMobile">🏃</button>
+        <button id="flashlightBtnMobile">🔦</button>
+        <button id="hideBtnMobile">🚪</button>
+        <button id="specLeftBtn" style="display: none;">◀</button>
+        <button id="specRightBtn" style="display: none;">▶</button>
     </div>
     
     <!-- Three.js -->
@@ -89,6 +95,9 @@
     
     <!-- Engine Core -->
     <script src="engine.js"></script>
+    
+    <!-- Platform Detection -->
+    <script src="platform.js"></script>
     
     <!-- Game Modules -->
     <script src="supabase.js"></script>

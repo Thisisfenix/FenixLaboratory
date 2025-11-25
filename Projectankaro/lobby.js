@@ -144,18 +144,19 @@ class Lobby {
             const mat = new THREE.MeshStandardMaterial({ 
                 color: this.playerColors[i],
                 emissive: this.playerColors[i],
-                emissiveIntensity: 0.3
+                emissiveIntensity: 0.3,
+                flatShading: true
             });
             const geo = new THREE.BoxGeometry(1.5, 0.2, 1.5);
             const box = new THREE.Mesh(geo, mat);
             box.position.set(pos.x, 0.1, pos.z);
-            box.castShadow = true;
-            box.receiveShadow = true;
+            box.castShadow = false;
+            box.receiveShadow = false;
             engine.addObject(box);
         });
 
-        // Decoración
-        for (let i = 0; i < 5; i++) {
+        // Decoración (reducida)
+        for (let i = 0; i < 3; i++) {
             const x = (Math.random() - 0.5) * 15;
             const z = (Math.random() - 0.5) * 15;
             engine.createBox(0.5, 2, 0.5, 0x444444, x, 1, z);
@@ -219,6 +220,12 @@ class Lobby {
             
             player.setPosition(newPos.x, newPos.y, newPos.z);
             
+            // Rotar jugador solo cuando se mueve
+            if (moveX !== 0 || moveZ !== 0) {
+                const angle = Math.atan2(this.velocity.x, this.velocity.z);
+                player.setRotation(angle);
+            }
+            
             // Cámara tercera persona con rotación
             const distance = 5;
             const height = 3;
@@ -242,17 +249,22 @@ class Lobby {
         this.isActive = false;
         this.canMove = false;
         
-        // Limpiar escena
-        while(engine.scene.children.length > 0) { 
-            engine.scene.remove(engine.scene.children[0]);
-        }
+        // Guardar jugadores antes de limpiar
+        const players = [];
+        playerManager.players.forEach(player => {
+            if (player.mesh) {
+                players.push(player.mesh);
+            }
+        });
         
-        // Re-agregar luces
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(5, 10, 5);
-        light.castShadow = true;
-        engine.scene.add(light);
-        engine.scene.add(new THREE.AmbientLight(0x404040, 0.5));
+        // Limpiar escena excepto jugadores
+        const toRemove = [];
+        engine.scene.children.forEach(child => {
+            if (!players.includes(child) && child.type !== 'DirectionalLight' && child.type !== 'AmbientLight') {
+                toRemove.push(child);
+            }
+        });
+        toRemove.forEach(obj => engine.scene.remove(obj));
         
         if (document.pointerLockElement) document.exitPointerLock();
     }

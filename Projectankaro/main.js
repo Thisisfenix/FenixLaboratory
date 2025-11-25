@@ -14,6 +14,7 @@ const micBtn = document.getElementById('micBtn');
 const micIcon = document.getElementById('micIcon');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
 const fullscreenIcon = document.getElementById('fullscreenIcon');
+const dummyBtn = document.getElementById('dummyBtn');
 
 // Loading screen
 function updateLoadingProgress(percent, text) {
@@ -252,19 +253,29 @@ startBtn.addEventListener('click', () => {
 function updatePlayerCount(count) {
     currentPlayersEl.textContent = count;
     
-    // Habilitar botón solo si es host y hay al menos 2 jugadores
+    // Habilitar botón solo si hay al menos 2 jugadores y eres el host
     if (count >= 2 && supabaseNetwork.isHost) {
         startBtn.disabled = false;
         updateStatus(`✔️ ${count}/8 jugadores - Listos para comenzar!`, '#00ff00');
     } else if (count >= 2 && !supabaseNetwork.isHost) {
         updateStatus(`✔️ ${count}/8 jugadores - Esperando al host...`, '#ffd700');
+    } else if (count < 2 && supabaseNetwork.isHost) {
+        startBtn.disabled = true;
+        updateStatus(`⏳ ${count}/8 jugadores - Mínimo 2 para iniciar`, '#ffd700');
     }
 }
 
-function updateStatus(message, color) {
+function updateStatus(message, color, duration = 3000) {
     statusEl.textContent = message;
     statusEl.style.borderColor = color;
     statusEl.style.color = color;
+    statusEl.style.opacity = '1';
+    
+    if (statusEl.timeout) clearTimeout(statusEl.timeout);
+    
+    statusEl.timeout = setTimeout(() => {
+        statusEl.style.opacity = '0';
+    }, duration);
 }
 
 // Escuchar cambios en la sala
@@ -280,6 +291,7 @@ function listenToRoomChanges(roomCode) {
                 // Spawn nuevos jugadores
                 room.players.forEach((playerData, index) => {
                     if (!playerManager.getPlayer(playerData.id)) {
+                        playerData.color = lobby.playerColors[index];
                         lobby.spawnPlayer(playerData, index);
                         updateStatus(`👥 ${playerData.name} se unió!`, '#00ff00');
                         
@@ -297,7 +309,11 @@ function listenToRoomChanges(roomCode) {
 }
 
 // Start game
+let gameStarting = false;
 function startGame() {
+    if (gameStarting) return;
+    gameStarting = true;
+    
     // Mostrar pantalla de carga
     const loadingScreen = document.getElementById('loadingScreen');
     loadingScreen.style.display = 'flex';
@@ -356,6 +372,7 @@ function startGame() {
                         setTimeout(() => {
                             hideLoadingScreen();
                             console.log('Game started');
+                            gameStarting = false;
                         }, 500);
                     }, 300);
                 }, 300);
@@ -397,6 +414,13 @@ function animate() {
                 }
             });
             
+            // Recoger fusibles
+            game.fuses.forEach(fuse => {
+                if (!fuse.userData.collected && player.position.distanceTo(fuse.position) < 2) {
+                    game.collectFuse(player, fuse);
+                }
+            });
+            
             // Reparar generadores (mantener E presionado)
             game.generators.forEach(gen => {
                 if (!gen.userData.repaired && player.position.distanceTo(gen.position) < 3) {
@@ -405,6 +429,18 @@ function animate() {
                     }
                 }
             });
+            
+            // Activar palancas
+            game.levers.forEach(lever => {
+                if (!lever.userData.activated && player.position.distanceTo(lever.position) < 2) {
+                    if (gameplay.keys['KeyE']) {
+                        game.activateLever(player, lever);
+                    }
+                }
+            });
+            
+            // Verificar escape
+            game.checkEscape(player);
         }
         
         // Broadcast posición en juego
@@ -485,6 +521,14 @@ function updateMissionsUI() {
     if (game.generators) {
         const repaired = game.generators.filter(g => g.userData.repaired).length;
         document.getElementById('gensCount').textContent = repaired;
+    }
+    
+    if (game.fuses) {
+        document.getElementById('fusesCount').textContent = game.fusesCollected;
+    }
+    
+    if (game.levers) {
+        document.getElementById('leversCount').textContent = game.leversActivated;
     }
 }
 

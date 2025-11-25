@@ -15,9 +15,9 @@ class AudioManager {
         this.sounds.jump = new Audio('../public/html/stuff/salto.mp3');
         this.sounds.jump.volume = 0.4;
         
-        this.sounds.ambient = new Audio('../public/html/stuff/pasillo1better.mp3');
-        this.sounds.ambient.volume = 0.5;
-        this.sounds.ambient.loop = true;
+        this.sounds.gameStart = new Audio('../public/html/stuff/pasillo1better.mp3');
+        this.sounds.gameStart.volume = 0.5;
+        this.sounds.gameStart.loop = false;
         
         this.sounds.flashlight = new Audio('../public/html/stuff/flashlight.mp3');
         this.sounds.flashlight.volume = 0.4;
@@ -81,12 +81,11 @@ class AudioManager {
         this.stop('runGrass');
     }
 
-    startAmbient() {
-        this.playLoop('ambient');
-    }
-
-    stopAmbient() {
-        this.stop('ambient');
+    playGameStart() {
+        if (this.sounds.gameStart && this.sounds.gameStart.paused) {
+            this.sounds.gameStart.currentTime = 0;
+            this.sounds.gameStart.play().catch(() => {});
+        }
     }
 
     startRain() {
@@ -98,7 +97,9 @@ class AudioManager {
     }
     
     playDeath() {
-        this.play('death');
+        if (this.sounds.death && this.sounds.death.paused) {
+            this.play('death');
+        }
     }
 }
 
