@@ -23,6 +23,7 @@ canvas { display: block; }
     text-shadow: 0 0 20px #ff0000;
     margin-bottom: 10px;
     letter-spacing: 4px;
+    transition: all 0.3s;
 }
 
 .room-info {
@@ -251,6 +252,9 @@ canvas { display: block; }
 @media (max-width: 768px) {
     .title { font-size: 32px; }
     .room-info { font-size: 14px; padding: 10px 20px; }
+    #controls { bottom: 80px; }
+    #playerName, #roomCodeInput { width: 200px; font-size: 14px; padding: 10px 15px; }
+    .btn { padding: 12px 30px; font-size: 16px; }
     
     .fullscreen-btn {
         bottom: 100px;
@@ -270,10 +274,13 @@ canvas { display: block; }
 }
 
 @media (max-width: 768px) and (orientation: landscape) {
-    .title { font-size: 24px; }
-    .room-info { font-size: 12px; padding: 5px 15px; }
-    #ui { top: 10px; }
-    #status { top: 80px; font-size: 12px; padding: 5px 15px; }
+    .title { font-size: 20px; letter-spacing: 2px; }
+    .room-info { font-size: 10px; padding: 5px 10px; }
+    #ui { top: 5px; }
+    #status { top: 60px; font-size: 10px; padding: 5px 10px; }
+    #controls { bottom: 10px; gap: 5px; }
+    #playerName, #roomCodeInput { width: 150px; font-size: 12px; padding: 8px 12px; }
+    .btn { padding: 8px 20px; font-size: 12px; }
     
     #joystick {
         left: 15px;
@@ -320,4 +327,10 @@ canvas { display: block; }
         height: 40px;
         font-size: 20px;
     }
+}
+
+@media (orientation: portrait) {
+    #loadingScreen > div:first-child { font-size: 36px !important; }
+    #loadingScreen > div:nth-child(2) { font-size: 16px !important; }
+    #loadingScreen > div:nth-child(3) { width: 250px !important; }
 }
