@@ -93,17 +93,25 @@ class SupabaseNetwork {
         
         this.channel = supabase.channel(`room:${this.roomCode}`, {
             config: {
-                broadcast: { 
-                    self: false,
-                    ack: false
-                }
+                presence: { key: this.localPlayerId },
+                broadcast: { self: false }
             }
         })
-        .on('broadcast', { event: 'player_move' }, (payload) => {
-            this.onPlayerMove(payload);
-        })
-        .on('broadcast', { event: 'game_start' }, () => {
-            this.onGameStart();
+        .on('presence', { event: 'sync' }, () => {
+            const state = this.channel.presenceState();
+            Object.values(state).forEach(presences => {
+                presences.forEach(presence => {
+                    if (presence.playerId !== this.localPlayerId && presence.position) {
+                        this.onPlayerMove({ payload: presence });
+                    }
+                    if (presence.event === 'game_start') {
+                        this.onGameStart();
+                    }
+                    if (presence.event === 'mic_noise') {
+                        this.onMicNoise({ payload: presence });
+                    }
+                });
+            });
         })
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
@@ -115,24 +123,30 @@ class SupabaseNetwork {
     broadcastPosition(position) {
         if (!this.channel) return;
 
-        this.channel.send({
-            type: 'broadcast',
-            event: 'player_move',
-            payload: {
-                playerId: this.localPlayerId,
-                position: { x: position.x, y: position.y, z: position.z }
-            }
-        }).catch(() => {});
+        this.channel.track({
+            playerId: this.localPlayerId,
+            position: { x: position.x, y: position.y, z: position.z }
+        });
     }
 
     broadcastGameStart() {
         if (!this.channel) return;
 
-        this.channel.send({
-            type: 'broadcast',
+        this.channel.track({
             event: 'game_start',
-            payload: { hostId: this.localPlayerId }
-        }).catch(() => {});
+            hostId: this.localPlayerId
+        });
+    }
+    
+    broadcastMicNoise(position, range) {
+        if (!this.channel) return;
+        
+        this.channel.track({
+            event: 'mic_noise',
+            playerId: this.localPlayerId,
+            position: { x: position.x, y: position.y, z: position.z },
+            range: range
+        });
     }
 
     onPlayerMove(payload) {
@@ -148,6 +162,22 @@ class SupabaseNetwork {
     onGameStart() {
         if (typeof startGame === 'function') {
             startGame();
+        }
+    }
+    
+    onMicNoise(payload) {
+        const { playerId, position, range } = payload.payload;
+        if (playerId === this.localPlayerId) return;
+        
+        if (typeof game !== 'undefined' && game.killer) {
+            const dist = Math.sqrt(
+                Math.pow(game.killer.position.x - position.x, 2) +
+                Math.pow(game.killer.position.z - position.z, 2)
+            );
+            
+            if (dist < range) {
+                game.killer.userData.heardPlayer = { x: position.x, z: position.z };
+            }
         }
     }
 

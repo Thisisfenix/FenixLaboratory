@@ -52,12 +52,36 @@ class VoiceChat {
             });
             
             this.isEnabled = true;
+            this.setupVolumeDetection();
             console.log('Microphone enabled');
             return true;
         } catch (error) {
             console.error('Microphone error:', error);
             return false;
         }
+    }
+    
+    setupVolumeDetection() {
+        const audioContext = new AudioContext();
+        const analyser = audioContext.createAnalyser();
+        const microphone = audioContext.createMediaStreamSource(this.localStream);
+        microphone.connect(analyser);
+        analyser.fftSize = 256;
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        
+        const checkVolume = () => {
+            if (!this.isEnabled) return;
+            analyser.getByteFrequencyData(dataArray);
+            const volume = dataArray.reduce((a, b) => a + b) / dataArray.length / 255;
+            
+            if (volume > 0.1 && typeof gameplay !== 'undefined' && gameplay.localPlayer) {
+                const range = 15 * volume;
+                supabaseNetwork.broadcastMicNoise(gameplay.localPlayer.position, range);
+            }
+            
+            requestAnimationFrame(checkVolume);
+        };
+        checkVolume();
     }
 
     callPeer(peerId) {
@@ -142,6 +166,8 @@ class VoiceChat {
     }
 
     disconnect() {
+        this.isEnabled = false;
+        
         if (this.localStream) {
             this.localStream.getTracks().forEach(track => track.stop());
         }
@@ -152,8 +178,6 @@ class VoiceChat {
         if (this.peer) {
             this.peer.destroy();
         }
-
-        this.isEnabled = false;
     }
 }
 
