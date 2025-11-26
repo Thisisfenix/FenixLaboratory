@@ -114,31 +114,23 @@ class Game {
     }
 
     spawnItems() {
-        // Items para recoger (herramientas) - sin luces individuales
         for (let i = 0; i < 6; i++) {
             const x = (Math.random() - 0.5) * 70;
             const z = (Math.random() - 0.5) * 70;
             
-            const mat = new THREE.MeshStandardMaterial({ 
-                color: 0xffd700,
-                emissive: 0xffd700,
-                emissiveIntensity: 0.5
-            });
-            const geo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-            const item = new THREE.Mesh(geo, mat);
+            const item = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.5, 0.5),
+                new THREE.MeshBasicMaterial({ color: 0xffd700 })
+            );
             item.position.set(x, 0.5, z);
-            item.castShadow = false;
-            item.receiveShadow = false;
             item.userData.type = 'tool';
             item.userData.collected = false;
             engine.addObject(item);
-            
             this.items.push(item);
         }
     }
 
     spawnGenerators() {
-        // Generadores para reparar - sin luces individuales
         const positions = [
             { x: -30, z: -30 },
             { x: 30, z: -30 },
@@ -147,29 +139,22 @@ class Game {
             { x: 0, z: 0 }
         ];
 
-        positions.forEach((pos, i) => {
-            const mat = new THREE.MeshStandardMaterial({ 
-                color: 0x444444,
-                emissive: 0xff0000,
-                emissiveIntensity: 0.3
-            });
-            const geo = new THREE.BoxGeometry(2, 1.5, 1);
-            const gen = new THREE.Mesh(geo, mat);
+        positions.forEach(pos => {
+            const gen = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 1.5, 1),
+                new THREE.MeshBasicMaterial({ color: 0xff0000 })
+            );
             gen.position.set(pos.x, 0.75, pos.z);
-            gen.castShadow = false;
-            gen.receiveShadow = true;
             gen.userData.type = 'generator';
             gen.userData.repaired = false;
             gen.userData.progress = 0;
             gen.userData.requiredTools = 2;
             engine.addObject(gen);
-            
             this.generators.push(gen);
         });
     }
     
     spawnFuses() {
-        // Fusibles para recoger
         const positions = [
             { x: -45, z: 0 },
             { x: 45, z: 0 },
@@ -177,98 +162,69 @@ class Game {
         ];
         
         positions.forEach(pos => {
-            const mat = new THREE.MeshStandardMaterial({ 
-                color: 0x00ffff,
-                emissive: 0x00ffff,
-                emissiveIntensity: 0.6
-            });
-            const geo = new THREE.CylinderGeometry(0.2, 0.2, 0.8, 8);
-            const fuse = new THREE.Mesh(geo, mat);
+            const fuse = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.2, 0.2, 0.8, 6),
+                new THREE.MeshBasicMaterial({ color: 0x00ffff })
+            );
             fuse.position.set(pos.x, 0.5, pos.z);
             fuse.rotation.z = Math.PI / 2;
-            fuse.castShadow = false;
-            fuse.receiveShadow = false;
             fuse.userData.type = 'fuse';
             fuse.userData.collected = false;
             engine.addObject(fuse);
-            
             this.fuses.push(fuse);
         });
     }
     
     spawnLevers() {
-        // Palancas para activar
         const positions = [
             { x: -50, z: -30 },
             { x: 50, z: 30 }
         ];
         
         positions.forEach(pos => {
-            const base = engine.createBox(0.5, 1.5, 0.5, 0x555555, pos.x, 0.75, pos.z);
+            engine.createBox(0.5, 1.5, 0.5, 0x555555, pos.x, 0.75, pos.z);
             
-            const mat = new THREE.MeshStandardMaterial({ 
-                color: 0xff0000,
-                emissive: 0xff0000,
-                emissiveIntensity: 0.4
-            });
-            const geo = new THREE.BoxGeometry(0.3, 0.8, 0.2);
-            const lever = new THREE.Mesh(geo, mat);
+            const lever = new THREE.Mesh(
+                new THREE.BoxGeometry(0.3, 0.8, 0.2),
+                new THREE.MeshBasicMaterial({ color: 0xff0000 })
+            );
             lever.position.set(pos.x, 1.5, pos.z);
             lever.userData.type = 'lever';
             lever.userData.activated = false;
             engine.addObject(lever);
-            
             this.levers.push(lever);
         });
     }
     
     spawnExitDoor() {
-        // Puerta de salida
-        const doorFrame = engine.createBox(4, 6, 0.5, 0x8b4513, 0, 3, 58);
+        engine.createBox(4, 6, 0.5, 0x8b4513, 0, 3, 58);
         
-        const mat = new THREE.MeshStandardMaterial({ 
-            color: 0x654321,
-            emissive: 0xff0000,
-            emissiveIntensity: 0.3
-        });
-        const geo = new THREE.BoxGeometry(3.5, 5.5, 0.3);
-        const door = new THREE.Mesh(geo, mat);
+        const door = new THREE.Mesh(
+            new THREE.BoxGeometry(3.5, 5.5, 0.3),
+            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        );
         door.position.set(0, 2.75, 58);
         door.userData.type = 'exitdoor';
         engine.addObject(door);
-        
         this.exitDoor = door;
     }
 
     spawnEntity() {
         const group = new THREE.Group();
         
-        // Cuerpo oscuro (geometría simplificada)
         const body = new THREE.Mesh(
             new THREE.CylinderGeometry(0.5, 0.4, 2.5, 6),
-            new THREE.MeshStandardMaterial({ 
-                color: 0x0a0a0a, 
-                emissive: 0x330000,
-                emissiveIntensity: 0.5
-            })
+            new THREE.MeshBasicMaterial({ color: 0x330000 })
         );
-        body.castShadow = false;
         group.add(body);
         
-        // Cabeza (geometría simplificada)
         const head = new THREE.Mesh(
             new THREE.SphereGeometry(0.6, 6, 6),
-            new THREE.MeshStandardMaterial({ 
-                color: 0xff0000,
-                emissive: 0xff0000,
-                emissiveIntensity: 0.8
-            })
+            new THREE.MeshBasicMaterial({ color: 0xff0000 })
         );
         head.position.y = 1.5;
-        head.castShadow = false;
         group.add(head);
         
-        // Ojos (geometría simplificada)
         const eye1 = new THREE.Mesh(
             new THREE.SphereGeometry(0.15, 4, 4),
             new THREE.MeshBasicMaterial({ color: 0xffff00 })
@@ -280,14 +236,12 @@ class Game {
         eye2.position.set(0.25, 1.6, 0.5);
         group.add(eye2);
         
-        // Spawn más lejos de los jugadores
         group.position.set(-45, 1.25, -45);
         engine.addObject(group);
         
         this.entity = group;
         this.entityActive = true;
         
-        // Inicializar sistema de patrullaje
         this.entity.userData.patrolWaypoints = [
             { x: -40, z: -40 },
             { x: 40, z: -40 },
@@ -314,18 +268,19 @@ class Game {
     updateEntity(delta) {
         if (!this.entity || !this.entityActive) return;
 
-        // Buscar jugador más cercano (optimizado - solo cada 5 frames)
         if (!this.entity.userData.updateCounter) this.entity.userData.updateCounter = 0;
         this.entity.userData.updateCounter++;
         
-        if (this.entity.userData.updateCounter % 5 === 0) {
+        if (this.entity.userData.updateCounter % 10 === 0) {
             let closestPlayer = null;
             let closestDist = Infinity;
 
             playerManager.players.forEach(player => {
-                const dist = this.entity.position.distanceTo(player.position);
-                if (dist < closestDist) {
-                    closestDist = dist;
+                const dx = this.entity.position.x - player.position.x;
+                const dz = this.entity.position.z - player.position.z;
+                const distSq = dx * dx + dz * dz;
+                if (distSq < closestDist * closestDist) {
+                    closestDist = Math.sqrt(distSq);
                     closestPlayer = player;
                 }
             });
@@ -339,61 +294,43 @@ class Game {
 
         if (!closestPlayer) return;
 
-        // Verificar si el jugador está en rango de visión
-        const inVision = closestDist < this.entityVisionRange;
-        const lostVision = closestDist > this.entityLoseRange;
-
-        if (inVision) {
+        if (closestDist < this.entityVisionRange) {
             this.entityTarget = closestPlayer;
-        } else if (lostVision) {
+        } else if (closestDist > this.entityLoseRange) {
             this.entityTarget = null;
         }
 
-        // Mover hacia el objetivo
         if (this.entityTarget) {
-            const direction = new THREE.Vector3()
-                .subVectors(this.entityTarget.position, this.entity.position)
-                .normalize();
+            const dx = this.entityTarget.position.x - this.entity.position.x;
+            const dz = this.entityTarget.position.z - this.entity.position.z;
+            const dist = Math.sqrt(dx * dx + dz * dz);
             
-            const speed = this.entityChaseSpeed;
-            this.entity.position.add(direction.multiplyScalar(speed));
+            this.entity.position.x += (dx / dist) * this.entityChaseSpeed;
+            this.entity.position.z += (dz / dist) * this.entityChaseSpeed;
+            this.entity.position.y = 1.25;
             
-            // Rotar hacia el objetivo
-            this.entity.lookAt(this.entityTarget.position);
-            
-            // Animación de persecución (más agresiva)
-            this.entity.position.y = 1.25 + Math.sin(Date.now() * 0.015) * 0.4;
-            this.entity.rotation.y += Math.sin(Date.now() * 0.01) * 0.02;
+            this.entity.rotation.y = Math.atan2(dx, dz);
         } else {
-            // Patrullar por waypoints
             if (!this.entity.userData.patrolTarget) {
                 const waypoint = this.entity.userData.patrolWaypoints[this.entity.userData.currentWaypoint];
                 this.entity.userData.patrolTarget = new THREE.Vector3(waypoint.x, 1.25, waypoint.z);
             }
             
-            const direction = new THREE.Vector3()
-                .subVectors(this.entity.userData.patrolTarget, this.entity.position)
-                .normalize();
+            const dx = this.entity.userData.patrolTarget.x - this.entity.position.x;
+            const dz = this.entity.userData.patrolTarget.z - this.entity.position.z;
+            const distSq = dx * dx + dz * dz;
             
-            const distToWaypoint = this.entity.position.distanceTo(this.entity.userData.patrolTarget);
-            
-            // Si llegó al waypoint, ir al siguiente
-            if (distToWaypoint < 2) {
+            if (distSq < 4) {
                 this.entity.userData.currentWaypoint = (this.entity.userData.currentWaypoint + 1) % this.entity.userData.patrolWaypoints.length;
                 this.entity.userData.patrolTarget = null;
             } else {
-                this.entity.position.add(direction.multiplyScalar(this.entitySpeed));
-                
-                // Rotar suavemente hacia el waypoint
-                const targetRotation = Math.atan2(direction.x, direction.z);
-                this.entity.rotation.y += (targetRotation - this.entity.rotation.y) * 0.05;
+                const dist = Math.sqrt(distSq);
+                this.entity.position.x += (dx / dist) * this.entitySpeed;
+                this.entity.position.z += (dz / dist) * this.entitySpeed;
+                this.entity.position.y = 1.25;
             }
-            
-            // Animación de patrullaje (más calmada)
-            this.entity.position.y = 1.25 + Math.sin(Date.now() * 0.005) * 0.15;
         }
 
-        // Verificar captura
         if (closestDist < 2) {
             this.capturePlayer(closestPlayer);
         }
@@ -441,14 +378,7 @@ class Game {
         player.userData.tools -= generator.userData.requiredTools;
         this.generatorsRepaired++;
         
-        // Cambiar color a verde
         generator.material.color.setHex(0x00ff00);
-        generator.material.emissive.setHex(0x00ff00);
-        generator.material.emissiveIntensity = 0.5;
-        
-        if (generator.userData.light) {
-            generator.userData.light.color.setHex(0x00ff00);
-        }
         
         const progress = document.getElementById('gameProgress');
         if (progress) {
@@ -483,7 +413,6 @@ class Game {
         
         lever.userData.activated = true;
         lever.material.color.setHex(0x00ff00);
-        lever.material.emissive.setHex(0x00ff00);
         lever.rotation.x = Math.PI / 4;
         
         this.leversActivated++;
@@ -512,8 +441,6 @@ class Game {
         
         if (this.exitDoor) {
             this.exitDoor.material.color.setHex(0x00ff00);
-            this.exitDoor.material.emissive.setHex(0x00ff00);
-            this.exitDoor.material.emissiveIntensity = 0.6;
         }
         
         const status = document.getElementById('status');

@@ -382,8 +382,13 @@ function startGame() {
 }
 
 // Animation loop
-function animate() {
+let lastTime = 0;
+let frameCount = 0;
+function animate(time) {
     requestAnimationFrame(animate);
+    
+    if (time - lastTime < 16.67) return;
+    lastTime = time;
     
     const delta = engine.update();
     
@@ -391,8 +396,7 @@ function animate() {
         lobby.update(delta);
         playerManager.update(delta);
         
-        // Broadcast posición del jugador local
-        if (playerManager.localPlayer && Date.now() % 100 < 16) {
+        if (playerManager.localPlayer && frameCount % 6 === 0) {
             supabaseNetwork.broadcastPosition(playerManager.localPlayer.position);
         }
     } else if (gameState === 'game') {
@@ -400,56 +404,62 @@ function animate() {
         playerManager.update(delta);
         game.update(delta);
         
-        // Actualizar UI de misiones
-        updateMissionsUI();
+        if (frameCount % 10 === 0) updateMissionsUI();
         
-        // Interacción con items
         if (playerManager.localPlayer) {
             const player = playerManager.localPlayer;
+            const px = player.position.x;
+            const py = player.position.y;
+            const pz = player.position.z;
             
-            // Recoger items
-            game.items.forEach(item => {
-                if (!item.userData.collected && player.position.distanceTo(item.position) < 2) {
-                    game.collectItem(player, item);
+            for (let i = 0; i < game.items.length; i++) {
+                const item = game.items[i];
+                if (!item.userData.collected) {
+                    const dx = px - item.position.x;
+                    const dz = pz - item.position.z;
+                    if (dx * dx + dz * dz < 4) game.collectItem(player, item);
                 }
-            });
+            }
             
-            // Recoger fusibles
-            game.fuses.forEach(fuse => {
-                if (!fuse.userData.collected && player.position.distanceTo(fuse.position) < 2) {
-                    game.collectFuse(player, fuse);
+            for (let i = 0; i < game.fuses.length; i++) {
+                const fuse = game.fuses[i];
+                if (!fuse.userData.collected) {
+                    const dx = px - fuse.position.x;
+                    const dz = pz - fuse.position.z;
+                    if (dx * dx + dz * dz < 4) game.collectFuse(player, fuse);
                 }
-            });
+            }
             
-            // Reparar generadores (mantener E presionado)
-            game.generators.forEach(gen => {
-                if (!gen.userData.repaired && player.position.distanceTo(gen.position) < 3) {
-                    if (gameplay.keys['KeyE']) {
-                        game.repairGenerator(player, gen);
+            if (gameplay.keys['KeyE']) {
+                for (let i = 0; i < game.generators.length; i++) {
+                    const gen = game.generators[i];
+                    if (!gen.userData.repaired) {
+                        const dx = px - gen.position.x;
+                        const dz = pz - gen.position.z;
+                        if (dx * dx + dz * dz < 9) game.repairGenerator(player, gen);
                     }
                 }
-            });
-            
-            // Activar palancas
-            game.levers.forEach(lever => {
-                if (!lever.userData.activated && player.position.distanceTo(lever.position) < 2) {
-                    if (gameplay.keys['KeyE']) {
-                        game.activateLever(player, lever);
+                
+                for (let i = 0; i < game.levers.length; i++) {
+                    const lever = game.levers[i];
+                    if (!lever.userData.activated) {
+                        const dx = px - lever.position.x;
+                        const dz = pz - lever.position.z;
+                        if (dx * dx + dz * dz < 4) game.activateLever(player, lever);
                     }
                 }
-            });
+            }
             
-            // Verificar escape
             game.checkEscape(player);
         }
         
-        // Broadcast posición en juego
-        if (playerManager.localPlayer && Date.now() % 50 < 16) {
+        if (playerManager.localPlayer && frameCount % 3 === 0) {
             supabaseNetwork.broadcastPosition(playerManager.localPlayer.position);
         }
     }
     
     engine.render();
+    frameCount++;
 }
 
 // Start - Esperar a que todo cargue

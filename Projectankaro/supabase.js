@@ -97,18 +97,18 @@ class SupabaseNetwork {
                 broadcast: { self: false }
             }
         })
+        .on('broadcast', { event: 'game_start' }, (payload) => {
+            this.onGameStart();
+        })
+        .on('broadcast', { event: 'mic_noise' }, (payload) => {
+            this.onMicNoise(payload);
+        })
         .on('presence', { event: 'sync' }, () => {
             const state = this.channel.presenceState();
             Object.values(state).forEach(presences => {
                 presences.forEach(presence => {
                     if (presence.playerId !== this.localPlayerId && presence.position) {
                         this.onPlayerMove({ payload: presence });
-                    }
-                    if (presence.event === 'game_start') {
-                        this.onGameStart();
-                    }
-                    if (presence.event === 'mic_noise') {
-                        this.onMicNoise({ payload: presence });
                     }
                 });
             });
@@ -132,20 +132,24 @@ class SupabaseNetwork {
     broadcastGameStart() {
         if (!this.channel) return;
 
-        this.channel.track({
+        this.channel.send({
+            type: 'broadcast',
             event: 'game_start',
-            hostId: this.localPlayerId
+            payload: { hostId: this.localPlayerId }
         });
     }
     
     broadcastMicNoise(position, range) {
         if (!this.channel) return;
         
-        this.channel.track({
+        this.channel.send({
+            type: 'broadcast',
             event: 'mic_noise',
-            playerId: this.localPlayerId,
-            position: { x: position.x, y: position.y, z: position.z },
-            range: range
+            payload: {
+                playerId: this.localPlayerId,
+                position: { x: position.x, y: position.y, z: position.z },
+                range: range
+            }
         });
     }
 

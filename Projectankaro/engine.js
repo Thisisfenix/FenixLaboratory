@@ -33,11 +33,15 @@ class Engine {
             // Renderer
             this.renderer = new THREE.WebGLRenderer({ 
                 antialias: false,
-                powerPreference: 'high-performance'
+                powerPreference: 'high-performance',
+                stencil: false,
+                depth: true
             });
+            this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
             this.renderer.setSize(window.innerWidth, window.innerHeight);
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.BasicShadowMap;
+            this.renderer.shadowMap.autoUpdate = false;
             
             // Asegurar que el canvas se agregue al body
             const existingCanvas = document.querySelector('canvas');

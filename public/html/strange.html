@@ -483,7 +483,7 @@
         <div class="intro-text" style="animation-delay: 16s; font-size: 20px; color: #ffd700;">• Busca la linterna en la habitación</div>
         <div class="intro-text" style="animation-delay: 20s; font-size: 20px; color: #ffd700;">• Encuentra el cofre en el pasillo</div>
         <div class="intro-text" style="animation-delay: 24s; font-size: 20px; color: #ffd700;">• Llega a la puerta de salida</div>
-        <div class="intro-text" style="animation-delay: 28s; font-size: 28px; color: #00ff00;">WASD - Mover | ESPACIO - Saltar | F - Linterna | E - Interactuar</div>
+        <div class="intro-text" id="introControls" style="animation-delay: 28s; font-size: 28px; color: #00ff00;">WASD - Mover | ESPACIO - Saltar | F - Linterna | E - Interactuar</div>
     </div>
     
     <div id="location">
@@ -492,9 +492,9 @@
     </div>
     
     <div id="ui">
-        <div>WASD - Mover | ESPACIO - Saltar | SHIFT - Correr</div>
-        <div>F/X - Linterna | C - Mirar Atrás</div>
-        <div>E/B - Interactuar</div>
+        <div id="controlsHUD">WASD - Mover | ESPACIO - Saltar | SHIFT - Correr</div>
+        <div id="controlsHUD2">F/X - Linterna | C - Mirar Atrás</div>
+        <div id="controlsHUD3">E/B - Interactuar</div>
         <div id="distance" style="margin-top: 10px; color: #ffd700;">Distancia: 0m</div>
     </div>
     <div id="interact">Presiona E para tomar linterna</div>
@@ -516,12 +516,7 @@
     
     <div id="tutorial">
         <h2>📖 TUTORIAL</h2>
-        <p><strong>WASD</strong> - Moverte</p>
-        <p><strong>ESPACIO</strong> - Saltar obstáculos</p>
-        <p><strong>SHIFT</strong> - Correr (consume stamina)</p>
-        <p><strong>F</strong> - Encender/Apagar linterna</p>
-        <p><strong>C</strong> - Mirar atrás</p>
-        <p><strong>E</strong> - Interactuar con objetos</p>
+        <div id="tutorialContent"></div>
         <p style="color: #ff4444; margin-top: 20px;">⚠️ Administra tu stamina sabiamente</p>
         <button onclick="closeTutorial()">Entendido</button>
     </div>
@@ -894,11 +889,16 @@
             document.getElementById('loadText').textContent = `${asset}... ${Math.floor(loadingProgress)}%`;
             
             if(loadedAssets >= totalAssets) {
+                // Detectar consola y saltar pantalla de carga más rápido
+                const gamepads = navigator.getGamepads();
+                const hasGamepad = gamepads && gamepads[0];
+                const delay = hasGamepad ? 100 : 500;
+                
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('intro').style.display = 'flex';
                     hideIntro();
-                }, 500);
+                }, delay);
             }
         }
 
@@ -906,10 +906,74 @@
         if(typeof THREE !== 'undefined') {
             updateLoading('Three.js cargado');
         }
+        
+        // Actualizar controles en intro y HUD según dispositivo
+        window.addEventListener('load', () => {
+            const gamepads = navigator.getGamepads();
+            const hasGamepad = gamepads && gamepads[0];
+            
+            const introControls = document.getElementById('introControls');
+            const controlsHUD = document.getElementById('controlsHUD');
+            const controlsHUD2 = document.getElementById('controlsHUD2');
+            const controlsHUD3 = document.getElementById('controlsHUD3');
+            
+            if(isMobile) {
+                if(introControls) introControls.textContent = 'Joystick - Mover | ⬆️ - Saltar | 🔦 - Linterna | E - Interactuar';
+                if(controlsHUD) controlsHUD.textContent = 'Joystick - Mover | ⬆️ - Saltar | 🏃 - Correr';
+                if(controlsHUD2) controlsHUD2.textContent = '🔦 - Linterna | Pantalla Derecha - Cámara';
+                if(controlsHUD3) controlsHUD3.textContent = 'E - Interactuar';
+            } else if(hasGamepad) {
+                if(introControls) introControls.textContent = 'Stick Izq - Mover | A - Saltar | X - Linterna | B - Interactuar';
+                if(controlsHUD) controlsHUD.textContent = 'Stick Izq - Mover | A - Saltar | L/R - Correr';
+                if(controlsHUD2) controlsHUD2.textContent = 'X - Linterna | Y - Mirar Atrás | Start - Pantalla Completa';
+                if(controlsHUD3) controlsHUD3.textContent = 'B - Interactuar | Stick Der - Cámara';
+                
+                // Ocultar botón de configuración en consola
+                const settingsBtn = document.getElementById('settingsBtn');
+                if(settingsBtn) settingsBtn.style.display = 'none';
+            }
+        });
 
         function showTutorial() {
             if(tutorialShown) return;
             tutorialShown = true;
+            
+            const tutorialContent = document.getElementById('tutorialContent');
+            const gamepads = navigator.getGamepads();
+            const hasGamepad = gamepads && gamepads[0];
+            
+            if(isMobile) {
+                tutorialContent.innerHTML = `
+                    <p><strong>Joystick Izquierdo</strong> - Moverte</p>
+                    <p><strong>⬆️</strong> - Saltar obstáculos</p>
+                    <p><strong>🏃</strong> - Correr (consume stamina)</p>
+                    <p><strong>🔦</strong> - Encender/Apagar linterna</p>
+                    <p><strong>Pantalla Derecha</strong> - Mover cámara</p>
+                    <p><strong>E</strong> - Interactuar con objetos</p>
+                `;
+            } else if(hasGamepad) {
+                tutorialContent.innerHTML = `
+                    <p><strong>Stick Izquierdo</strong> - Moverte</p>
+                    <p><strong>A</strong> - Saltar obstáculos</p>
+                    <p><strong>L1/R1/L2/R2</strong> - Correr (consume stamina)</p>
+                    <p><strong>X</strong> - Encender/Apagar linterna</p>
+                    <p><strong>Y</strong> - Mirar atrás</p>
+                    <p><strong>B</strong> - Interactuar con objetos</p>
+                    <p><strong>Stick Derecho</strong> - Mover cámara</p>
+                    <p><strong>Start</strong> - Pantalla completa</p>
+                    <p><strong>Select</strong> - Ver tutorial</p>
+                `;
+            } else {
+                tutorialContent.innerHTML = `
+                    <p><strong>WASD</strong> - Moverte</p>
+                    <p><strong>ESPACIO</strong> - Saltar obstáculos</p>
+                    <p><strong>SHIFT</strong> - Correr (consume stamina)</p>
+                    <p><strong>F</strong> - Encender/Apagar linterna</p>
+                    <p><strong>C</strong> - Mirar atrás</p>
+                    <p><strong>E</strong> - Interactuar con objetos</p>
+                `;
+            }
+            
             document.getElementById('tutorial').style.display = 'block';
             document.exitPointerLock();
         }
@@ -2217,16 +2281,26 @@
             // Y - Mirar atrás
             if(gp.buttons[3].pressed) lookingBack = true;
             else lookingBack = false;
-            // L1/R1 o L2/R2 - Correr
-            if(gp.buttons[4].pressed || gp.buttons[5].pressed || gp.buttons[6].pressed || gp.buttons[7].pressed) {
+            // L1/R1 o L2/R2 - Correr (solo uno a la vez)
+            if(gp.buttons[4].pressed || gp.buttons[5].pressed || gp.buttons[6].value > 0.5 || gp.buttons[7].value > 0.5) {
                 isRunning = true;
-            } else if(!moveForward && !moveBackward && !moveLeft && !moveRight) {
+            } else {
                 isRunning = false;
             }
-            // Start - Configuración
-            if(gp.buttons[9].pressed) toggleSettings();
+            // Start - Pantalla completa (en consola)
+            if(gp.buttons[9].pressed && !gp.buttons[9].wasPressed) {
+                toggleFullscreen();
+                gp.buttons[9].wasPressed = true;
+            } else if(!gp.buttons[9].pressed) {
+                gp.buttons[9].wasPressed = false;
+            }
             // Select - Tutorial
-            if(gp.buttons[8].pressed) showTutorial();
+            if(gp.buttons[8].pressed && !gp.buttons[8].wasPressed) {
+                showTutorial();
+                gp.buttons[8].wasPressed = true;
+            } else if(!gp.buttons[8].pressed) {
+                gp.buttons[8].wasPressed = false;
+            }
         }
 
         function animate() {

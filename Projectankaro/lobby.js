@@ -139,28 +139,16 @@ class Lobby {
         engine.createBox(0.5, 5, 20, 0x2a2a2a, -10, 2.5, 0);
         engine.createBox(0.5, 5, 20, 0x2a2a2a, 10, 2.5, 0);
 
-        // Plataformas de spawn con colores (sin luces individuales)
+        // Plataformas de spawn con colores
         this.spawnPoints.forEach((pos, i) => {
-            const mat = new THREE.MeshStandardMaterial({ 
-                color: this.playerColors[i],
-                emissive: this.playerColors[i],
-                emissiveIntensity: 0.3,
-                flatShading: true
-            });
+            const mat = new THREE.MeshBasicMaterial({ color: this.playerColors[i] });
             const geo = new THREE.BoxGeometry(1.5, 0.2, 1.5);
             const box = new THREE.Mesh(geo, mat);
             box.position.set(pos.x, 0.1, pos.z);
-            box.castShadow = false;
-            box.receiveShadow = false;
+            box.matrixAutoUpdate = false;
+            box.updateMatrix();
             engine.addObject(box);
         });
-
-        // Decoración (reducida)
-        for (let i = 0; i < 3; i++) {
-            const x = (Math.random() - 0.5) * 15;
-            const z = (Math.random() - 0.5) * 15;
-            engine.createBox(0.5, 2, 0.5, 0x444444, x, 1, z);
-        }
 
         console.log('Lobby created');
     }
@@ -183,66 +171,40 @@ class Lobby {
     }
 
     update(delta) {
-        // Actualizar gamepad
+        if (!this.canMove || !playerManager.localPlayer) return;
+        
         this.updateGamepad();
         
-        // Movimiento del jugador local
-        if (this.canMove && playerManager.localPlayer) {
-            this.velocity.set(0, 0, 0);
-            let moveX = 0;
-            let moveZ = 0;
-            
-            // Teclado
-            if (this.keys['KeyW']) moveZ -= 1;
-            if (this.keys['KeyS']) moveZ += 1;
-            if (this.keys['KeyA']) moveX -= 1;
-            if (this.keys['KeyD']) moveX += 1;
-            
-            // Joystick (móvil/gamepad)
-            if (Math.abs(this.joystickX) > 0.1 || Math.abs(this.joystickY) > 0.1) {
-                moveX += this.joystickX;
-                moveZ += this.joystickY;
-            }
-            
-            // Aplicar rotación de cámara
-            if (moveX !== 0 || moveZ !== 0) {
-                const angle = this.cameraRotation.y;
-                this.velocity.x = (moveX * Math.cos(angle) + moveZ * Math.sin(angle)) * this.moveSpeed;
-                this.velocity.z = (-moveX * Math.sin(angle) + moveZ * Math.cos(angle)) * this.moveSpeed;
-            }
+        let moveX = (this.keys['KeyD'] ? 1 : 0) - (this.keys['KeyA'] ? 1 : 0);
+        let moveZ = (this.keys['KeyS'] ? 1 : 0) - (this.keys['KeyW'] ? 1 : 0);
+        
+        if (Math.abs(this.joystickX) > 0.1) moveX += this.joystickX;
+        if (Math.abs(this.joystickY) > 0.1) moveZ += this.joystickY;
+        
+        if (moveX !== 0 || moveZ !== 0) {
+            const angle = this.cameraRotation.y;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
             
             const player = playerManager.localPlayer;
-            const newPos = player.position.clone().add(this.velocity);
+            const newX = Math.max(-9, Math.min(9, player.position.x + (moveX * cos + moveZ * sin) * this.moveSpeed));
+            const newZ = Math.max(-9, Math.min(9, player.position.z + (-moveX * sin + moveZ * cos) * this.moveSpeed));
             
-            // Límites del lobby
-            newPos.x = Math.max(-9, Math.min(9, newPos.x));
-            newPos.z = Math.max(-9, Math.min(9, newPos.z));
-            
-            player.setPosition(newPos.x, newPos.y, newPos.z);
-            
-            // Rotar jugador solo cuando se mueve
-            if (moveX !== 0 || moveZ !== 0) {
-                const angle = Math.atan2(this.velocity.x, this.velocity.z);
-                player.setRotation(angle);
-            }
-            
-            // Cámara tercera persona con rotación
-            const distance = 5;
-            const height = 3;
-            const camX = player.position.x + Math.sin(this.cameraRotation.y) * distance;
-            const camZ = player.position.z + Math.cos(this.cameraRotation.y) * distance;
-            const camY = player.position.y + height + Math.sin(this.cameraRotation.x) * 2;
-            
-            engine.camera.position.set(camX, camY, camZ);
-            engine.camera.lookAt(player.position);
-        } else {
-            // Cámara rotatoria si no hay jugador local
-            const time = Date.now() * 0.0003;
-            engine.camera.position.x = Math.sin(time) * 12;
-            engine.camera.position.z = Math.cos(time) * 12;
-            engine.camera.position.y = 6;
-            engine.camera.lookAt(0, 1, 0);
+            player.setPosition(newX, player.position.y, newZ);
+            player.setRotation(Math.atan2(moveX * cos + moveZ * sin, -moveX * sin + moveZ * cos));
         }
+        
+        const player = playerManager.localPlayer;
+        const sinY = Math.sin(this.cameraRotation.y);
+        const cosY = Math.cos(this.cameraRotation.y);
+        const sinX = Math.sin(this.cameraRotation.x);
+        
+        engine.camera.position.set(
+            player.position.x + sinY * 5,
+            player.position.y + 3 + sinX * 2,
+            player.position.z + cosY * 5
+        );
+        engine.camera.lookAt(player.position);
     }
 
     destroy() {
