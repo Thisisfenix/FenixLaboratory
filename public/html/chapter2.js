@@ -31,14 +31,34 @@ class Chapter2 {
         this.mouseY = 0;
         this.velocity = new THREE.Vector3();
         this.collectedIcons = [];
-        this.totalIcons = 6;
+        this.totalIcons = 10;
+        this.collectedKeys = [];
+        this.totalKeys = 3;
         this.blockedDoor = null;
+        this.keyObjects = [];
         this.gisselCyber = null;
         this.gisselTriggered = false;
+        this.legInjured = true;
+        this.legHealProgress = 0;
         this.joystickX = 0;
         this.joystickY = 0;
         this.touchStartX = 0;
         this.touchStartY = 0;
+        this.runBobTime = 0;
+        
+        // Sistemas de exploración
+        this.terminalsRead = 0;
+        this.totalTerminals = 4;
+        this.terminals = [];
+        this.generatorsActivated = [];
+        this.securityCodeDigits = [];
+        this.colorSequence = [];
+        this.memoryFragments = [];
+        this.audioRecordings = [];
+        this.powerOutage = false;
+        this.ventDucts = [];
+        this.flashlightBroken = false;
+        this.floatingObjects = [];
     }
 
     start() {
@@ -57,6 +77,7 @@ class Chapter2 {
         });
         document.addEventListener('keyup', (e) => {
             this.keys[e.key.toLowerCase()] = false;
+            if(e.key.toLowerCase() === 'shift') this.isRunning = false;
         });
         document.addEventListener('mousemove', (e) => {
             if(document.pointerLockElement) {
@@ -185,17 +206,61 @@ class Chapter2 {
     }
     
     handleInteract() {
-        // Lógica de interacción centralizada
         if(this.phase === 'exploring') {
             const playerPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
             
+            // Terminales
+            for(let terminal of this.terminals) {
+                const dist = playerPos.distanceTo(terminal.position);
+                if(!terminal.userData.read && dist < 1.5) {
+                    terminal.userData.read = true;
+                    this.terminalsRead++;
+                    showMonologue(`💻 Terminal: ${terminal.userData.hint}`);
+                    this.playCollectSound();
+                    return;
+                }
+            }
+            
+            // Generadores
             for(let note of this.notes) {
-                const dx = playerPos.x - note.position.x;
-                const dz = playerPos.z - note.position.z;
-                const dist = Math.sqrt(dx * dx + dz * dz);
+                const dist = playerPos.distanceTo(note.position);
                 
-                if(note.userData.type === 'icon' && !note.userData.collected && dist < 1.5) {
+                if(note.userData.type === 'generator' && dist < 1.5) {
+                    if(!note.userData.active) {
+                        note.userData.active = true;
+                        this.generatorsActivated.push(note.userData.id);
+                        note.material.color.setHex(0x00ff00);
+                        showMonologue(`⚡ Generador ${note.userData.id + 1} activado`);
+                        if(this.generatorsActivated.length === 3 && this.powerOutage) {
+                            this.restorePower();
+                        }
+                    }
+                    return;
+                } else if(note.userData.type === 'codeNote' && !note.userData.read && dist < 1.5) {
+                    note.userData.read = true;
+                    this.securityCodeDigits.push(note.userData.digit);
+                    showMonologue(`🔢 Dígito encontrado: ${note.userData.digit}`);
+                    return;
+                } else if(note.userData.type === 'colorPanel' && !note.userData.pressed && dist < 1.5) {
+                    note.userData.pressed = true;
+                    this.colorSequence.push(note.userData.order);
+                    showMonologue(`🎨 Panel ${note.userData.order} presionado`);
+                    return;
+                } else if(note.userData.type === 'memory' && !note.userData.collected && dist < 1.5) {
+                    note.userData.collected = true;
+                    scene.remove(note);
+                    showMonologue(`🧠 Fragmento ${this.memoryFragments.filter(m => m.userData.collected).length}/15`);
+                    return;
+                } else if(note.userData.type === 'audio' && !note.userData.collected && dist < 1.5) {
+                    note.userData.collected = true;
+                    scene.remove(note);
+                    showMonologue(`🎵 Grabación ${this.audioRecordings.filter(a => a.userData.collected).length}/5`);
+                    return;
+                } else if(note.userData.type === 'icon' && !note.userData.collected && dist < 1.5) {
                     this.collectIcon(note);
+                    return;
+                } else if(note.userData.type === 'key' && !note.userData.collected && dist < 1.5) {
+                    this.collectKey(note);
                     return;
                 } else if(note.userData.type === 'note' && !note.userData.read && dist < 1.5) {
                     this.readNote(note);
@@ -205,12 +270,18 @@ class Chapter2 {
                 }
             }
             
-            // Verificar puerta
-            if(this.collectedIcons.length >= this.totalIcons) {
-                const doorDist = Math.sqrt(
-                    Math.pow(playerPos.x - 0, 2) + 
-                    Math.pow(playerPos.z - 14, 2)
-                );
+            // Ventilación
+            for(let vent of this.ventDucts) {
+                const dist = playerPos.distanceTo(vent.position);
+                if(dist < 1.5) {
+                    camera.position.set(vent.userData.connects.x, vent.userData.connects.y || 1.6, vent.userData.connects.z);
+                    showMonologue('Atravesé el ducto de ventilación');
+                    return;
+                }
+            }
+            
+            if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys) {
+                const doorDist = Math.sqrt(Math.pow(playerPos.x - 0, 2) + Math.pow(playerPos.z - 14, 2));
                 if(doorDist < 2) {
                     this.openDoor();
                 }
@@ -265,6 +336,9 @@ class Chapter2 {
         }
         const ambient = new THREE.AmbientLight(0x202020, 0.3);
         scene.add(ambient);
+        
+        // NO detener audios al cambiar de zona
+        // Los audios de pasos, correr y cansancio deben seguir funcionando
     }
 
     createFallingCinematic() {
@@ -288,9 +362,9 @@ class Chapter2 {
     }
 
     createPitBottom() {
-        // Suelo laboratorio GRANDE 60x60m
+        // Suelo laboratorio EXPANDIDO 80x80m
         const floor = new THREE.Mesh(
-            new THREE.PlaneGeometry(60, 60),
+            new THREE.PlaneGeometry(80, 80),
             new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
         );
         floor.rotation.x = -Math.PI / 2;
@@ -301,15 +375,15 @@ class Chapter2 {
         this.walls = [];
         
         const outerWalls = [
-            new THREE.Mesh(new THREE.BoxGeometry(60, 6, 0.5), wallMat),
-            new THREE.Mesh(new THREE.BoxGeometry(60, 6, 0.5), wallMat),
-            new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 60), wallMat),
-            new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 60), wallMat)
+            new THREE.Mesh(new THREE.BoxGeometry(80, 6, 0.5), wallMat),
+            new THREE.Mesh(new THREE.BoxGeometry(80, 6, 0.5), wallMat),
+            new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 80), wallMat),
+            new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 80), wallMat)
         ];
-        outerWalls[0].position.set(0, 3, -30);
-        outerWalls[1].position.set(0, 3, 30);
-        outerWalls[2].position.set(-30, 3, 0);
-        outerWalls[3].position.set(30, 3, 0);
+        outerWalls[0].position.set(0, 3, -40);
+        outerWalls[1].position.set(0, 3, 40);
+        outerWalls[2].position.set(-40, 3, 0);
+        outerWalls[3].position.set(40, 3, 0);
         outerWalls.forEach(w => {
             scene.add(w);
             this.walls.push(w);
@@ -324,7 +398,12 @@ class Chapter2 {
         this.createNotes();
         this.createBlockedDoor();
         this.createCollectibleIcons();
+        this.createTerminals();
+        this.createPuzzleRooms();
+        this.createVentilationSystem();
+        this.createOptionalCollectibles();
         this.spawnGisselCyber();
+        this.startDynamicEvents();
     }
 
     createBlockedDoor() {
@@ -346,7 +425,9 @@ class Chapter2 {
         ctx.textAlign = 'center';
         ctx.fillText('BLOQUEADO', 256, 100);
         ctx.font = '30px Arial';
-        ctx.fillText(`0/${this.totalIcons} ICONOS`, 256, 160);
+        ctx.fillText(`0/${this.totalIcons} ICONOS`, 256, 140);
+        ctx.font = '25px Arial';
+        ctx.fillText(`0/${this.totalKeys} LLAVES`, 256, 180);
         const texture = new THREE.CanvasTexture(canvas);
         const sign = new THREE.Mesh(
             new THREE.PlaneGeometry(2.5, 1.5),
@@ -370,34 +451,67 @@ class Chapter2 {
             { path: '../assets/icons/LunaNormalIcon.png', name: 'Luna' },
             { path: '../assets/icons/AngelNormalIcon.png', name: 'Angel' },
             { path: '../assets/icons/IrisNormalIcon.png', name: 'Iris' },
-            { path: '../assets/icons/MollyNormalIcon.png', name: 'Molly' }
+            { path: '../assets/icons/MollyNormalIcon.png', name: 'Molly' },
+            { path: '../assets/icons/GisselInactiveIcon.png', name: 'Gissel 2' },
+            { path: '../assets/icons/IA777NormalIcon.png', name: 'iA777 2' },
+            { path: '../assets/icons/LunaNormalIcon.png', name: 'Luna 2' },
+            { path: '../assets/icons/AngelNormalIcon.png', name: 'Angel 2' }
         ];
         
-        // Habitaciones disponibles (aleatorias cada partida)
+        // Habitaciones con dimensiones (centro, ancho, profundidad, nivel)
         const availableRooms = [
-            { x: -20, z: -20, name: 'Storage' },
-            { x: -20, z: -8, name: 'Office' },
-            { x: 20, z: -20, name: 'Lab' },
-            { x: 20, z: -8, name: 'Medical' },
-            { x: 0, z: -18, name: 'Main' },
-            { x: -12, z: 0, name: 'Research' },
-            { x: 12, z: 0, name: 'Testing' },
-            { x: -20, z: 20, name: 'Containment' },
-            { x: -20, z: 8, name: 'Security' },
-            { x: 20, z: 20, name: 'Server' },
-            { x: 20, z: 8, name: 'Archive' },
-            { x: 0, z: 18, name: 'Observation' }
+            { x: -28, z: -28, w: 10, d: 10, level: 1 },
+            { x: -28, z: -10, w: 10, d: 8, level: 1 },
+            { x: 28, z: -28, w: 10, d: 10, level: 1 },
+            { x: 28, z: -10, w: 10, d: 8, level: 1 },
+            { x: -28, z: 28, w: 10, d: 10, level: 1 },
+            { x: -28, z: 10, w: 10, d: 8, level: 1 },
+            { x: 28, z: 28, w: 10, d: 10, level: 1 },
+            { x: 28, z: 10, w: 10, d: 8, level: 1 },
+            { x: -28, z: -28, w: 10, d: 10, level: 2 },
+            { x: -28, z: -10, w: 10, d: 8, level: 2 },
+            { x: 28, z: -28, w: 10, d: 10, level: 2 },
+            { x: 28, z: -10, w: 10, d: 8, level: 2 }
         ];
         
         // Mezclar habitaciones aleatoriamente
         const shuffledRooms = availableRooms.sort(() => Math.random() - 0.5);
-        const iconPositions = shuffledRooms.slice(0, 6);
+        const iconPositions = shuffledRooms.slice(0, 10);
+        
+        // Crear 3 llaves de colores en habitaciones específicas
+        const keyRooms = [
+            { color: 0xff0000, name: 'Roja', room: availableRooms[4] },
+            { color: 0x0000ff, name: 'Azul', room: availableRooms[7] },
+            { color: 0x00ff00, name: 'Verde', room: availableRooms[10] }
+        ];
+        
+        keyRooms.forEach((keyData, i) => {
+            const room = keyData.room;
+            const x = room.x + (Math.random() - 0.5) * (room.w - 2);
+            const z = room.z + (Math.random() - 0.5) * (room.d - 2);
+            const y = room.level === 2 ? 6.86 : 0.86;
+            
+            const key = new THREE.Mesh(
+                new THREE.BoxGeometry(0.3, 0.6, 0.1),
+                new THREE.MeshBasicMaterial({ color: keyData.color })
+            );
+            key.position.set(x, y, z);
+            key.rotation.x = -Math.PI / 2;
+            key.userData = { type: 'key', name: keyData.name, id: i, collected: false };
+            scene.add(key);
+            this.notes.push(key);
+            this.keyObjects.push(key);
+            
+            const keyLight = new THREE.PointLight(keyData.color, 1, 3);
+            keyLight.position.set(x, y + 0.5, z);
+            scene.add(keyLight);
+        });
         
         icons.forEach((data, i) => {
-            const pos = iconPositions[i];
-            const x = pos.x + (Math.random() - 0.5) * 4;
-            const z = pos.z + (Math.random() - 0.5) * 4;
-            const y = 0.86;
+            const room = iconPositions[i];
+            const x = room.x + (Math.random() - 0.5) * (room.w - 2);
+            const z = room.z + (Math.random() - 0.5) * (room.d - 2);
+            const y = room.level === 2 ? 6.86 : 0.86;
             
             const canvas = document.createElement('canvas');
             canvas.width = 128;
@@ -429,7 +543,7 @@ class Chapter2 {
                 
                 // Luz dorada sobre icono
                 const iconLight = new THREE.PointLight(0xffd700, 0.8, 3);
-                iconLight.position.set(x, y + 1, z);
+                iconLight.position.set(x, y + 0.5, z);
                 scene.add(iconLight);
             };
             img.src = data.path;
@@ -455,15 +569,25 @@ class Chapter2 {
             ctx.textAlign = 'center';
             ctx.fillText('BLOQUEADO', 256, 100);
             ctx.font = '30px Arial';
-            ctx.fillText(`${this.collectedIcons.length}/${this.totalIcons} ICONOS`, 256, 160);
+            ctx.fillText(`${this.collectedIcons.length}/${this.totalIcons} ICONOS`, 256, 140);
+            ctx.font = '25px Arial';
+            ctx.fillText(`${this.collectedKeys.length}/${this.totalKeys} LLAVES`, 256, 180);
         }
         
         texture.needsUpdate = true;
     }
 
     spawnGisselCyber() {
-        const x = (Math.random() - 0.5) * 24; // -12 a 12
-        const z = (Math.random() - 0.5) * 24; // -12 a 12
+        // Spawn en una habitación aleatoria del nivel 1
+        const rooms = [
+            { x: -28, z: -28, w: 10, d: 10 },
+            { x: 28, z: -28, w: 10, d: 10 },
+            { x: -28, z: 28, w: 10, d: 10 },
+            { x: 28, z: 28, w: 10, d: 10 }
+        ];
+        const room = rooms[Math.floor(Math.random() * rooms.length)];
+        const x = room.x + (Math.random() - 0.5) * (room.w - 2);
+        const z = room.z + (Math.random() - 0.5) * (room.d - 2);
         
         const loader = new THREE.TextureLoader();
         loader.load('stuff/Gisselcyber.jpg', (texture) => {
@@ -490,37 +614,48 @@ class Chapter2 {
     createLabRooms() {
         const wallMat = new THREE.MeshBasicMaterial({ color: 0x3a3a3a });
         const doorMat = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
+        const level2WallMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+        const ceilingMat = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
         
-        // 12 habitaciones estratégicamente distribuidas
+        // 16 habitaciones en 2 niveles (8 por nivel) - 80x80m
         const rooms = [
-            // Esquina superior izquierda
-            { x: -20, z: -20, w: 8, d: 8, door: 'south', type: 'storage' },
-            { x: -20, z: -8, w: 8, d: 6, door: 'east', type: 'office' },
+            // NIVEL 1 (y=0)
+            { x: -28, z: -28, w: 10, d: 10, door: 'south', type: 'storage', level: 1 },
+            { x: -28, z: -10, w: 10, d: 8, door: 'east', type: 'office', level: 1 },
+            { x: 28, z: -28, w: 10, d: 10, door: 'south', type: 'lab', level: 1 },
+            { x: 28, z: -10, w: 10, d: 8, door: 'west', type: 'medical', level: 1 },
+            { x: -28, z: 28, w: 10, d: 10, door: 'north', type: 'containment', level: 1 },
+            { x: -28, z: 10, w: 10, d: 8, door: 'east', type: 'security', level: 1 },
+            { x: 28, z: 28, w: 10, d: 10, door: 'north', type: 'server', level: 1 },
+            { x: 28, z: 10, w: 10, d: 8, door: 'west', type: 'archive', level: 1 },
             
-            // Esquina superior derecha
-            { x: 20, z: -20, w: 8, d: 8, door: 'south', type: 'lab' },
-            { x: 20, z: -8, w: 8, d: 6, door: 'west', type: 'medical' },
-            
-            // Centro superior
-            { x: 0, z: -18, w: 10, d: 6, door: 'south', type: 'main' },
-            
-            // Centro
-            { x: -12, z: 0, w: 6, d: 8, door: 'east', type: 'research' },
-            { x: 12, z: 0, w: 6, d: 8, door: 'west', type: 'testing' },
-            
-            // Esquina inferior izquierda
-            { x: -20, z: 20, w: 8, d: 8, door: 'north', type: 'containment' },
-            { x: -20, z: 8, w: 8, d: 6, door: 'east', type: 'security' },
-            
-            // Esquina inferior derecha
-            { x: 20, z: 20, w: 8, d: 8, door: 'north', type: 'server' },
-            { x: 20, z: 8, w: 8, d: 6, door: 'west', type: 'archive' },
-            
-            // Centro inferior
-            { x: 0, z: 18, w: 10, d: 6, door: 'north', type: 'observation' }
+            // NIVEL 2 (y=6) - Accesible por escaleras
+            { x: -28, z: -28, w: 10, d: 10, door: 'south', type: 'research', level: 2 },
+            { x: -28, z: -10, w: 10, d: 8, door: 'east', type: 'testing', level: 2 },
+            { x: 28, z: -28, w: 10, d: 10, door: 'south', type: 'observation', level: 2 },
+            { x: 28, z: -10, w: 10, d: 8, door: 'west', type: 'control', level: 2 },
+            { x: -28, z: 28, w: 10, d: 10, door: 'north', type: 'power', level: 2 },
+            { x: -28, z: 10, w: 10, d: 8, door: 'east', type: 'backup', level: 2 },
+            { x: 28, z: 28, w: 10, d: 10, door: 'north', type: 'vault', level: 2 },
+            { x: 28, z: 10, w: 10, d: 8, door: 'west', type: 'mainframe', level: 2 }
         ];
         
         rooms.forEach(room => {
+            const yOffset = room.level === 2 ? 6 : 0;
+            
+            // Suelo de habitación (sólido para nivel 2)
+            const roomFloor = new THREE.Mesh(
+                room.level === 2 ? new THREE.BoxGeometry(room.w, 0.3, room.d) : new THREE.PlaneGeometry(room.w, room.d),
+                new THREE.MeshBasicMaterial({ color: room.level === 2 ? 0x2a2a2a : 0x1a1a1a })
+            );
+            if(room.level === 1) {
+                roomFloor.rotation.x = -Math.PI / 2;
+                roomFloor.position.set(room.x, yOffset + 0.01, room.z);
+            } else {
+                roomFloor.position.set(room.x, yOffset - 0.15, room.z);
+            }
+            scene.add(roomFloor);
+            
             // Paredes de habitación
             const walls = [
                 { w: room.w, h: 3, d: 0.3, x: 0, z: room.d/2, side: 'north' },
@@ -531,94 +666,368 @@ class Chapter2 {
             
             walls.forEach(wall => {
                 if(wall.side === room.door) {
-                    // Crear marco de puerta
                     const doorWidth = 2;
                     const sideWidth = (wall.w - doorWidth) / 2;
                     
                     if(wall.side === 'north' || wall.side === 'south') {
-                        // Paredes laterales de puerta
-                        const leftWall = new THREE.Mesh(
-                            new THREE.BoxGeometry(sideWidth, wall.h, wall.d),
-                            wallMat
-                        );
-                        leftWall.position.set(room.x + wall.x - doorWidth/2 - sideWidth/2, 1.5, room.z + wall.z);
+                        const leftWall = new THREE.Mesh(new THREE.BoxGeometry(sideWidth, wall.h, wall.d), wallMat);
+                        leftWall.position.set(room.x + wall.x - doorWidth/2 - sideWidth/2, yOffset + 1.5, room.z + wall.z);
                         scene.add(leftWall);
                         this.walls.push(leftWall);
                         
-                        const rightWall = new THREE.Mesh(
-                            new THREE.BoxGeometry(sideWidth, wall.h, wall.d),
-                            wallMat
-                        );
-                        rightWall.position.set(room.x + wall.x + doorWidth/2 + sideWidth/2, 1.5, room.z + wall.z);
+                        const rightWall = new THREE.Mesh(new THREE.BoxGeometry(sideWidth, wall.h, wall.d), wallMat);
+                        rightWall.position.set(room.x + wall.x + doorWidth/2 + sideWidth/2, yOffset + 1.5, room.z + wall.z);
                         scene.add(rightWall);
                         this.walls.push(rightWall);
                         
-                        // Marco superior
-                        const topFrame = new THREE.Mesh(
-                            new THREE.BoxGeometry(doorWidth, 0.3, wall.d),
-                            doorMat
-                        );
-                        topFrame.position.set(room.x + wall.x, 2.85, room.z + wall.z);
+                        const topFrame = new THREE.Mesh(new THREE.BoxGeometry(doorWidth, 0.3, wall.d), doorMat);
+                        topFrame.position.set(room.x + wall.x, yOffset + 2.85, room.z + wall.z);
                         scene.add(topFrame);
                     } else {
-                        // Paredes laterales de puerta (vertical)
-                        const leftWall = new THREE.Mesh(
-                            new THREE.BoxGeometry(wall.w, wall.h, sideWidth),
-                            wallMat
-                        );
-                        leftWall.position.set(room.x + wall.x, 1.5, room.z + wall.z - doorWidth/2 - sideWidth/2);
+                        const leftWall = new THREE.Mesh(new THREE.BoxGeometry(wall.w, wall.h, sideWidth), wallMat);
+                        leftWall.position.set(room.x + wall.x, yOffset + 1.5, room.z + wall.z - doorWidth/2 - sideWidth/2);
                         scene.add(leftWall);
                         this.walls.push(leftWall);
                         
-                        const rightWall = new THREE.Mesh(
-                            new THREE.BoxGeometry(wall.w, wall.h, sideWidth),
-                            wallMat
-                        );
-                        rightWall.position.set(room.x + wall.x, 1.5, room.z + wall.z + doorWidth/2 + sideWidth/2);
+                        const rightWall = new THREE.Mesh(new THREE.BoxGeometry(wall.w, wall.h, sideWidth), wallMat);
+                        rightWall.position.set(room.x + wall.x, yOffset + 1.5, room.z + wall.z + doorWidth/2 + sideWidth/2);
                         scene.add(rightWall);
                         this.walls.push(rightWall);
                         
-                        // Marco superior
-                        const topFrame = new THREE.Mesh(
-                            new THREE.BoxGeometry(wall.w, 0.3, doorWidth),
-                            doorMat
-                        );
-                        topFrame.position.set(room.x + wall.x, 2.85, room.z + wall.z);
+                        const topFrame = new THREE.Mesh(new THREE.BoxGeometry(wall.w, 0.3, doorWidth), doorMat);
+                        topFrame.position.set(room.x + wall.x, yOffset + 2.85, room.z + wall.z);
                         scene.add(topFrame);
                     }
                 } else {
-                    // Pared completa
-                    const wallMesh = new THREE.Mesh(
-                        new THREE.BoxGeometry(wall.w, wall.h, wall.d),
-                        wallMat
-                    );
-                    wallMesh.position.set(room.x + wall.x, 1.5, room.z + wall.z);
+                    const wallMesh = new THREE.Mesh(new THREE.BoxGeometry(wall.w, wall.h, wall.d), wallMat);
+                    wallMesh.position.set(room.x + wall.x, yOffset + 1.5, room.z + wall.z);
                     scene.add(wallMesh);
                     this.walls.push(wallMesh);
                 }
             });
             
-            // Luz en habitación según tipo
             let lightColor = 0x404040;
             if(room.type === 'containment') lightColor = 0xff0000;
             else if(room.type === 'medical') lightColor = 0x00ff00;
-            else if(room.type === 'server') lightColor = 0x0000ff;
+            else if(room.type === 'server' || room.type === 'mainframe') lightColor = 0x0000ff;
+            else if(room.type === 'power') lightColor = 0xffff00;
             
             const roomLight = new THREE.PointLight(lightColor, 0.5, room.w);
-            roomLight.position.set(room.x, 2.5, room.z);
+            roomLight.position.set(room.x, yOffset + 2.5, room.z);
             scene.add(roomLight);
         });
         
-        // Pasillos principales (sin paredes para permitir movimiento)
+        // Suelo completo del nivel 2 (80x80m)
+        const level2Floor = new THREE.Mesh(
+            new THREE.BoxGeometry(80, 0.3, 80),
+            new THREE.MeshBasicMaterial({ color: 0x252525 })
+        );
+        level2Floor.position.set(0, 5.85, 0);
+        scene.add(level2Floor);
+        
+        // PAREDES EXTERIORES NIVEL 2 (oscuras y aterradoras)
+        const level2OuterWalls = [
+            new THREE.Mesh(new THREE.BoxGeometry(80, 3, 0.5), level2WallMat),
+            new THREE.Mesh(new THREE.BoxGeometry(80, 3, 0.5), level2WallMat),
+            new THREE.Mesh(new THREE.BoxGeometry(0.5, 3, 80), level2WallMat),
+            new THREE.Mesh(new THREE.BoxGeometry(0.5, 3, 80), level2WallMat)
+        ];
+        level2OuterWalls[0].position.set(0, 7.5, -40);
+        level2OuterWalls[1].position.set(0, 7.5, 40);
+        level2OuterWalls[2].position.set(-40, 7.5, 0);
+        level2OuterWalls[3].position.set(40, 7.5, 0);
+        level2OuterWalls.forEach(w => {
+            scene.add(w);
+            this.walls.push(w);
+        });
+        
+        // TECHO NIVEL 2 (oscuro)
+        const level2Ceiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(80, 80),
+            ceilingMat
+        );
+        level2Ceiling.rotation.x = Math.PI / 2;
+        level2Ceiling.position.y = 9;
+        scene.add(level2Ceiling);
+        
+        // Luces rojas tenues en nivel 2 (ambiente terrorífico)
+        for(let i = 0; i < 8; i++) {
+            const x = (i % 4 - 1.5) * 20;
+            const z = Math.floor(i / 4) * 40 - 20;
+            const redLight = new THREE.PointLight(0xff0000, 0.3, 15);
+            redLight.position.set(x, 7.5, z);
+            scene.add(redLight);
+        }
+        
+        // ÁREA CENTRAL NIVEL 2 - Zona de experimentación
+        // Plataforma central elevada con contenedor "666"
+        const centralPlatform = new THREE.Mesh(
+            new THREE.CylinderGeometry(8, 9, 0.5, 16),
+            new THREE.MeshBasicMaterial({ color: 0x2a2a2a })
+        );
+        centralPlatform.position.set(0, 6.25, 0);
+        scene.add(centralPlatform);
+        
+        // Contenedor central "666" grande
+        const mainContainer = new THREE.Mesh(
+            new THREE.CylinderGeometry(2.5, 2.5, 3, 16),
+            new THREE.MeshBasicMaterial({ color: 0x4a0000, transparent: true, opacity: 0.6 })
+        );
+        mainContainer.position.set(0, 7.5, 0);
+        scene.add(mainContainer);
+        this.floatingObjects.push({ mesh: mainContainer, type: 'float', baseY: 7.5, speed: 0.0008 });
+        
+        // Luz roja pulsante en contenedor
+        const containerLight = new THREE.PointLight(0xff0000, 2, 15);
+        containerLight.position.set(0, 7.5, 0);
+        scene.add(containerLight);
+        setInterval(() => {
+            containerLight.intensity = Math.random() > 0.5 ? 2.5 : 1.5;
+        }, 400);
+        
+        // Anillo de energía giratorio
+        const energyRing = new THREE.Mesh(
+            new THREE.TorusGeometry(6, 0.2, 8, 32),
+            new THREE.MeshBasicMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 0.8 })
+        );
+        energyRing.rotation.x = Math.PI / 2;
+        energyRing.position.y = 7;
+        scene.add(energyRing);
+        this.floatingObjects.push({ mesh: energyRing, type: 'ring', baseY: 7, speed: 0.001 });
+        
+        // Pilares alrededor de la plataforma central
+        for(let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const pillar = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.4, 0.5, 2.5, 8),
+                new THREE.MeshBasicMaterial({ color: 0x3a3a3a })
+            );
+            pillar.position.set(Math.sin(angle) * 10, 7.25, Math.cos(angle) * 10);
+            scene.add(pillar);
+            
+            // Luces en pilares
+            const pillarLight = new THREE.PointLight(i % 2 === 0 ? 0xff0000 : 0x00ffff, 0.8, 6);
+            pillarLight.position.set(Math.sin(angle) * 10, 8, Math.cos(angle) * 10);
+            scene.add(pillarLight);
+        }
+        
+        // Mesas de experimentos en el centro
+        const experimentTables = [
+            { x: -5, z: -5 }, { x: 5, z: -5 },
+            { x: -5, z: 5 }, { x: 5, z: 5 }
+        ];
+        experimentTables.forEach(pos => {
+            const table = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 0.1, 1.5),
+                new THREE.MeshBasicMaterial({ color: 0x4a4a4a })
+            );
+            table.position.set(pos.x, 6.8, pos.z);
+            scene.add(table);
+            
+            // Equipos en mesas (con vibración)
+            const equipment = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.6, 0.4),
+                new THREE.MeshBasicMaterial({ color: 0x666666 })
+            );
+            equipment.position.set(pos.x, 7.15, pos.z);
+            scene.add(equipment);
+            this.floatingObjects.push({ mesh: equipment, type: 'vibrate', baseY: 7.15, speed: 0.01 });
+            
+            // Pantallas con luz
+            const screen = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.4, 0.05),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 0.5 })
+            );
+            screen.position.set(pos.x - 0.5, 7.2, pos.z);
+            scene.add(screen);
+        });
+        
+        // Cables colgantes del techo (con balanceo)
+        for(let i = 0; i < 12; i++) {
+            const length = Math.random() * 1.5 + 0.5;
+            const cable = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, length, 4),
+                new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
+            );
+            const x = (Math.random() - 0.5) * 30;
+            const z = (Math.random() - 0.5) * 30;
+            cable.position.set(x, 9 - length/2, z);
+            scene.add(cable);
+            this.floatingObjects.push({ mesh: cable, type: 'swing', baseX: x, baseZ: z, speed: 0.002 + Math.random() * 0.001, offset: Math.random() * Math.PI * 2 });
+        }
+        
+        // Estanterías con suministros en pasillos
+        const shelfPositions = [
+            { x: -15, z: 0 }, { x: 15, z: 0 },
+            { x: 0, z: -15 }, { x: 0, z: 15 }
+        ];
+        shelfPositions.forEach(pos => {
+            const shelf = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 2, 0.5),
+                new THREE.MeshBasicMaterial({ color: 0x3a3a3a })
+            );
+            shelf.position.set(pos.x, 7, pos.z);
+            scene.add(shelf);
+            
+            // Cajas en estanterías
+            for(let i = 0; i < 5; i++) {
+                const box = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.4, 0.4, 0.4),
+                    new THREE.MeshBasicMaterial({ color: 0x5a5a5a })
+                );
+                box.position.set(pos.x, 7.8, pos.z - 0.8 + i * 0.4);
+                scene.add(box);
+            }
+        });
+        
+        // Contenedores de almacenamiento
+        for(let i = 0; i < 8; i++) {
+            const container = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 1.2, 1.5),
+                new THREE.MeshBasicMaterial({ color: 0x2a2a2a })
+            );
+            const angle = (i / 8) * Math.PI * 2;
+            container.position.set(Math.sin(angle) * 18, 6.6, Math.cos(angle) * 18);
+            container.rotation.y = Math.random() * Math.PI;
+            scene.add(container);
+        }
+        
+        // Luces de advertencia parpadeantes
+        for(let i = 0; i < 6; i++) {
+            const warningLight = new THREE.PointLight(0xffaa00, 0, 8);
+            const x = (Math.random() - 0.5) * 25;
+            const z = (Math.random() - 0.5) * 25;
+            warningLight.position.set(x, 8.5, z);
+            scene.add(warningLight);
+            setInterval(() => {
+                warningLight.intensity = Math.random() > 0.7 ? 1.2 : 0;
+            }, 500 + i * 100);
+        }
+        
+        // Paneles de control en paredes
+        const controlPanels = [
+            { x: -18, z: 0, rot: Math.PI / 2 },
+            { x: 18, z: 0, rot: -Math.PI / 2 },
+            { x: 0, z: -18, rot: 0 },
+            { x: 0, z: 18, rot: Math.PI }
+        ];
+        controlPanels.forEach(data => {
+            const panel = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 1.5, 0.1),
+                new THREE.MeshBasicMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.3 })
+            );
+            panel.position.set(data.x, 7, data.z);
+            panel.rotation.y = data.rot;
+            scene.add(panel);
+        });
+        
+        // Escaleras para nivel 2 en esquinas con barandales
+        this.createStairs(-20, -20);
+        this.createStairs(20, -20);
+        this.createStairs(-20, 20);
+        this.createStairs(20, 20);
+        
+        // Barandales en pasillos nivel 2
+        const railingMat = new THREE.MeshBasicMaterial({ color: 0x4a4a4a });
+        const railings = [
+            { x: -10, z: 0, w: 0.1, d: 20 },
+            { x: 10, z: 0, w: 0.1, d: 20 },
+            { x: 0, z: -10, w: 20, d: 0.1 },
+            { x: 0, z: 10, w: 20, d: 0.1 }
+        ];
+        railings.forEach(r => {
+            const railing = new THREE.Mesh(
+                new THREE.BoxGeometry(r.w, 1, r.d),
+                railingMat
+            );
+            railing.position.set(r.x, 6.5, r.z);
+            scene.add(railing);
+        });
+        
         const corridorLights = [
-            { x: 0, z: -10 }, { x: 0, z: 0 }, { x: 0, z: 10 },
-            { x: -10, z: 0 }, { x: 10, z: 0 }
+            { x: 0, z: -20 }, { x: 0, z: 0 }, { x: 0, z: 20 },
+            { x: -20, z: 0 }, { x: 20, z: 0 },
+            { x: 0, z: -20, y: 6 }, { x: 0, z: 0, y: 6 }, { x: 0, z: 20, y: 6 },
+            { x: -20, z: 0, y: 6 }, { x: 20, z: 0, y: 6 }
         ];
         corridorLights.forEach(pos => {
-            const light = new THREE.PointLight(0x606060, 0.4, 12);
-            light.position.set(pos.x, 2.5, pos.z);
+            const light = new THREE.PointLight(0x606060, 0.4, 15);
+            light.position.set(pos.x, pos.y || 2.5, pos.z);
             scene.add(light);
         });
+        
+        // Señales de advertencia en nivel 2 (pegadas a paredes internas)
+        const warningTexts = [
+            { x: -10, z: -10, rot: Math.PI / 4, text: '⚠️ PELIGRO\nNIVEL 2' },
+            { x: 10, z: -10, rot: -Math.PI / 4, text: '⚠️ ZONA\nRESTRINGIDA' },
+            { x: -10, z: 10, rot: -Math.PI / 4, text: '☢️ RIESGO\nBIOLÓGICO' },
+            { x: 10, z: 10, rot: Math.PI / 4, text: '⚡ ALTA\nTENSIÓN' }
+        ];
+        warningTexts.forEach(data => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffaa00';
+            ctx.fillRect(0, 0, 256, 256);
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'center';
+            const lines = data.text.split('\n');
+            lines.forEach((line, i) => {
+                ctx.fillText(line, 128, 100 + i * 50);
+            });
+            const texture = new THREE.CanvasTexture(canvas);
+            const sign = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.2, 1.2),
+                new THREE.MeshBasicMaterial({ map: texture })
+            );
+            sign.position.set(data.x, 7.5, data.z);
+            sign.rotation.y = data.rot;
+            scene.add(sign);
+        });
+    }
+    
+    createStairs(x, z) {
+        const stairMat = new THREE.MeshBasicMaterial({ color: 0x4a4a4a });
+        const railMat = new THREE.MeshBasicMaterial({ color: 0x3a3a3a });
+        
+        // Plataforma base
+        const basePlatform = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 3), stairMat);
+        basePlatform.position.set(x, 0.1, z);
+        scene.add(basePlatform);
+        
+        // 12 escalones para subir 6m
+        for(let i = 0; i < 12; i++) {
+            const step = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 0.8), stairMat);
+            step.position.set(x, i * 0.5 + 0.25, z + i * 0.5);
+            scene.add(step);
+            
+            // Barandales en escaleras
+            if(i > 0) {
+                const leftRail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.8, 0.1), railMat);
+                leftRail.position.set(x - 1.4, i * 0.5 + 0.4, z + i * 0.5);
+                scene.add(leftRail);
+                
+                const rightRail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.8, 0.1), railMat);
+                rightRail.position.set(x + 1.4, i * 0.5 + 0.4, z + i * 0.5);
+                scene.add(rightRail);
+            }
+        }
+        
+        // Plataforma superior conectada al nivel 2
+        const topPlatform = new THREE.Mesh(new THREE.BoxGeometry(3, 0.2, 3), stairMat);
+        topPlatform.position.set(x, 6.1, z + 6);
+        scene.add(topPlatform);
+        
+        const stairLight = new THREE.PointLight(0x808080, 0.6, 8);
+        stairLight.position.set(x, 3, z + 3);
+        scene.add(stairLight);
+        
+        // Luz en la parte superior
+        const topLight = new THREE.PointLight(0xff0000, 0.5, 6);
+        topLight.position.set(x, 6.5, z + 6);
+        scene.add(topLight);
     }
 
     createLaboratory() {
@@ -844,7 +1253,11 @@ class Chapter2 {
             setTimeout(() => blackOverlay.remove(), 2000);
             
             showMonologue('Un laboratorio abandonado... "Proyecto 666"');
+            setTimeout(() => {
+                showMonologue('*Dolor agudo* Mi pierna... está lastimada...');
+            }, 2000);
             this.createStaminaBar();
+            this.createInjuryIndicator();
             
             // Efecto de despertar (visión borrosa)
             const blur = document.createElement('div');
@@ -871,6 +1284,27 @@ class Chapter2 {
         bar.appendChild(fill);
         document.body.appendChild(bar);
     }
+    
+    createInjuryIndicator() {
+        if(document.getElementById('injuryIndicator')) return;
+        
+        const indicator = document.createElement('div');
+        indicator.id = 'injuryIndicator';
+        indicator.style.cssText = 'position:fixed;bottom:45px;left:20px;width:200px;height:12px;background:#222;border:2px solid #ff0000;z-index:100;';
+        
+        const fill = document.createElement('div');
+        fill.id = 'injuryFill';
+        fill.style.cssText = 'height:100%;background:linear-gradient(90deg,#ff0000,#ff8888);width:100%;transition:width 0.5s;';
+        
+        const label = document.createElement('div');
+        label.id = 'injuryLabel';
+        label.style.cssText = 'position:fixed;bottom:60px;left:20px;color:#ff0000;font-size:12px;font-weight:bold;text-shadow:0 0 5px #000;z-index:100;';
+        label.textContent = '🦵 PIERNA LASTIMADA';
+        
+        indicator.appendChild(fill);
+        document.body.appendChild(indicator);
+        document.body.appendChild(label);
+    }
 
     update(delta) {
         if(!this.active) return;
@@ -892,15 +1326,41 @@ class Chapter2 {
         // Actualizar gamepad
         this.updateGamepad();
         
+        // Curación gradual de pierna
+        if(this.legInjured) {
+            this.legHealProgress += delta * 0.5;
+            if(this.legHealProgress >= 100) {
+                this.legInjured = false;
+                this.legHealProgress = 100;
+                showMonologue('Mi pierna... se siente mejor.');
+                const indicator = document.getElementById('injuryIndicator');
+                const label = document.getElementById('injuryLabel');
+                if(indicator) indicator.remove();
+                if(label) label.remove();
+            }
+            
+            const injuryFill = document.getElementById('injuryFill');
+            if(injuryFill) {
+                injuryFill.style.width = (100 - this.legHealProgress) + '%';
+                if(this.legHealProgress > 70) {
+                    injuryFill.style.background = 'linear-gradient(90deg,#ffaa00,#ffdd88)';
+                    const indicator = document.getElementById('injuryIndicator');
+                    if(indicator) indicator.style.borderColor = '#ffaa00';
+                }
+            }
+        }
+        
         // Actualizar isRunning ANTES de calcular movimiento
-        if(!this.isRunning) this.isRunning = this.keys['shift'];
+        this.isRunning = this.keys['shift'] && !this.staminaExhausted;
         
         // Movimiento
         this.velocity.x = 0;
         this.velocity.z = 0;
 
-        let baseSpeed = 0.08;
-        if(this.isRunning && this.stamina > 0 && !this.staminaExhausted) baseSpeed = 0.14;
+        let baseSpeed = this.legInjured ? 0.05 : 0.08;
+        if(this.isRunning && this.stamina > 0 && !this.staminaExhausted) {
+            baseSpeed = this.legInjured ? 0.09 : 0.14;
+        }
         
         const isMoving = this.keys['w'] || this.keys['a'] || this.keys['s'] || this.keys['d'] || Math.abs(this.joystickX) > 0.1 || Math.abs(this.joystickY) > 0.1;
         
@@ -925,23 +1385,64 @@ class Chapter2 {
 
         camera.position.addScaledVector(direction, -this.velocity.z);
         camera.position.addScaledVector(right, -this.velocity.x);
-
-        // Límites del laboratorio (60x60m)
-        camera.position.x = Math.max(-29, Math.min(29, camera.position.x));
-        camera.position.z = Math.max(-29, Math.min(29, camera.position.z));
         
-        // Colisión con paredes
+        // Animación de correr (balanceo de cámara)
+        let baseY = 1.6;
+        if(this.isRunning && isMoving && this.stamina > 0 && !this.staminaExhausted) {
+            this.runBobTime += delta * 15;
+            baseY += Math.sin(this.runBobTime) * 0.08;
+            camera.rotation.z = Math.sin(this.runBobTime * 0.5) * 0.02;
+        } else if(isMoving) {
+            this.runBobTime += delta * 8;
+            baseY += Math.sin(this.runBobTime) * 0.03;
+        } else {
+            camera.rotation.z = 0;
+            this.runBobTime = 0;
+        }
+
+        // Límites del laboratorio (80x80m) y altura por nivel
+        camera.position.x = Math.max(-39, Math.min(39, camera.position.x));
+        camera.position.z = Math.max(-39, Math.min(39, camera.position.z));
+        
+        // Detectar si está en escaleras para cambiar altura
+        const stairPositions = [
+            { x: -20, z: -20 }, { x: 20, z: -20 },
+            { x: -20, z: 20 }, { x: 20, z: 20 }
+        ];
+        
+        let onStairs = false;
+        for(let stair of stairPositions) {
+            const dx = Math.abs(camera.position.x - stair.x);
+            const dz = camera.position.z - stair.z;
+            if(dx < 1.5 && dz >= 0 && dz <= 6) {
+                onStairs = true;
+                camera.position.y = 1.6 + (dz * 1.0);
+                break;
+            }
+        }
+        
+        // Si no está en escaleras, ajustar altura según nivel
+        if(!onStairs) {
+            const onLevel2 = camera.position.y > 4;
+            if(onLevel2) {
+                camera.position.y = 7.6 + (baseY - 1.6);
+            } else {
+                camera.position.y = baseY;
+            }
+        }
+        
+        // Colisión con paredes (MEJORADA)
         if(this.walls) {
             const playerBox = new THREE.Box3(
-                new THREE.Vector3(camera.position.x - 0.3, 0, camera.position.z - 0.3),
-                new THREE.Vector3(camera.position.x + 0.3, 2, camera.position.z + 0.3)
+                new THREE.Vector3(camera.position.x - 0.3, camera.position.y - 1.6, camera.position.z - 0.3),
+                new THREE.Vector3(camera.position.x + 0.3, camera.position.y + 0.4, camera.position.z + 0.3)
             );
             
             for(let wall of this.walls) {
                 const wallBox = new THREE.Box3().setFromObject(wall);
                 if(playerBox.intersectsBox(wallBox)) {
-                    camera.position.addScaledVector(direction, velocity.z * 2);
-                    camera.position.addScaledVector(right, velocity.x * 2);
+                    camera.position.addScaledVector(direction, this.velocity.z * 2);
+                    camera.position.addScaledVector(right, this.velocity.x * 2);
                     break;
                 }
             }
@@ -950,9 +1451,26 @@ class Chapter2 {
         const playerPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
         let nearNote = null;
         
-        // Sistema de stamina
+        // Actualizar objetos flotantes en fase exploring
+        if(this.floatingObjects && this.floatingObjects.length > 0) {
+            const time = Date.now() * 0.001;
+            for(let obj of this.floatingObjects) {
+                if(obj.type === 'ring') {
+                    obj.mesh.rotation.z += obj.speed * 60 * delta;
+                } else if(obj.type === 'float') {
+                    obj.mesh.position.y = obj.baseY + Math.sin(time * obj.speed * 1000) * 0.15;
+                } else if(obj.type === 'swing') {
+                    obj.mesh.rotation.z = Math.sin(time * obj.speed * 1000 + obj.offset) * 0.1;
+                } else if(obj.type === 'vibrate') {
+                    obj.mesh.position.y = obj.baseY + Math.sin(time * obj.speed * 1000) * 0.02;
+                    obj.mesh.rotation.y = Math.sin(time * obj.speed * 500) * 0.05;
+                }
+            }
+        }
+        
+        // Sistema de stamina (más rápido si pierna lastimada)
         if(this.isRunning && this.stamina > 0 && !this.staminaExhausted && isMoving) {
-            this.stamina -= 0.5;
+            this.stamina -= this.legInjured ? 0.7 : 0.5;
             if(this.stamina <= 0) {
                 this.stamina = 0;
                 this.staminaExhausted = true;
@@ -961,10 +1479,10 @@ class Chapter2 {
                     this.exhaustedAudio.currentTime = 0;
                     this.exhaustedAudio.play().catch(() => {});
                 }
-                showMonologue('*Jadeo* No puedo más...');
+                showMonologue(this.legInjured ? '*Jadeo* Mi pierna... no aguanta...' : '*Jadeo* No puedo más...');
             }
         } else if(this.stamina < this.maxStamina) {
-            this.stamina += 0.2;
+            this.stamina += this.legInjured ? 0.15 : 0.2;
             if(this.stamina >= this.maxStamina) {
                 this.stamina = this.maxStamina;
                 this.staminaExhausted = false;
@@ -981,6 +1499,7 @@ class Chapter2 {
             if(this.runAudioPlaying && this.runAudio) {
                 this.runAudioPlaying = false;
                 this.runAudio.pause();
+                this.runAudio.currentTime = 0;
             }
         }
         
@@ -991,6 +1510,8 @@ class Chapter2 {
                 this.playFootstep();
                 this.footstepTimer = 0;
             }
+        } else {
+            this.footstepTimer = 0;
         }
         
         // Verificar distancia con Gissel Cyber
@@ -1010,6 +1531,9 @@ class Chapter2 {
             const dist = Math.sqrt(dx * dx + dz * dz);
             
             if(note.userData.type === 'icon' && !note.userData.collected && dist < 1.5) {
+                nearNote = note;
+                break;
+            } else if(note.userData.type === 'key' && !note.userData.collected && dist < 1.5) {
                 nearNote = note;
                 break;
             } else if(note.userData.type === 'note' && !note.userData.read && dist < 1.5) {
@@ -1055,7 +1579,7 @@ class Chapter2 {
         }
         
         // Verificar puerta desbloqueada
-        if(this.collectedIcons.length >= this.totalIcons && this.phase === 'exploring') {
+        if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys && this.phase === 'exploring') {
             const doorDist = Math.sqrt(
                 Math.pow(playerPos.x - 0, 2) + 
                 Math.pow(playerPos.z - 14, 2)
@@ -1089,6 +1613,13 @@ class Chapter2 {
         camera.position.set(0, 1.6, -50);
         showMonologue('Un túnel... debo seguir la luz...');
         vibrateGamepad(300, 0.5, 0.5);
+        
+        // Asegurar que los audios sigan disponibles
+        if(!this.runAudio || this.runAudio.error) {
+            this.runAudio = new Audio('stuff/correr.mp3');
+            this.runAudio.volume = 0.4;
+            this.runAudio.loop = true;
+        }
     }
 
     createEscapeTunnel() {
@@ -1293,7 +1824,7 @@ class Chapter2 {
         this.updateGamepad();
         
         // Actualizar isRunning ANTES de calcular movimiento
-        if(!this.isRunning) this.isRunning = this.keys['shift'];
+        this.isRunning = this.keys['shift'] && !this.staminaExhausted;
         
         // Movimiento en túnel
         this.velocity.x = 0;
@@ -1349,6 +1880,31 @@ class Chapter2 {
                 this.stamina = this.maxStamina;
                 this.staminaExhausted = false;
             }
+        }
+        
+        // Audio de correr en túnel
+        if(this.isRunning && isMoving && this.stamina > 0 && !this.staminaExhausted) {
+            if(!this.runAudioPlaying && this.runAudio) {
+                this.runAudioPlaying = true;
+                this.runAudio.play().catch(() => {});
+            }
+        } else {
+            if(this.runAudioPlaying && this.runAudio) {
+                this.runAudioPlaying = false;
+                this.runAudio.pause();
+                this.runAudio.currentTime = 0;
+            }
+        }
+        
+        // Footsteps en túnel
+        if(isMoving && !this.isRunning) {
+            this.footstepTimer += delta * 1000;
+            if(this.footstepTimer >= this.footstepInterval) {
+                this.playFootstep();
+                this.footstepTimer = 0;
+            }
+        } else {
+            this.footstepTimer = 0;
         }
         
         // Actualizar barra de stamina
@@ -1863,7 +2419,17 @@ class Chapter2 {
 
     enterWhiteRoom() {
         this.phase = 'whiteroom';
+        this.flashlightBroken = true;
         this.clearScene();
+        
+        // Asegurar que los audios sigan disponibles
+        if(!this.runAudio || this.runAudio.error) {
+            this.runAudio = new Audio('stuff/correr.mp3');
+            this.runAudio.volume = 0.4;
+            this.runAudio.loop = true;
+        }
+        
+        showMonologue('Mi linterna... dejó de funcionar...');
         
         // Sala completamente blanca 40x40m
         const floor = new THREE.Mesh(
@@ -1896,9 +2462,13 @@ class Chapter2 {
         ceiling.position.y = 10;
         scene.add(ceiling);
         
-        // Luz ambiental intensa
+        // Luz ambiental intensa (sala blanca)
         const ambient = new THREE.AmbientLight(0xffffff, 1.5);
         scene.add(ambient);
+        
+        setTimeout(() => {
+            showMonologue('Todo brilla... no necesito la linterna aquí.');
+        }, 2000);
         
         // Puerta de salida al final
         const exitDoor = new THREE.Mesh(
@@ -1950,6 +2520,17 @@ class Chapter2 {
         camera.position.x = Math.max(-19, Math.min(19, camera.position.x));
         camera.position.z = Math.max(-19, Math.min(19, camera.position.z));
         
+        // Footsteps en sala blanca (sin correr)
+        if(isMoving) {
+            this.footstepTimer += delta * 1000;
+            if(this.footstepTimer >= this.footstepInterval) {
+                this.playFootstep();
+                this.footstepTimer = 0;
+            }
+        } else {
+            this.footstepTimer = 0;
+        }
+        
         // Frases en posiciones específicas
         const phrases = [
             { z: -15, text: 'Voz desconocida: "Bienvenido al vacío..."', triggered: false },
@@ -1984,61 +2565,84 @@ class Chapter2 {
         this.rainParticles = [];
         this.clearScene();
         
-        // Pasillo largo 10x100m con pasto
+        // Asegurar que los audios sigan disponibles
+        if(!this.runAudio || this.runAudio.error) {
+            this.runAudio = new Audio('stuff/correr.mp3');
+            this.runAudio.volume = 0.4;
+            this.runAudio.loop = true;
+        }
+        if(this.footstepPool.length === 0) {
+            for(let i = 0; i < 3; i++) {
+                const audio = new Audio('stuff/stepsound.mp3');
+                audio.volume = 0.25;
+                this.footstepPool.push(audio);
+            }
+        }
+        
+        // PATIO LARGO 30x500m con pasto oscuro y lodoso
         const grassFloor = new THREE.Mesh(
-            new THREE.PlaneGeometry(10, 100),
-            new THREE.MeshBasicMaterial({ color: 0x2d5016 })
+            new THREE.PlaneGeometry(30, 500),
+            new THREE.MeshBasicMaterial({ color: 0x1a3010 })
         );
         grassFloor.rotation.x = -Math.PI / 2;
-        grassFloor.position.z = 50;
+        grassFloor.position.z = 250;
         scene.add(grassFloor);
         
-        // Paredes del pasillo
-        const wallMat = new THREE.MeshBasicMaterial({ color: 0x3a3a3a });
-        const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 100), wallMat);
-        wallLeft.position.set(-5, 3, 50);
+        // Muros de piedra altos a los lados (8m altura)
+        const wallMat = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
+        const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(1, 8, 500), wallMat);
+        wallLeft.position.set(-15, 4, 250);
         scene.add(wallLeft);
         
-        const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 100), wallMat);
-        wallRight.position.set(5, 3, 50);
+        const wallRight = new THREE.Mesh(new THREE.BoxGeometry(1, 8, 500), wallMat);
+        wallRight.position.set(15, 4, 250);
         scene.add(wallRight);
         
-        // Vegetación a los lados (30 árboles)
-        const treeMat = new THREE.MeshBasicMaterial({ color: 0x3a2a1a });
-        const leavesMat = new THREE.MeshBasicMaterial({ color: 0x1a4a1a });
-        for(let i = 0; i < 30; i++) {
-            const side = Math.random() > 0.5 ? -4 : 4;
-            const z = i * 3.3;
+        // Árboles muertos y vegetación oscura (80 árboles)
+        const treeMat = new THREE.MeshBasicMaterial({ color: 0x2a1a0a });
+        const leavesMat = new THREE.MeshBasicMaterial({ color: 0x0a2a0a });
+        for(let i = 0; i < 80; i++) {
+            const side = Math.random() > 0.5 ? -12 : 12;
+            const z = i * 6.2 + Math.random() * 3;
             
             const trunk = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.3, 0.3, 2, 4),
+                new THREE.CylinderGeometry(0.4, 0.5, 3, 4),
                 treeMat
             );
-            trunk.position.set(side, 1, z);
+            trunk.position.set(side + (Math.random() - 0.5) * 2, 1.5, z);
+            trunk.rotation.z = (Math.random() - 0.5) * 0.3;
             scene.add(trunk);
             
             const leaves = new THREE.Mesh(
-                new THREE.SphereGeometry(1, 4, 4),
+                new THREE.SphereGeometry(1.2, 4, 4),
                 leavesMat
             );
-            leaves.position.set(side, 2.5, z);
+            leaves.position.set(side + (Math.random() - 0.5) * 2, 3.5, z);
             scene.add(leaves);
         }
         
-        // Iconos de personajes en las paredes (12 frases)
+        // Lápidas y estatuas con iconos (20 susurros)
         const characterIcons = [
-            { path: '../assets/icons/GisselInactiveIcon.png', pos: [-4.8, 2, 10], whisper: 'Gissel: "No te rindas..."' },
-            { path: '../assets/icons/IA777NormalIcon.png', pos: [4.8, 2, 15], whisper: 'iA777: "Sistema... alerta..."' },
-            { path: '../assets/icons/LunaNormalIcon.png', pos: [-4.8, 2, 20], whisper: 'Luna: "Sigue adelante..."' },
-            { path: '../assets/icons/AngelNormalIcon.png', pos: [4.8, 2, 25], whisper: 'Angel: "La luz te guía..."' },
-            { path: '../assets/icons/IrisNormalIcon.png', pos: [-4.8, 2, 30], whisper: 'Iris: "Puedo sentirte..."' },
-            { path: '../assets/icons/MollyNormalIcon.png', pos: [4.8, 2, 35], whisper: 'Molly: "Confía en ti..."' },
-            { path: '../assets/icons/GisselInactiveIcon.png', pos: [-4.8, 2, 40], whisper: 'Gissel: "¡Eres fuerte!"' },
-            { path: '../assets/icons/IA777NormalIcon.png', pos: [4.8, 2, 45], whisper: 'iA777: "Continuar... misión..."' },
-            { path: '../assets/icons/LunaNormalIcon.png', pos: [-4.8, 2, 50], whisper: 'Luna: "Ya casi..."' },
-            { path: '../assets/icons/AngelNormalIcon.png', pos: [4.8, 2, 55], whisper: 'Angel: "Bendiciones..."' },
-            { path: '../assets/icons/IrisNormalIcon.png', pos: [-4.8, 2, 60], whisper: 'Iris: "Estás cerca..."' },
-            { path: '../assets/icons/MollyNormalIcon.png', pos: [4.8, 2, 65], whisper: 'Molly: "No pares ahora..."' }
+            { path: '../assets/icons/GisselInactiveIcon.png', pos: [-10, 1.5, 25], whisper: 'Gissel: "La lluvia... nunca para..."' },
+            { path: '../assets/icons/IA777NormalIcon.png', pos: [10, 1.5, 50], whisper: 'iA777: "Peligro... detectado..."' },
+            { path: '../assets/icons/LunaNormalIcon.png', pos: [-10, 1.5, 75], whisper: 'Luna: "El castillo... te espera..."' },
+            { path: '../assets/icons/AngelNormalIcon.png', pos: [10, 1.5, 100], whisper: 'Angel: "Reza por tu alma..."' },
+            { path: '../assets/icons/IrisNormalIcon.png', pos: [-10, 1.5, 125], whisper: 'Iris: "Siento... oscuridad..."' },
+            { path: '../assets/icons/MollyNormalIcon.png', pos: [10, 1.5, 150], whisper: 'Molly: "No mires atrás..."' },
+            { path: '../assets/icons/GisselInactiveIcon.png', pos: [-10, 1.5, 175], whisper: 'Gissel: "Corre... CORRE!"' },
+            { path: '../assets/icons/IA777NormalIcon.png', pos: [10, 1.5, 200], whisper: 'iA777: "IA666... cerca..."' },
+            { path: '../assets/icons/LunaNormalIcon.png', pos: [-10, 1.5, 225], whisper: 'Luna: "La tormenta empeora..."' },
+            { path: '../assets/icons/AngelNormalIcon.png', pos: [10, 1.5, 250], whisper: 'Angel: "Dios te proteja..."' },
+            { path: '../assets/icons/IrisNormalIcon.png', pos: [-10, 1.5, 275], whisper: 'Iris: "Algo te observa..."' },
+            { path: '../assets/icons/MollyNormalIcon.png', pos: [10, 1.5, 300], whisper: 'Molly: "Ya casi llegas..."' },
+            { path: '../assets/icons/GisselInactiveIcon.png', pos: [-10, 1.5, 325], whisper: 'Gissel: "El castillo... maldito..."' },
+            { path: '../assets/icons/IA777NormalIcon.png', pos: [10, 1.5, 350], whisper: 'iA777: "Alerta máxima..."' },
+            { path: '../assets/icons/LunaNormalIcon.png', pos: [-10, 1.5, 375], whisper: 'Luna: "No entres... huye..."' },
+            { path: '../assets/icons/AngelNormalIcon.png', pos: [10, 1.5, 400], whisper: 'Angel: "Perdona nuestros pecados..."' },
+            { path: '../assets/icons/IrisNormalIcon.png', pos: [-10, 1.5, 425], whisper: 'Iris: "Puedo ver... tu miedo..."' },
+            { path: '../assets/icons/MollyNormalIcon.png', pos: [10, 1.5, 450], whisper: 'Molly: "El final está cerca..."' },
+            { path: '../assets/icons/LunaNormalIcon.png', pos: [-10, 1.5, 475], whisper: 'Luna: "Última advertencia..."' },
+            { path: '../assets/icons/GisselInactiveIcon.png', pos: [0, 1.5, 490], whisper: 'Gissel: "...adiós..."' }
         ];
         
         characterIcons.forEach(data => {
@@ -2067,9 +2671,9 @@ class Chapter2 {
             });
         });
         
-        // Lluvia (150 partículas)
+        // Lluvia INTENSA (400 partículas)
         this.rainParticles = [];
-        for(let i = 0; i < 150; i++) {
+        for(let i = 0; i < 400; i++) {
             const geometry = new THREE.BufferGeometry();
             const vertices = new Float32Array([0, 0, 0, 0, -0.3, 0]);
             geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
@@ -2078,66 +2682,102 @@ class Chapter2 {
             const rain = new THREE.Line(geometry, material);
             
             rain.position.set(
-                (Math.random() - 0.5) * 30,
-                Math.random() * 10 + 5,
-                (Math.random() - 0.5) * 30
+                (Math.random() - 0.5) * 60,
+                Math.random() * 15 + 5,
+                Math.random() * 500
             );
             
-            rain.userData.velocity = Math.random() * 0.3 + 0.2;
+            rain.userData.velocity = Math.random() * 0.5 + 0.4;
             scene.add(rain);
             this.rainParticles.push(rain);
         }
         
-        // Castillo al final del pasillo
+        // CASTILLO ÉPICO al final (30m ancho, 15m alto)
         const castleWall = new THREE.Mesh(
-            new THREE.BoxGeometry(10, 8, 1),
-            new THREE.MeshBasicMaterial({ color: 0x4a4a4a })
+            new THREE.BoxGeometry(30, 15, 2),
+            new THREE.MeshBasicMaterial({ color: 0x2a2a2a })
         );
-        castleWall.position.set(0, 4, 99);
+        castleWall.position.set(0, 7.5, 498);
         scene.add(castleWall);
         
-        // Torres del castillo
-        for(let x of [-4, 4]) {
+        // Torres del castillo (4 torres grandes)
+        for(let x of [-12, -4, 4, 12]) {
             const tower = new THREE.Mesh(
-                new THREE.CylinderGeometry(1, 1.2, 10, 8),
-                new THREE.MeshBasicMaterial({ color: 0x3a3a3a })
+                new THREE.CylinderGeometry(2, 2.5, 18, 8),
+                new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
             );
-            tower.position.set(x, 5, 99);
+            tower.position.set(x, 9, 498);
             scene.add(tower);
             
             const towerTop = new THREE.Mesh(
-                new THREE.ConeGeometry(1.5, 2, 8),
+                new THREE.ConeGeometry(3, 4, 8),
                 new THREE.MeshBasicMaterial({ color: 0x8b0000 })
             );
-            towerTop.position.set(x, 11, 99);
+            towerTop.position.set(x, 20, 498);
             scene.add(towerTop);
+            
+            // Ventanas rojas en torres
+            for(let y of [5, 10, 15]) {
+                const window = new THREE.PointLight(0xff0000, 1, 8);
+                window.position.set(x, y, 497);
+                scene.add(window);
+            }
         }
         
-        // Puerta del castillo
+        // Puerta del castillo GRANDE
         const castleDoor = new THREE.Mesh(
-            new THREE.BoxGeometry(3, 4, 0.3),
-            new THREE.MeshBasicMaterial({ color: 0x2a1a0a })
+            new THREE.BoxGeometry(6, 8, 0.5),
+            new THREE.MeshBasicMaterial({ color: 0x1a0a0a })
         );
-        castleDoor.position.set(0, 2, 98.5);
+        castleDoor.position.set(0, 4, 496);
         scene.add(castleDoor);
         
-        // Luz dorada sobre castillo
-        const castleLight = new THREE.PointLight(0xffd700, 3, 20);
-        castleLight.position.set(0, 6, 98);
+        // Marco dorado de puerta
+        const doorFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(7, 9, 0.3),
+            new THREE.MeshBasicMaterial({ color: 0xffd700 })
+        );
+        doorFrame.position.set(0, 4.5, 495.5);
+        scene.add(doorFrame);
+        
+        // Luces dramáticas del castillo
+        const castleLight = new THREE.PointLight(0xffd700, 5, 40);
+        castleLight.position.set(0, 10, 495);
         scene.add(castleLight);
         
-        // Luz ambiental tenue
-        const ambient = new THREE.AmbientLight(0x404040, 0.5);
+        // Relámpagos simulados
+        const lightning = new THREE.PointLight(0xaaaaff, 0, 100);
+        lightning.position.set(0, 20, 250);
+        scene.add(lightning);
+        setInterval(() => {
+            if(Math.random() > 0.95) {
+                lightning.intensity = 8;
+                setTimeout(() => lightning.intensity = 0, 100);
+            }
+        }, 500);
+        
+        // Niebla y ambiente oscuro
+        const ambient = new THREE.AmbientLight(0x202020, 0.3);
         scene.add(ambient);
+        
+        // Luces tenues cada 50m
+        for(let i = 0; i < 10; i++) {
+            const light = new THREE.PointLight(0x404040, 0.5, 15);
+            light.position.set((Math.random() - 0.5) * 20, 3, i * 50 + 25);
+            scene.add(light);
+        }
+        
+        // Sonido de lluvia ambiental
+        this.playRainAmbient();
         
         camera.position.set(0, 1.6, 5);
         camera.lookAt(0, 1.6, 10);
-        showMonologue('Un pasillo... con pasto...');
+        showMonologue('Un patio... lluvia intensa...');
         
         setTimeout(() => {
-            showMonologue('Escucho... susurros...');
+            showMonologue('La tormenta... no para...');
             setTimeout(() => {
-                showMonologue('Al final... ¿un castillo?');
+                showMonologue('Al final... un castillo oscuro...');
             }, 3000);
         }, 3000);
     }
@@ -2147,7 +2787,7 @@ class Chapter2 {
         this.updateGamepad();
         
         // Actualizar isRunning ANTES de calcular movimiento
-        if(!this.isRunning) this.isRunning = this.keys['shift'];
+        this.isRunning = this.keys['shift'] && !this.staminaExhausted;
         
         // Movimiento
         this.velocity.x = 0;
@@ -2178,9 +2818,72 @@ class Chapter2 {
         camera.position.addScaledVector(direction, -this.velocity.z);
         camera.position.addScaledVector(right, -this.velocity.x);
 
-        // Límites del pasillo (10x100m)
-        camera.position.x = Math.max(-4.5, Math.min(4.5, camera.position.x));
-        camera.position.z = Math.max(5, Math.min(95, camera.position.z));
+        // Límites del patio (30x500m)
+        camera.position.x = Math.max(-14, Math.min(14, camera.position.x));
+        camera.position.z = Math.max(5, Math.min(493, camera.position.z));
+        
+        // Sistema de stamina en pasillo
+        if(this.isRunning && this.stamina > 0 && !this.staminaExhausted && isMoving) {
+            this.stamina -= 0.5;
+            if(this.stamina <= 0) {
+                this.stamina = 0;
+                this.staminaExhausted = true;
+                this.isRunning = false;
+                if(this.exhaustedAudio) {
+                    this.exhaustedAudio.currentTime = 0;
+                    this.exhaustedAudio.play().catch(() => {});
+                }
+                showMonologue('*Jadeo* No puedo más...');
+            }
+        } else if(this.stamina < this.maxStamina) {
+            this.stamina += 0.2;
+            if(this.stamina >= this.maxStamina) {
+                this.stamina = this.maxStamina;
+                this.staminaExhausted = false;
+            }
+        }
+        
+        // Audio de correr en pasillo
+        if(this.isRunning && isMoving && this.stamina > 0 && !this.staminaExhausted) {
+            if(!this.runAudioPlaying && this.runAudio) {
+                this.runAudioPlaying = true;
+                this.runAudio.play().catch(() => {});
+            }
+        } else {
+            if(this.runAudioPlaying && this.runAudio) {
+                this.runAudioPlaying = false;
+                this.runAudio.pause();
+                this.runAudio.currentTime = 0;
+            }
+        }
+        
+        // Footsteps en pasillo
+        if(isMoving && !this.isRunning) {
+            this.footstepTimer += delta * 1000;
+            if(this.footstepTimer >= this.footstepInterval) {
+                this.playFootstep();
+                this.footstepTimer = 0;
+            }
+        } else {
+            this.footstepTimer = 0;
+        }
+        
+        // Actualizar barra de stamina
+        const staminaFill = document.getElementById('ch2StaminaFill');
+        const staminaBar = document.getElementById('ch2StaminaBar');
+        if(staminaFill) {
+            staminaFill.style.width = (this.stamina / this.maxStamina * 100) + '%';
+            if(this.staminaExhausted) {
+                staminaBar.style.borderColor = '#ff0000';
+                staminaFill.style.background = 'linear-gradient(90deg,#ff0000,#ff8888)';
+            } else if(this.stamina < 30) {
+                staminaBar.style.borderColor = '#ffaa00';
+                staminaFill.style.background = 'linear-gradient(90deg,#ffaa00,#ffdd88)';
+            } else {
+                staminaBar.style.borderColor = '#00ff00';
+                staminaFill.style.background = 'linear-gradient(90deg,#00ff00,#88ff88)';
+            }
+        }
         
         // Actualizar lluvia
         if(this.rainParticles) {
@@ -2205,8 +2908,25 @@ class Chapter2 {
             }
         }
         
+        // Actualizar objetos flotantes
+        if(this.floatingObjects && this.floatingObjects.length > 0) {
+            const time = Date.now() * 0.001;
+            for(let obj of this.floatingObjects) {
+                if(obj.type === 'ring') {
+                    obj.mesh.rotation.z += obj.speed * 60 * delta;
+                } else if(obj.type === 'float') {
+                    obj.mesh.position.y = obj.baseY + Math.sin(time * obj.speed * 1000) * 0.15;
+                } else if(obj.type === 'swing') {
+                    obj.mesh.rotation.z = Math.sin(time * obj.speed * 1000 + obj.offset) * 0.1;
+                } else if(obj.type === 'vibrate') {
+                    obj.mesh.position.y = obj.baseY + Math.sin(time * obj.speed * 1000) * 0.02;
+                    obj.mesh.rotation.y = Math.sin(time * obj.speed * 500) * 0.05;
+                }
+            }
+        }
+        
         // Verificar si llegó al castillo
-        if(camera.position.z >= 93) {
+        if(camera.position.z >= 490) {
             this.finishChapter();
         }
     }
@@ -2228,7 +2948,7 @@ class Chapter2 {
             setTimeout(() => {
                 showMonologue('Pero IA666 sigue ahí fuera...');
                 setTimeout(() => {
-                    showMonologue('Proyecto 666... ¿Qué han creado?');
+                    showMonologue('El castillo... ¿qué secretos guarda?');
                     setTimeout(() => {
                         // Texto "CONTINUARÁ" con efecto dramático
                         const continueText = document.createElement('div');
@@ -2249,6 +2969,25 @@ class Chapter2 {
         }, 2000);
     }
 
+    playRainAmbient() {
+        if(!this.audioContext) return;
+        const noise = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+        
+        noise.type = 'sawtooth';
+        noise.frequency.setValueAtTime(100, this.audioContext.currentTime);
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(300, this.audioContext.currentTime);
+        
+        gain.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.audioContext.destination);
+        noise.start();
+    }
+    
     playWhisper() {
         if(!this.audioContext) return;
         const osc = this.audioContext.createOscillator();
@@ -2306,9 +3045,31 @@ class Chapter2 {
         // Actualizar cartel de puerta
         this.updateDoorSign();
         
-        if(this.collectedIcons.length >= this.totalIcons) {
+        if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length < this.totalKeys) {
             setTimeout(() => {
-                showMonologue('¡Todos los iconos recolectados! La puerta está desbloqueada.');
+                showMonologue(`¡Todos los iconos! Ahora busca las ${this.totalKeys} llaves.`);
+            }, 1000);
+        } else if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys) {
+            setTimeout(() => {
+                showMonologue('¡Todo recolectado! La puerta está desbloqueada.');
+            }, 1000);
+        }
+    }
+    
+    collectKey(key) {
+        key.userData.collected = true;
+        this.collectedKeys.push(key.userData.name);
+        scene.remove(key);
+        
+        this.playCollectSound();
+        showMonologue(`🔑 Llave ${key.userData.name} recolectada (${this.collectedKeys.length}/${this.totalKeys})`);
+        vibrateGamepad(200, 0.5, 0.5);
+        
+        this.updateDoorSign();
+        
+        if(this.collectedKeys.length >= this.totalKeys && this.collectedIcons.length >= this.totalIcons) {
+            setTimeout(() => {
+                showMonologue('¡Todo recolectado! La puerta está desbloqueada.');
             }, 1000);
         }
     }
@@ -2470,6 +3231,224 @@ class Chapter2 {
         gain.connect(this.audioContext.destination);
         osc.start();
         osc.stop(this.audioContext.currentTime + 0.3);
+    }
+    
+    createTerminals() {
+        const terminalPositions = [
+            { x: -28, z: -10, room: 'Office', hint: 'Llave Roja en Containment' },
+            { x: 28, z: -10, room: 'Medical', hint: 'Llave Azul en Archive' },
+            { x: -28, z: 10, room: 'Security', hint: 'Llave Verde en Testing (Nivel 2)' },
+            { x: 28, z: 10, room: 'Archive', hint: 'Iconos dispersos en 10 habitaciones' }
+        ];
+        
+        terminalPositions.forEach((data, i) => {
+            const terminal = new THREE.Mesh(
+                new THREE.BoxGeometry(0.8, 1.2, 0.1),
+                new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+            );
+            terminal.position.set(data.x, 1, data.z);
+            terminal.userData = { type: 'terminal', hint: data.hint, id: i, read: false };
+            scene.add(terminal);
+            this.terminals.push(terminal);
+            
+            const termLight = new THREE.PointLight(0x00ff00, 0.8, 3);
+            termLight.position.set(data.x, 1.5, data.z);
+            scene.add(termLight);
+        });
+    }
+    
+    createPuzzleRooms() {
+        // Sala de Energía (Power - Nivel 2): 3 generadores
+        const powerRoom = { x: -28, z: 28, y: 6 };
+        for(let i = 0; i < 3; i++) {
+            const gen = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.4, 0.4, 1.5, 8),
+                new THREE.MeshBasicMaterial({ color: 0x4a4a4a })
+            );
+            gen.position.set(powerRoom.x - 3 + i * 3, powerRoom.y + 0.75, powerRoom.z);
+            gen.userData = { type: 'generator', id: i, active: false };
+            scene.add(gen);
+            this.notes.push(gen);
+        }
+        
+        // Sala de Seguridad (Security): Código de 4 dígitos en notas
+        const securityNotes = [
+            { x: -28, z: 10, digit: '6' },
+            { x: 28, z: -28, digit: '6' },
+            { x: -28, z: -28, digit: '6' },
+            { x: 28, z: 28, digit: '6' }
+        ];
+        securityNotes.forEach(data => {
+            const note = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.3, 0.4),
+                new THREE.MeshBasicMaterial({ color: 0xffffcc })
+            );
+            note.position.set(data.x, 0.86, data.z);
+            note.rotation.x = -Math.PI / 2;
+            note.userData = { type: 'codeNote', digit: data.digit, read: false };
+            scene.add(note);
+            this.notes.push(note);
+        });
+        
+        // Sala de Contención (Containment): Secuencia de colores
+        const colorPanels = [
+            { x: -28, z: 28, color: 0xff0000, order: 1 },
+            { x: -27, z: 28, color: 0x00ff00, order: 2 },
+            { x: -26, z: 28, color: 0x0000ff, order: 3 }
+        ];
+        colorPanels.forEach(data => {
+            const panel = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.5, 0.1),
+                new THREE.MeshBasicMaterial({ color: data.color })
+            );
+            panel.position.set(data.x, 1.5, data.z);
+            panel.userData = { type: 'colorPanel', order: data.order, pressed: false };
+            scene.add(panel);
+            this.notes.push(panel);
+        });
+    }
+    
+    createVentilationSystem() {
+        const ventPositions = [
+            { x: -20, z: -20, connects: { x: 20, z: -20 } },
+            { x: -20, z: 20, connects: { x: 20, z: 20 } },
+            { x: -28, z: 0, connects: { x: 28, z: 0, y: 6 } }
+        ];
+        
+        ventPositions.forEach(data => {
+            const vent = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 1, 0.2),
+                new THREE.MeshBasicMaterial({ color: 0x2a2a2a })
+            );
+            vent.position.set(data.x, 2.5, data.z);
+            vent.userData = { type: 'vent', connects: data.connects };
+            scene.add(vent);
+            this.ventDucts.push(vent);
+            
+            const ventLight = new THREE.PointLight(0x404040, 0.3, 2);
+            ventLight.position.set(data.x, 2.5, data.z);
+            scene.add(ventLight);
+        });
+    }
+    
+    createOptionalCollectibles() {
+        // Habitaciones para coleccionables
+        const rooms = [
+            { x: -28, z: -28, w: 10, d: 10, level: 1 },
+            { x: -28, z: -10, w: 10, d: 8, level: 1 },
+            { x: 28, z: -28, w: 10, d: 10, level: 1 },
+            { x: 28, z: -10, w: 10, d: 8, level: 1 },
+            { x: -28, z: 28, w: 10, d: 10, level: 1 },
+            { x: -28, z: 10, w: 10, d: 8, level: 1 },
+            { x: 28, z: 28, w: 10, d: 10, level: 1 },
+            { x: 28, z: 10, w: 10, d: 8, level: 1 },
+            { x: -28, z: -28, w: 10, d: 10, level: 2 },
+            { x: -28, z: -10, w: 10, d: 8, level: 2 },
+            { x: 28, z: -28, w: 10, d: 10, level: 2 },
+            { x: 28, z: -10, w: 10, d: 8, level: 2 },
+            { x: -28, z: 28, w: 10, d: 10, level: 2 },
+            { x: -28, z: 10, w: 10, d: 8, level: 2 },
+            { x: 28, z: 28, w: 10, d: 10, level: 2 }
+        ];
+        
+        // 15 fragmentos de memoria
+        for(let i = 0; i < 15; i++) {
+            const room = rooms[i % rooms.length];
+            const x = room.x + (Math.random() - 0.5) * (room.w - 2);
+            const z = room.z + (Math.random() - 0.5) * (room.d - 2);
+            const y = room.level === 2 ? 6.86 : 0.86;
+            
+            const fragment = new THREE.Mesh(
+                new THREE.SphereGeometry(0.2, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.7 })
+            );
+            fragment.position.set(x, y, z);
+            fragment.userData = { type: 'memory', id: i, collected: false };
+            scene.add(fragment);
+            this.memoryFragments.push(fragment);
+            
+            const fragLight = new THREE.PointLight(0xff00ff, 0.5, 2);
+            fragLight.position.set(x, y + 0.5, z);
+            scene.add(fragLight);
+        }
+        
+        // 5 grabaciones de audio en habitaciones específicas
+        const audioRooms = [rooms[8], rooms[10], rooms[4], rooms[6], rooms[12]];
+        audioRooms.forEach((room, i) => {
+            const x = room.x + (Math.random() - 0.5) * (room.w - 2);
+            const z = room.z + (Math.random() - 0.5) * (room.d - 2);
+            const y = room.level === 2 ? 6.86 : 0.86;
+            
+            const audio = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.3, 0.3, 0.5, 8),
+                new THREE.MeshBasicMaterial({ color: 0x00ffff })
+            );
+            audio.position.set(x, y, z);
+            audio.userData = { type: 'audio', id: i, collected: false };
+            scene.add(audio);
+            this.audioRecordings.push(audio);
+        });
+    }
+    
+    startDynamicEvents() {
+        // Apagones aleatorios cada 60-120 segundos
+        setInterval(() => {
+            if(this.phase === 'exploring' && !this.powerOutage && Math.random() > 0.5) {
+                this.triggerPowerOutage();
+            }
+        }, 90000);
+        
+        // IA666 aparece brevemente cada 45-90 segundos
+        setInterval(() => {
+            if(this.phase === 'exploring' && !this.ia666 && Math.random() > 0.6) {
+                this.spawnIA666Brief();
+            }
+        }, 60000);
+    }
+    
+    triggerPowerOutage() {
+        this.powerOutage = true;
+        showMonologue('¡Las luces se apagaron!');
+        
+        scene.children.forEach(child => {
+            if(child instanceof THREE.PointLight) {
+                child.userData.originalIntensity = child.intensity;
+                child.intensity = 0.1;
+            }
+        });
+        
+        setTimeout(() => {
+            showMonologue('Debo encontrar fusibles...');
+        }, 2000);
+    }
+    
+    restorePower() {
+        this.powerOutage = false;
+        showMonologue('¡Energía restaurada!');
+        
+        scene.children.forEach(child => {
+            if(child instanceof THREE.PointLight && child.userData.originalIntensity) {
+                child.intensity = child.userData.originalIntensity;
+            }
+        });
+    }
+    
+    spawnIA666Brief() {
+        const x = (Math.random() - 0.5) * 60;
+        const z = (Math.random() - 0.5) * 60;
+        
+        const shadow = new THREE.Mesh(
+            new THREE.BoxGeometry(0.6, 1.6, 0.4),
+            new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.8 })
+        );
+        shadow.position.set(x, 0.8, z);
+        scene.add(shadow);
+        
+        showMonologue('Algo se movió...');
+        
+        setTimeout(() => {
+            scene.remove(shadow);
+        }, 3000);
     }
 }
 

@@ -758,18 +758,22 @@
         let isJumping = false, jumpVelocity = 0, onGround = true;
         const JUMP_FORCE = 0.15, GRAVITY = 0.008, GROUND_Y = 1.6;
         let endMessages = [
-            "Escapaste...",
-            "¿O eso crees?",
-            "Él te dejó salir...",
-            "2019x no era el único...",
-            "Algo despierta en la niebla...",
+            "Escapaste del pasillo...",
+            "Pero 2019x te dejó ir...",
+            "Él no era el único experimento...",
+            "Algo más despertó en la oscuridad...",
             "Circuitos corruptos... pasos entre mundos...",
-            "Dos nuevos jugadores se acercan...",
-            "Uno es máquina. El otro ve todo...",
-            "La Entidad... tiene miedo...",
-            "El juego cambiará para siempre...",
-            "¿Quién es el siguiente?",
-            "PRÓXIMAMENTE..."
+            "Dos presencias se acercan a la niebla...",
+            "Una es máquina corrupta...",
+            "La otra ve todo... pasado, presente, futuro...",
+            "La Entidad siente algo nuevo...",
+            "Miedo...",
+            "El Deadly Pursuit cambiará para siempre...",
+            "¿Quién es el Jugador Cero?",
+            "¿Qué secretos guarda el castillo?",
+            "Las respuestas están más cerca de lo que crees...",
+            "Pero... ¿estás listo para la verdad?",
+            "La caída... es solo el comienzo..."
         ]
         let currentEndMessage = 0;
         let monologues = [
@@ -880,6 +884,18 @@
         let inRainZone = false;
         let hallwayLoaded = false;
         let grassZoneLoaded = false;
+        let runBobTime = 0;
+        let hangingCables = [];
+        let ceilingFans = [];
+        let fanAudio;
+        let fanAudioPlaying = false;
+        let screamAudio;
+        let screamTriggered = false;
+        let iSeeYouAudio;
+        let metalPipeAudio;
+        let metalPipeTriggered = false;
+        let dripAudio;
+        let dripZones = [];
 
 
         // Loading system
@@ -1267,6 +1283,97 @@
                 }
             }
         }
+        
+        function checkScream(distance) {
+            const screamTrigger = 350 + Math.floor(Math.random() * 400);
+            if(!screamTriggered && distance >= screamTrigger) {
+                screamTriggered = true;
+                playScream();
+                showMonologue('¿Qué fue ese grito?');
+                vibrateGamepad(400, 0.8, 0.8);
+            }
+        }
+        
+        function playScream() {
+            if(!screamAudio) return;
+            
+            screamAudio.currentTime = 0;
+            screamAudio.play().catch(() => {});
+            
+            setTimeout(() => {
+                const echo1 = screamAudio.cloneNode();
+                echo1.volume = 0.25;
+                echo1.play().catch(() => {});
+            }, 400);
+            
+            setTimeout(() => {
+                const echo2 = screamAudio.cloneNode();
+                echo2.volume = 0.12;
+                echo2.play().catch(() => {});
+            }, 800);
+        }
+        
+        function checkMetalPipe(distance) {
+            const pipeTrigger = 550 + Math.floor(Math.random() * 300);
+            if(!metalPipeTriggered && distance >= pipeTrigger) {
+                metalPipeTriggered = true;
+                playMetalPipe();
+                showMonologue('💀 METAL PIPE FALLING SOUND 💀');
+                vibrateGamepad(600, 1.0, 1.0);
+            }
+        }
+        
+        function playMetalPipe() {
+            if(!metalPipeAudio) return;
+            
+            // Sonido principal con AURA
+            metalPipeAudio.currentTime = 0;
+            metalPipeAudio.play().catch(() => {});
+            
+            // Eco 1 - Más fuerte
+            setTimeout(() => {
+                const echo1 = metalPipeAudio.cloneNode();
+                echo1.volume = 0.5;
+                echo1.play().catch(() => {});
+            }, 300);
+            
+            // Eco 2 - Medio
+            setTimeout(() => {
+                const echo2 = metalPipeAudio.cloneNode();
+                echo2.volume = 0.3;
+                echo2.play().catch(() => {});
+            }, 600);
+            
+            // Eco 3 - Suave pero con AURA
+            setTimeout(() => {
+                const echo3 = metalPipeAudio.cloneNode();
+                echo3.volume = 0.15;
+                echo3.play().catch(() => {});
+            }, 900);
+        }
+        
+        function checkDripZones(distance) {
+            if(killerChasing) {
+                if(dripAudio && !dripAudio.paused) dripAudio.pause();
+                return;
+            }
+            
+            let closestDist = Infinity;
+            for(let zone of dripZones) {
+                const center = (zone.start + zone.end) / 2;
+                const dist = Math.abs(distance - center);
+                if(dist < closestDist) closestDist = dist;
+            }
+            
+            const maxRange = 50;
+            if(closestDist < maxRange) {
+                if(dripAudio && dripAudio.paused) dripAudio.play().catch(() => {});
+                const volume = Math.max(0, 0.3 * (1 - closestDist / maxRange));
+                if(dripAudio) dripAudio.volume = volume;
+            } else {
+                if(dripAudio && !dripAudio.paused) dripAudio.pause();
+            }
+        }
 
         function playGunshot() {
             if(!gunshotAudio) return;
@@ -1361,6 +1468,33 @@
             
             gunshotAudio = new Audio('stuff/disparo.mp3');
             gunshotAudio.volume = 0.6;
+            
+            fanAudio = new Audio('stuff/ventilador.mp3');
+            fanAudio.volume = 0.15;
+            fanAudio.loop = true;
+            
+            screamAudio = new Audio('stuff/femalescream.mp3');
+            screamAudio.volume = 0.5;
+            
+            iSeeYouAudio = new Audio('stuff/ISEEYOU.mp3');
+            iSeeYouAudio.volume = 0.7;
+            
+            metalPipeAudio = new Audio('stuff/metal pipe.mp3');
+            metalPipeAudio.volume = 0.8;
+            
+            dripAudio = new Audio('stuff/goteos.mp3');
+            dripAudio.volume = 0.3;
+            dripAudio.loop = true;
+            
+            // Zonas estratégicas de goteras (cerca de tuberías y grietas)
+            dripZones = [
+                { start: 100, end: 130 },
+                { start: 280, end: 310 },
+                { start: 450, end: 480 },
+                { start: 620, end: 650 },
+                { start: 780, end: 810 },
+                { start: 920, end: 950 }
+            ];
             
             // Reproducir audio de pasillo
             playHallwayAudio();
@@ -1523,6 +1657,9 @@
             const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 1, metalness: 0, flatShading: true });
             const wallMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 1, metalness: 0, flatShading: true });
             const obstacleMat = new THREE.MeshStandardMaterial({ color: 0x4a0000, roughness: 0.9, metalness: 0, flatShading: true });
+            const pipeMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.8, metalness: 0.3, flatShading: true });
+            const bloodMat = new THREE.MeshBasicMaterial({ color: 0x330000, transparent: true, opacity: 0.6 });
+            const crackMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.3 });
             
             const hallLength = 2500;
             
@@ -1728,6 +1865,9 @@
             
             // Iconos de personajes en las paredes
             createCharacterIcons();
+            
+            // Ambiente del pasillo
+            createHallwayAmbience(pipeMat, bloodMat, crackMat);
 
             // Cofre en 2450m
             createChest(0, 0.5, 2450);
@@ -2408,9 +2548,9 @@
             velocity.x = 0;
             velocity.z = 0;
 
-            let baseSpeed = 0.08;
-            if(isRunning && stamina > 0 && !staminaExhausted) baseSpeed = 0.14;
-            if(killerChasing) baseSpeed = isRunning && stamina > 0 && !staminaExhausted ? 0.16 : 0.10;
+            let baseSpeed = 0.04;
+            if(isRunning && stamina > 0 && !staminaExhausted) baseSpeed = 0.07;
+            if(killerChasing) baseSpeed = isRunning && stamina > 0 && !staminaExhausted ? 0.08 : 0.05;
             
             const speed = baseSpeed;
             const isMoving = moveForward || moveBackward || moveLeft || moveRight || Math.abs(joystickX) > 0.1 || Math.abs(joystickY) > 0.1;
@@ -2498,9 +2638,9 @@
                     onGround = true;
                     jumpVelocity = 0;
                 }
-            } else {
-                playerY = GROUND_Y;
             }
+            
+            camera.position.y = playerY;
 
             // Colisión con obstáculos (solo muy cercanos, cada 3 frames)
             if(Date.now() % 3 === 0) {
@@ -2563,6 +2703,10 @@
                 killerSpawned = true;
                 killerPosition = camera.position.z - 100; // Spawn 100m detrás
                 spawn2019x();
+                if(iSeeYouAudio) {
+                    iSeeYouAudio.currentTime = 0;
+                    iSeeYouAudio.play().catch(() => {});
+                }
                 showMonologue('¡ÉL ESTÁ AQUÍ! ¡CORRE!');
                 startChase();
                 vibrateGamepad(1000, 1.0, 1.0);
@@ -2671,7 +2815,19 @@
                 showEndSequence();
             }
 
-            camera.position.y = playerY;
+            // Animación de correr
+            if(isRunning && isMoving && stamina > 0 && !staminaExhausted) {
+                runBobTime += 0.24;
+                camera.position.y = GROUND_Y + Math.sin(runBobTime) * 0.08;
+                camera.rotation.z = Math.sin(runBobTime * 0.5) * 0.02;
+            } else if(isMoving) {
+                runBobTime += 0.13;
+                camera.position.y = GROUND_Y + Math.sin(runBobTime) * 0.03;
+            } else {
+                camera.position.y = playerY;
+                camera.rotation.z = 0;
+                runBobTime = 0;
+            }
             
             // Actualizar linterna (optimizado)
             if(hasFlashlight && flashlightOn) {
@@ -2725,6 +2881,8 @@
                 
                 checkObjectFalls(posZ);
                 checkGunshots(posZ);
+                checkScream(posZ);
+                checkMetalPipe(posZ);
                 
                 // Iconos cada 10 frames
                 if(Date.now() % 10 === 0) checkCharacterIcons(posZ);
@@ -2733,6 +2891,9 @@
                 if(Math.random() > 0.9998) {
                     playWhisper();
                 }
+                
+                // Sistema de goteras por zonas
+                checkDripZones(posZ);
             }
             
             // Actualizar objetos cayendo (solo si hay objetos, cada 2 frames)
@@ -2752,6 +2913,35 @@
                 }
             }
 
+            // Animar cables colgantes
+            if(hangingCables.length > 0) {
+                const time = Date.now() * 0.001;
+                hangingCables.forEach(cable => {
+                    cable.rotation.z = Math.sin(time + cable.userData.swingOffset) * 0.15;
+                });
+            }
+            
+            // Animar ventiladores y audio por proximidad
+            if(ceilingFans.length > 0 && !killerChasing) {
+                let nearFan = false;
+                ceilingFans.forEach(fan => {
+                    fan.rotation.y += fan.userData.speed;
+                    const dist = Math.abs(camera.position.z - fan.position.z);
+                    if(dist < 20) nearFan = true;
+                });
+                
+                if(nearFan && !fanAudioPlaying && fanAudio) {
+                    fanAudio.play().catch(() => {});
+                    fanAudioPlaying = true;
+                } else if(!nearFan && fanAudioPlaying && fanAudio) {
+                    fanAudio.pause();
+                    fanAudioPlaying = false;
+                }
+            } else if(fanAudioPlaying && fanAudio) {
+                fanAudio.pause();
+                fanAudioPlaying = false;
+            }
+            
             // Actualizar fragmentos de puerta (solo si hay fragmentos)
             if(doorFragments.length > 0) {
                 for(let i = doorFragments.length - 1; i >= 0; i--) {
@@ -3166,6 +3356,155 @@
             // Vibración sutil
             vibrateGamepad(100, 0.2, 0.2);
         }
+        
+        function createHallwayAmbience(pipeMat, bloodMat, crackMat) {
+            // Tuberías en las paredes (cada 100m)
+            for(let z = 50; z < 1000; z += 100) {
+                // Tubería izquierda
+                const pipeL = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.15, 0.15, 50, 6),
+                    pipeMat
+                );
+                pipeL.rotation.z = Math.PI / 2;
+                pipeL.position.set(-4.8, 2.5, z);
+                scene.add(pipeL);
+                
+                // Tubería derecha
+                const pipeR = pipeL.clone();
+                pipeR.position.set(4.8, 2.5, z);
+                scene.add(pipeR);
+            }
+            
+            // Cables colgantes (cada 80m)
+            for(let z = 100; z < 1000; z += 80) {
+                const cable = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.03, 0.03, 1.5, 4),
+                    new THREE.MeshBasicMaterial({ color: 0x222222 })
+                );
+                cable.position.set((Math.random() - 0.5) * 6, 3.5, z);
+                cable.userData.swingOffset = Math.random() * Math.PI * 2;
+                scene.add(cable);
+                hangingCables.push(cable);
+            }
+            
+            // Manchas de sangre en paredes (cada 150m)
+            for(let z = 80; z < 1000; z += 150) {
+                const side = Math.random() > 0.5 ? -4.9 : 4.9;
+                const bloodStain = new THREE.Mesh(
+                    new THREE.PlaneGeometry(0.8, 1.2),
+                    bloodMat
+                );
+                bloodStain.position.set(side, 1.5 + Math.random(), z);
+                bloodStain.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
+                scene.add(bloodStain);
+            }
+            
+            // Grietas con luz roja (cada 200m)
+            for(let z = 120; z < 1000; z += 200) {
+                const side = Math.random() > 0.5 ? -4.9 : 4.9;
+                const crack = new THREE.Mesh(
+                    new THREE.PlaneGeometry(0.3, 2),
+                    crackMat
+                );
+                crack.position.set(side, 2, z);
+                crack.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
+                scene.add(crack);
+                
+                // Luz roja de la grieta
+                const crackLight = new THREE.PointLight(0xff0000, 0.3, 5);
+                crackLight.position.set(side * 0.9, 2, z);
+                scene.add(crackLight);
+            }
+            
+            // Puertas cerradas a los lados (cada 180m)
+            for(let z = 140; z < 1000; z += 180) {
+                const side = Math.random() > 0.5 ? -4.8 : 4.8;
+                const door = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.2, 2.5, 1.5),
+                    new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.9, metalness: 0 })
+                );
+                door.position.set(side, 1.25, z);
+                scene.add(door);
+            }
+            
+            // Carteles de advertencia (cada 250m)
+            const warningTexts = ['PELIGRO', 'NO PASAR', 'ZONA RESTRINGIDA', 'SALIDA →'];
+            for(let z = 200; z < 1000; z += 250) {
+                const side = Math.random() > 0.5 ? -4.9 : 4.9;
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, 256, 128);
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(10, 10, 236, 108);
+                ctx.fillStyle = '#ff0000';
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(warningTexts[Math.floor(Math.random() * warningTexts.length)], 128, 70);
+                const texture = new THREE.CanvasTexture(canvas);
+                const sign = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.5, 0.75),
+                    new THREE.MeshBasicMaterial({ map: texture })
+                );
+                sign.position.set(side, 2.5, z);
+                sign.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
+                scene.add(sign);
+            }
+            
+            // Charcos de agua (cada 120m)
+            for(let z = 90; z < 1000; z += 120) {
+                const puddle = new THREE.Mesh(
+                    new THREE.CircleGeometry(0.6, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x1a3a4a, roughness: 0.2, metalness: 0.8 })
+                );
+                puddle.rotation.x = -Math.PI / 2;
+                puddle.position.set((Math.random() - 0.5) * 4, 0.01, z);
+                scene.add(puddle);
+            }
+            
+            // Escombros en el suelo (cada 100m)
+            for(let z = 70; z < 1000; z += 100) {
+                for(let i = 0; i < 3; i++) {
+                    const debris = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.2 + Math.random() * 0.3, 0.1, 0.2 + Math.random() * 0.3),
+                        new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 1, metalness: 0 })
+                    );
+                    debris.position.set((Math.random() - 0.5) * 7, 0.05, z + (Math.random() - 0.5) * 10);
+                    debris.rotation.y = Math.random() * Math.PI;
+                    scene.add(debris);
+                }
+            }
+            
+            // Ventiladores oxidados en el techo (cada 150m)
+            for(let z = 100; z < 1000; z += 150) {
+                const fanGroup = new THREE.Group();
+                
+                // Base del ventilador
+                const base = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.3, 0.3, 0.1, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.9, metalness: 0.2 })
+                );
+                fanGroup.add(base);
+                
+                // 3 aspas
+                for(let i = 0; i < 3; i++) {
+                    const blade = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.8, 0.05, 0.15),
+                        new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.8, metalness: 0.1 })
+                    );
+                    blade.rotation.y = (i * Math.PI * 2) / 3;
+                    fanGroup.add(blade);
+                }
+                
+                fanGroup.position.set((Math.random() - 0.5) * 4, 3.8, z);
+                fanGroup.userData.speed = 0.01 + Math.random() * 0.02;
+                scene.add(fanGroup);
+                ceilingFans.push(fanGroup);
+            }
+        }
 
         function pickupFlashlight() {
             hasFlashlight = true;
@@ -3574,17 +3913,28 @@
             eye2.position.set(0.2, 1.4, 0.4);
             character.add(eye2);
             
+            // Luz para iluminar al personaje
+            const charLight = new THREE.PointLight(0xff00ff, 1.5, 10);
+            charLight.position.set(0, 2, 0);
+            character.add(charLight);
+            
             character.position.set(0, 0, camera.position.z + 5);
+            character.rotation.y = Math.PI;
             scene.add(character);
             
             // Mostrar mensajes uno por uno
             let msgIndex = 0;
+            let currentBubble = null;
             const showNextMessage = () => {
                 if(msgIndex < endMessages.length) {
-                    showMonologue(endMessages[msgIndex]);
+                    if(currentBubble) character.remove(currentBubble);
+                    currentBubble = createSpeechBubble(endMessages[msgIndex]);
+                    currentBubble.position.set(0, 2.5, 0);
+                    character.add(currentBubble);
                     msgIndex++;
                     setTimeout(showNextMessage, 3000);
                 } else {
+                    if(currentBubble) character.remove(currentBubble);
                     // Después del último mensaje, romper el suelo
                     setTimeout(() => breakFloor(character), 1000);
                 }
@@ -3592,7 +3942,44 @@
             showNextMessage();
         }
         
+        function createSpeechBubble(text) {
+            const bubble = new THREE.Group();
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            ctx.strokeStyle = '#ff00ff';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.roundRect(10, 10, 492, 108, 15);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const words = text.split(' ');
+            let lines = [], currentLine = '';
+            words.forEach(word => {
+                const testLine = currentLine + word + ' ';
+                if(ctx.measureText(testLine).width > 460 && currentLine) {
+                    lines.push(currentLine);
+                    currentLine = word + ' ';
+                } else currentLine = testLine;
+            });
+            lines.push(currentLine);
+            lines.forEach((line, i) => ctx.fillText(line.trim(), 256, 64 - ((lines.length - 1) * 15) + i * 30));
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide, depthTest: false }));
+            plane.renderOrder = 999;
+            bubble.add(plane);
+            return bubble;
+        }
+        
         function breakFloor(character) {
+            showMonologue('¿Qué...? ¡EL SUELO!');
             showMonologue('¿Qué...? ¡EL SUELO!');
             vibrateGamepad(500, 0.8, 0.8);
             
