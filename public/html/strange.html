@@ -1326,29 +1326,56 @@
         function playMetalPipe() {
             if(!metalPipeAudio) return;
             
-            // Sonido principal con AURA
+            // Sonido principal con AURA y fade in
+            metalPipeAudio.volume = 0;
             metalPipeAudio.currentTime = 0;
             metalPipeAudio.play().catch(() => {});
             
-            // Eco 1 - Más fuerte
+            // Fade in rápido (0 a 0.8 en 100ms)
+            let fadeInTime = 0;
+            const fadeInInterval = setInterval(() => {
+                fadeInTime += 10;
+                metalPipeAudio.volume = Math.min(0.8, fadeInTime / 100 * 0.8);
+                if(fadeInTime >= 100) clearInterval(fadeInInterval);
+            }, 10);
+            
+            // Eco 1 - Más fuerte con fade
             setTimeout(() => {
                 const echo1 = metalPipeAudio.cloneNode();
-                echo1.volume = 0.5;
+                echo1.volume = 0;
                 echo1.play().catch(() => {});
+                let t = 0;
+                const i = setInterval(() => {
+                    t += 10;
+                    echo1.volume = Math.min(0.5, t / 80 * 0.5);
+                    if(t >= 80) clearInterval(i);
+                }, 10);
             }, 300);
             
-            // Eco 2 - Medio
+            // Eco 2 - Medio con fade
             setTimeout(() => {
                 const echo2 = metalPipeAudio.cloneNode();
-                echo2.volume = 0.3;
+                echo2.volume = 0;
                 echo2.play().catch(() => {});
+                let t = 0;
+                const i = setInterval(() => {
+                    t += 10;
+                    echo2.volume = Math.min(0.3, t / 80 * 0.3);
+                    if(t >= 80) clearInterval(i);
+                }, 10);
             }, 600);
             
-            // Eco 3 - Suave pero con AURA
+            // Eco 3 - Suave pero con AURA y fade
             setTimeout(() => {
                 const echo3 = metalPipeAudio.cloneNode();
-                echo3.volume = 0.15;
+                echo3.volume = 0;
                 echo3.play().catch(() => {});
+                let t = 0;
+                const i = setInterval(() => {
+                    t += 10;
+                    echo3.volume = Math.min(0.15, t / 80 * 0.15);
+                    if(t >= 80) clearInterval(i);
+                }, 10);
             }, 900);
         }
         
@@ -2640,6 +2667,7 @@
                 }
             }
             
+            // Aplicar posición Y ANTES de la animación de correr
             camera.position.y = playerY;
 
             // Colisión con obstáculos (solo muy cercanos, cada 3 frames)
@@ -2815,18 +2843,19 @@
                 showEndSequence();
             }
 
-            // Animación de correr
-            if(isRunning && isMoving && stamina > 0 && !staminaExhausted) {
-                runBobTime += 0.24;
-                camera.position.y = GROUND_Y + Math.sin(runBobTime) * 0.08;
-                camera.rotation.z = Math.sin(runBobTime * 0.5) * 0.02;
-            } else if(isMoving) {
-                runBobTime += 0.13;
-                camera.position.y = GROUND_Y + Math.sin(runBobTime) * 0.03;
-            } else {
-                camera.position.y = playerY;
-                camera.rotation.z = 0;
-                runBobTime = 0;
+            // Animación de correr (solo si está en el suelo)
+            if(onGround && !isJumping) {
+                if(isRunning && isMoving && stamina > 0 && !staminaExhausted) {
+                    runBobTime += 0.24;
+                    camera.position.y = playerY + Math.sin(runBobTime) * 0.08;
+                    camera.rotation.z = Math.sin(runBobTime * 0.5) * 0.02;
+                } else if(isMoving) {
+                    runBobTime += 0.13;
+                    camera.position.y = playerY + Math.sin(runBobTime) * 0.03;
+                } else {
+                    camera.rotation.z = 0;
+                    runBobTime = 0;
+                }
             }
             
             // Actualizar linterna (optimizado)
