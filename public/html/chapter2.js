@@ -45,6 +45,8 @@ class Chapter2 {
         this.touchStartX = 0;
         this.touchStartY = 0;
         this.runBobTime = 0;
+        this.targetHeight = 1.6;
+        this.currentHeight = 1.6;
         
         // Sistemas de exploración
         this.terminalsRead = 0;
@@ -59,6 +61,7 @@ class Chapter2 {
         this.ventDucts = [];
         this.flashlightBroken = false;
         this.floatingObjects = [];
+        this.lastCheckpoint = { x: 0, y: 1.6, z: -40 };
     }
 
     start() {
@@ -68,12 +71,80 @@ class Chapter2 {
         this.initAudio();
         this.createFallingCinematic();
         this.setupControls();
+        this.loadProgress();
+    }
+    
+    saveProgress() {
+        const progress = {
+            phase: this.phase,
+            collectedIcons: this.collectedIcons,
+            collectedKeys: this.collectedKeys,
+            notesRead: this.notesRead,
+            terminalsRead: this.terminalsRead,
+            legInjured: this.legInjured,
+            legHealProgress: this.legHealProgress,
+            lastCheckpoint: this.lastCheckpoint,
+            cameraPosition: { x: camera.position.x, y: camera.position.y, z: camera.position.z }
+        };
+        localStorage.setItem('chapter2Progress', JSON.stringify(progress));
+        showMonologue('💾 Progreso guardado');
+    }
+    
+    loadProgress() {
+        const saved = localStorage.getItem('chapter2Progress');
+        if(!saved) return;
+        
+        try {
+            const progress = JSON.parse(saved);
+            if(progress.phase === 'exploring' || progress.phase === 'escaping' || progress.phase === 'courtyard') {
+                this.collectedIcons = progress.collectedIcons || [];
+                this.collectedKeys = progress.collectedKeys || [];
+                this.notesRead = progress.notesRead || 0;
+                this.terminalsRead = progress.terminalsRead || 0;
+                this.legInjured = progress.legInjured !== undefined ? progress.legInjured : true;
+                this.legHealProgress = progress.legHealProgress || 0;
+                this.lastCheckpoint = progress.lastCheckpoint || { x: 0, y: 1.6, z: -40 };
+                
+                showMonologue('📂 Progreso cargado. Presiona L para continuar o N para nuevo juego');
+                
+                const loadHandler = (e) => {
+                    if(e.key.toLowerCase() === 'l') {
+                        this.phase = progress.phase;
+                        if(progress.phase === 'exploring') {
+                            this.clearScene();
+                            this.createPitBottom();
+                            camera.position.set(progress.cameraPosition.x, progress.cameraPosition.y, progress.cameraPosition.z);
+                            this.phase = 'exploring';
+                            this.updateDoorSign();
+                        } else if(progress.phase === 'escaping') {
+                            this.startEscapePhase();
+                            camera.position.set(progress.cameraPosition.x, progress.cameraPosition.y, progress.cameraPosition.z);
+                        } else if(progress.phase === 'courtyard') {
+                            this.enterCourtyard();
+                            camera.position.set(progress.cameraPosition.x, progress.cameraPosition.y, progress.cameraPosition.z);
+                        }
+                        document.removeEventListener('keydown', loadHandler);
+                    } else if(e.key.toLowerCase() === 'n') {
+                        localStorage.removeItem('chapter2Progress');
+                        showMonologue('Nuevo juego iniciado');
+                        document.removeEventListener('keydown', loadHandler);
+                    }
+                };
+                document.addEventListener('keydown', loadHandler);
+            }
+        } catch(e) {
+            console.error('Error cargando progreso:', e);
+        }
     }
 
     setupControls() {
         document.addEventListener('keydown', (e) => {
             this.keys[e.key.toLowerCase()] = true;
             if(e.key.toLowerCase() === 'e') this.handleInteract();
+            if(e.key.toLowerCase() === 'f5') {
+                e.preventDefault();
+                this.saveProgress();
+            }
         });
         document.addEventListener('keyup', (e) => {
             this.keys[e.key.toLowerCase()] = false;
@@ -433,7 +504,8 @@ class Chapter2 {
             new THREE.PlaneGeometry(2.5, 1.5),
             new THREE.MeshBasicMaterial({ map: texture, transparent: true })
         );
-        sign.position.set(0, 1.5, 14.4);
+        sign.position.set(0, 1.5, 14);
+        sign.rotation.y = Math.PI;
         scene.add(sign);
         
         this.blockedDoor = { frame: doorFrame, sign: sign, canvas: canvas, ctx: ctx, texture: texture };
@@ -1416,7 +1488,8 @@ class Chapter2 {
             const dz = camera.position.z - stair.z;
             if(dx < 1.5 && dz >= 0 && dz <= 6) {
                 onStairs = true;
-                camera.position.y = 1.6 + (dz * 1.0);
+                // Calcular altura objetivo basada en progreso en escaleras
+                this.targetHeight = 1.6 + (dz * 1.0);
                 break;
             }
         }
@@ -1425,11 +1498,16 @@ class Chapter2 {
         if(!onStairs) {
             const onLevel2 = camera.position.y > 4;
             if(onLevel2) {
-                camera.position.y = 7.6 + (baseY - 1.6);
+                this.targetHeight = 7.6 + (baseY - 1.6);
             } else {
-                camera.position.y = baseY;
+                this.targetHeight = baseY;
             }
         }
+        
+        // Interpolación suave de altura (lerp)
+        const lerpSpeed = 0.15; // Velocidad de transición (0.15 = suave)
+        this.currentHeight += (this.targetHeight - this.currentHeight) * lerpSpeed;
+        camera.position.y = this.currentHeight;
         
         // Colisión con paredes (MEJORADA)
         if(this.walls) {
@@ -1610,7 +1688,7 @@ class Chapter2 {
         this.phase = 'escaping';
         this.clearScene();
         this.createEscapeTunnel();
-        camera.position.set(0, 1.6, -50);
+        camera.position.set(0, 1.6, -40);
         showMonologue('Un túnel... debo seguir la luz...');
         vibrateGamepad(300, 0.5, 0.5);
         
@@ -1730,7 +1808,7 @@ class Chapter2 {
             light.position.set(data.x, 2.5, data.z);
             scene.add(light);
 
-            this.lightZones.push({ position: new THREE.Vector3(data.x, 0, data.z), radius: data.radius });
+            this.lightZones.push({ position: new THREE.Vector3(data.x, 0, data.z), radius: data.radius, visited: false });
         });
         
         // Luces parpadeantes con colores variados
@@ -1934,6 +2012,13 @@ class Chapter2 {
             const dist = Math.sqrt(dx * dx + dz * dz);
             if(dist < zone.radius) {
                 inLight = true;
+                // Guardar checkpoint si es la primera vez en esta luz
+                if(!zone.visited) {
+                    zone.visited = true;
+                    this.lastCheckpoint = { x: zone.position.x, y: 1.6, z: zone.position.z };
+                    showMonologue('✓ Checkpoint guardado');
+                    this.saveProgress();
+                }
                 break;
             }
         }
@@ -2102,7 +2187,7 @@ class Chapter2 {
             glitchOverlay.style.background = 'rgba(0,0,0,1)';
             glitchOverlay.style.mixBlendMode = 'normal';
             setTimeout(() => {
-                camera.position.set(0, 1.6, -50);
+                camera.position.set(this.lastCheckpoint.x, this.lastCheckpoint.y, this.lastCheckpoint.z);
                 if(this.ia666) {
                     scene.remove(this.ia666);
                     this.ia666 = null;
@@ -2111,7 +2196,7 @@ class Chapter2 {
                 this.timeInDarkness = 0;
                 glitchOverlay.style.opacity = '0';
                 setTimeout(() => glitchOverlay.remove(), 1000);
-                showMonologue('Desperté... debo intentarlo de nuevo...');
+                showMonologue('Desperté en el último checkpoint...');
             }, 2000);
         }, 1500);
     }
@@ -3044,6 +3129,7 @@ class Chapter2 {
         
         // Actualizar cartel de puerta
         this.updateDoorSign();
+        this.saveProgress();
         
         if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length < this.totalKeys) {
             setTimeout(() => {
@@ -3066,6 +3152,7 @@ class Chapter2 {
         vibrateGamepad(200, 0.5, 0.5);
         
         this.updateDoorSign();
+        this.saveProgress();
         
         if(this.collectedKeys.length >= this.totalKeys && this.collectedIcons.length >= this.totalIcons) {
             setTimeout(() => {
