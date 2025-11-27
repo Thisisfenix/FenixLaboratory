@@ -275,6 +275,73 @@
         #settingsBtn:hover {
             background: rgba(50, 50, 50, 0.9);
         }
+        #chapterBtn {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            color: #ffd700;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        #chapterBtn:hover {
+            background: rgba(50, 50, 50, 0.9);
+        }
+        #chapterPanel {
+            position: fixed;
+            top: 140px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ffd700;
+            padding: 20px;
+            display: none;
+            z-index: 100;
+            min-width: 250px;
+        }
+        #chapterPanel h3 {
+            color: #ffd700;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        .chapter-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #2a2a2a;
+            border: 1px solid #666;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .chapter-item:hover {
+            background: #3a3a3a;
+            border-color: #ffd700;
+        }
+        .chapter-item.locked {
+            background: #1a1a1a;
+            color: #666;
+            cursor: not-allowed;
+            border-color: #444;
+        }
+        .chapter-item.locked:hover {
+            background: #1a1a1a;
+            border-color: #444;
+        }
+        .chapter-item.current {
+            border-color: #00ff00;
+            background: #1a3a1a;
+        }
         #settingsPanel {
             position: fixed;
             top: 80px;
@@ -547,6 +614,20 @@
     </div>
     
     <div id="settingsBtn" onclick="toggleSettings()">⚙️</div>
+    <div id="chapterBtn" onclick="toggleChapters()">📖</div>
+    
+    <div id="chapterPanel">
+        <h3>📖 CAPÍTULOS</h3>
+        <div class="chapter-item current" onclick="loadChapter(1)">
+            <div style="font-size: 16px; font-weight: bold;">CAPÍTULO 1</div>
+            <div style="font-size: 12px; color: #aaa; margin-top: 4px;">El Pasillo</div>
+        </div>
+        <div class="chapter-item locked" id="chapter2Item" onclick="loadChapter(2)">
+            <div style="font-size: 16px; font-weight: bold;">CAPÍTULO 2</div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">🔒 Completa Cap 1</div>
+        </div>
+    </div>
+    
     <div id="settingsPanel">
         <h3>⚙️ CONFIGURACIÓN</h3>
         <div class="setting-item">
@@ -2434,7 +2515,42 @@
 
         function toggleSettings() {
             const panel = document.getElementById('settingsPanel');
+            const chapterPanel = document.getElementById('chapterPanel');
+            if(chapterPanel) chapterPanel.style.display = 'none';
             panel.style.display = panel.style.display === 'none' || !panel.style.display ? 'block' : 'none';
+        }
+
+        function toggleChapters() {
+            const panel = document.getElementById('chapterPanel');
+            const settingsPanel = document.getElementById('settingsPanel');
+            if(settingsPanel) settingsPanel.style.display = 'none';
+            panel.style.display = panel.style.display === 'none' || !panel.style.display ? 'block' : 'none';
+            checkChapter2Unlock();
+        }
+
+        function checkChapter2Unlock() {
+            const chapter2Item = document.getElementById('chapter2Item');
+            if(localStorage.getItem('chapter2Unlocked') === 'true') {
+                chapter2Item.classList.remove('locked');
+                chapter2Item.querySelector('div:last-child').innerHTML = '<span style="color: #44ff44;">✔️ Desbloqueado</span>';
+            }
+        }
+
+        function loadChapter(num) {
+            if(num === 2 && localStorage.getItem('chapter2Unlocked') !== 'true') {
+                showMonologue('🔒 Capítulo 2 bloqueado - Completa el Capítulo 1 o usa el código secreto');
+                vibrateGamepad(200, 0.3, 0.3);
+                return;
+            }
+            
+            if(num === 1) {
+                location.reload();
+            } else if(num === 2) {
+                toggleChapters();
+                if(typeof unlockChapter2 === 'function') {
+                    unlockChapter2();
+                }
+            }
         }
 
         async function validateSecretCode() {
@@ -2453,8 +2569,11 @@
                 message.className = 'success';
                 input.disabled = true;
                 
+                localStorage.setItem('chapter2Unlocked', 'true');
+                
                 setTimeout(() => {
                     toggleSettings();
+                    checkChapter2Unlock();
                     if(typeof unlockChapter2 === 'function') {
                         unlockChapter2();
                     }
@@ -2505,6 +2624,8 @@
                     }
                 });
             }
+            
+            checkChapter2Unlock();
         });
 
         function onResize() {
@@ -4310,6 +4431,9 @@
         }
         
         function startFalling(character) {
+            // Desbloquear Capítulo 2 al completar Capítulo 1
+            localStorage.setItem('chapter2Unlocked', 'true');
+            
             let fallTime = 0;
             const fallDuration = 3500;
             const initialY = camera.position.y;
@@ -4362,6 +4486,7 @@
                     
                     vibrateGamepad(1000, 1.0, 1.0);
                     showMonologue('*GOLPE FUERTE*');
+                    showMonologue('🔓 CAPÍTULO 2 DESBLOQUEADO');
                     
                     setTimeout(() => {
                         chapter2.start();

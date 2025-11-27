@@ -3019,6 +3019,9 @@ class Chapter2 {
     finishChapter() {
         this.phase = 'finished';
         
+        // Guardar que se completó el Capítulo 2
+        localStorage.setItem('chapter2Completed', 'true');
+        
         // Fade a blanco
         const whiteOverlay = document.createElement('div');
         whiteOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999;opacity:0;transition:opacity 2s;';
