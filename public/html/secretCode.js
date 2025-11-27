@@ -1,7 +1,7 @@
 // Sistema de código secreto - Hash SHA-256 para evitar trampa
 (function() {
-    // Hash SHA-256 del código correcto
-    const validHash = 'a7f8d9e2c1b4a6f3e8d7c9b2a5f4e3d8c7b6a9f2e5d4c3b8a7f6e9d2c5b4a3f8';
+    // Hash SHA-256 de "FENIX2025"
+    const validHash = 'fb39396cd544d43b2732c225210ae1de327c310fbd80e9a0a34710419540754c';
     
     window.checkSecretCode = async function(inputCode) {
         const hash = await sha256(inputCode.toUpperCase().trim());
