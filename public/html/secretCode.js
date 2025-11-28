@@ -7,16 +7,8 @@
         try {
             const normalized = inputCode.toUpperCase().trim();
             const hash = await sha256(normalized);
-            console.log('=== DEBUG CÓDIGO SECRETO ===');
-            console.log('Input original:', inputCode);
-            console.log('Input normalizado:', normalized);
-            console.log('Hash generado:', hash);
-            console.log('Hash válido:', validHash);
-            console.log('¿Coincide?:', hash === validHash);
-            console.log('===========================');
             return hash === validHash;
         } catch(e) {
-            console.error('Error en checkSecretCode:', e);
             return false;
         }
     };
@@ -29,12 +21,7 @@
     }
     
     window.unlockChapter2 = function() {
-        console.log('=== UNLOCK CHAPTER 2 LLAMADO ===');
-        console.log('chapter2 existe?', typeof chapter2 !== 'undefined');
-        console.log('chapter2.start existe?', typeof chapter2 !== 'undefined' && typeof chapter2.start === 'function');
-        
         if(typeof chapter2 !== 'undefined' && chapter2.start) {
-            console.log('Iniciando Chapter 2...');
             // Fade a negro
             const blackOverlay = document.createElement('div');
             blackOverlay.style.cssText = `
@@ -63,6 +50,5 @@
         return false;
     };
     
-    console.log('secretCode.js cargado correctamente');
-    console.log('Hash válido configurado:', validHash);
+
 })();
