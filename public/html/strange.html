@@ -3095,10 +3095,16 @@
                 if(Date.now() % 5 === 0) {
                     document.getElementById('distance').textContent = `Distancia: ${distance}m`;
                 }
-                
-                // Usar posición Z para eventos (más preciso)
+            } else {
+                // En habitación inicial, mostrar 0m
+                if(Date.now() % 5 === 0) {
+                    document.getElementById('distance').textContent = 'Distancia: 0m';
+                }
+            }
+            
+            // Continuar con eventos solo fuera de habitación
+            if(!inStartRoom) {
                 const posZ = Math.floor(camera.position.z);
-                
                 if(currentMonologue < monologues.length && posZ >= monologues[currentMonologue].dist) {
                     showMonologue(monologues[currentMonologue].text);
                     currentMonologue++;
@@ -3917,6 +3923,13 @@
             if(!hasFlashlight) return;
             flashlightOn = !flashlightOn;
             playFlashlightSound();
+            
+            // Actualizar intensidad inmediatamente
+            if(flashlightOn) {
+                lamp.intensity = 6.5;
+            } else {
+                lamp.intensity = 0;
+            }
         }
 
         function openLore() {
