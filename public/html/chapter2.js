@@ -3046,19 +3046,22 @@ class Chapter2 {
                 setTimeout(() => {
                     showMonologue('El castillo... ¿qué secretos guarda?');
                     setTimeout(() => {
-                        // Texto "CONTINUARÁ" con efecto dramático
-                        const continueText = document.createElement('div');
-                        continueText.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#ff0000;font-size:64px;font-weight:bold;text-shadow:0 0 30px #ff0000;z-index:10000;opacity:0;transition:opacity 1s;letter-spacing:10px;';
-                        continueText.textContent = 'CONTINUARÁ...';
-                        document.body.appendChild(continueText);
-                        setTimeout(() => continueText.style.opacity = '1', 100);
+                        // Iniciar Chapter 3 (JOKE)
+                        this.active = false;
+                        const bar = document.getElementById('ch2StaminaBar');
+                        if(bar) bar.remove();
+                        const injuryIndicator = document.getElementById('injuryIndicator');
+                        if(injuryIndicator) injuryIndicator.remove();
+                        const injuryLabel = document.getElementById('injuryLabel');
+                        if(injuryLabel) injuryLabel.remove();
                         
-                        setTimeout(() => {
-                            this.active = false;
-                            const bar = document.getElementById('ch2StaminaBar');
-                            if(bar) bar.remove();
+                        whiteOverlay.remove();
+                        
+                        if(typeof chapter3 !== 'undefined') {
+                            chapter3.start();
+                        } else {
                             location.reload();
-                        }, 3000);
+                        }
                     }, 3000);
                 }, 3000);
             }, 3000);
