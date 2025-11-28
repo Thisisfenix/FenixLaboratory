@@ -96,7 +96,7 @@ class Chapter2 {
         
         try {
             const progress = JSON.parse(saved);
-            if(progress.phase === 'exploring' || progress.phase === 'escaping' || progress.phase === 'courtyard') {
+            if(progress.phase === 'exploring' || progress.phase === 'escaping' || progress.phase === 'whiteroom' || progress.phase === 'courtyard') {
                 this.collectedIcons = progress.collectedIcons || [];
                 this.collectedKeys = progress.collectedKeys || [];
                 this.notesRead = progress.notesRead || 0;
@@ -118,6 +118,9 @@ class Chapter2 {
                             this.updateDoorSign();
                         } else if(progress.phase === 'escaping') {
                             this.startEscapePhase();
+                            camera.position.set(progress.cameraPosition.x, progress.cameraPosition.y, progress.cameraPosition.z);
+                        } else if(progress.phase === 'whiteroom') {
+                            this.enterWhiteRoom();
                             camera.position.set(progress.cameraPosition.x, progress.cameraPosition.y, progress.cameraPosition.z);
                         } else if(progress.phase === 'courtyard') {
                             this.enterCourtyard();
@@ -2016,7 +2019,7 @@ class Chapter2 {
                 if(!zone.visited) {
                     zone.visited = true;
                     this.lastCheckpoint = { x: zone.position.x, y: 1.6, z: zone.position.z };
-                    showMonologue('✓ Checkpoint guardado');
+                    showMonologue('💾 Checkpoint guardado');
                     this.saveProgress();
                 }
                 break;
@@ -2514,6 +2517,8 @@ class Chapter2 {
             this.runAudio.loop = true;
         }
         
+        this.lastCheckpoint = { x: 0, y: 1.6, z: -18 };
+        this.saveProgress();
         showMonologue('Mi linterna... dejó de funcionar...');
         
         // Sala completamente blanca 40x40m
@@ -2663,6 +2668,9 @@ class Chapter2 {
                 this.footstepPool.push(audio);
             }
         }
+        
+        this.lastCheckpoint = { x: 0, y: 1.6, z: 5 };
+        this.saveProgress();
         
         // PATIO LARGO 30x500m con pasto oscuro y lodoso
         const grassFloor = new THREE.Mesh(
