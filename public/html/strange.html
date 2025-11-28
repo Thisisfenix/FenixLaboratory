@@ -487,8 +487,8 @@
         }
         #sprintBtn {
             position: absolute;
-            right: 130px;
-            bottom: 30px;
+            right: 30px;
+            bottom: 130px;
             width: 80px;
             height: 80px;
             background: rgba(0, 200, 255, 0.2);
@@ -860,6 +860,15 @@
     <script src="chapter2.js"></script>
     <script src="chapter3.js"></script>
     <script src="secretCode.js"></script>
+    <script>
+        // Inicializar Chapter 3
+        let chapter3;
+        window.addEventListener('load', () => {
+            if(typeof Chapter3 !== 'undefined') {
+                chapter3 = new Chapter3();
+            }
+        });
+    </script>
     <script>
         let scene, camera, renderer, lamp, chest, flashlight, table, door, exitDoor, ceilingLight, mysteryDoor, gisselPainting, platforms = [], obstacles = [], doorFragments = [];
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;

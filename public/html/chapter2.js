@@ -169,6 +169,12 @@ class Chapter2 {
     }
     
     setupTouchControls() {
+        // Mostrar controles móviles
+        const mobileControls = document.getElementById('mobileControls');
+        if(mobileControls) mobileControls.style.display = 'block';
+        const sprintBtn = document.getElementById('sprintBtn');
+        if(sprintBtn) sprintBtn.style.display = 'flex';
+        
         // Joystick virtual
         const joystick = document.getElementById('joystick');
         const stick = document.getElementById('stick');
@@ -205,31 +211,34 @@ class Chapter2 {
             });
         }
         
-        // Control de cámara táctil
-        const cameraControl = document.getElementById('cameraControl');
-        if(cameraControl) {
-            cameraControl.addEventListener('touchstart', (e) => {
+        // Control de cámara táctil (lado derecho de la pantalla)
+        let touchStartX = 0, touchStartY = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            if(touch.clientX > window.innerWidth / 2) {
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+            }
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            if(touch.clientX > window.innerWidth / 2) {
                 e.preventDefault();
-                this.touchStartX = e.touches[0].clientX;
-                this.touchStartY = e.touches[0].clientY;
-            });
-            
-            cameraControl.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                const deltaX = e.touches[0].clientX - this.touchStartX;
-                const deltaY = e.touches[0].clientY - this.touchStartY;
+                const deltaX = touch.clientX - touchStartX;
+                const deltaY = touch.clientY - touchStartY;
                 
                 this.mouseX -= deltaX * 0.005;
                 this.mouseY -= deltaY * 0.005;
                 this.mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.mouseY));
                 
-                this.touchStartX = e.touches[0].clientX;
-                this.touchStartY = e.touches[0].clientY;
-            });
-        }
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+            }
+        });
         
         // Botón de sprint
-        const sprintBtn = document.getElementById('sprintBtn');
         if(sprintBtn) {
             sprintBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -1901,6 +1910,12 @@ class Chapter2 {
     }
 
     updateEscapePhase(delta) {
+        // Mostrar distancia en túnel
+        const distanceEl = document.getElementById('distance');
+        if(distanceEl) {
+            distanceEl.textContent = `Distancia: ${Math.floor(camera.position.z)}m`;
+        }
+        
         // Actualizar gamepad
         this.updateGamepad();
         
@@ -2155,13 +2170,14 @@ class Chapter2 {
                 if(this.ia666) {
                     scene.remove(this.ia666);
                     this.ia666 = null;
-                    this.ia666Spawned = false;
                 }
             }
         }, 50);
         
-        if(wasSpawned) {
+        if(wasSpawned && !this.ia666DespawnMessageShown) {
+            this.ia666DespawnMessageShown = true;
             showMonologue('Huyó de la luz...');
+            setTimeout(() => this.ia666DespawnMessageShown = false, 3000);
         }
     }
 
@@ -2507,7 +2523,7 @@ class Chapter2 {
 
     enterWhiteRoom() {
         this.phase = 'whiteroom';
-        this.flashlightBroken = true;
+        this.flashlightBroken = false;
         this.clearScene();
         
         // Asegurar que los audios sigan disponibles
@@ -2519,7 +2535,7 @@ class Chapter2 {
         
         this.lastCheckpoint = { x: 0, y: 1.6, z: -18 };
         this.saveProgress();
-        showMonologue('Mi linterna... dejó de funcionar...');
+        showMonologue('Todo brilla... la linterna funciona aquí.');
         
         // Sala completamente blanca 40x40m
         const floor = new THREE.Mesh(
@@ -3046,8 +3062,10 @@ class Chapter2 {
                 setTimeout(() => {
                     showMonologue('El castillo... ¿qué secretos guarda?');
                     setTimeout(() => {
-                        // Iniciar Chapter 3 (JOKE)
-                        this.active = false;
+                        showMonologue('CONTINUARÁ...');
+                        setTimeout(() => {
+                            // Iniciar Chapter 3 (JOKE)
+                            this.active = false;
                         const bar = document.getElementById('ch2StaminaBar');
                         if(bar) bar.remove();
                         const injuryIndicator = document.getElementById('injuryIndicator');
@@ -3057,11 +3075,17 @@ class Chapter2 {
                         
                         whiteOverlay.remove();
                         
-                        if(typeof chapter3 !== 'undefined') {
-                            chapter3.start();
+                        // Verificar si Chapter3 existe y crear instancia si es necesario
+                        if(typeof Chapter3 !== 'undefined') {
+                            if(typeof window.chapter3 === 'undefined') {
+                                window.chapter3 = new Chapter3();
+                            }
+                            window.chapter3.start();
                         } else {
-                            location.reload();
+                            console.error('Chapter3 no está cargado');
+                            showMonologue('Error: Capítulo 3 no disponible');
                         }
+                        }, 3000);
                     }, 3000);
                 }, 3000);
             }, 3000);
@@ -3196,6 +3220,10 @@ class Chapter2 {
     openDoor() {
         if(this.phase !== 'exploring') return;
         this.phase = 'transition';
+        
+        // Ocultar prompt inmediatamente
+        const doorPrompt = document.getElementById('doorPrompt');
+        if(doorPrompt) doorPrompt.remove();
         
         // Animación de puerta abriéndose
         if(this.blockedDoor) {
