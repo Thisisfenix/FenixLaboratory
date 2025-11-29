@@ -1363,6 +1363,12 @@ class Chapter2 {
     startLanding() {
         this.phase = 'exploring';
         
+        // Detener intro
+        if(this.labIntroAudio) {
+            this.labIntroAudio.pause();
+            this.labIntroAudio.currentTime = 0;
+        }
+        
         // Ambiente del laboratorio
         if(this.labAmbientAudio) {
             this.labAmbientAudio.play().catch(() => {});
@@ -1461,28 +1467,6 @@ class Chapter2 {
         if(!this.metalPipePlayed && Math.random() < 0.0001) {
             this.metalPipePlayed = true;
             this.metalPipeAudio.play().catch(() => {});
-        }
-        
-        // Sonido de computadora cerca de terminales
-        let nearTerminal = false;
-        for(let terminal of this.terminals) {
-            const dist = playerPos.distanceTo(terminal.position);
-            if(dist < 3) {
-                nearTerminal = true;
-                break;
-            }
-        }
-        if(nearTerminal && this.computerAudio.paused) {
-            this.computerAudio.play().catch(() => {});
-        } else if(!nearTerminal && !this.computerAudio.paused) {
-            this.computerAudio.pause();
-        }
-        
-        // Sonido de electricidad en nivel 2
-        if(camera.position.y > 4 && this.electricityAudio.paused) {
-            this.electricityAudio.play().catch(() => {});
-        } else if(camera.position.y <= 4 && !this.electricityAudio.paused) {
-            this.electricityAudio.pause();
         }
         
         // Actualizar gamepad
@@ -1617,6 +1601,29 @@ class Chapter2 {
         }
 
         const playerPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
+        
+        // Sonido de computadora cerca de terminales
+        let nearTerminal = false;
+        for(let terminal of this.terminals) {
+            const dist = playerPos.distanceTo(terminal.position);
+            if(dist < 3) {
+                nearTerminal = true;
+                break;
+            }
+        }
+        if(nearTerminal && this.computerAudio.paused) {
+            this.computerAudio.play().catch(() => {});
+        } else if(!nearTerminal && !this.computerAudio.paused) {
+            this.computerAudio.pause();
+        }
+        
+        // Sonido de electricidad en nivel 2
+        if(camera.position.y > 4 && this.electricityAudio.paused) {
+            this.electricityAudio.play().catch(() => {});
+        } else if(camera.position.y <= 4 && !this.electricityAudio.paused) {
+            this.electricityAudio.pause();
+        }
+        
         let nearNote = null;
         
         // Actualizar objetos flotantes en fase exploring
