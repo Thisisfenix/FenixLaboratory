@@ -18,6 +18,15 @@ class Chapter3 {
     start() {
         this.active = true;
         this.phase = 'cinematic';
+        
+        // Detener TODOS los audios del Chapter 1
+        if(typeof stopAllChapter1Audio === 'function') stopAllChapter1Audio();
+        
+        // Configurar renderer con fondo negro
+        if(typeof renderer !== 'undefined') {
+            renderer.setClearColor(0x000000);
+        }
+        
         this.clearScene();
         this.setupControls();
         this.initAudio();
@@ -106,67 +115,133 @@ class Chapter3 {
     }
 
     createCastleHallway() {
-        // Iluminación mejorada
-        const ambient = new THREE.AmbientLight(0x404040, 0.4);
+        // Niebla oscura
+        scene.fog = new THREE.Fog(0x0a0a0a, 5, 35);
+        
+        // Iluminación tenue
+        const ambient = new THREE.AmbientLight(0x1a1a2a, 0.15);
         scene.add(ambient);
 
-        // Luz direccional dramática desde arriba
-        const directional = new THREE.DirectionalLight(0x8b4513, 0.6);
-        directional.position.set(0, 10, 10);
-        scene.add(directional);
+        // Materiales con textura de piedra
+        const stoneMat = new THREE.MeshStandardMaterial({ 
+            color: 0x3a3a3a, 
+            roughness: 0.95, 
+            metalness: 0.05,
+            flatShading: true
+        });
+        const darkStoneMat = new THREE.MeshStandardMaterial({ 
+            color: 0x1a1a1a, 
+            roughness: 1, 
+            metalness: 0,
+            flatShading: true
+        });
 
-        // Suelo de piedra
-        const floor = new THREE.Mesh(
-            new THREE.PlaneGeometry(8, 50),
-            new THREE.MeshBasicMaterial({ color: 0x2a2a2a })
-        );
-        floor.rotation.x = -Math.PI / 2;
-        floor.position.z = 25;
-        scene.add(floor);
-
-        // Paredes de piedra
-        const wallMat = new THREE.MeshBasicMaterial({ color: 0x3a3a3a });
-        const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 50), wallMat);
-        wallLeft.position.set(-4, 3, 25);
-        scene.add(wallLeft);
-
-        const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 50), wallMat);
-        wallRight.position.set(4, 3, 25);
-        scene.add(wallRight);
-
-        // Techo
-        const ceiling = new THREE.Mesh(
-            new THREE.PlaneGeometry(8, 50),
-            new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
-        );
-        ceiling.rotation.x = Math.PI / 2;
-        ceiling.position.set(0, 6, 25);
-        scene.add(ceiling);
-
-        // Antorchas en las paredes (cada 10m)
-        for(let z = 5; z < 50; z += 10) {
-            const torchLight = new THREE.PointLight(0xff6600, 1, 8);
-            torchLight.position.set(-3.5, 3, z);
-            scene.add(torchLight);
-
-            const torchLight2 = new THREE.PointLight(0xff6600, 1, 8);
-            torchLight2.position.set(3.5, 3, z);
-            scene.add(torchLight2);
+        // Suelo de piedra con bloques
+        for(let z = -20; z < 50; z += 4) {
+            for(let x = -4; x < 4; x += 2) {
+                const tile = new THREE.Mesh(
+                    new THREE.BoxGeometry(2, 0.2, 4),
+                    Math.random() > 0.5 ? stoneMat : darkStoneMat
+                );
+                tile.position.set(x, -0.1, z);
+                scene.add(tile);
+            }
         }
 
-        // Puerta misteriosa al final
-        const doorFrame = new THREE.Mesh(
-            new THREE.BoxGeometry(3, 4, 0.3),
-            new THREE.MeshBasicMaterial({ color: 0x1a0a0a })
+        // Paredes de piedra con profundidad
+        const wallMat = new THREE.MeshStandardMaterial({ 
+            color: 0x2a2520, 
+            roughness: 0.9, 
+            metalness: 0.1,
+            flatShading: true
+        });
+        
+        const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(1, 8, 70), wallMat);
+        wallLeft.position.set(-4.5, 4, 15);
+        scene.add(wallLeft);
+
+        const wallRight = new THREE.Mesh(new THREE.BoxGeometry(1, 8, 70), wallMat);
+        wallRight.position.set(4.5, 4, 15);
+        scene.add(wallRight);
+
+        // Techo arqueado oscuro
+        const ceiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(9, 70),
+            new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 1, side: THREE.DoubleSide })
         );
-        doorFrame.position.set(0, 2, 48);
-        scene.add(doorFrame);
+        ceiling.rotation.x = Math.PI / 2;
+        ceiling.position.set(0, 7.5, 15);
+        scene.add(ceiling);
 
-        // Luz roja misteriosa en la puerta
-        const doorLight = new THREE.PointLight(0xff0000, 2, 10);
-        doorLight.position.set(0, 3, 47);
+        // Columnas de piedra
+        for(let z = -10; z < 50; z += 15) {
+            const pillarL = new THREE.Mesh(
+                new THREE.BoxGeometry(0.8, 7, 0.8),
+                new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.9 })
+            );
+            pillarL.position.set(-3.8, 3.5, z);
+            scene.add(pillarL);
+            
+            const pillarR = pillarL.clone();
+            pillarR.position.set(3.8, 3.5, z);
+            scene.add(pillarR);
+        }
+
+        // Antorchas con fuego
+        for(let z = 0; z < 50; z += 12) {
+            // Izquierda
+            const torchHolderL = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.1, 0.15, 0.8, 6),
+                new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.6 })
+            );
+            torchHolderL.position.set(-4, 3.5, z);
+            scene.add(torchHolderL);
+            
+            const fireL = new THREE.PointLight(0xff4400, 1.5, 12);
+            fireL.position.set(-4, 4, z);
+            scene.add(fireL);
+            
+            // Derecha
+            const torchHolderR = torchHolderL.clone();
+            torchHolderR.position.set(4, 3.5, z);
+            scene.add(torchHolderR);
+            
+            const fireR = new THREE.PointLight(0xff4400, 1.5, 12);
+            fireR.position.set(4, 4, z);
+            scene.add(fireR);
+        }
+        
+        // Ventanas con luz de luna
+        for(let z = 5; z < 45; z += 20) {
+            const windowLight = new THREE.PointLight(0x6666ff, 0.3, 8);
+            windowLight.position.set(Math.random() > 0.5 ? -4.3 : 4.3, 5, z);
+            scene.add(windowLight);
+        }
+
+        // Puerta del castillo al final
+        const doorMat = new THREE.MeshStandardMaterial({ 
+            color: 0x1a0a0a, 
+            roughness: 0.8,
+            emissive: 0x330000,
+            emissiveIntensity: 0.2
+        });
+        const door = new THREE.Mesh(
+            new THREE.BoxGeometry(3.5, 5, 0.5),
+            doorMat
+        );
+        door.position.set(0, 2.5, 48);
+        scene.add(door);
+        
+        // Marco de puerta
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.9 });
+        const frameTop = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.5, 0.6), frameMat);
+        frameTop.position.set(0, 5.25, 48);
+        scene.add(frameTop);
+
+        // Luz roja siniestra en la puerta
+        const doorLight = new THREE.PointLight(0xff0000, 3, 15);
+        doorLight.position.set(0, 3.5, 47);
         scene.add(doorLight);
-
     }
 
     triggerDialogue() {
@@ -223,6 +298,9 @@ class Chapter3 {
 
     update(delta) {
         if(!this.active) return;
+        // Permitir update durante cinemática también
+        if(this.phase === 'cinematic') return;
+        if(this.phase === 'dialogue') return;
         if(this.phase !== 'entering') return;
 
         // Movimiento
@@ -255,9 +333,13 @@ class Chapter3 {
         camera.position.addScaledVector(direction, -this.velocity.z);
         camera.position.addScaledVector(right, -this.velocity.x);
 
-        // Límites del pasillo
+        // Límites del pasillo del castillo
         camera.position.x = Math.max(-3.5, Math.min(3.5, camera.position.x));
-        camera.position.z = Math.max(0, Math.min(45, camera.position.z));
+        camera.position.z = Math.max(0, Math.min(47, camera.position.z));
+        
+        // Mostrar distancia en HUD
+        const distEl = document.getElementById('distance');
+        if(distEl) distEl.textContent = `Castillo: ${Math.floor(camera.position.z)}m / 47m`;
 
         // Audio de correr
         if(isRunning && isMoving) {

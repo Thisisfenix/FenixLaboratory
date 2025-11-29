@@ -3236,13 +3236,16 @@ class Chapter2 {
                         const injuryLabel = document.getElementById('injuryLabel');
                         if(injuryLabel) injuryLabel.remove();
                         
-                        whiteOverlay.remove();
-                        
                         // Verificar si Chapter3 existe e iniciar cinemática
                         if(typeof Chapter3 !== 'undefined' && typeof chapter3 !== 'undefined') {
-                            chapter3.start();
+                            // Esperar un frame antes de iniciar Chapter 3
+                            setTimeout(() => {
+                                whiteOverlay.remove();
+                                chapter3.start();
+                            }, 100);
                         } else {
                             // Si no existe Chapter3, recargar la página para volver al menú
+                            whiteOverlay.remove();
                             console.log('Chapter3 no disponible, recargando...');
                             location.reload();
                         }

@@ -626,6 +626,10 @@
             <div style="font-size: 16px; font-weight: bold;">CAPÍTULO 2</div>
             <div style="font-size: 12px; color: #666; margin-top: 4px;">🔒 Completa Cap 1</div>
         </div>
+        <div class="chapter-item locked" id="chapter3Item" onclick="loadChapter(3)">
+            <div style="font-size: 16px; font-weight: bold;">CAPÍTULO 3</div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">🔒 Completa Cap 2</div>
+        </div>
     </div>
     
     <div id="settingsPanel">
@@ -2636,11 +2640,23 @@
                 chapter2Item.classList.remove('locked');
                 chapter2Item.querySelector('div:last-child').innerHTML = '<span style="color: #44ff44;">✔️ Desbloqueado</span>';
             }
+            
+            const chapter3Item = document.getElementById('chapter3Item');
+            if(localStorage.getItem('chapter2Completed') === 'true') {
+                chapter3Item.classList.remove('locked');
+                chapter3Item.querySelector('div:last-child').innerHTML = '<span style="color: #44ff44;">✔️ Desbloqueado</span>';
+            }
         }
 
         function loadChapter(num) {
             if(num === 2 && localStorage.getItem('chapter2Unlocked') !== 'true') {
                 showMonologue('🔒 Capítulo 2 bloqueado - Completa el Capítulo 1 o usa el código secreto');
+                vibrateGamepad(200, 0.3, 0.3);
+                return;
+            }
+            
+            if(num === 3 && localStorage.getItem('chapter2Completed') !== 'true') {
+                showMonologue('🔒 Capítulo 3 bloqueado - Completa el Capítulo 2');
                 vibrateGamepad(200, 0.3, 0.3);
                 return;
             }
@@ -2651,6 +2667,14 @@
                 toggleChapters();
                 if(typeof unlockChapter2 === 'function') {
                     unlockChapter2();
+                }
+            } else if(num === 3) {
+                toggleChapters();
+                if(typeof chapter3 !== 'undefined') {
+                    stopAllChapter1Audio();
+                    chapter3.start();
+                } else {
+                    showMonologue('❌ Error: Capítulo 3 no disponible');
                 }
             }
         }
