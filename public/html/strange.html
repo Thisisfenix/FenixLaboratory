@@ -647,7 +647,7 @@
             <input type="text" id="secretCodeInput" placeholder="Ingresa el código..." maxlength="20">
             <div id="codeMessage"></div>
         </div>
-        <button onclick="saveProgress()">💾 Guardar Progreso</button>
+        <button onclick="saveGameProgress()">💾 Guardar Progreso</button>
         <button onclick="loadProgress()">📂 Cargar Progreso</button>
         <button onclick="toggleFullscreen()">⛶ Pantalla Completa</button>
     </div>
@@ -4380,6 +4380,16 @@
             }
         }
 
+        function saveGameProgress() {
+            // Detectar si estamos en Capítulo 2
+            if(typeof chapter2 !== 'undefined' && chapter2.active) {
+                chapter2.saveProgress();
+            } else {
+                // Capítulo 1
+                saveProgress();
+            }
+        }
+        
         function saveProgress() {
             const saveData = {
                 position: { x: camera.position.x, y: camera.position.y, z: camera.position.z },

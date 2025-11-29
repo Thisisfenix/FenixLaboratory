@@ -79,8 +79,46 @@ class Chapter2 {
     }
     
     saveProgress() {
+        // Detectar ubicación actual
+        let currentLocation = 'Desconocido';
+        const posZ = camera.position.z;
+        const posY = camera.position.y;
+        
+        if(this.phase === 'exploring') {
+            if(posY > 4) {
+                currentLocation = 'Laboratorio - Nivel 2';
+            } else {
+                currentLocation = 'Laboratorio - Nivel 1';
+            }
+        } else if(this.phase === 'escaping') {
+            if(posZ < 400) {
+                currentLocation = 'Túnel de Escape - Zona Oscura';
+            } else if(posZ < 800) {
+                currentLocation = 'Túnel de Escape - Zona Verde';
+            } else if(posZ < 1200) {
+                currentLocation = 'Túnel de Escape - Zona Roja';
+            } else {
+                currentLocation = 'Túnel de Escape - Zona Azul';
+            }
+        } else if(this.phase === 'whiteroom') {
+            currentLocation = 'White Room';
+        } else if(this.phase === 'courtyard') {
+            if(posZ < 100) {
+                currentLocation = 'Patio - Entrada';
+            } else if(posZ < 250) {
+                currentLocation = 'Patio - Zona Media';
+            } else if(posZ < 400) {
+                currentLocation = 'Patio - Cerca del Castillo';
+            } else {
+                currentLocation = 'Patio - Frente al Castillo';
+            }
+        } else if(this.phase === 'rivalry') {
+            currentLocation = 'Sala de Rivalidad';
+        }
+        
         const progress = {
             phase: this.phase,
+            location: currentLocation,
             collectedIcons: this.collectedIcons,
             collectedKeys: this.collectedKeys,
             notesRead: this.notesRead,
@@ -91,7 +129,7 @@ class Chapter2 {
             cameraPosition: { x: camera.position.x, y: camera.position.y, z: camera.position.z }
         };
         localStorage.setItem('chapter2Progress', JSON.stringify(progress));
-        showMonologue('💾 Progreso guardado');
+        showMonologue(`💾 Progreso guardado en: ${currentLocation}`);
     }
     
     loadProgress() {
@@ -3200,15 +3238,13 @@ class Chapter2 {
                         
                         whiteOverlay.remove();
                         
-                        // Verificar si Chapter3 existe y crear instancia si es necesario
-                        if(typeof Chapter3 !== 'undefined') {
-                            if(typeof window.chapter3 === 'undefined') {
-                                window.chapter3 = new Chapter3();
-                            }
-                            window.chapter3.start();
+                        // Verificar si Chapter3 existe e iniciar cinemática
+                        if(typeof Chapter3 !== 'undefined' && typeof chapter3 !== 'undefined') {
+                            chapter3.start();
                         } else {
-                            console.error('Chapter3 no está cargado');
-                            showMonologue('Error: Capítulo 3 no disponible');
+                            // Si no existe Chapter3, recargar la página para volver al menú
+                            console.log('Chapter3 no disponible, recargando...');
+                            location.reload();
                         }
                         }, 3000);
                     }, 3000);
