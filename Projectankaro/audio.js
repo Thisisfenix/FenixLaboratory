@@ -8,42 +8,48 @@ class AudioManager {
     }
 
     init() {
-        // Cargar sonidos
-        this.sounds.walk = new Audio('../public/html/stuff/stepsound.mp3');
-        this.sounds.walk.volume = 0.3;
-        
-        this.sounds.jump = new Audio('../public/html/stuff/salto.mp3');
-        this.sounds.jump.volume = 0.4;
-        
-        this.sounds.gameStart = new Audio('../public/html/stuff/pasillo1better.mp3');
-        this.sounds.gameStart.volume = 0.5;
-        this.sounds.gameStart.loop = false;
-        
-        this.sounds.flashlight = new Audio('../public/html/stuff/flashlight.mp3');
-        this.sounds.flashlight.volume = 0.4;
-        
-        this.sounds.exhausted = new Audio('../public/html/stuff/exhausted.mp3');
-        this.sounds.exhausted.volume = 0.5;
-        
-        this.sounds.run = new Audio('../public/html/stuff/correr.mp3');
-        this.sounds.run.volume = 0.4;
-        this.sounds.run.loop = true;
-        
-        this.sounds.runGrass = new Audio('../public/html/stuff/correrpasto.mp3');
-        this.sounds.runGrass.volume = 0.4;
-        this.sounds.runGrass.loop = true;
-        
-        this.sounds.walkGrass = new Audio('../public/html/stuff/caminarpasto.mp3');
-        this.sounds.walkGrass.volume = 0.3;
-        
-        this.sounds.rain = new Audio('../public/html/stuff/lluvia.mp3');
-        this.sounds.rain.volume = 0.3;
-        this.sounds.rain.loop = true;
-        
-        this.sounds.death = new Audio('../public/html/stuff/mandied.mp3');
-        this.sounds.death.volume = 0.6;
-        
-        console.log('Audio system initialized');
+        try {
+            // Cargar sonidos con rutas relativas correctas
+            const audioPath = '../public/html/stuff/';
+            
+            this.sounds.walk = new Audio(audioPath + 'stepsound.mp3');
+            this.sounds.walk.volume = 0.3;
+            
+            this.sounds.jump = new Audio(audioPath + 'salto.mp3');
+            this.sounds.jump.volume = 0.4;
+            
+            this.sounds.gameStart = new Audio(audioPath + 'pasillo1better.mp3');
+            this.sounds.gameStart.volume = 0.5;
+            this.sounds.gameStart.loop = false;
+            
+            this.sounds.flashlight = new Audio(audioPath + 'flashlight.mp3');
+            this.sounds.flashlight.volume = 0.4;
+            
+            this.sounds.exhausted = new Audio(audioPath + 'exhausted.mp3');
+            this.sounds.exhausted.volume = 0.5;
+            
+            this.sounds.run = new Audio(audioPath + 'correr.mp3');
+            this.sounds.run.volume = 0.4;
+            this.sounds.run.loop = true;
+            
+            this.sounds.runGrass = new Audio(audioPath + 'correrpasto.mp3');
+            this.sounds.runGrass.volume = 0.4;
+            this.sounds.runGrass.loop = true;
+            
+            this.sounds.walkGrass = new Audio(audioPath + 'caminarpasto.mp3');
+            this.sounds.walkGrass.volume = 0.3;
+            
+            this.sounds.rain = new Audio(audioPath + 'lluvia.mp3');
+            this.sounds.rain.volume = 0.3;
+            this.sounds.rain.loop = true;
+            
+            this.sounds.death = new Audio(audioPath + 'mandied.mp3');
+            this.sounds.death.volume = 0.6;
+            
+            console.log('Audio system initialized');
+        } catch (error) {
+            console.error('Audio initialization error:', error);
+        }
     }
 
     play(soundName) {

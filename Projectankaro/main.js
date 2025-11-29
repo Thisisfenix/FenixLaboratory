@@ -14,7 +14,6 @@ const micBtn = document.getElementById('micBtn');
 const micIcon = document.getElementById('micIcon');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
 const fullscreenIcon = document.getElementById('fullscreenIcon');
-const dummyBtn = document.getElementById('dummyBtn');
 
 // Loading screen
 function updateLoadingProgress(percent, text) {
@@ -396,7 +395,7 @@ function animate(time) {
         lobby.update(delta);
         playerManager.update(delta);
         
-        if (playerManager.localPlayer && frameCount % 6 === 0) {
+        if (playerManager.localPlayer && playerManager.localPlayer.position && frameCount % 6 === 0) {
             supabaseNetwork.broadcastPosition(playerManager.localPlayer.position);
         }
     } else if (gameState === 'game') {
@@ -453,7 +452,7 @@ function animate(time) {
             game.checkEscape(player);
         }
         
-        if (playerManager.localPlayer && frameCount % 3 === 0) {
+        if (playerManager.localPlayer && playerManager.localPlayer.position && frameCount % 3 === 0) {
             supabaseNetwork.broadcastPosition(playerManager.localPlayer.position);
         }
     }

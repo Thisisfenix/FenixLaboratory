@@ -44,8 +44,8 @@ class VoiceChat {
         try {
             this.localStream = await navigator.mediaDevices.getUserMedia({ 
                 audio: {
-                    echoCancellation: false,
-                    noiseSuppression: false,
+                    echoCancellation: true,
+                    noiseSuppression: true,
                     autoGainControl: true
                 },
                 video: false 
@@ -57,31 +57,36 @@ class VoiceChat {
             return true;
         } catch (error) {
             console.error('Microphone error:', error);
+            this.isEnabled = false;
             return false;
         }
     }
     
     setupVolumeDetection() {
-        const audioContext = new AudioContext();
-        const analyser = audioContext.createAnalyser();
-        const microphone = audioContext.createMediaStreamSource(this.localStream);
-        microphone.connect(analyser);
-        analyser.fftSize = 256;
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        
-        const checkVolume = () => {
-            if (!this.isEnabled) return;
-            analyser.getByteFrequencyData(dataArray);
-            const volume = dataArray.reduce((a, b) => a + b) / dataArray.length / 255;
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = audioContext.createAnalyser();
+            const microphone = audioContext.createMediaStreamSource(this.localStream);
+            microphone.connect(analyser);
+            analyser.fftSize = 256;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
             
-            if (volume > 0.1 && typeof gameplay !== 'undefined' && gameplay.localPlayer) {
-                const range = 15 * volume;
-                supabaseNetwork.broadcastMicNoise(gameplay.localPlayer.position, range);
-            }
-            
-            requestAnimationFrame(checkVolume);
-        };
-        checkVolume();
+            const checkVolume = () => {
+                if (!this.isEnabled || !this.localStream) return;
+                analyser.getByteFrequencyData(dataArray);
+                const volume = dataArray.reduce((a, b) => a + b) / dataArray.length / 255;
+                
+                if (volume > 0.1 && typeof gameplay !== 'undefined' && playerManager.localPlayer) {
+                    const range = 15 * volume;
+                    supabaseNetwork.broadcastMicNoise(playerManager.localPlayer.position, range);
+                }
+                
+                requestAnimationFrame(checkVolume);
+            };
+            checkVolume();
+        } catch (error) {
+            console.error('Volume detection error:', error);
+        }
     }
 
     callPeer(peerId) {

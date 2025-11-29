@@ -62,6 +62,10 @@ class Chapter2 {
         this.flashlightBroken = false;
         this.floatingObjects = [];
         this.lastCheckpoint = { x: 0, y: 1.6, z: -40 };
+        this.chapter2RainAudio = null;
+        this.whiteRoomAudio = null;
+        this.voicesAudio = null;
+        this.metalPipePlayed = false;
     }
 
     start() {
@@ -391,6 +395,38 @@ class Chapter2 {
         
         this.exhaustedAudio = new Audio('stuff/exhausted.mp3');
         this.exhaustedAudio.volume = 0.5;
+        
+        // Sonidos de pasto para el patio
+        this.grassWalkAudio = new Audio('stuff/caminarpasto.mp3');
+        this.grassWalkAudio.volume = 0.3;
+        
+        this.grassRunAudio = new Audio('stuff/correrpasto.mp3');
+        this.grassRunAudio.volume = 0.4;
+        this.grassRunAudio.loop = true;
+        
+        // Metal pipe random
+        this.metalPipeAudio = new Audio('stuff/metal pipe.mp3');
+        this.metalPipeAudio.volume = 0.5;
+        
+        // Ambientes del laboratorio
+        this.labIntroAudio = new Audio('stuff/labchapter2intro.mp3');
+        this.labIntroAudio.volume = 0.4;
+        
+        this.labAmbientAudio = new Audio('stuff/chapter2laboratory.mp3');
+        this.labAmbientAudio.volume = 0.3;
+        this.labAmbientAudio.loop = true;
+        
+        this.bubbleAudio = new Audio('stuff/burbujas.mp3');
+        this.bubbleAudio.volume = 0.3;
+        this.bubbleAudio.loop = true;
+        
+        this.computerAudio = new Audio('stuff/computerlab.mp3');
+        this.computerAudio.volume = 0.4;
+        this.computerAudio.loop = true;
+        
+        this.electricityAudio = new Audio('stuff/electrictyzone.mp3');
+        this.electricityAudio.volume = 0.35;
+        this.electricityAudio.loop = true;
     }
 
     createDroneSound(frequency, volume) {
@@ -442,6 +478,11 @@ class Chapter2 {
         camera.position.set(0, 45, 8);
         camera.lookAt(this.playerModel.position);
         showMonologue('¡EL SUELO SE ABRE!');
+        
+        // Intro del laboratorio al empezar la caída
+        if(this.labIntroAudio) {
+            this.labIntroAudio.play().catch(() => {});
+        }
     }
 
     createPitBottom() {
@@ -1321,6 +1362,15 @@ class Chapter2 {
 
     startLanding() {
         this.phase = 'exploring';
+        
+        // Ambiente del laboratorio
+        if(this.labAmbientAudio) {
+            this.labAmbientAudio.play().catch(() => {});
+        }
+        if(this.bubbleAudio) {
+            this.bubbleAudio.play().catch(() => {});
+        }
+        
         showMonologue('¿Dónde... dónde estoy?');
         
         // Fade desde negro
@@ -1407,6 +1457,34 @@ class Chapter2 {
     }
 
     updateExploring(delta) {
+        // Metal pipe random (solo 1 vez)
+        if(!this.metalPipePlayed && Math.random() < 0.0001) {
+            this.metalPipePlayed = true;
+            this.metalPipeAudio.play().catch(() => {});
+        }
+        
+        // Sonido de computadora cerca de terminales
+        let nearTerminal = false;
+        for(let terminal of this.terminals) {
+            const dist = playerPos.distanceTo(terminal.position);
+            if(dist < 3) {
+                nearTerminal = true;
+                break;
+            }
+        }
+        if(nearTerminal && this.computerAudio.paused) {
+            this.computerAudio.play().catch(() => {});
+        } else if(!nearTerminal && !this.computerAudio.paused) {
+            this.computerAudio.pause();
+        }
+        
+        // Sonido de electricidad en nivel 2
+        if(camera.position.y > 4 && this.electricityAudio.paused) {
+            this.electricityAudio.play().catch(() => {});
+        } else if(camera.position.y <= 4 && !this.electricityAudio.paused) {
+            this.electricityAudio.pause();
+        }
+        
         // Actualizar gamepad
         this.updateGamepad();
         
@@ -2537,6 +2615,14 @@ class Chapter2 {
         this.saveProgress();
         showMonologue('Todo brilla... la linterna funciona aquí.');
         
+        // Audio de sala blanca
+        if(!this.whiteRoomAudio) {
+            this.whiteRoomAudio = new Audio('stuff/whiteroomchapter2.mp3');
+            this.whiteRoomAudio.volume = 0.5;
+            this.whiteRoomAudio.loop = true;
+        }
+        this.whiteRoomAudio.play().catch(() => {});
+        
         // Sala completamente blanca 40x40m
         const floor = new THREE.Mesh(
             new THREE.PlaneGeometry(40, 40),
@@ -2952,25 +3038,28 @@ class Chapter2 {
             }
         }
         
-        // Audio de correr en pasillo
+        // Audio de correr en patio (pasto)
         if(this.isRunning && isMoving && this.stamina > 0 && !this.staminaExhausted) {
-            if(!this.runAudioPlaying && this.runAudio) {
+            if(!this.runAudioPlaying && this.grassRunAudio) {
                 this.runAudioPlaying = true;
-                this.runAudio.play().catch(() => {});
+                this.grassRunAudio.play().catch(() => {});
             }
         } else {
-            if(this.runAudioPlaying && this.runAudio) {
+            if(this.runAudioPlaying && this.grassRunAudio) {
                 this.runAudioPlaying = false;
-                this.runAudio.pause();
-                this.runAudio.currentTime = 0;
+                this.grassRunAudio.pause();
+                this.grassRunAudio.currentTime = 0;
             }
         }
         
-        // Footsteps en pasillo
+        // Footsteps en patio (pasto)
         if(isMoving && !this.isRunning) {
             this.footstepTimer += delta * 1000;
             if(this.footstepTimer >= this.footstepInterval) {
-                this.playFootstep();
+                if(this.grassWalkAudio) {
+                    this.grassWalkAudio.currentTime = 0;
+                    this.grassWalkAudio.play().catch(() => {});
+                }
                 this.footstepTimer = 0;
             }
         } else {
@@ -3093,43 +3182,23 @@ class Chapter2 {
     }
 
     playRainAmbient() {
-        if(!this.audioContext) return;
-        const noise = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-        const filter = this.audioContext.createBiquadFilter();
-        
-        noise.type = 'sawtooth';
-        noise.frequency.setValueAtTime(100, this.audioContext.currentTime);
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(300, this.audioContext.currentTime);
-        
-        gain.gain.setValueAtTime(0.15, this.audioContext.currentTime);
-        
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.audioContext.destination);
-        noise.start();
+        if(!this.chapter2RainAudio) {
+            this.chapter2RainAudio = new Audio('stuff/chapter2rain.mp3');
+            this.chapter2RainAudio.volume = 0.4;
+            this.chapter2RainAudio.loop = true;
+        }
+        this.chapter2RainAudio.play().catch(() => {});
     }
     
     playWhisper() {
-        if(!this.audioContext) return;
-        const osc = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-        const filter = this.audioContext.createBiquadFilter();
-        
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150 + Math.random() * 100, this.audioContext.currentTime);
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(500, this.audioContext.currentTime);
-        
-        gain.gain.setValueAtTime(0.05, this.audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 2);
-        
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.audioContext.destination);
-        osc.start();
-        osc.stop(this.audioContext.currentTime + 2);
+        if(this.phase === 'whiteroom') {
+            if(!this.voicesAudio) {
+                this.voicesAudio = new Audio('stuff/voices.mp3');
+                this.voicesAudio.volume = 0.6;
+            }
+            this.voicesAudio.currentTime = 0;
+            this.voicesAudio.play().catch(() => {});
+        }
     }
     
     readNote(note) {

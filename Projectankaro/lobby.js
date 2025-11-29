@@ -211,24 +211,40 @@ class Lobby {
         this.isActive = false;
         this.canMove = false;
         
-        // Guardar jugadores antes de limpiar
-        const players = [];
+        // Guardar referencias de jugadores
+        const playerMeshes = new Set();
         playerManager.players.forEach(player => {
             if (player.mesh) {
-                players.push(player.mesh);
+                playerMeshes.add(player.mesh);
             }
         });
         
-        // Limpiar escena excepto jugadores
+        // Limpiar escena excepto jugadores y luces
         const toRemove = [];
         engine.scene.children.forEach(child => {
-            if (!players.includes(child) && child.type !== 'DirectionalLight' && child.type !== 'AmbientLight') {
+            if (!playerMeshes.has(child) && 
+                child.type !== 'DirectionalLight' && 
+                child.type !== 'AmbientLight' &&
+                child.type !== 'HemisphereLight' &&
+                !child.isCamera) {
                 toRemove.push(child);
             }
         });
-        toRemove.forEach(obj => engine.scene.remove(obj));
+        toRemove.forEach(obj => {
+            if (obj.geometry) obj.geometry.dispose();
+            if (obj.material) {
+                if (Array.isArray(obj.material)) {
+                    obj.material.forEach(m => m.dispose());
+                } else {
+                    obj.material.dispose();
+                }
+            }
+            engine.scene.remove(obj);
+        });
         
         if (document.pointerLockElement) document.exitPointerLock();
+        
+        console.log('Lobby destroyed, players preserved');
     }
 }
 

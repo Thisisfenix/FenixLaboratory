@@ -1,17 +1,52 @@
-// Chapter 3 - JOKE CHAPTER (Cursed Castle)
+// Chapter 3 - Cursed Castle (SNEAK PEEK)
 class Chapter3 {
     constructor() {
         this.active = false;
         this.phase = 'cinematic';
-        this.cinematicProgress = 0;
-        this.flashbangTriggered = false;
+        this.keys = {};
+        this.mouseX = 0;
+        this.mouseY = 0;
+        this.velocity = new THREE.Vector3();
+        this.dialogueTriggered = false;
+        this.stepAudio = null;
+        this.runAudio = null;
+        this.runAudioPlaying = false;
+        this.footstepTimer = 0;
+        this.footstepInterval = 500;
     }
 
     start() {
         this.active = true;
         this.phase = 'cinematic';
         this.clearScene();
+        this.setupControls();
+        this.initAudio();
         this.startCinematic();
+    }
+
+    initAudio() {
+        this.stepAudio = new Audio('stuff/castlestep.mp3');
+        this.stepAudio.volume = 0.3;
+        
+        this.runAudio = new Audio('stuff/castlerun.mp3');
+        this.runAudio.volume = 0.4;
+        this.runAudio.loop = true;
+    }
+
+    setupControls() {
+        document.addEventListener('keydown', (e) => {
+            this.keys[e.key.toLowerCase()] = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            this.keys[e.key.toLowerCase()] = false;
+        });
+        document.addEventListener('mousemove', (e) => {
+            if(document.pointerLockElement) {
+                this.mouseX -= e.movementX * 0.002;
+                this.mouseY -= e.movementY * 0.002;
+                this.mouseY = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.mouseY));
+            }
+        });
     }
 
     clearScene() {
@@ -21,214 +56,241 @@ class Chapter3 {
     }
 
     startCinematic() {
-        // Pantalla negra inicial
+        // Fade desde negro
         const blackScreen = document.createElement('div');
         blackScreen.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9999;';
         document.body.appendChild(blackScreen);
 
-        // Castillo oscuro y dramático
-        const ambient = new THREE.AmbientLight(0x202020, 0.2);
-        scene.add(ambient);
+        this.createCastleHallway();
 
-        // Castillo épico
-        const castleWall = new THREE.Mesh(
-            new THREE.BoxGeometry(40, 20, 3),
-            new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
-        );
-        castleWall.position.set(0, 10, -20);
-        scene.add(castleWall);
+        // Cámara cinemática - vista exterior del castillo
+        camera.position.set(0, 3, -15);
+        camera.lookAt(0, 2, 0);
 
-        // Torres
-        for(let x of [-15, -5, 5, 15]) {
-            const tower = new THREE.Mesh(
-                new THREE.CylinderGeometry(2.5, 3, 25, 8),
-                new THREE.MeshBasicMaterial({ color: 0x0a0a0a })
-            );
-            tower.position.set(x, 12.5, -20);
-            scene.add(tower);
-
-            const towerTop = new THREE.Mesh(
-                new THREE.ConeGeometry(4, 5, 8),
-                new THREE.MeshBasicMaterial({ color: 0x8b0000 })
-            );
-            towerTop.position.set(x, 26, -20);
-            scene.add(towerTop);
-        }
-
-        // Puerta del castillo
-        const door = new THREE.Mesh(
-            new THREE.BoxGeometry(8, 12, 0.5),
-            new THREE.MeshBasicMaterial({ color: 0x2a1a0a })
-        );
-        door.position.set(0, 6, -17);
-        scene.add(door);
-
-        // Luces dramáticas
-        const redLight = new THREE.PointLight(0xff0000, 3, 30);
-        redLight.position.set(0, 15, -15);
-        scene.add(redLight);
-
-        // Cámara cinemática
-        camera.position.set(0, 2, 10);
-        camera.lookAt(0, 10, -20);
-
-        // Fade in desde negro
+        // Fade in
         setTimeout(() => {
-            blackScreen.style.transition = 'opacity 2s';
+            blackScreen.style.transition = 'opacity 3s';
             blackScreen.style.opacity = '0';
-            setTimeout(() => blackScreen.remove(), 2000);
+            setTimeout(() => blackScreen.remove(), 3000);
         }, 500);
 
-        // Texto dramático
+        // Diálogos cinemáticos
         setTimeout(() => {
-            showMonologue('El Castillo Oscuro...');
+            showMonologue('El Castillo Maldito...');
             setTimeout(() => {
-                showMonologue('Aquí yacen los secretos más profundos...');
+                showMonologue('Las puertas se abren...');
                 setTimeout(() => {
-                    showMonologue('Debo entrar... y descubrir la verdad...');
+                    this.moveCameraInside();
+                }, 3000);
+            }, 3000);
+        }, 2000);
+    }
+
+    moveCameraInside() {
+        // Mover cámara hacia adentro del castillo
+        let progress = 0;
+        const moveInterval = setInterval(() => {
+            progress += 0.01;
+            camera.position.z += 0.2;
+            camera.position.y = 3 - progress * 1.4;
+            camera.lookAt(0, 1.6, camera.position.z + 10);
+
+            if(camera.position.z >= 0) {
+                clearInterval(moveInterval);
+                camera.position.set(0, 1.6, 0);
+                camera.lookAt(0, 1.6, 25);
+                this.phase = 'entering';
+                showMonologue('Entré al castillo...');
+            }
+        }, 16);
+    }
+
+    createCastleHallway() {
+        // Iluminación mejorada
+        const ambient = new THREE.AmbientLight(0x404040, 0.4);
+        scene.add(ambient);
+
+        // Luz direccional dramática desde arriba
+        const directional = new THREE.DirectionalLight(0x8b4513, 0.6);
+        directional.position.set(0, 10, 10);
+        scene.add(directional);
+
+        // Suelo de piedra
+        const floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(8, 50),
+            new THREE.MeshBasicMaterial({ color: 0x2a2a2a })
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.z = 25;
+        scene.add(floor);
+
+        // Paredes de piedra
+        const wallMat = new THREE.MeshBasicMaterial({ color: 0x3a3a3a });
+        const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 50), wallMat);
+        wallLeft.position.set(-4, 3, 25);
+        scene.add(wallLeft);
+
+        const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 50), wallMat);
+        wallRight.position.set(4, 3, 25);
+        scene.add(wallRight);
+
+        // Techo
+        const ceiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(8, 50),
+            new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
+        );
+        ceiling.rotation.x = Math.PI / 2;
+        ceiling.position.set(0, 6, 25);
+        scene.add(ceiling);
+
+        // Antorchas en las paredes (cada 10m)
+        for(let z = 5; z < 50; z += 10) {
+            const torchLight = new THREE.PointLight(0xff6600, 1, 8);
+            torchLight.position.set(-3.5, 3, z);
+            scene.add(torchLight);
+
+            const torchLight2 = new THREE.PointLight(0xff6600, 1, 8);
+            torchLight2.position.set(3.5, 3, z);
+            scene.add(torchLight2);
+        }
+
+        // Puerta misteriosa al final
+        const doorFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 4, 0.3),
+            new THREE.MeshBasicMaterial({ color: 0x1a0a0a })
+        );
+        doorFrame.position.set(0, 2, 48);
+        scene.add(doorFrame);
+
+        // Luz roja misteriosa en la puerta
+        const doorLight = new THREE.PointLight(0xff0000, 2, 10);
+        doorLight.position.set(0, 3, 47);
+        scene.add(doorLight);
+
+    }
+
+    triggerDialogue() {
+        this.dialogueTriggered = true;
+        this.phase = 'dialogue';
+
+        // Detener movimiento
+        this.keys = {};
+
+        showMonologue('Voces... detrás de la puerta...');
+        setTimeout(() => {
+            showMonologue('Voz 1: "El sujeto ha llegado..."');
+            setTimeout(() => {
+                showMonologue('Voz 2: "¿Está listo para la verdad?"');
+                setTimeout(() => {
+                    showMonologue('Voz 1: "Pronto lo sabremos..."');
                     setTimeout(() => {
-                        this.moveCameraTowardsCastle();
+                        showMonologue('Voz 2: "El Rey Oscuro espera..."');
+                        setTimeout(() => {
+                            this.showContinuara();
+                        }, 3000);
                     }, 3000);
                 }, 3000);
             }, 3000);
         }, 2000);
     }
 
-    moveCameraTowardsCastle() {
-        // Mover cámara hacia el castillo dramáticamente
-        let progress = 0;
-        const moveInterval = setInterval(() => {
-            progress += 0.01;
-            camera.position.z -= 0.15;
-            camera.position.y += 0.02;
-            
-            if(camera.position.z <= -15) {
-                clearInterval(moveInterval);
-                this.triggerFlashbang();
-            }
-        }, 16);
+    showContinuara() {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:10000;opacity:0;transition:opacity 2s;';
+        document.body.appendChild(overlay);
 
         setTimeout(() => {
-            showMonologue('La puerta se abre...');
-        }, 2000);
-    }
-
-    triggerFlashbang() {
-        this.flashbangTriggered = true;
-        
-        // FLASHBANG INTENSO
-        const flashbang = document.createElement('div');
-        flashbang.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:10000;opacity:0;';
-        document.body.appendChild(flashbang);
-
-        // Sonido de flashbang
-        this.playFlashbangSound();
-        vibrateGamepad(1000, 1.0, 1.0);
-
-        setTimeout(() => {
-            flashbang.style.transition = 'opacity 0.1s';
-            flashbang.style.opacity = '1';
-            
+            overlay.style.opacity = '1';
             setTimeout(() => {
-                // JOKE REVEAL
-                flashbang.innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;font-family:Comic Sans MS,cursive;">
-                        <h1 style="font-size:120px;color:#ff00ff;text-shadow:0 0 20px #ff00ff;animation:spin 2s linear infinite;margin:0;">SIKE!</h1>
-                        <h2 style="font-size:60px;color:#00ff00;margin:20px 0;">Chapter 3 no existe todavía 😂</h2>
-                        <p style="font-size:30px;color:#ff0000;margin:10px;">Te trolleé bien feo</p>
-                        <img src="https://media.tenor.com/images/d8c0e3f5e5f5e5f5e5f5e5f5e5f5e5f5/tenor.gif" style="width:400px;margin:30px;border:5px solid #ff00ff;border-radius:20px;" onerror="this.style.display='none'">
-                        <button onclick="location.reload()" style="padding:20px 40px;font-size:30px;background:#ff00ff;color:#fff;border:none;border-radius:10px;cursor:pointer;margin-top:20px;font-family:Comic Sans MS;">Volver al Laboratorio 🤡</button>
+                overlay.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;color:#fff;font-family:Arial,sans-serif;text-align:center;">
+                        <h1 style="font-size:100px;color:#8b0000;text-shadow:0 0 40px #ff0000;margin:0;animation:pulse 3s infinite;">CONTINUARÁ...</h1>
+                        <h2 style="font-size:50px;color:#ffd700;margin:40px 0;text-shadow:0 0 20px #ffd700;">CAPÍTULO 3: EL CASTILLO MALDITO</h2>
+                        <p style="font-size:35px;color:#ff6600;margin:20px 0;text-shadow:0 0 15px #ff6600;">📅 29-30 de Noviembre, 2025</p>
+                        <p style="font-size:20px;color:#888;margin:40px 0;max-width:600px;line-height:1.6;">El Rey Oscuro espera... ¿Estás listo para descubrir la verdad sobre el Proyecto 666?</p>
+                        <button onclick="location.reload()" style="padding:20px 50px;font-size:28px;background:linear-gradient(45deg,#8b0000,#ff0000);color:#fff;border:3px solid #ffd700;border-radius:15px;cursor:pointer;margin-top:40px;font-weight:bold;box-shadow:0 0 30px rgba(255,0,0,0.5);transition:all 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">🔙 Volver al Menú</button>
                     </div>
                     <style>
-                        @keyframes spin {
-                            0% { transform: rotate(0deg) scale(1); }
-                            50% { transform: rotate(180deg) scale(1.2); }
-                            100% { transform: rotate(360deg) scale(1); }
+                        @keyframes pulse {
+                            0%, 100% { transform: scale(1); }
+                            50% { transform: scale(1.1); }
                         }
                     </style>
                 `;
-                
-                // Efectos cursed
-                this.startCursedEffects();
-            }, 500);
+            }, 2000);
         }, 100);
-    }
-
-    startCursedEffects() {
-        // Cambiar colores random
-        setInterval(() => {
-            document.body.style.filter = `hue-rotate(${Math.random() * 360}deg) saturate(${Math.random() * 3})`;
-        }, 200);
-
-        // Shake de pantalla
-        setInterval(() => {
-            document.body.style.transform = `translate(${Math.random() * 10 - 5}px, ${Math.random() * 10 - 5}px) rotate(${Math.random() * 2 - 1}deg)`;
-        }, 50);
-
-        // Emojis random cayendo
-        setInterval(() => {
-            const emojis = ['🤡', '💀', '👻', '🎃', '🔥', '💩', '🤪', '😂', '🗿', '💯'];
-            const emoji = document.createElement('div');
-            emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-            emoji.style.cssText = `position:fixed;left:${Math.random() * 100}%;top:-50px;font-size:${Math.random() * 50 + 30}px;z-index:9999;pointer-events:none;`;
-            document.body.appendChild(emoji);
-            
-            let pos = -50;
-            const fall = setInterval(() => {
-                pos += 5;
-                emoji.style.top = pos + 'px';
-                emoji.style.transform = `rotate(${pos * 2}deg)`;
-                if(pos > window.innerHeight) {
-                    clearInterval(fall);
-                    emoji.remove();
-                }
-            }, 16);
-        }, 300);
-
-        // Sonidos random
-        setInterval(() => {
-            this.playRandomSound();
-        }, 1000);
-    }
-
-    playFlashbangSound() {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1000, audioContext.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 1);
-        
-        gain.gain.setValueAtTime(0.8, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
-        
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        osc.start();
-        osc.stop(audioContext.currentTime + 2);
-    }
-
-    playRandomSound() {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.type = ['sine', 'square', 'sawtooth', 'triangle'][Math.floor(Math.random() * 4)];
-        osc.frequency.setValueAtTime(Math.random() * 1000 + 100, audioContext.currentTime);
-        
-        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        osc.start();
-        osc.stop(audioContext.currentTime + 0.3);
     }
 
     update(delta) {
         if(!this.active) return;
-        // No hay update necesario, todo es cinemático
+        if(this.phase !== 'entering') return;
+
+        // Movimiento
+        this.velocity.x = 0;
+        this.velocity.z = 0;
+
+        const isRunning = this.keys['shift'];
+        const speed = isRunning ? 0.14 : 0.08;
+        const isMoving = this.keys['w'] || this.keys['s'] || this.keys['a'] || this.keys['d'];
+        
+        if(this.keys['w']) this.velocity.z -= speed;
+        if(this.keys['s']) this.velocity.z += speed;
+        if(this.keys['a']) this.velocity.x -= speed;
+        if(this.keys['d']) this.velocity.x += speed;
+
+        // Rotación de cámara
+        camera.rotation.order = 'YXZ';
+        camera.rotation.y = this.mouseX;
+        camera.rotation.x = this.mouseY;
+
+        // Aplicar movimiento
+        const direction = new THREE.Vector3();
+        camera.getWorldDirection(direction);
+        direction.y = 0;
+        direction.normalize();
+
+        const right = new THREE.Vector3();
+        right.crossVectors(camera.up, direction).normalize();
+
+        camera.position.addScaledVector(direction, -this.velocity.z);
+        camera.position.addScaledVector(right, -this.velocity.x);
+
+        // Límites del pasillo
+        camera.position.x = Math.max(-3.5, Math.min(3.5, camera.position.x));
+        camera.position.z = Math.max(0, Math.min(45, camera.position.z));
+
+        // Audio de correr
+        if(isRunning && isMoving) {
+            if(!this.runAudioPlaying && this.runAudio) {
+                this.runAudioPlaying = true;
+                this.runAudio.play().catch(() => {});
+            }
+        } else {
+            if(this.runAudioPlaying && this.runAudio) {
+                this.runAudioPlaying = false;
+                this.runAudio.pause();
+                this.runAudio.currentTime = 0;
+            }
+        }
+
+        // Footsteps cuando NO está corriendo
+        if(isMoving && !isRunning) {
+            this.footstepTimer += delta * 1000;
+            if(this.footstepTimer >= this.footstepInterval) {
+                if(this.stepAudio) {
+                    this.stepAudio.currentTime = 0;
+                    this.stepAudio.play().catch(() => {});
+                }
+                this.footstepTimer = 0;
+            }
+        } else {
+            this.footstepTimer = 0;
+        }
+
+        // Trigger diálogo cerca de la puerta
+        if(camera.position.z >= 40 && !this.dialogueTriggered) {
+            this.triggerDialogue();
+        }
     }
 }
 

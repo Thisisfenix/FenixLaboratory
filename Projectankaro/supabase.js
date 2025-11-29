@@ -121,11 +121,16 @@ class SupabaseNetwork {
     }
 
     broadcastPosition(position) {
-        if (!this.channel) return;
+        if (!this.channel || !position) return;
 
         this.channel.track({
             playerId: this.localPlayerId,
             position: { x: position.x, y: position.y, z: position.z }
+        }).catch(err => {
+            // Ignorar errores de broadcast no críticos
+            if (err.message && !err.message.includes('not subscribed')) {
+                console.error('Broadcast error:', err);
+            }
         });
     }
 
@@ -140,7 +145,7 @@ class SupabaseNetwork {
     }
     
     broadcastMicNoise(position, range) {
-        if (!this.channel) return;
+        if (!this.channel || !position) return;
         
         this.channel.send({
             type: 'broadcast',
@@ -150,6 +155,8 @@ class SupabaseNetwork {
                 position: { x: position.x, y: position.y, z: position.z },
                 range: range
             }
+        }).catch(err => {
+            // Ignorar errores de broadcast no críticos
         });
     }
 
@@ -158,8 +165,17 @@ class SupabaseNetwork {
         if (playerId === this.localPlayerId) return;
 
         const player = playerManager.getPlayer(playerId);
-        if (player) {
-            player.setPosition(position.x, position.y, position.z);
+        if (player && position) {
+            // Interpolación suave para movimiento más fluido
+            const targetPos = new THREE.Vector3(position.x, position.y, position.z);
+            const currentPos = player.position;
+            const lerpFactor = 0.3;
+            
+            const newX = currentPos.x + (targetPos.x - currentPos.x) * lerpFactor;
+            const newY = currentPos.y + (targetPos.y - currentPos.y) * lerpFactor;
+            const newZ = currentPos.z + (targetPos.z - currentPos.z) * lerpFactor;
+            
+            player.setPosition(newX, newY, newZ);
         }
     }
 

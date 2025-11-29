@@ -51,19 +51,24 @@ class Game {
         let i = 0;
         playerManager.players.forEach((player) => {
             const pos = spawnPositions[i] || spawnPositions[0];
-            player.setPosition(pos.x, 1, pos.z);
             
-            // Re-crear mesh si no existe o no es visible
-            if (!player.mesh || !player.mesh.visible) {
-                if (player.mesh) engine.removeObject(player.mesh);
-                player.create();
-                player.setPosition(pos.x, 1, pos.z);
-            }
-            
-            // Asegurar userData
+            // Asegurar userData antes de cualquier operación
             if (!player.userData) {
                 player.userData = {};
             }
+            
+            // Re-crear mesh si no existe
+            if (!player.mesh) {
+                player.create();
+            }
+            
+            // Asegurar que el mesh sea visible
+            if (player.mesh) {
+                player.mesh.visible = true;
+            }
+            
+            // Posicionar jugador
+            player.setPosition(pos.x, 1, pos.z);
             
             i++;
         });
@@ -337,13 +342,19 @@ class Game {
     }
 
     capturePlayer(player) {
-        console.log('Player captured!');
-        audioManager.playDeath();
+        if (player.isDead) return; // Evitar captura múltiple
+        
+        console.log('Player captured:', player.name || player.id);
+        
+        if (typeof audioManager !== 'undefined' && audioManager.playDeath) {
+            audioManager.playDeath();
+        }
+        
+        player.isDead = true;
         
         if (player.isLocal) {
             gameplay.enableSpectatorMode();
         } else {
-            player.isDead = true;
             if (player.mesh) player.mesh.visible = false;
         }
         

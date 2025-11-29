@@ -631,6 +631,10 @@
     <div id="settingsPanel">
         <h3>⚙️ CONFIGURACIÓN</h3>
         <div class="setting-item">
+            <label>Volumen Master: <span class="setting-value" id="volumeValue">100%</span></label>
+            <input type="range" id="volumeSlider" min="0" max="2" step="0.1" value="1">
+        </div>
+        <div class="setting-item">
             <label>Sensibilidad del Mouse: <span class="setting-value" id="sensitivityValue">1.0x</span></label>
             <input type="range" id="sensitivitySlider" min="0.1" max="3" step="0.1" value="1">
         </div>
@@ -956,6 +960,7 @@
         let introShown = false, locationShown = false;
         let mouseSensitivity = 1.0;
         let screenBrightness = 1.0;
+        let masterVolume = 1.0;
 
         // Audio System
         let audioContext, ambientSound, breathingSound, footstepAudio, flashlightAudio, hallwayAudio, cineAudio, doorBreakAudio, objectFallAudio, jumpAudio, chaseAudio, runAudio, exhaustedAudio, gunshotAudio, grassWalkAudio, grassRunAudio;
@@ -1006,9 +1011,14 @@
         let inRainZone = false;
         let hallwayLoaded = false;
         let grassZoneLoaded = false;
+        let metalWalkAudio, metalRunAudio;
+        let machineAudio, chainAudio;
+        let machineAudioPlaying = false;
+        let chainAudioPlaying = false;
         let runBobTime = 0;
         let hangingCables = [];
         let ceilingFans = [];
+        let industrialMachines = [];
         let fanAudio;
         let fanAudioPlaying = false;
         let screamAudio;
@@ -1668,6 +1678,21 @@
             grassRunAudio = new Audio('stuff/correrpasto.mp3');
             grassRunAudio.volume = 0.4;
             grassRunAudio.loop = true;
+            
+            metalWalkAudio = new Audio('stuff/caminarmetal.mp3');
+            metalWalkAudio.volume = 0.3;
+            
+            metalRunAudio = new Audio('stuff/corrermetal.mp3');
+            metalRunAudio.volume = 0.4;
+            metalRunAudio.loop = true;
+            
+            machineAudio = new Audio('stuff/machine.mp3');
+            machineAudio.volume = 0.3;
+            machineAudio.loop = true;
+            
+            chainAudio = new Audio('stuff/cadenas.mp3');
+            chainAudio.volume = 0.25;
+            chainAudio.loop = true;
         }
 
         function playHallwayAudio() {
@@ -1702,33 +1727,95 @@
 
         // Ocultar intro después de que termine
         function hideIntro() {
-            setTimeout(() => {
-                const intro = document.getElementById('intro');
-                intro.classList.add('hidden');
-                
-                // Efecto de despertar con parpadeo
-                const blinkOverlay = document.createElement('div');
-                blinkOverlay.style.cssText = `
-                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                    background: #000; z-index: 2500; opacity: 1; transition: opacity 0.2s;
+            const introDuration = localStorage.getItem('introSeen') === 'true' ? 0 : 32000;
+            
+            // Mostrar mensaje de skip si ya vio la intro
+            if(introDuration === 32000) {
+                const skipMsg = document.createElement('div');
+                skipMsg.style.cssText = `
+                    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+                    color: #fff; font-size: 16px; z-index: 2100; text-align: center;
+                    background: rgba(0,0,0,0.7); padding: 10px 20px; border: 2px solid #fff;
                 `;
-                document.body.appendChild(blinkOverlay);
                 
-                // Parpadeos rápidos
-                setTimeout(() => blinkOverlay.style.opacity = '0', 100);
-                setTimeout(() => blinkOverlay.style.opacity = '1', 300);
-                setTimeout(() => blinkOverlay.style.opacity = '0', 500);
-                setTimeout(() => blinkOverlay.style.opacity = '1', 800);
-                setTimeout(() => {
-                    blinkOverlay.style.opacity = '0';
-                    setTimeout(() => blinkOverlay.remove(), 500);
-                }, 1200);
+                const gamepads = navigator.getGamepads();
+                const hasGamepad = gamepads && gamepads[0];
+                if(isMobile) {
+                    skipMsg.textContent = 'Toca la pantalla para saltar intro';
+                } else if(hasGamepad) {
+                    skipMsg.textContent = 'Presiona A para saltar intro';
+                } else {
+                    skipMsg.textContent = 'Presiona ESPACIO/ENTER para saltar intro';
+                }
+                document.body.appendChild(skipMsg);
+                
+                let skipTriggered = false;
+                const skipIntro = () => {
+                    if(skipTriggered) return;
+                    skipTriggered = true;
+                    skipMsg.remove();
+                    skipToEnd();
+                    document.removeEventListener('keydown', skipHandler);
+                    document.removeEventListener('touchstart', touchHandler);
+                    document.removeEventListener('click', clickHandler);
+                    clearInterval(gamepadInterval);
+                };
+                
+                const skipHandler = (e) => {
+                    if(e.code === 'Space' || e.code === 'Enter') skipIntro();
+                };
+                
+                const touchHandler = () => skipIntro();
+                const clickHandler = () => skipIntro();
+                
+                document.addEventListener('keydown', skipHandler);
+                document.addEventListener('touchstart', touchHandler);
+                document.addEventListener('click', clickHandler);
+                
+                const gamepadInterval = setInterval(() => {
+                    const gp = navigator.getGamepads()[0];
+                    if(gp && gp.buttons[0].pressed) skipIntro();
+                }, 100);
                 
                 setTimeout(() => {
-                    intro.style.display = 'none';
-                    introShown = true;
-                }, 2000);
-            }, 32000);
+                    skipMsg.remove();
+                    clearInterval(gamepadInterval);
+                    document.removeEventListener('keydown', skipHandler);
+                    document.removeEventListener('touchstart', touchHandler);
+                    document.removeEventListener('click', clickHandler);
+                }, introDuration);
+            }
+            
+            setTimeout(() => {
+                skipToEnd();
+            }, introDuration);
+        }
+        
+        function skipToEnd() {
+            const intro = document.getElementById('intro');
+            intro.classList.add('hidden');
+            localStorage.setItem('introSeen', 'true');
+            
+            const blinkOverlay = document.createElement('div');
+            blinkOverlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: #000; z-index: 2500; opacity: 1; transition: opacity 0.2s;
+            `;
+            document.body.appendChild(blinkOverlay);
+            
+            setTimeout(() => blinkOverlay.style.opacity = '0', 100);
+            setTimeout(() => blinkOverlay.style.opacity = '1', 300);
+            setTimeout(() => blinkOverlay.style.opacity = '0', 500);
+            setTimeout(() => blinkOverlay.style.opacity = '1', 800);
+            setTimeout(() => {
+                blinkOverlay.style.opacity = '0';
+                setTimeout(() => blinkOverlay.remove(), 500);
+            }, 1200);
+            
+            setTimeout(() => {
+                intro.style.display = 'none';
+                introShown = true;
+            }, 2000);
         }
 
         // Inicializar audio con interacción del usuario
@@ -1835,10 +1922,11 @@
             scene.add(grassFloor);
             platforms.push(grassFloor);
             
-            // Suelo final (1800-2500m)
+            // Suelo final INDUSTRIAL (1800-2500m)
+            const metalFloorMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.8, metalness: 0.6, flatShading: true });
             const floor2 = new THREE.Mesh(
                 new THREE.PlaneGeometry(10, 700),
-                floorMat
+                metalFloorMat
             );
             floor2.rotation.x = -Math.PI / 2;
             floor2.position.z = 2150;
@@ -1857,10 +1945,11 @@
             ceiling1.position.z = 500;
             scene.add(ceiling1);
             
-            // Techo después de zona de pasto (1800-2500m)
+            // Techo INDUSTRIAL después de zona de pasto (1800-2500m)
+            const metalCeilingMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9, metalness: 0.5, flatShading: true });
             const ceiling2 = new THREE.Mesh(
                 new THREE.PlaneGeometry(10, 700),
-                ceilingMat
+                metalCeilingMat
             );
             ceiling2.rotation.x = Math.PI / 2;
             ceiling2.position.y = 4;
@@ -1884,10 +1973,11 @@
             wallRight1.castShadow = true;
             scene.add(wallRight1);
             
-            // Paredes después de zona de pasto (1800-2500m)
+            // Paredes INDUSTRIALES después de zona de pasto (1800-2500m)
+            const metalWallMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9, metalness: 0.6, flatShading: true });
             const wallLeft2 = new THREE.Mesh(
                 new THREE.BoxGeometry(1, 4, 700),
-                wallMat
+                metalWallMat
             );
             wallLeft2.position.set(-5, 2, 2150);
             wallLeft2.castShadow = true;
@@ -1895,7 +1985,7 @@
 
             const wallRight2 = new THREE.Mesh(
                 new THREE.BoxGeometry(1, 4, 700),
-                wallMat
+                metalWallMat
             );
             wallRight2.position.set(5, 2, 2150);
             wallRight2.castShadow = true;
@@ -2608,12 +2698,30 @@
             }
         }
 
+        function updateAllAudioVolumes() {
+            const audios = [footstepAudio, flashlightAudio, hallwayAudio, cineAudio, doorBreakAudio, objectFallAudio, jumpAudio, chaseAudio, runAudio, exhaustedAudio, gunshotAudio, grassWalkAudio, grassRunAudio, rainAudio, fanAudio, screamAudio, iSeeYouAudio, metalPipeAudio, dripAudio, metalWalkAudio, metalRunAudio, machineAudio, chainAudio];
+            audios.forEach(audio => {
+                if(audio && audio.volume !== undefined) {
+                    const baseVolume = audio.dataset?.baseVolume || audio.volume;
+                    audio.volume = Math.min(1, baseVolume * masterVolume);
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            const volumeSlider = document.getElementById('volumeSlider');
             const sensitivitySlider = document.getElementById('sensitivitySlider');
             const brightnessSlider = document.getElementById('brightnessSlider');
+            const volumeValue = document.getElementById('volumeValue');
             const sensitivityValue = document.getElementById('sensitivityValue');
             const brightnessValue = document.getElementById('brightnessValue');
             const secretCodeInput = document.getElementById('secretCodeInput');
+
+            volumeSlider.addEventListener('input', (e) => {
+                masterVolume = parseFloat(e.target.value);
+                volumeValue.textContent = Math.round(masterVolume * 100) + '%';
+                updateAllAudioVolumes();
+            });
 
             sensitivitySlider.addEventListener('input', (e) => {
                 mouseSensitivity = parseFloat(e.target.value);
@@ -2794,16 +2902,28 @@
             if(moveLeft || joystickX < -0.1) velocity.x -= speed;
             if(moveRight || joystickX > 0.1) velocity.x += speed;
 
-            // Determinar si está en zona de pasto
+            // Determinar zona actual
             const onGrass = camera.position.z >= 1000 && camera.position.z <= 1800;
+            const onMetal = camera.position.z >= 1800 && camera.position.z <= 2500;
             
             // Audio de correr
             if(isRunning && isMoving && stamina > 0 && !staminaExhausted) {
                 if(!runAudioPlaying) {
                     runAudioPlaying = true;
                     if(onGrass && grassRunAudio) {
+                        if(runAudio) runAudio.pause();
+                        if(metalRunAudio) metalRunAudio.pause();
+                        grassRunAudio.currentTime = 0;
                         grassRunAudio.play().catch(() => {});
+                    } else if(onMetal && metalRunAudio) {
+                        if(runAudio) runAudio.pause();
+                        if(grassRunAudio) grassRunAudio.pause();
+                        metalRunAudio.currentTime = 0;
+                        metalRunAudio.play().catch(() => {});
                     } else if(runAudio) {
+                        if(grassRunAudio) grassRunAudio.pause();
+                        if(metalRunAudio) metalRunAudio.pause();
+                        runAudio.currentTime = 0;
                         runAudio.play().catch(() => {});
                     }
                 }
@@ -2812,6 +2932,7 @@
                     runAudioPlaying = false;
                     if(runAudio) runAudio.pause();
                     if(grassRunAudio) grassRunAudio.pause();
+                    if(metalRunAudio) metalRunAudio.pause();
                 }
             }
             
@@ -2820,9 +2941,11 @@
                 footstepTimer += 16;
                 if(footstepTimer >= footstepInterval) {
                     if(onGrass && grassWalkAudio) {
-                        const audio = grassWalkAudio.cloneNode();
-                        audio.volume = 0.3;
-                        audio.play().catch(() => {});
+                        grassWalkAudio.currentTime = 0;
+                        grassWalkAudio.play().catch(() => {});
+                    } else if(onMetal && metalWalkAudio) {
+                        metalWalkAudio.currentTime = 0;
+                        metalWalkAudio.play().catch(() => {});
                     } else {
                         playFootstepSound();
                     }
@@ -2904,12 +3027,25 @@
                 }
             }
 
+            // Colisiones con paredes
+            const wallLeft = -4.5;
+            const wallRight = 4.5;
+            const playerRadius = 0.3;
+            
+            if(camera.position.x - playerRadius < wallLeft) {
+                camera.position.x = wallLeft + playerRadius;
+                velocity.x = 0;
+            }
+            if(camera.position.x + playerRadius > wallRight) {
+                camera.position.x = wallRight - playerRadius;
+                velocity.x = 0;
+            }
+            
             // Límites
             if(inStartRoom) {
-                camera.position.x = Math.max(-4.5, Math.min(4.5, camera.position.x));
                 camera.position.z = Math.max(-9.5, Math.min(0.5, camera.position.z));
                 
-                    // Transición de habitación a pasillo
+                // Transición de habitación a pasillo
                 if(camera.position.z > 0 && hasFlashlight) {
                     inStartRoom = false;
                     scene.children.find(c => c instanceof THREE.AmbientLight).intensity = 0;
@@ -2923,7 +3059,6 @@
                     }
                 }
             } else {
-                camera.position.x = Math.max(-4.5, Math.min(4.5, camera.position.x));
                 camera.position.z = Math.max(1, Math.min(2550, camera.position.z));
             }
 
@@ -2949,8 +3084,8 @@
 
             // 2019x persigue al jugador
             if(killerChasing && !isCaught) {
-                // 2019x se mueve a velocidad constante (más lento que el jugador corriendo)
-                const killerSpeed = 0.065;
+                // 2019x se mueve a velocidad balanceada (más lento que jugador corriendo, más rápido que caminando)
+                const killerSpeed = 0.055;
                 killerPosition += killerSpeed;
                 
                 // Actualizar posición del modelo 3D
@@ -2994,9 +3129,13 @@
                 document.getElementById('killerIndicator').style.display = 'none';
                 if(killer2019x) scene.remove(killer2019x);
                 
-                // Remover aura roja
-                const redFog = document.querySelector('div[style*="radial-gradient"][style*="rgba(255,0,0"]');
-                if(redFog) redFog.remove();
+                // Remover todas las nieblas rojas
+                document.querySelectorAll('div').forEach(div => {
+                    const style = div.style.cssText;
+                    if(style.includes('radial-gradient') && style.includes('255') && style.includes('0') && style.includes('0')) {
+                        div.remove();
+                    }
+                });
                 
                 showMonologue('Lo... lo logré... se detuvo...');
             }
@@ -3086,7 +3225,14 @@
                 lamp.target.position.copy(lamp.position);
                 lamp.target.position.add(lookDirection.multiplyScalar(10));
                 
-                lamp.intensity = 6.5;
+                // Mejorar linterna en zona de pasto (1000-1800m)
+                if(onGrass) {
+                    lamp.intensity = 12;
+                    lamp.distance = 50;
+                } else {
+                    lamp.intensity = 6.5;
+                    lamp.distance = 35;
+                }
                 
                 // Actualizar sombras solo cada 5 frames
                 if(Date.now() % 5 === 0) {
@@ -3187,6 +3333,45 @@
             } else if(fanAudioPlaying && fanAudio) {
                 fanAudio.pause();
                 fanAudioPlaying = false;
+            }
+            
+            // Audio de máquinas y cadenas por proximidad
+            if(industrialMachines.length > 0 && camera.position.z >= 1800 && camera.position.z <= 2500) {
+                let nearMachine = false;
+                let nearChain = false;
+                
+                industrialMachines.forEach(item => {
+                    const dist = Math.abs(camera.position.z - item.position.z);
+                    if(dist < 40) {
+                        if(item.type === 'machine') nearMachine = true;
+                        if(item.type === 'chain') nearChain = true;
+                    }
+                });
+                
+                if(nearMachine && !machineAudioPlaying && machineAudio) {
+                    machineAudio.play().catch(() => {});
+                    machineAudioPlaying = true;
+                } else if(!nearMachine && machineAudioPlaying && machineAudio) {
+                    machineAudio.pause();
+                    machineAudioPlaying = false;
+                }
+                
+                if(nearChain && !chainAudioPlaying && chainAudio) {
+                    chainAudio.play().catch(() => {});
+                    chainAudioPlaying = true;
+                } else if(!nearChain && chainAudioPlaying && chainAudio) {
+                    chainAudio.pause();
+                    chainAudioPlaying = false;
+                }
+            } else {
+                if(machineAudioPlaying && machineAudio) {
+                    machineAudio.pause();
+                    machineAudioPlaying = false;
+                }
+                if(chainAudioPlaying && chainAudio) {
+                    chainAudio.pause();
+                    chainAudioPlaying = false;
+                }
             }
             
             // Actualizar fragmentos de puerta (solo si hay fragmentos)
@@ -3663,81 +3848,86 @@
         }
         
         function createSecondHallwayAmbience(pipeMat, bloodMat, crackMat) {
-            // Tuberías (cada 100m)
-            for(let z = 1850; z < 2500; z += 100) {
-                const pipeL = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.15, 0.15, 50, 6),
-                    pipeMat
+            // TEMÁTICA INDUSTRIAL - Paredes de metal oxidado
+            const metalMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9, metalness: 0.6 });
+            const rustMat = new THREE.MeshStandardMaterial({ color: 0x5a3a2a, roughness: 1, metalness: 0.3 });
+            
+            // Tuberías industriales grandes (cada 80m)
+            for(let z = 1850; z < 2500; z += 80) {
+                const bigPipe = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.3, 0.3, 60, 8),
+                    rustMat
                 );
-                pipeL.rotation.z = Math.PI / 2;
-                pipeL.position.set(-4.8, 2.5, z);
-                scene.add(pipeL);
-                
-                const pipeR = pipeL.clone();
-                pipeR.position.set(4.8, 2.5, z);
-                scene.add(pipeR);
+                bigPipe.rotation.z = Math.PI / 2;
+                bigPipe.position.set(Math.random() > 0.5 ? -4.7 : 4.7, 3, z);
+                scene.add(bigPipe);
             }
             
-            // Cables colgantes (cada 80m)
-            for(let z = 1900; z < 2500; z += 80) {
-                const cable = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.03, 0.03, 1.5, 4),
-                    new THREE.MeshBasicMaterial({ color: 0x222222 })
+            // Cadenas colgantes (cada 70m)
+            for(let z = 1900; z < 2500; z += 70) {
+                const chain = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.05, 0.05, 2, 6),
+                    metalMat
                 );
-                cable.position.set((Math.random() - 0.5) * 6, 3.5, z);
-                cable.userData.swingOffset = Math.random() * Math.PI * 2;
-                scene.add(cable);
-                hangingCables.push(cable);
+                chain.position.set((Math.random() - 0.5) * 6, 3.5, z);
+                chain.userData.swingOffset = Math.random() * Math.PI * 2;
+                scene.add(chain);
+                hangingCables.push(chain);
+                industrialMachines.push({ position: { z: z }, type: 'chain' });
             }
             
-            // Manchas de sangre (cada 150m)
-            for(let z = 1880; z < 2500; z += 150) {
+            // Válvulas y tanques (cada 120m)
+            for(let z = 1880; z < 2500; z += 120) {
+                const side = Math.random() > 0.5 ? -4.5 : 4.5;
+                const tank = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.4, 0.4, 1.5, 8),
+                    rustMat
+                );
+                tank.position.set(side, 1.5, z);
+                scene.add(tank);
+                industrialMachines.push({ position: { z: z }, type: 'machine' });
+            }
+            
+            // Luces industriales parpadeantes (cada 100m)
+            for(let z = 1920; z < 2500; z += 100) {
+                const lightColor = Math.random() > 0.5 ? 0xff6600 : 0xffaa00;
+                const industrialLight = new THREE.PointLight(lightColor, 0.8, 15);
+                industrialLight.position.set((Math.random() - 0.5) * 4, 3.5, z);
+                scene.add(industrialLight);
+            }
+            
+            // Rejillas metálicas en paredes (cada 90m)
+            for(let z = 1900; z < 2500; z += 90) {
                 const side = Math.random() > 0.5 ? -4.9 : 4.9;
-                const bloodStain = new THREE.Mesh(
-                    new THREE.PlaneGeometry(0.8, 1.2),
-                    bloodMat
+                const grate = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1, 1.5),
+                    new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.8, metalness: 0.7 })
                 );
-                bloodStain.position.set(side, 1.5 + Math.random(), z);
-                bloodStain.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
-                scene.add(bloodStain);
+                grate.position.set(side, 2, z);
+                grate.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
+                scene.add(grate);
             }
             
-            // Grietas con luz roja (cada 200m)
-            for(let z = 1920; z < 2500; z += 200) {
-                const side = Math.random() > 0.5 ? -4.9 : 4.9;
-                const crack = new THREE.Mesh(
-                    new THREE.PlaneGeometry(0.3, 2),
-                    crackMat
-                );
-                crack.position.set(side, 2, z);
-                crack.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
-                scene.add(crack);
-                
-                const crackLight = new THREE.PointLight(0xff0000, 0.3, 5);
-                crackLight.position.set(side * 0.9, 2, z);
-                scene.add(crackLight);
-            }
-            
-            // Ventiladores (cada 150m)
-            for(let z = 1900; z < 2500; z += 150) {
+            // Ventiladores industriales (cada 130m)
+            for(let z = 1900; z < 2500; z += 130) {
                 const fanGroup = new THREE.Group();
                 const base = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.3, 0.3, 0.1, 8),
-                    new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.9, metalness: 0.2 })
+                    new THREE.CylinderGeometry(0.4, 0.4, 0.15, 8),
+                    metalMat
                 );
                 fanGroup.add(base);
                 
-                for(let i = 0; i < 3; i++) {
+                for(let i = 0; i < 4; i++) {
                     const blade = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.8, 0.05, 0.15),
-                        new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.8, metalness: 0.1 })
+                        new THREE.BoxGeometry(1, 0.08, 0.2),
+                        rustMat
                     );
-                    blade.rotation.y = (i * Math.PI * 2) / 3;
+                    blade.rotation.y = (i * Math.PI * 2) / 4;
                     fanGroup.add(blade);
                 }
                 
                 fanGroup.position.set((Math.random() - 0.5) * 4, 3.8, z);
-                fanGroup.userData.speed = 0.01 + Math.random() * 0.02;
+                fanGroup.userData.speed = 0.02 + Math.random() * 0.03;
                 scene.add(fanGroup);
                 ceilingFans.push(fanGroup);
             }
