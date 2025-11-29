@@ -1662,36 +1662,38 @@
         function loadGrassZone() {
             // Cargar audios de zona de pasto
             chaseAudio = new Audio('stuff/2019chase.mp3');
-            chaseAudio.volume = 0.7;
+            chaseAudio.volume = 0.7 * masterVolume;
             chaseAudio.loop = true;
             chaseAudio.addEventListener('ended', () => {
                 if(killerChasing) chaseAudio.play();
             });
             
             rainAudio = new Audio('stuff/lluvia.mp3');
-            rainAudio.volume = 0.4;
+            rainAudio.volume = 0.4 * masterVolume;
             rainAudio.loop = true;
             
             grassWalkAudio = new Audio('stuff/caminarpasto.mp3');
-            grassWalkAudio.volume = 0.3;
+            grassWalkAudio.volume = 0.3 * masterVolume;
+            grassWalkAudio.loop = false;
             
             grassRunAudio = new Audio('stuff/correrpasto.mp3');
-            grassRunAudio.volume = 0.4;
+            grassRunAudio.volume = 0.4 * masterVolume;
             grassRunAudio.loop = true;
             
             metalWalkAudio = new Audio('stuff/caminarmetal.mp3');
-            metalWalkAudio.volume = 0.3;
+            metalWalkAudio.volume = 0.3 * masterVolume;
+            metalWalkAudio.loop = false;
             
             metalRunAudio = new Audio('stuff/corrermetal.mp3');
-            metalRunAudio.volume = 0.4;
+            metalRunAudio.volume = 0.4 * masterVolume;
             metalRunAudio.loop = true;
             
             machineAudio = new Audio('stuff/machine.mp3');
-            machineAudio.volume = 0.3;
+            machineAudio.volume = 0.3 * masterVolume;
             machineAudio.loop = true;
             
             chainAudio = new Audio('stuff/cadenas.mp3');
-            chainAudio.volume = 0.25;
+            chainAudio.volume = 0.25 * masterVolume;
             chainAudio.loop = true;
         }
 
@@ -2939,18 +2941,18 @@
                 if(!runAudioPlaying) {
                     runAudioPlaying = true;
                     if(onGrass && grassRunAudio) {
-                        if(runAudio) runAudio.pause();
-                        if(metalRunAudio) metalRunAudio.pause();
+                        if(runAudio && !runAudio.paused) runAudio.pause();
+                        if(metalRunAudio && !metalRunAudio.paused) metalRunAudio.pause();
                         grassRunAudio.currentTime = 0;
                         grassRunAudio.play().catch(() => {});
                     } else if(onMetal && metalRunAudio) {
-                        if(runAudio) runAudio.pause();
-                        if(grassRunAudio) grassRunAudio.pause();
+                        if(runAudio && !runAudio.paused) runAudio.pause();
+                        if(grassRunAudio && !grassRunAudio.paused) grassRunAudio.pause();
                         metalRunAudio.currentTime = 0;
                         metalRunAudio.play().catch(() => {});
                     } else if(runAudio) {
-                        if(grassRunAudio) grassRunAudio.pause();
-                        if(metalRunAudio) metalRunAudio.pause();
+                        if(grassRunAudio && !grassRunAudio.paused) grassRunAudio.pause();
+                        if(metalRunAudio && !metalRunAudio.paused) metalRunAudio.pause();
                         runAudio.currentTime = 0;
                         runAudio.play().catch(() => {});
                     }
@@ -2958,22 +2960,24 @@
             } else {
                 if(runAudioPlaying) {
                     runAudioPlaying = false;
-                    if(runAudio) runAudio.pause();
-                    if(grassRunAudio) grassRunAudio.pause();
-                    if(metalRunAudio) metalRunAudio.pause();
+                    if(runAudio && !runAudio.paused) runAudio.pause();
+                    if(grassRunAudio && !grassRunAudio.paused) grassRunAudio.pause();
+                    if(metalRunAudio && !metalRunAudio.paused) metalRunAudio.pause();
                 }
             }
             
             // Footsteps solo cuando NO está corriendo
-            if(isMoving && !isRunning) {
+            if(isMoving && !isRunning && !staminaExhausted) {
                 footstepTimer += 16;
                 if(footstepTimer >= footstepInterval) {
                     if(onGrass && grassWalkAudio) {
-                        grassWalkAudio.currentTime = 0;
-                        grassWalkAudio.play().catch(() => {});
+                        const walkAudio = grassWalkAudio.cloneNode();
+                        walkAudio.volume = 0.3 * masterVolume;
+                        walkAudio.play().catch(() => {});
                     } else if(onMetal && metalWalkAudio) {
-                        metalWalkAudio.currentTime = 0;
-                        metalWalkAudio.play().catch(() => {});
+                        const walkAudio = metalWalkAudio.cloneNode();
+                        walkAudio.volume = 0.3 * masterVolume;
+                        walkAudio.play().catch(() => {});
                     } else {
                         playFootstepSound();
                     }
@@ -3356,21 +3360,25 @@
                     fanAudioPlaying = true;
                 } else if(!nearFan && fanAudioPlaying && fanAudio) {
                     fanAudio.pause();
+                    fanAudio.currentTime = 0;
                     fanAudioPlaying = false;
                 }
             } else if(fanAudioPlaying && fanAudio) {
                 fanAudio.pause();
+                fanAudio.currentTime = 0;
                 fanAudioPlaying = false;
             }
             
             // Audio de máquinas y cadenas por proximidad
-            if(industrialMachines.length > 0 && camera.position.z >= 1800 && camera.position.z <= 2500) {
+            const inMetalZone = camera.position.z >= 1800 && camera.position.z <= 2500;
+            
+            if(industrialMachines.length > 0 && inMetalZone) {
                 let nearMachine = false;
                 let nearChain = false;
                 
                 industrialMachines.forEach(item => {
                     const dist = Math.abs(camera.position.z - item.position.z);
-                    if(dist < 40) {
+                    if(dist < 15) {
                         if(item.type === 'machine') nearMachine = true;
                         if(item.type === 'chain') nearChain = true;
                     }
@@ -3381,6 +3389,7 @@
                     machineAudioPlaying = true;
                 } else if(!nearMachine && machineAudioPlaying && machineAudio) {
                     machineAudio.pause();
+                    machineAudio.currentTime = 0;
                     machineAudioPlaying = false;
                 }
                 
@@ -3389,15 +3398,18 @@
                     chainAudioPlaying = true;
                 } else if(!nearChain && chainAudioPlaying && chainAudio) {
                     chainAudio.pause();
+                    chainAudio.currentTime = 0;
                     chainAudioPlaying = false;
                 }
             } else {
                 if(machineAudioPlaying && machineAudio) {
                     machineAudio.pause();
+                    machineAudio.currentTime = 0;
                     machineAudioPlaying = false;
                 }
                 if(chainAudioPlaying && chainAudio) {
                     chainAudio.pause();
+                    chainAudio.currentTime = 0;
                     chainAudioPlaying = false;
                 }
             }
@@ -3891,30 +3903,48 @@
                 scene.add(bigPipe);
             }
             
-            // Cadenas colgantes (cada 70m)
-            for(let z = 1900; z < 2500; z += 70) {
-                const chain = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.05, 0.05, 2, 6),
-                    metalMat
-                );
-                chain.position.set((Math.random() - 0.5) * 6, 3.5, z);
-                chain.userData.swingOffset = Math.random() * Math.PI * 2;
-                scene.add(chain);
-                hangingCables.push(chain);
-                industrialMachines.push({ position: { z: z }, type: 'chain' });
-            }
+            // Zonas estratégicas de cadenas (3 zonas concentradas)
+            const chainZones = [1900, 2100, 2300];
+            chainZones.forEach(zoneStart => {
+                for(let i = 0; i < 3; i++) {
+                    const chain = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.05, 0.05, 2, 6),
+                        metalMat
+                    );
+                    chain.position.set((Math.random() - 0.5) * 6, 3.5, zoneStart + i * 5);
+                    chain.userData.swingOffset = Math.random() * Math.PI * 2;
+                    scene.add(chain);
+                    hangingCables.push(chain);
+                }
+                industrialMachines.push({ position: { z: zoneStart + 5 }, type: 'chain' });
+            });
             
-            // Válvulas y tanques (cada 120m)
-            for(let z = 1880; z < 2500; z += 120) {
-                const side = Math.random() > 0.5 ? -4.5 : 4.5;
-                const tank = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.4, 0.4, 1.5, 8),
+            // Zonas estratégicas de máquinas (4 zonas concentradas)
+            const machineZones = [1880, 2000, 2150, 2350];
+            machineZones.forEach(zoneStart => {
+                for(let i = 0; i < 2; i++) {
+                    const side = i === 0 ? -4.5 : 4.5;
+                    const tank = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.4, 0.4, 1.5, 8),
+                        rustMat
+                    );
+                    tank.position.set(side, 1.5, zoneStart + i * 3);
+                    scene.add(tank);
+                }
+                industrialMachines.push({ position: { z: zoneStart + 1.5 }, type: 'machine' });
+            });
+            
+            // Generadores grandes en puntos clave
+            const generatorPositions = [1950, 2200, 2400];
+            generatorPositions.forEach(z => {
+                const generator = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.5, 2, 1),
                     rustMat
                 );
-                tank.position.set(side, 1.5, z);
-                scene.add(tank);
+                generator.position.set(Math.random() > 0.5 ? -4 : 4, 1, z);
+                scene.add(generator);
                 industrialMachines.push({ position: { z: z }, type: 'machine' });
-            }
+            });
             
             // Luces industriales parpadeantes (cada 100m)
             for(let z = 1920; z < 2500; z += 100) {
