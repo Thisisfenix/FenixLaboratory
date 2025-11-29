@@ -415,7 +415,7 @@ class Chapter2 {
         this.labIntroAudio.volume = 0.4 * vol;
         
         this.labAmbientAudio = new Audio('stuff/chapter2laboratory.mp3');
-        this.labAmbientAudio.volume = 0.3 * vol;
+        this.labAmbientAudio.volume = 0.1 * vol;
         this.labAmbientAudio.loop = true;
         
         this.bubbleAudio = new Audio('stuff/burbujas.mp3');
@@ -458,8 +458,29 @@ class Chapter2 {
         const ambient = new THREE.AmbientLight(0x202020, 0.3);
         scene.add(ambient);
         
-        // NO detener audios al cambiar de zona
-        // Los audios de pasos, correr y cansancio deben seguir funcionando
+        // Pausar audios de sala al cambiar de zona
+        this.stopRoomAudios();
+    }
+    
+    stopRoomAudios() {
+        if(this.labAmbientAudio && !this.labAmbientAudio.paused) {
+            this.labAmbientAudio.pause();
+        }
+        if(this.bubbleAudio && !this.bubbleAudio.paused) {
+            this.bubbleAudio.pause();
+        }
+        if(this.computerAudio && !this.computerAudio.paused) {
+            this.computerAudio.pause();
+        }
+        if(this.electricityAudio && !this.electricityAudio.paused) {
+            this.electricityAudio.pause();
+        }
+        if(this.whiteRoomAudio && !this.whiteRoomAudio.paused) {
+            this.whiteRoomAudio.pause();
+        }
+        if(this.chapter2RainAudio && !this.chapter2RainAudio.paused) {
+            this.chapter2RainAudio.pause();
+        }
     }
 
     createFallingCinematic() {
@@ -579,10 +600,10 @@ class Chapter2 {
             { path: '../assets/icons/AngelNormalIcon.png', name: 'Angel' },
             { path: '../assets/icons/IrisNormalIcon.png', name: 'Iris' },
             { path: '../assets/icons/MollyNormalIcon.png', name: 'Molly' },
-            { path: '../assets/icons/GisselInactiveIcon.png', name: 'Gissel 2' },
-            { path: '../assets/icons/IA777NormalIcon.png', name: 'iA777 2' },
-            { path: '../assets/icons/LunaNormalIcon.png', name: 'Luna 2' },
-            { path: '../assets/icons/AngelNormalIcon.png', name: 'Angel 2' }
+            { path: '../assets/icons/GisselInactiveIcon.png', name: 'Gissel' },
+            { path: '../assets/icons/IA777NormalIcon.png', name: 'iA777' },
+            { path: '../assets/icons/LunaNormalIcon.png', name: 'Luna' },
+            { path: '../assets/icons/AngelNormalIcon.png', name: 'Angel' }
         ];
         
         // Habitaciones con dimensiones (centro, ancho, profundidad, nivel)
@@ -1436,7 +1457,7 @@ class Chapter2 {
         
         const fill = document.createElement('div');
         fill.id = 'injuryFill';
-        fill.style.cssText = 'height:100%;background:linear-gradient(90deg,#ff0000,#ff8888);width:100%;transition:width 0.5s;';
+        fill.style.cssText = 'height:100%;background:linear-gradient(90deg,#ff0000,#ff8888);width:' + (100 - this.legHealProgress) + '%;transition:width 0.5s;';
         
         const label = document.createElement('div');
         label.id = 'injuryLabel';

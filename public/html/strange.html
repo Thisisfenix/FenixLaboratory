@@ -2858,10 +2858,27 @@
             }
         }
 
+        function stopAllChapter1Audio() {
+            // Detener TODOS los audios del capítulo 1
+            if(hallwayAudio && !hallwayAudio.paused) { hallwayAudio.pause(); hallwayAudio.currentTime = 0; }
+            if(cineAudio && !cineAudio.paused) { cineAudio.pause(); cineAudio.currentTime = 0; }
+            if(chaseAudio && !chaseAudio.paused) { chaseAudio.pause(); chaseAudio.currentTime = 0; }
+            if(runAudio && !runAudio.paused) { runAudio.pause(); runAudio.currentTime = 0; }
+            if(grassRunAudio && !grassRunAudio.paused) { grassRunAudio.pause(); grassRunAudio.currentTime = 0; }
+            if(metalRunAudio && !metalRunAudio.paused) { metalRunAudio.pause(); metalRunAudio.currentTime = 0; }
+            if(rainAudio && !rainAudio.paused) { rainAudio.pause(); rainAudio.currentTime = 0; }
+            if(fanAudio && !fanAudio.paused) { fanAudio.pause(); fanAudio.currentTime = 0; }
+            if(machineAudio && !machineAudio.paused) { machineAudio.pause(); machineAudio.currentTime = 0; }
+            if(chainAudio && !chainAudio.paused) { chainAudio.pause(); chainAudio.currentTime = 0; }
+            if(dripAudio && !dripAudio.paused) { dripAudio.pause(); dripAudio.currentTime = 0; }
+            stopHeartbeat();
+        }
+
         function animate() {
             requestAnimationFrame(animate);
 
             if(chapter2.active) {
+                stopAllChapter1Audio();
                 const delta = 0.016;
                 chapter2.update(delta);
                 renderer.render(scene, camera);
