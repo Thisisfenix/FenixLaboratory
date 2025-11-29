@@ -380,52 +380,54 @@ class Chapter2 {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         this.ambientSound = this.createDroneSound(60, 0.2);
         
+        const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
+        
         this.footstepAudio = new Audio('stuff/stepsound.mp3');
-        this.footstepAudio.volume = 0.25;
+        this.footstepAudio.volume = 0.25 * vol;
         
         for(let i = 0; i < 3; i++) {
             const audio = new Audio('stuff/stepsound.mp3');
-            audio.volume = 0.25;
+            audio.volume = 0.25 * vol;
             this.footstepPool.push(audio);
         }
         
         this.runAudio = new Audio('stuff/correr.mp3');
-        this.runAudio.volume = 0.4;
+        this.runAudio.volume = 0.4 * vol;
         this.runAudio.loop = true;
         
         this.exhaustedAudio = new Audio('stuff/exhausted.mp3');
-        this.exhaustedAudio.volume = 0.5;
+        this.exhaustedAudio.volume = 0.5 * vol;
         
         // Sonidos de pasto para el patio
         this.grassWalkAudio = new Audio('stuff/caminarpasto.mp3');
-        this.grassWalkAudio.volume = 0.3;
+        this.grassWalkAudio.volume = 0.3 * vol;
         
         this.grassRunAudio = new Audio('stuff/correrpasto.mp3');
-        this.grassRunAudio.volume = 0.4;
+        this.grassRunAudio.volume = 0.4 * vol;
         this.grassRunAudio.loop = true;
         
         // Metal pipe random
         this.metalPipeAudio = new Audio('stuff/metal pipe.mp3');
-        this.metalPipeAudio.volume = 0.5;
+        this.metalPipeAudio.volume = 0.5 * vol;
         
         // Ambientes del laboratorio
         this.labIntroAudio = new Audio('stuff/labchapter2intro.mp3');
-        this.labIntroAudio.volume = 0.4;
+        this.labIntroAudio.volume = 0.4 * vol;
         
         this.labAmbientAudio = new Audio('stuff/chapter2laboratory.mp3');
-        this.labAmbientAudio.volume = 0.3;
+        this.labAmbientAudio.volume = 0.3 * vol;
         this.labAmbientAudio.loop = true;
         
         this.bubbleAudio = new Audio('stuff/burbujas.mp3');
-        this.bubbleAudio.volume = 0.3;
+        this.bubbleAudio.volume = 0.3 * vol;
         this.bubbleAudio.loop = true;
         
         this.computerAudio = new Audio('stuff/computerlab.mp3');
-        this.computerAudio.volume = 0.4;
+        this.computerAudio.volume = 0.4 * vol;
         this.computerAudio.loop = true;
         
         this.electricityAudio = new Audio('stuff/electrictyzone.mp3');
-        this.electricityAudio.volume = 0.35;
+        this.electricityAudio.volume = 0.35 * vol;
         this.electricityAudio.loop = true;
     }
 
@@ -1789,10 +1791,12 @@ class Chapter2 {
         showMonologue('Un túnel... debo seguir la luz...');
         vibrateGamepad(300, 0.5, 0.5);
         
+        const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
+        
         // Asegurar que los audios sigan disponibles
         if(!this.runAudio || this.runAudio.error) {
             this.runAudio = new Audio('stuff/correr.mp3');
-            this.runAudio.volume = 0.4;
+            this.runAudio.volume = 0.4 * vol;
             this.runAudio.loop = true;
         }
     }
@@ -2611,10 +2615,12 @@ class Chapter2 {
         this.flashlightBroken = false;
         this.clearScene();
         
+        const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
+        
         // Asegurar que los audios sigan disponibles
         if(!this.runAudio || this.runAudio.error) {
             this.runAudio = new Audio('stuff/correr.mp3');
-            this.runAudio.volume = 0.4;
+            this.runAudio.volume = 0.4 * vol;
             this.runAudio.loop = true;
         }
         
@@ -2625,7 +2631,7 @@ class Chapter2 {
         // Audio de sala blanca
         if(!this.whiteRoomAudio) {
             this.whiteRoomAudio = new Audio('stuff/whiteroomchapter2.mp3');
-            this.whiteRoomAudio.volume = 0.5;
+            this.whiteRoomAudio.volume = 0.5 * vol;
             this.whiteRoomAudio.loop = true;
         }
         this.whiteRoomAudio.play().catch(() => {});
@@ -2764,16 +2770,18 @@ class Chapter2 {
         this.rainParticles = [];
         this.clearScene();
         
+        const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
+        
         // Asegurar que los audios sigan disponibles
         if(!this.runAudio || this.runAudio.error) {
             this.runAudio = new Audio('stuff/correr.mp3');
-            this.runAudio.volume = 0.4;
+            this.runAudio.volume = 0.4 * vol;
             this.runAudio.loop = true;
         }
         if(this.footstepPool.length === 0) {
             for(let i = 0; i < 3; i++) {
                 const audio = new Audio('stuff/stepsound.mp3');
-                audio.volume = 0.25;
+                audio.volume = 0.25 * vol;
                 this.footstepPool.push(audio);
             }
         }
@@ -3189,9 +3197,10 @@ class Chapter2 {
     }
 
     playRainAmbient() {
+        const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
         if(!this.chapter2RainAudio) {
             this.chapter2RainAudio = new Audio('stuff/chapter2rain.mp3');
-            this.chapter2RainAudio.volume = 0.4;
+            this.chapter2RainAudio.volume = 0.4 * vol;
             this.chapter2RainAudio.loop = true;
         }
         this.chapter2RainAudio.play().catch(() => {});
@@ -3199,9 +3208,10 @@ class Chapter2 {
     
     playWhisper() {
         if(this.phase === 'whiteroom') {
+            const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
             if(!this.voicesAudio) {
                 this.voicesAudio = new Audio('stuff/voices.mp3');
-                this.voicesAudio.volume = 0.6;
+                this.voicesAudio.volume = 0.6 * vol;
             }
             this.voicesAudio.currentTime = 0;
             this.voicesAudio.play().catch(() => {});

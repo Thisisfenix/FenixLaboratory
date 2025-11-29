@@ -2699,12 +2699,40 @@
         }
 
         function updateAllAudioVolumes() {
-            const audios = [footstepAudio, flashlightAudio, hallwayAudio, cineAudio, doorBreakAudio, objectFallAudio, jumpAudio, chaseAudio, runAudio, exhaustedAudio, gunshotAudio, grassWalkAudio, grassRunAudio, rainAudio, fanAudio, screamAudio, iSeeYouAudio, metalPipeAudio, dripAudio, metalWalkAudio, metalRunAudio, machineAudio, chainAudio];
-            audios.forEach(audio => {
-                if(audio && audio.volume !== undefined) {
-                    const baseVolume = audio.dataset?.baseVolume || audio.volume;
-                    audio.volume = Math.min(1, baseVolume * masterVolume);
+            const audios = [
+                {audio: footstepAudio, base: 0.3},
+                {audio: flashlightAudio, base: 0.4},
+                {audio: hallwayAudio, base: 0.5},
+                {audio: cineAudio, base: 0.6},
+                {audio: doorBreakAudio, base: 0.7},
+                {audio: objectFallAudio, base: 0.5},
+                {audio: jumpAudio, base: 0.4},
+                {audio: chaseAudio, base: 0.7},
+                {audio: runAudio, base: 0.4},
+                {audio: exhaustedAudio, base: 0.5},
+                {audio: gunshotAudio, base: 0.6},
+                {audio: grassWalkAudio, base: 0.3},
+                {audio: grassRunAudio, base: 0.4},
+                {audio: rainAudio, base: 0.4},
+                {audio: fanAudio, base: 0.15},
+                {audio: screamAudio, base: 0.5},
+                {audio: iSeeYouAudio, base: 0.7},
+                {audio: metalPipeAudio, base: 0.8},
+                {audio: dripAudio, base: 0.3},
+                {audio: metalWalkAudio, base: 0.3},
+                {audio: metalRunAudio, base: 0.4},
+                {audio: machineAudio, base: 0.3},
+                {audio: chainAudio, base: 0.25}
+            ];
+            audios.forEach(item => {
+                if(item.audio && item.audio.volume !== undefined) {
+                    item.audio.volume = Math.min(1, item.base * masterVolume);
                 }
+            });
+            
+            // Actualizar pool de footsteps
+            footstepPool.forEach(step => {
+                if(step) step.volume = Math.min(1, 0.25 * masterVolume);
             });
         }
 
