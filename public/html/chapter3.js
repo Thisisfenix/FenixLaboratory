@@ -27,6 +27,9 @@ class Chapter3 {
         this.totalRooms = 3;
         this.currentRoom = null;
         this.monologuesShown = {};
+        
+        // Limitador de framerate para 144Hz
+        this.maxDelta = 1/60; // Limitar a 60 FPS equivalente
     }
 
     start() {
@@ -1006,6 +1009,9 @@ class Chapter3 {
         if(!this.active) return;
         if(this.phase === 'cinematic') return;
         if(this.phase === 'dialogue') return;
+        
+        // Limitar delta para monitores de alta frecuencia
+        delta = Math.min(delta, this.maxDelta);
 
         // Sistema de stamina
         const isMoving = this.keys['w'] || this.keys['s'] || this.keys['a'] || this.keys['d'];

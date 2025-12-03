@@ -49,6 +49,9 @@ class Chapter2 {
         this.targetHeight = 1.6;
         this.currentHeight = 1.6;
         
+        // Limitador de framerate para 144Hz
+        this.maxDelta = 1/60; // Limitar a 60 FPS equivalente
+        
         // Sistemas de exploración
         this.terminalsRead = 0;
         this.totalTerminals = 4;
@@ -1427,22 +1430,30 @@ class Chapter2 {
             { pos: [11, 0.86, -5], text: 'DÍA 30: EVACUACIÓN INMEDIATA. Sellar el laboratorio. NUNCA ABRIR. El Sujeto 666 no debe salir.', title: 'Orden de Evacuación' },
             { pos: [-8, 1.3, -12], text: 'Nota personal: Si alguien lee esto... huye. No cometas nuestros errores. Este lugar está maldito.', title: 'Nota Personal' },
             { pos: [0, 0.86, 1.5], text: 'ADVERTENCIA FINAL: El Sujeto 666 escapó del contenedor. Dios nos perdone por lo que hemos creado.', title: '⚠️ ADVERTENCIA' },
-            { pos: [8, 1.3, -12], text: 'iA777 aunque no es muy bueno en tecnología, logró crear este casco con materiales que encontró y la experiencia de su creador. De manera misteriosa, el casco desapareció y ahora está aquí.', title: 'Origen del Casco' }
+            { pos: [8, 1.3, -12], text: 'iA777 aunque no es muy bueno en tecnología, logró crear este casco con materiales que encontró y la experiencia de su creador. De manera misteriosa, el casco desapareció y ahora está aquí.', title: 'Origen del Casco' },
+            { pos: [-5, 0.86, -8], text: 'Ellos no fueron los culpables, fue algo mas', title: 'Hoja Oculta', hidden: true }
         ];
 
         notePositions.forEach((data, i) => {
+            // Material especial para hoja oculta
+            const material = data.hidden ? 
+                new THREE.MeshBasicMaterial({ color: 0x2a2a2a, transparent: true, opacity: 0.3 }) : 
+                noteMat;
+            
             const note = new THREE.Mesh(
                 new THREE.PlaneGeometry(0.3, 0.4),
-                noteMat
+                material
             );
             note.position.set(data.pos[0], data.pos[1], data.pos[2]);
             note.rotation.x = -Math.PI / 2;
-            note.userData = { type: 'note', text: data.text, title: data.title, id: i, read: false };
+            note.userData = { type: 'note', text: data.text, title: data.title, id: i, read: false, hidden: data.hidden || false };
             scene.add(note);
             this.notes.push(note);
 
-            // Luz amarilla sobre nota
-            const noteLight = new THREE.PointLight(0xffff00, 0.4, 2);
+            // Luz especial para hoja oculta (roja y tenue) o amarilla normal
+            const lightColor = data.hidden ? 0xff0000 : 0xffff00;
+            const lightIntensity = data.hidden ? 0.2 : 0.4;
+            const noteLight = new THREE.PointLight(lightColor, lightIntensity, 2);
             noteLight.position.set(data.pos[0], data.pos[1] + 0.5, data.pos[2]);
             scene.add(noteLight);
         });
@@ -1592,6 +1603,9 @@ class Chapter2 {
 
     update(delta) {
         if(!this.active) return;
+        
+        // Limitar delta para monitores de alta frecuencia
+        delta = Math.min(delta, this.maxDelta);
 
         if(this.phase === 'falling') {
             this.updateFalling(delta);

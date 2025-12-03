@@ -2921,8 +2921,17 @@
             stopHeartbeat();
         }
 
-        function animate() {
+        let lastTime = 0;
+        const targetFPS = 60;
+        const frameTime = 1000 / targetFPS;
+
+        function animate(currentTime) {
             requestAnimationFrame(animate);
+            
+            if (currentTime - lastTime < frameTime) {
+                return;
+            }
+            lastTime = currentTime;
 
             if(chapter4 && chapter4.active) {
                 stopAllChapter1Audio();

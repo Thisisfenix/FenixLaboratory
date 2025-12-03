@@ -21,6 +21,9 @@ class Chapter4 {
         this.totalItems = 5;
         this.randomEvents = [];
         this.monologuesShown = {};
+        
+        // Limitador de framerate para 144Hz
+        this.maxDelta = 1/60; // Limitar a 60 FPS equivalente
     }
 
     start() {
@@ -282,6 +285,9 @@ class Chapter4 {
 
     update(delta) {
         if(!this.active || this.phase !== 'exploring') return;
+        
+        // Limitar delta para monitores de alta frecuencia
+        delta = Math.min(delta, this.maxDelta);
 
         // Movimiento
         this.velocity.x = 0;
