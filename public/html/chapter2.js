@@ -34,6 +34,7 @@ class Chapter2 {
         this.totalIcons = 10;
         this.collectedKeys = [];
         this.totalKeys = 3;
+        this.hasHelmet = false;
         this.blockedDoor = null;
         this.keyObjects = [];
         this.gisselCyber = null;
@@ -66,6 +67,10 @@ class Chapter2 {
         this.whiteRoomAudio = null;
         this.voicesAudio = null;
         this.metalPipePlayed = false;
+        this.helmetFlashlight = null;
+        this.helmetFlashlightOn = false;
+        this.flashlightAudio = null;
+        this.doorOpened = false;
     }
 
     start() {
@@ -121,11 +126,13 @@ class Chapter2 {
             location: currentLocation,
             collectedIcons: this.collectedIcons,
             collectedKeys: this.collectedKeys,
+            hasHelmet: this.hasHelmet,
             notesRead: this.notesRead,
             terminalsRead: this.terminalsRead,
             legInjured: this.legInjured,
             legHealProgress: this.legHealProgress,
             lastCheckpoint: this.lastCheckpoint,
+            doorOpened: this.doorOpened,
             cameraPosition: { x: camera.position.x, y: camera.position.y, z: camera.position.z }
         };
         localStorage.setItem('chapter2Progress', JSON.stringify(progress));
@@ -141,11 +148,13 @@ class Chapter2 {
             if(progress.phase === 'exploring' || progress.phase === 'escaping' || progress.phase === 'whiteroom' || progress.phase === 'courtyard') {
                 this.collectedIcons = progress.collectedIcons || [];
                 this.collectedKeys = progress.collectedKeys || [];
+                this.hasHelmet = progress.hasHelmet || false;
                 this.notesRead = progress.notesRead || 0;
                 this.terminalsRead = progress.terminalsRead || 0;
                 this.legInjured = progress.legInjured !== undefined ? progress.legInjured : true;
                 this.legHealProgress = progress.legHealProgress || 0;
                 this.lastCheckpoint = progress.lastCheckpoint || { x: 0, y: 1.6, z: -40 };
+                this.doorOpened = progress.doorOpened || false;
                 
                 showMonologue('📂 Progreso cargado. Presiona L para continuar o N para nuevo juego');
                 
@@ -171,14 +180,17 @@ class Chapter2 {
                         document.removeEventListener('keydown', loadHandler);
                     } else if(e.key.toLowerCase() === 'n') {
                         localStorage.removeItem('chapter2Progress');
-                        showMonologue('Nuevo juego iniciado');
+                        showMonologue('Reiniciando...');
                         document.removeEventListener('keydown', loadHandler);
+                        setTimeout(() => location.reload(), 500);
                     }
                 };
                 document.addEventListener('keydown', loadHandler);
             }
         } catch(e) {
             console.error('Error cargando progreso:', e);
+            localStorage.removeItem('chapter2Progress');
+            showMonologue('⚠️ Progreso corrupto eliminado. Iniciando nuevo juego.');
         }
     }
 
@@ -186,6 +198,7 @@ class Chapter2 {
         document.addEventListener('keydown', (e) => {
             this.keys[e.key.toLowerCase()] = true;
             if(e.key.toLowerCase() === 'e') this.handleInteract();
+            if(e.key.toLowerCase() === 'f' && this.hasHelmet && this.phase === 'escaping') this.toggleHelmetFlashlight();
             if(e.key.toLowerCase() === 'f5') {
                 e.preventDefault();
                 this.saveProgress();
@@ -257,6 +270,7 @@ class Chapter2 {
         let touchStartX = 0, touchStartY = 0;
         
         document.addEventListener('touchstart', (e) => {
+            if(!e.touches || e.touches.length === 0) return;
             const touch = e.touches[0];
             if(touch.clientX > window.innerWidth / 2) {
                 touchStartX = touch.clientX;
@@ -346,6 +360,17 @@ class Chapter2 {
                 }
             }
             
+            // Casco experimental
+            for(let note of this.notes) {
+                if(note.userData.type === 'helmet' && !note.userData.collected) {
+                    const dist = playerPos.distanceTo(note.position);
+                    if(dist < 1.5) {
+                        this.collectHelmet(note);
+                        return;
+                    }
+                }
+            }
+            
             // Generadores
             for(let note of this.notes) {
                 const dist = playerPos.distanceTo(note.position);
@@ -405,11 +430,17 @@ class Chapter2 {
                 }
             }
             
-            if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys) {
-                const doorDist = Math.sqrt(Math.pow(playerPos.x - 0, 2) + Math.pow(playerPos.z - 14, 2));
-                if(doorDist < 2) {
+            // Puerta - verificar si está cerca
+            const doorDist = Math.sqrt(Math.pow(playerPos.x - 0, 2) + Math.pow(playerPos.z - 14, 2));
+            if(doorDist < 2 && !this.doorOpened) {
+                // Solo abrir si tiene TODOS los requerimientos
+                if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys && this.hasHelmet) {
+                    this.doorOpened = true;
                     this.openDoor();
+                } else {
+                    showMonologue('La puerta está bloqueada. Necesito todos los items.');
                 }
+                return;
             }
         }
     }
@@ -467,6 +498,10 @@ class Chapter2 {
         this.electricityAudio = new Audio('stuff/electrictyzone.mp3');
         this.electricityAudio.volume = 0.35 * vol;
         this.electricityAudio.loop = true;
+        
+        // Linterna del casco
+        this.flashlightAudio = new Audio('stuff/flashlight.mp3');
+        this.flashlightAudio.volume = 0.5 * vol;
     }
 
     createDroneSound(frequency, volume) {
@@ -550,7 +585,7 @@ class Chapter2 {
         // Suelo laboratorio EXPANDIDO 80x80m
         const floor = new THREE.Mesh(
             new THREE.PlaneGeometry(80, 80),
-            new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
+            new THREE.MeshBasicMaterial({ color: 0x3a3a3a })
         );
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
@@ -732,6 +767,7 @@ class Chapter2 {
                 iconLight.position.set(x, y + 0.5, z);
                 scene.add(iconLight);
             };
+            img.onerror = () => console.error('Failed to load icon:', data.path);
             img.src = data.path;
         });
     }
@@ -742,7 +778,9 @@ class Chapter2 {
         const { ctx, canvas, texture, sign } = this.blockedDoor;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        if(this.collectedIcons.length >= this.totalIcons) {
+        const allCollected = this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys && this.hasHelmet;
+        
+        if(allCollected) {
             ctx.fillStyle = '#00ff00';
             ctx.font = 'bold 60px Arial';
             ctx.textAlign = 'center';
@@ -758,6 +796,8 @@ class Chapter2 {
             ctx.fillText(`${this.collectedIcons.length}/${this.totalIcons} ICONOS`, 256, 140);
             ctx.font = '25px Arial';
             ctx.fillText(`${this.collectedKeys.length}/${this.totalKeys} LLAVES`, 256, 180);
+            ctx.font = '20px Arial';
+            ctx.fillText(this.hasHelmet ? 'V CASCO' : 'X CASCO', 256, 210);
         }
         
         texture.needsUpdate = true;
@@ -832,7 +872,7 @@ class Chapter2 {
             // Suelo de habitación (sólido para nivel 2)
             const roomFloor = new THREE.Mesh(
                 room.level === 2 ? new THREE.BoxGeometry(room.w, 0.3, room.d) : new THREE.PlaneGeometry(room.w, room.d),
-                new THREE.MeshBasicMaterial({ color: room.level === 2 ? 0x2a2a2a : 0x1a1a1a })
+                new THREE.MeshBasicMaterial({ color: room.level === 2 ? 0x3a3a3a : 0x2a2a2a })
             );
             if(room.level === 1) {
                 roomFloor.rotation.x = -Math.PI / 2;
@@ -957,7 +997,7 @@ class Chapter2 {
         // Contenedor central "666" grande
         const mainContainer = new THREE.Mesh(
             new THREE.CylinderGeometry(2.5, 2.5, 3, 16),
-            new THREE.MeshBasicMaterial({ color: 0x4a0000, transparent: true, opacity: 0.6 })
+            new THREE.MeshStandardMaterial({ color: 0x4a0000, emissive: 0x4a0000, emissiveIntensity: 0.4, transparent: true, opacity: 0.6 })
         );
         mainContainer.position.set(0, 7.5, 0);
         scene.add(mainContainer);
@@ -974,7 +1014,7 @@ class Chapter2 {
         // Anillo de energía giratorio
         const energyRing = new THREE.Mesh(
             new THREE.TorusGeometry(6, 0.2, 8, 32),
-            new THREE.MeshBasicMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 0.8 })
+            new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 1.0 })
         );
         energyRing.rotation.x = Math.PI / 2;
         energyRing.position.y = 7;
@@ -1022,7 +1062,7 @@ class Chapter2 {
             // Pantallas con luz
             const screen = new THREE.Mesh(
                 new THREE.BoxGeometry(0.6, 0.4, 0.05),
-                new THREE.MeshBasicMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 0.5 })
+                new THREE.MeshStandardMaterial({ color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 0.7 })
             );
             screen.position.set(pos.x - 0.5, 7.2, pos.z);
             scene.add(screen);
@@ -1100,7 +1140,7 @@ class Chapter2 {
         controlPanels.forEach(data => {
             const panel = new THREE.Mesh(
                 new THREE.BoxGeometry(2, 1.5, 0.1),
-                new THREE.MeshBasicMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.3 })
+                new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.3 })
             );
             panel.position.set(data.x, 7, data.z);
             panel.rotation.y = data.rot;
@@ -1221,6 +1261,48 @@ class Chapter2 {
         const metalMat = new THREE.MeshBasicMaterial({ color: 0x666666 });
         const glassMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.3 });
 
+        // CASCO EXPERIMENTAL en posición [8, 1.3, -12]
+        const helmetGeometry = new THREE.Group();
+        const helmetBase = new THREE.Mesh(
+            new THREE.SphereGeometry(0.4, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+            new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.5 })
+        );
+        helmetBase.position.set(0, 0, 0);
+        helmetGeometry.add(helmetBase);
+        
+        const visor = new THREE.Mesh(
+            new THREE.BoxGeometry(0.5, 0.15, 0.05),
+            new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.7 })
+        );
+        visor.position.set(0, 0, 0.4);
+        helmetGeometry.add(visor);
+        
+        // Aura cyan alrededor del casco
+        const aura = new THREE.Mesh(
+            new THREE.SphereGeometry(0.6, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.2, side: THREE.BackSide })
+        );
+        aura.position.set(0, 0, 0);
+        helmetGeometry.add(aura);
+        
+        helmetGeometry.position.set(8, 1.3, -12);
+        helmetGeometry.userData = { type: 'helmet', collected: false, aura: aura };
+        scene.add(helmetGeometry);
+        this.notes.push(helmetGeometry);
+        this.floatingObjects.push({ mesh: helmetGeometry, type: 'float', baseY: 1.3, speed: 0.001 });
+        
+        // Luz cyan sobre casco
+        const helmetLight = new THREE.PointLight(0x00ffff, 2, 5);
+        helmetLight.position.set(8, 1.8, -12);
+        scene.add(helmetLight);
+        
+        // Animación de aura pulsante
+        setInterval(() => {
+            if(aura && aura.material) {
+                aura.material.opacity = 0.1 + Math.sin(Date.now() * 0.003) * 0.15;
+            }
+        }, 50);
+        
         // Contenedor central "666" (cápsula de contención)
         const container = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 2.5, 16), glassMat);
         container.position.set(0, 1.25, 0);
@@ -1344,7 +1426,8 @@ class Chapter2 {
             { pos: [-11, 0.86, -5], text: 'DÍA 28: Tres investigadores desaparecieron. Encontramos solo sangre. El director ordenó evacuar mañana.', title: 'Reporte de Incidente' },
             { pos: [11, 0.86, -5], text: 'DÍA 30: EVACUACIÓN INMEDIATA. Sellar el laboratorio. NUNCA ABRIR. El Sujeto 666 no debe salir.', title: 'Orden de Evacuación' },
             { pos: [-8, 1.3, -12], text: 'Nota personal: Si alguien lee esto... huye. No cometas nuestros errores. Este lugar está maldito.', title: 'Nota Personal' },
-            { pos: [0, 0.86, 1.5], text: 'ADVERTENCIA FINAL: El Sujeto 666 escapó del contenedor. Dios nos perdone por lo que hemos creado.', title: '⚠️ ADVERTENCIA' }
+            { pos: [0, 0.86, 1.5], text: 'ADVERTENCIA FINAL: El Sujeto 666 escapó del contenedor. Dios nos perdone por lo que hemos creado.', title: '⚠️ ADVERTENCIA' },
+            { pos: [8, 1.3, -12], text: 'iA777 aunque no es muy bueno en tecnología, logró crear este casco con materiales que encontró y la experiencia de su creador. De manera misteriosa, el casco desapareció y ahora está aquí.', title: 'Origen del Casco' }
         ];
 
         notePositions.forEach((data, i) => {
@@ -1761,6 +1844,27 @@ class Chapter2 {
             }
         }
         
+        // Verificar distancia a la puerta para mostrar prompt
+        if(!this.doorOpened) {
+            const doorDist = Math.sqrt(Math.pow(playerPos.x - 0, 2) + Math.pow(playerPos.z - 14, 2));
+            if(doorDist < 2) {
+                if(!document.getElementById('doorPrompt')) {
+                    const prompt = document.createElement('div');
+                    prompt.id = 'doorPrompt';
+                    prompt.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:15px 30px;border-radius:10px;font-size:18px;z-index:1000;';
+                    if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys && this.hasHelmet) {
+                        prompt.textContent = 'Presiona E para abrir la puerta';
+                    } else {
+                        prompt.textContent = 'Puerta bloqueada - Faltan items';
+                    }
+                    document.body.appendChild(prompt);
+                }
+            } else {
+                const doorPrompt = document.getElementById('doorPrompt');
+                if(doorPrompt) doorPrompt.remove();
+            }
+        }
+        
         for(let note of this.notes) {
             const dx = playerPos.x - note.position.x;
             const dz = playerPos.z - note.position.z;
@@ -1814,41 +1918,25 @@ class Chapter2 {
             }
         }
         
-        // Verificar puerta desbloqueada
-        if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys && this.phase === 'exploring') {
-            const doorDist = Math.sqrt(
-                Math.pow(playerPos.x - 0, 2) + 
-                Math.pow(playerPos.z - 14, 2)
-            );
-            
-            if(doorDist < 2) {
-                if(!document.getElementById('doorPrompt')) {
-                    const prompt = document.createElement('div');
-                    prompt.id = 'doorPrompt';
-                    prompt.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,255,0,0.8);color:#000;padding:15px 30px;border-radius:10px;font-size:18px;z-index:1000;font-weight:bold;';
-                    prompt.textContent = 'Presiona E para abrir puerta';
-                    document.body.appendChild(prompt);
-                }
-                
-                if(this.keys['e']) {
-                    this.handleInteract();
-                    const prompt = document.getElementById('doorPrompt');
-                    if(prompt) prompt.remove();
-                }
-            } else {
-                const prompt = document.getElementById('doorPrompt');
-                if(prompt) prompt.remove();
-            }
-        }
+
     }
 
     startEscapePhase() {
         this.phase = 'escaping';
+        this.updateExperimentalHUD();
+        this.showContextualMessage('contextual_escape');
+        setTimeout(() => this.showContextualMessage('contextual_tunnel'), 3000);
         this.clearScene();
         this.createEscapeTunnel();
         camera.position.set(0, 1.6, -40);
         showMonologue('Un túnel... debo seguir la luz...');
         vibrateGamepad(300, 0.5, 0.5);
+        
+        // Mostrar overlay del casco si lo tiene
+        if(this.hasHelmet) {
+            this.createHelmetOverlay();
+            setTimeout(() => showMonologue('Presiona F para activar la linterna del casco'), 2000);
+        }
         
         const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
         
@@ -1861,28 +1949,38 @@ class Chapter2 {
     }
 
     createEscapeTunnel() {
+        // Luz ambiental para que Lambert funcione
+        const ambient = new THREE.AmbientLight(0x404040, 0.8);
+        scene.add(ambient);
+        
+        // Materiales reutilizables con emissive para que se vean
+        const floorMat1 = new THREE.MeshLambertMaterial({ color: 0x2a2a2a, emissive: 0x1a1a1a, emissiveIntensity: 0.3 });
+        const floorMat2 = new THREE.MeshLambertMaterial({ color: 0x1a3a1a, emissive: 0x0a1a0a, emissiveIntensity: 0.3 });
+        const floorMat3 = new THREE.MeshLambertMaterial({ color: 0x3a1a1a, emissive: 0x1a0a0a, emissiveIntensity: 0.3 });
+        const floorMat4 = new THREE.MeshLambertMaterial({ color: 0x1a1a3a, emissive: 0x0a0a1a, emissiveIntensity: 0.3 });
+        
         // Suelo con diferentes texturas por zonas
         const floorZones = [
-            { start: 0, end: 400, color: 0x050505 },
-            { start: 400, end: 800, color: 0x0a0a0a },
-            { start: 800, end: 1200, color: 0x1a0a0a },
-            { start: 1200, end: 1500, color: 0x0a0a1a }
+            { start: 0, end: 400, mat: floorMat1 },
+            { start: 400, end: 800, mat: floorMat2 },
+            { start: 800, end: 1200, mat: floorMat3 },
+            { start: 1200, end: 1500, mat: floorMat4 }
         ];
         
         floorZones.forEach(zone => {
             const length = zone.end - zone.start;
             const floor = new THREE.Mesh(
-                new THREE.PlaneGeometry(15, length),
-                new THREE.MeshBasicMaterial({ color: zone.color })
+                new THREE.PlaneGeometry(15, length, 1, 1),
+                zone.mat
             );
             floor.rotation.x = -Math.PI / 2;
             floor.position.z = zone.start + length / 2;
             scene.add(floor);
         });
 
-        // Paredes con variaciones
-        const wallMat1 = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
-        const wallMat2 = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+        // Paredes con variaciones y emissive
+        const wallMat1 = new THREE.MeshLambertMaterial({ color: 0x2a2a2a, emissive: 0x1a1a1a, emissiveIntensity: 0.2 });
+        const wallMat2 = new THREE.MeshLambertMaterial({ color: 0x3a3a3a, emissive: 0x1a1a1a, emissiveIntensity: 0.2 });
         
         for(let i = 0; i < 4; i++) {
             const start = i * 375;
@@ -1901,23 +1999,23 @@ class Chapter2 {
             scene.add(wall2);
         }
         
-        // Tuberías y cables en paredes con variaciones
-        const pipeMat = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
-        const rustPipeMat = new THREE.MeshBasicMaterial({ color: 0x4a2a1a });
+        // Tuberías y cables en paredes con variaciones y emissive
+        const pipeMat = new THREE.MeshLambertMaterial({ color: 0x2a2a2a, emissive: 0x1a1a1a, emissiveIntensity: 0.2 });
+        const rustPipeMat = new THREE.MeshLambertMaterial({ color: 0x4a2a1a, emissive: 0x2a1a0a, emissiveIntensity: 0.2 });
+        const pipeGeo = new THREE.CylinderGeometry(0.15, 0.15, 15, 6);
         for(let i = 0; i < 30; i++) {
             const z = i * 50;
             const mat = i % 3 === 0 ? rustPipeMat : pipeMat;
-            const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 15, 8), mat);
+            const pipe = new THREE.Mesh(pipeGeo, mat);
             pipe.rotation.z = Math.PI / 2;
             pipe.position.set(0, 3.5, z);
             scene.add(pipe);
             
             // Cables colgantes
             if(i % 5 === 0) {
-                const cable = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.05, 0.05, 2, 4),
-                    new THREE.MeshBasicMaterial({ color: 0x1a1a1a })
-                );
+                const cableGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 3);
+                const cableMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a, emissive: 0x0a0a0a, emissiveIntensity: 0.2 });
+                const cable = new THREE.Mesh(cableGeo, cableMat);
                 cable.position.set((Math.random() - 0.5) * 10, 4, z);
                 scene.add(cable);
             }
@@ -1928,10 +2026,11 @@ class Chapter2 {
             const z = i * 300;
             const side = i % 2 === 0 ? -7.5 : 7.5;
             
+            const openingMat = new THREE.MeshLambertMaterial({ color: 0x0a0a0a, emissive: 0x050505, emissiveIntensity: 0.2 });
             // Abertura en pared
             const opening = new THREE.Mesh(
                 new THREE.BoxGeometry(3, 3, 0.5),
-                new THREE.MeshBasicMaterial({ color: 0x000000 })
+                openingMat
             );
             opening.position.set(side, 1.5, z);
             scene.add(opening);
@@ -1957,8 +2056,8 @@ class Chapter2 {
 
         lightPositions.forEach(data => {
             const lightCircle = new THREE.Mesh(
-                new THREE.CircleGeometry(data.radius, 12),
-                new THREE.MeshBasicMaterial({ color: data.color, transparent: true, opacity: 0.2 })
+                new THREE.CircleGeometry(data.radius, 8),
+                new THREE.MeshStandardMaterial({ color: data.color, transparent: true, opacity: 0.3, emissive: data.color, emissiveIntensity: 0.8 })
             );
             lightCircle.rotation.x = -Math.PI / 2;
             lightCircle.position.set(data.x, 0.01, data.z);
@@ -1988,9 +2087,12 @@ class Chapter2 {
             }, 300 + Math.random() * 500);
         }
 
-        // Obstáculos variados
-        const obstacleMat = new THREE.MeshBasicMaterial({ color: 0x2a0000 });
-        const barrelMat = new THREE.MeshBasicMaterial({ color: 0x4a4a2a });
+        // Obstáculos variados con emissive
+        const obstacleMat = new THREE.MeshLambertMaterial({ color: 0x2a0000, emissive: 0x1a0000, emissiveIntensity: 0.2 });
+        const barrelMat = new THREE.MeshLambertMaterial({ color: 0x4a4a2a, emissive: 0x2a2a1a, emissiveIntensity: 0.2 });
+        const boxGeo = new THREE.BoxGeometry(0.8, 1.2, 0.8);
+        const cylinderGeo = new THREE.CylinderGeometry(0.4, 0.4, 1, 6);
+        const plateGeo = new THREE.BoxGeometry(1.5, 0.3, 1);
         for(let i = 0; i < 60; i++) {
             const z = Math.random() * 1470 - 40;
             const x = (Math.random() - 0.5) * 12;
@@ -1998,11 +2100,11 @@ class Chapter2 {
             const type = Math.floor(Math.random() * 3);
             let obstacle;
             if(type === 0) {
-                obstacle = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.8), obstacleMat);
+                obstacle = new THREE.Mesh(boxGeo, obstacleMat);
             } else if(type === 1) {
-                obstacle = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1, 8), barrelMat);
+                obstacle = new THREE.Mesh(cylinderGeo, barrelMat);
             } else {
-                obstacle = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.3, 1), obstacleMat);
+                obstacle = new THREE.Mesh(plateGeo, obstacleMat);
             }
             obstacle.position.set(x, type === 2 ? 0.15 : 0.6, z);
             obstacle.rotation.y = Math.random() * Math.PI;
@@ -2058,10 +2160,15 @@ class Chapter2 {
     }
 
     updateEscapePhase(delta) {
-        // Mostrar distancia en túnel
-        const distanceEl = document.getElementById('distance');
-        if(distanceEl) {
-            distanceEl.textContent = `Distancia: ${Math.floor(camera.position.z)}m`;
+        // Actualizar HUD experimental si tiene casco
+        if(this.hasHelmet) {
+            this.updateExperimentalHUD();
+        } else {
+            // Mostrar distancia en túnel (sin casco)
+            const distanceEl = document.getElementById('distance');
+            if(distanceEl) {
+                distanceEl.textContent = `Distancia: ${Math.floor(camera.position.z)}m`;
+            }
         }
         
         // Actualizar gamepad
@@ -2104,6 +2211,15 @@ class Chapter2 {
         // Límites del túnel (15m ancho, 1500m largo)
         camera.position.x = Math.max(-7, Math.min(7, camera.position.x));
         camera.position.z = Math.max(-50, Math.min(1480, camera.position.z));
+        
+        // Actualizar linterna del casco
+        if(this.helmetFlashlightOn && this.helmetFlashlight) {
+            this.helmetFlashlight.position.copy(camera.position);
+            const targetPos = new THREE.Vector3();
+            camera.getWorldDirection(targetPos);
+            targetPos.multiplyScalar(5).add(camera.position);
+            this.helmetFlashlight.target.position.copy(targetPos);
+        }
 
         // Sistema de stamina en túnel
         if(this.isRunning && this.stamina > 0 && !this.staminaExhausted && isMoving) {
@@ -2230,6 +2346,7 @@ class Chapter2 {
 
     spawnIA666() {
         this.ia666Spawned = true;
+        this.showContextualMessage('contextual_ia666');
         const group = new THREE.Group();
         
         // Cuerpo robótico
@@ -2388,6 +2505,7 @@ class Chapter2 {
 
     enterRivalryRoom() {
         this.phase = 'rivalry';
+        this.updateExperimentalHUD();
         this.lightZones = [];
         this.ia666 = null;
         this.ia666Spawned = false;
@@ -2397,7 +2515,7 @@ class Chapter2 {
         // Sala 30x30m más grande
         const floor = new THREE.Mesh(
             new THREE.PlaneGeometry(30, 30),
-            new THREE.MeshBasicMaterial({ color: 0x0a0a0a })
+            new THREE.MeshBasicMaterial({ color: 0x2a2a2a })
         );
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
@@ -2407,7 +2525,7 @@ class Chapter2 {
             for(let j = -15; j <= 15; j += 3) {
                 const tile = new THREE.Mesh(
                     new THREE.PlaneGeometry(2.8, 2.8),
-                    new THREE.MeshBasicMaterial({ color: i % 6 === 0 || j % 6 === 0 ? 0x1a1a1a : 0x0f0f0f })
+                    new THREE.MeshBasicMaterial({ color: i % 6 === 0 || j % 6 === 0 ? 0x3a3a3a : 0x2a2a2a })
                 );
                 tile.rotation.x = -Math.PI / 2;
                 tile.position.set(i, 0.01, j);
@@ -2433,7 +2551,7 @@ class Chapter2 {
         for(let i = 0; i < 12; i++) {
             const panel = new THREE.Mesh(
                 new THREE.BoxGeometry(2, 1.5, 0.1),
-                new THREE.MeshBasicMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.3 })
+                new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.5 })
             );
             const angle = (i / 12) * Math.PI * 2;
             const radius = 14.5;
@@ -2543,7 +2661,7 @@ class Chapter2 {
         // Anillo de energía alrededor
         const ring = new THREE.Mesh(
             new THREE.TorusGeometry(5.5, 0.1, 8, 32),
-            new THREE.MeshBasicMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 0.8 })
+            new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 0.8 })
         );
         ring.rotation.x = Math.PI / 2;
         ring.position.y = 0.5;
@@ -2636,7 +2754,7 @@ class Chapter2 {
         // Puerta de salida épica
         const exitDoor = new THREE.Mesh(
             new THREE.BoxGeometry(4, 5, 0.3),
-            new THREE.MeshBasicMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 })
+            new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 })
         );
         exitDoor.position.set(0, 2.5, 14.8);
         scene.add(exitDoor);
@@ -2648,7 +2766,7 @@ class Chapter2 {
         // Marco de puerta brillante
         const doorFrame = new THREE.Mesh(
             new THREE.BoxGeometry(4.5, 5.5, 0.2),
-            new THREE.MeshBasicMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.7 })
+            new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.7 })
         );
         doorFrame.position.set(0, 2.5, 14.7);
         scene.add(doorFrame);
@@ -2671,6 +2789,8 @@ class Chapter2 {
 
     enterWhiteRoom() {
         this.phase = 'whiteroom';
+        this.updateExperimentalHUD();
+        this.showContextualMessage('contextual_whiteroom');
         this.flashlightBroken = false;
         this.clearScene();
         
@@ -2825,6 +2945,9 @@ class Chapter2 {
 
     enterCourtyard() {
         this.phase = 'courtyard';
+        this.updateExperimentalHUD();
+        this.showContextualMessage('contextual_whiteroom_recovery');
+        setTimeout(() => this.showContextualMessage('contextual_courtyard'), 4000);
         this.notes = [];
         this.rainParticles = [];
         this.clearScene();
@@ -3284,11 +3407,23 @@ class Chapter2 {
         
         const modal = document.createElement('div');
         modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a1a;color:#fff;padding:30px;border:3px solid #ff0000;border-radius:10px;max-width:500px;z-index:2000;font-family:monospace;box-shadow:0 0 30px rgba(255,0,0,0.5);';
-        modal.innerHTML = `
-            <h2 style="color:#ff0000;margin:0 0 15px 0;text-align:center;">${note.userData.title}</h2>
-            <p style="margin:0;line-height:1.8;font-size:16px;">${note.userData.text}</p>
-            <button onclick="this.parentElement.remove()" style="margin-top:20px;padding:10px 20px;background:#ff0000;color:#fff;border:none;border-radius:5px;cursor:pointer;width:100%;font-size:16px;">Cerrar [E]</button>
-        `;
+        
+        const title = document.createElement('h2');
+        title.style.cssText = 'color:#ff0000;margin:0 0 15px 0;text-align:center;';
+        title.textContent = note.userData.title;
+        
+        const text = document.createElement('p');
+        text.style.cssText = 'margin:0;line-height:1.8;font-size:16px;';
+        text.textContent = note.userData.text;
+        
+        const button = document.createElement('button');
+        button.style.cssText = 'margin-top:20px;padding:10px 20px;background:#ff0000;color:#fff;border:none;border-radius:5px;cursor:pointer;width:100%;font-size:16px;';
+        button.textContent = 'Cerrar [E]';
+        button.onclick = () => modal.remove();
+        
+        modal.appendChild(title);
+        modal.appendChild(text);
+        modal.appendChild(button);
         document.body.appendChild(modal);
         vibrateGamepad(200, 0.5, 0.5);
         
@@ -3317,9 +3452,13 @@ class Chapter2 {
         
         if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length < this.totalKeys) {
             setTimeout(() => {
-                showMonologue(`¡Todos los iconos! Ahora busca las ${this.totalKeys} llaves.`);
+                showMonologue(`¡Todos los iconos! Ahora busca las ${this.totalKeys} llaves y el casco.`);
             }, 1000);
-        } else if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys) {
+        } else if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys && !this.hasHelmet) {
+            setTimeout(() => {
+                showMonologue('¡Iconos y llaves! Ahora busca el casco experimental.');
+            }, 1000);
+        } else if(this.collectedIcons.length >= this.totalIcons && this.collectedKeys.length >= this.totalKeys && this.hasHelmet) {
             setTimeout(() => {
                 showMonologue('¡Todo recolectado! La puerta está desbloqueada.');
             }, 1000);
@@ -3338,7 +3477,11 @@ class Chapter2 {
         this.updateDoorSign();
         this.saveProgress();
         
-        if(this.collectedKeys.length >= this.totalKeys && this.collectedIcons.length >= this.totalIcons) {
+        if(this.collectedKeys.length >= this.totalKeys && this.collectedIcons.length >= this.totalIcons && !this.hasHelmet) {
+            setTimeout(() => {
+                showMonologue('¡Iconos y llaves! Ahora busca el casco experimental.');
+            }, 1000);
+        } else if(this.collectedKeys.length >= this.totalKeys && this.collectedIcons.length >= this.totalIcons && this.hasHelmet) {
             setTimeout(() => {
                 showMonologue('¡Todo recolectado! La puerta está desbloqueada.');
             }, 1000);
@@ -3487,6 +3630,279 @@ class Chapter2 {
         osc.stop(this.audioContext.currentTime + 0.8);
     }
 
+    collectHelmet(helmet) {
+        helmet.userData.collected = true;
+        this.hasHelmet = true;
+        scene.remove(helmet);
+        
+        this.playCollectSound();
+        showMonologue('🪖 ¡CASCO EXPERIMENTAL EQUIPADO!');
+        vibrateGamepad(300, 0.7, 0.7);
+        
+        // Activar HUD experimental
+        setTimeout(() => {
+            showMonologue('⚠️ SISTEMA EXPERIMENTAL ACTIVO ⚠️');
+            this.activateExperimentalHUD();
+            this.loadHelmetLore();
+            this.startHelmetLocator();
+        }, 1000);
+        
+        this.updateDoorSign();
+        this.saveProgress();
+    }
+    
+    startHelmetLocator() {
+        setInterval(() => {
+            if(!this.hasHelmet || this.phase !== 'exploring') return;
+            
+            const playerPos = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
+            let closest = null;
+            let minDist = Infinity;
+            
+            for(let note of this.notes) {
+                if((note.userData.type === 'icon' || note.userData.type === 'key') && !note.userData.collected) {
+                    const dist = playerPos.distanceTo(note.position);
+                    if(dist < minDist) {
+                        minDist = dist;
+                        closest = note;
+                    }
+                }
+            }
+            
+            if(closest) {
+                const type = closest.userData.type === 'icon' ? 'Icono' : 'Llave';
+                const name = closest.userData.name;
+                const dir = Math.floor(Math.atan2(closest.position.x - playerPos.x, closest.position.z - playerPos.z) * 180 / Math.PI);
+                showMonologue(`📡 ${type} ${name} detectado: ${Math.floor(minDist)}m - ${dir}°`);
+            }
+        }, 60000);
+    }
+    
+    createHelmetOverlay() {
+        if(document.getElementById('helmetOverlay')) return;
+        
+        const overlay = document.createElement('div');
+        overlay.id = 'helmetOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:50;';
+        overlay.innerHTML = `
+            <svg width="100%" height="100%" style="position:absolute;top:0;left:0;">
+                <!-- Visor del casco -->
+                <defs>
+                    <linearGradient id="visorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#00ffff;stop-opacity:0.1" />
+                        <stop offset="100%" style="stop-color:#0088ff;stop-opacity:0.05" />
+                    </linearGradient>
+                </defs>
+                <!-- Borde superior del visor -->
+                <path d="M 0 0 L 0 80 Q 50% 120, 100% 80 L 100% 0 Z" fill="url(#visorGrad)" opacity="0.3"/>
+                <!-- Bordes laterales -->
+                <rect x="0" y="0" width="3%" height="100%" fill="#001a33" opacity="0.6"/>
+                <rect x="97%" y="0" width="3%" height="100%" fill="#001a33" opacity="0.6"/>
+                <!-- HUD lines -->
+                <line x1="5%" y1="10%" x2="20%" y2="10%" stroke="#00ffff" stroke-width="1" opacity="0.5"/>
+                <line x1="80%" y1="10%" x2="95%" y2="10%" stroke="#00ffff" stroke-width="1" opacity="0.5"/>
+            </svg>
+        `;
+        document.body.appendChild(overlay);
+    }
+    
+    toggleHelmetFlashlight() {
+        this.helmetFlashlightOn = !this.helmetFlashlightOn;
+        
+        if(this.helmetFlashlightOn) {
+            // Crear luz azul más potente
+            this.helmetFlashlight = new THREE.SpotLight(0x00aaff, 8, 50, Math.PI / 4, 0.3, 0.5);
+            this.helmetFlashlight.position.copy(camera.position);
+            this.helmetFlashlight.target.position.set(
+                camera.position.x,
+                camera.position.y,
+                camera.position.z + 1
+            );
+            scene.add(this.helmetFlashlight);
+            scene.add(this.helmetFlashlight.target);
+            
+            if(this.flashlightAudio) {
+                this.flashlightAudio.currentTime = 0;
+                this.flashlightAudio.play().catch(() => {});
+            }
+            showMonologue('💡 Linterna del casco activada');
+        } else {
+            // Apagar luz
+            if(this.helmetFlashlight) {
+                scene.remove(this.helmetFlashlight);
+                scene.remove(this.helmetFlashlight.target);
+                this.helmetFlashlight = null;
+            }
+            if(this.flashlightAudio) {
+                this.flashlightAudio.currentTime = 0;
+                this.flashlightAudio.play().catch(() => {});
+            }
+            showMonologue('💡 Linterna del casco desactivada');
+        }
+    }
+    
+    loadHelmetLore() {
+        fetch('helmet_lore.json')
+            .then(res => {
+                if(!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                if(!data || !data.messages) throw new Error('Invalid helmet lore data');
+                this.helmetMessages = data.messages;
+                this.contextualMessagesShown = {};
+                this.showHelmetMessage(0);
+                this.startHelmetMessageTimer();
+            })
+            .catch(err => {
+                console.warn('Helmet lore not available:', err.message);
+                this.helmetMessages = null;
+            });
+    }
+    
+    showHelmetMessage(index) {
+        if(!this.helmetMessages || index >= this.helmetMessages.length) return;
+        
+        // Limitar a 1 cartel máximo
+        const existingBoxes = document.querySelectorAll('.helmet-message-box');
+        if(existingBoxes.length >= 1) return;
+        
+        const msg = this.helmetMessages[index];
+        const box = document.createElement('div');
+        box.className = 'helmet-message-box';
+        box.style.cssText = 'position:fixed;top:150px;right:20px;width:380px;background:rgba(0,100,200,0.9);border:2px solid #00ffff;border-radius:8px;padding:20px;z-index:1000;font-family:Courier New,monospace;color:#fff;box-shadow:0 0 20px rgba(0,255,255,0.5);animation:slideIn 0.5s;';
+        
+        const textDiv = document.createElement('div');
+        textDiv.style.cssText = 'font-size:18px;font-weight:bold;color:#00ffff;margin-bottom:10px;';
+        textDiv.textContent = msg.text;
+        
+        const subtextDiv = document.createElement('div');
+        subtextDiv.style.cssText = 'font-size:15px;color:#ccc;line-height:1.5;';
+        subtextDiv.textContent = msg.subtext;
+        
+        box.appendChild(textDiv);
+        box.appendChild(subtextDiv);
+        document.body.appendChild(box);
+        
+        setTimeout(() => {
+            box.style.animation = 'slideOut 0.5s';
+            setTimeout(() => box.remove(), 500);
+        }, 5000);
+    }
+    
+    showContextualMessage(type) {
+        if(!this.helmetMessages || this.contextualMessagesShown[type]) return;
+        
+        // Limitar a 1 cartel máximo
+        const existingBoxes = document.querySelectorAll('.helmet-message-box');
+        if(existingBoxes.length >= 1) return;
+        
+        const msg = this.helmetMessages.find(m => m.type === type);
+        if(!msg) return;
+        
+        this.contextualMessagesShown[type] = true;
+        const index = this.helmetMessages.indexOf(msg);
+        this.showHelmetMessage(index);
+    }
+    
+    startHelmetMessageTimer() {
+        let msgIndex = 1;
+        this.helmetMessageInterval = setInterval(() => {
+            if(!this.hasHelmet || !this.helmetMessages) {
+                clearInterval(this.helmetMessageInterval);
+                return;
+            }
+            const msg = this.helmetMessages[msgIndex];
+            if(!msg.type.startsWith('contextual_') && !msg.type.startsWith('chapter3_')) {
+                this.showHelmetMessage(msgIndex);
+            }
+            msgIndex = (msgIndex + 1) % this.helmetMessages.length;
+        }, 45000);
+        
+        // Mensajes psicológicos aleatorios cada 30-90 segundos
+        this.psychologicalInterval = setInterval(() => {
+            if(!this.hasHelmet || !this.helmetMessages) {
+                clearInterval(this.psychologicalInterval);
+                return;
+            }
+            if(Math.random() > 0.4) {
+                const psychMsgs = this.helmetMessages.filter(m => m.type === 'psychological');
+                if(psychMsgs.length > 0) {
+                    const randomMsg = psychMsgs[Math.floor(Math.random() * psychMsgs.length)];
+                    const index = this.helmetMessages.indexOf(randomMsg);
+                    this.showHelmetMessage(index);
+                }
+            }
+        }, 30000 + Math.random() * 60000);
+    }
+    
+    activateExperimentalHUD() {
+        this.updateExperimentalHUD();
+        
+        const staminaBar = document.getElementById('ch2StaminaBar');
+        if(staminaBar) {
+            staminaBar.style.background = 'rgba(0,0,0,0.7)';
+            staminaBar.style.borderColor = '#00ff88';
+            staminaBar.style.borderLeft = '3px solid #00ff88';
+            staminaBar.style.boxShadow = '0 0 15px rgba(0,255,136,0.6), inset 0 0 10px rgba(0,255,136,0.3)';
+        }
+        
+        const staminaFill = document.getElementById('ch2StaminaFill');
+        if(staminaFill) {
+            staminaFill.style.background = 'linear-gradient(90deg, #00ff88, #00ffcc)';
+        }
+        
+        const flash = document.createElement('div');
+        flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#00ffff;z-index:9999;opacity:0.5;transition:opacity 0.5s;pointer-events:none;';
+        document.body.appendChild(flash);
+        setTimeout(() => {
+            flash.style.opacity = '0';
+            setTimeout(() => flash.remove(), 500);
+        }, 100);
+    }
+    
+    updateExperimentalHUD() {
+        if(!this.hasHelmet) return;
+        
+        let location = 'Laboratorio';
+        let progressText = location;
+        
+        if(this.phase === 'exploring') {
+            const dist = Math.floor(Math.sqrt(camera.position.x * camera.position.x + camera.position.z * camera.position.z));
+            progressText = `${dist}m desde centro`;
+        } else if(this.phase === 'escaping') {
+            location = 'Túnel de Escape';
+            const dist = Math.floor(camera.position.z + 40);
+            progressText = `${dist}m / 1500m`;
+        } else if(this.phase === 'whiteroom') {
+            location = 'White Room';
+            progressText = location;
+        } else if(this.phase === 'courtyard') {
+            location = 'Patio Exterior';
+            progressText = location;
+        } else if(this.phase === 'rivalry') {
+            location = 'Sala de Rivalidad';
+            progressText = location;
+        }
+        
+        const ui = document.getElementById('ui');
+        if(ui) {
+            ui.style.display = 'block';
+            ui.innerHTML = `
+                <div style="font-family: 'Courier New', monospace; color: #ff4444; text-shadow: 0 0 10px #ff0000; margin-bottom: 15px; font-size: 14px;">
+                    ⚠️ SISTEMA EXPERIMENTAL ACTIVO ⚠️<br>
+                    <span style="color: #888; font-size: 11px;">Protocolo: ??? | Ubicación: ${location}</span>
+                </div>
+                <div id="controlsHUD" style="background: rgba(0,0,0,0.7); padding: 8px; border-left: 3px solid #ff4444; margin-bottom: 10px;">
+                    <span style="color: #ffd700;">⌨️ CONTROLES:</span> WASD - Mover | SHIFT - Correr
+                </div>
+                <div id="distance" style="background: rgba(0,0,0,0.7); padding: 8px; border-left: 3px solid #00ff88; color: #00ff88; font-weight: bold;">
+                    📍 Progreso: ${progressText}
+                </div>
+            `;
+        }
+    }
+    
     playPaperSound() {
         if(!this.audioContext) return;
         const osc = this.audioContext.createOscillator();

@@ -3,61 +3,42 @@ export class VipStore {
   constructor() {
     this.themes = {
       free: {
-        'default': {
-          name: '🔥 Tema Original',
-          description: 'Naranja vibrante',
-          colors: { primary: '#ff6b35', secondary: '#ff8c42' }
-        },
-        'neon': {
-          name: '⚡ Tema Neón',
-          description: 'Verde eléctrico',
-          colors: { primary: '#00ff88', secondary: '#00cc66' }
-        },
-        'retro': {
-          name: '🌸 Tema Retro',
-          description: 'Rosa vintage',
-          colors: { primary: '#ff6b9d', secondary: '#2d1b69' }
-        }
+        'default': { name: '🔥 Original', colors: { primary: '#ff6b35', secondary: '#ff8c42' } },
+        'light': { name: '☀️ Claro', colors: { primary: '#3182ce', secondary: '#805ad5' } },
+        'neon': { name: '💚 Neon', colors: { primary: '#00ff41', secondary: '#ff0080' } },
+        'cyberpunk': { name: '🌃 Cyberpunk', colors: { primary: '#ff0080', secondary: '#00d4ff' } },
+        'matrix': { name: '💻 Matrix', colors: { primary: '#00ff00', secondary: '#008800' } },
+        'synthwave': { name: '🌆 Synthwave', colors: { primary: '#ff6b9d', secondary: '#c44569' } },
+        'ocean': { name: '🌊 Ocean', colors: { primary: '#00d4ff', secondary: '#0099cc' } },
+        'forest': { name: '🌲 Forest', colors: { primary: '#4ade80', secondary: '#22c55e' } },
+        'sunset': { name: '🌅 Sunset', colors: { primary: '#f97316', secondary: '#ea580c' } },
+        'funkyatlas': { name: '🎨 FunkyAtlas', colors: { primary: '#ff4444', secondary: '#7597de' } },
+        'funkyatlas-christmas': { name: '🎅 FunkyAtlas Xmas', colors: { primary: '#FFD700', secondary: '#16a34a' } }
       },
       premium: {
-        'hacker': {
-          name: '💻 Tema Hacker',
-          description: 'Verde matrix',
-          colors: { primary: '#00ff00', secondary: '#000000' },
-          price: 100
-        },
-        'purple': {
-          name: '💜 Tema Púrpura',
-          description: 'Morado elegante',
-          colors: { primary: '#8b5cf6', secondary: '#a855f7' },
-          price: 125
-        },
-        'blue': {
-          name: '💙 Tema Azul',
-          description: 'Azul profesional',
-          colors: { primary: '#3b82f6', secondary: '#1d4ed8' },
-          price: 125
-        }
+        'christmas': { name: '🎄 Christmas', colors: { primary: '#dc2626', secondary: '#16a34a' }, price: 100 },
+        'halloween': { name: '🎃 Halloween', colors: { primary: '#f97316', secondary: '#7c2d12' }, price: 100 },
+        'valentine': { name: '💝 Valentine', colors: { primary: '#ec4899', secondary: '#be185d' }, price: 100 },
+        'easter': { name: '🐰 Easter', colors: { primary: '#a855f7', secondary: '#7c3aed' }, price: 100 },
+        'summer': { name: '☀️ Summer', colors: { primary: '#06b6d4', secondary: '#0891b2' }, price: 100 },
+        'autumn': { name: '🍂 Autumn', colors: { primary: '#ea580c', secondary: '#dc2626' }, price: 100 },
+        'galaxy': { name: '🌌 Galaxy', colors: { primary: '#7c3aed', secondary: '#4c1d95' }, price: 150 },
+        'gold': { name: '👑 Gold', colors: { primary: '#f59e0b', secondary: '#d97706' }, price: 150 },
+        'rainbow': { name: '🌈 Rainbow', colors: { primary: '#ec4899', secondary: '#8b5cf6' }, price: 150 },
+        'diamond': { name: '💎 Diamond', colors: { primary: '#0f172a', secondary: '#334155' }, price: 150 },
+        'vaporwave': { name: '🌸 Vaporwave', colors: { primary: '#3a86ff', secondary: '#06ffa5' }, price: 200 },
+        'hacker': { name: '👨‍💻 Hacker', colors: { primary: '#00ff00', secondary: '#008800' }, price: 200 },
+        'neon-city': { name: '🏙️ Neon City', colors: { primary: '#ff8000', secondary: '#00ff80' }, price: 200 },
+        'space': { name: '🚀 Space', colors: { primary: '#6666ff', secondary: '#9999ff' }, price: 200 }
       },
       vip: {
-        'galaxy': {
-          name: '💎 Tema Galaxy',
-          description: 'Púrpura espacial',
-          colors: { primary: '#8b5cf6', secondary: '#ec4899' },
-          requiresVip: true
-        },
-        'sunset': {
-          name: '🔥 Tema Sunset',
-          description: 'Atardecer dorado',
-          colors: { primary: '#f59e0b', secondary: '#dc2626' },
-          requiresVip: true
-        },
-        'ocean': {
-          name: '🌊 Tema Ocean',
-          description: 'Azul profundo',
-          colors: { primary: '#0ea5e9', secondary: '#1e40af' },
-          requiresVip: true
-        }
+        'fire': { name: '🔥 Fire', colors: { primary: '#ff4500', secondary: '#ff0000' }, requiresVip: true },
+        'ice': { name: '❄️ Ice', colors: { primary: '#4682b4', secondary: '#191970' }, requiresVip: true },
+        'toxic': { name: '☢️ Toxic', colors: { primary: '#32cd32', secondary: '#00ff00' }, requiresVip: true },
+        'royal': { name: '👑 Royal', colors: { primary: '#9932cc', secondary: '#8a2be2' }, requiresVip: true },
+        'steampunk': { name: '⚙️ Steampunk', colors: { primary: '#b8860b', secondary: '#8b4513' }, requiresVip: true },
+        'hologram': { name: '🔮 Hologram', colors: { primary: '#ff00ff', secondary: '#cc00cc' }, requiresVip: true },
+        'legendary': { name: '✨ Legendary', colors: { primary: '#ff8c00', secondary: '#ff1493' }, requiresVip: true }
       }
     };
     
@@ -235,7 +216,7 @@ export class VipStore {
         left: 50%;
         transform: translate(-50%, -50%);
         color: white;
-        font-size: 0.8em;
+        font-size: 0.65em;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         pointer-events: none;
         white-space: nowrap;
@@ -478,93 +459,45 @@ export class VipStore {
   }
   
   renderFreeThemes() {
-    return Object.entries(this.themes.free).map(([key, theme]) => `
-      <div class="mb-2">
-        <div class="card theme-card" style="background: var(--bg-light); border: 2px solid ${theme.colors.primary}; cursor: pointer;" onclick="applyTheme('${key}')">
-          <div class="card-body p-2 text-center">
-            <div style="width: 100%; height: 40px; background: linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary}); border-radius: 6px; margin-bottom: 8px;"></div>
-            <h6 style="color: ${theme.colors.primary}; margin: 0; font-size: 0.9em;">${theme.name}</h6>
-            <small class="text-muted" style="font-size: 0.7em;">${theme.description}</small>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    return `<select class="form-select form-select-sm" onchange="applyTheme(this.value); this.value=''" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);">
+      <option value="">Selecciona un tema...</option>
+      ${Object.entries(this.themes.free).map(([key, theme]) => `<option value="${key}">${theme.name}</option>`).join('')}
+    </select>`;
   }
   
   renderFreeFrames() {
-    return Object.entries(this.avatarFrames.free).map(([key, frame]) => `
-      <div class="mb-2">
-        <div class="card frame-card" style="background: var(--bg-light); border: 1px solid var(--primary); cursor: pointer;" onclick="applyAvatarFrame('${key}')">
-          <div class="card-body p-2 text-center">
-            <div style="width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0 auto 6px; ${frame.style !== 'none' ? frame.style : ''}"></div>
-            <h6 style="color: var(--primary); margin: 0; font-size: 0.8em;">${frame.name}</h6>
-            <small class="text-muted" style="font-size: 0.7em;">${frame.description}</small>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    return `<select class="form-select form-select-sm" onchange="applyAvatarFrame(this.value); this.value=''" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);">
+      <option value="">Selecciona un marco...</option>
+      ${Object.entries(this.avatarFrames.free).map(([key, frame]) => `<option value="${key}">${frame.name}</option>`).join('')}
+    </select>`;
   }
   
   renderPremiumThemes() {
-    return Object.entries(this.themes.premium).map(([key, theme]) => `
-      <div class="mb-2">
-        <div class="card theme-card" style="background: var(--bg-light); border: 2px solid ${theme.colors.primary}; cursor: pointer; opacity: ${this.hasPoints(theme.price) ? '1' : '0.6'};" onclick="purchaseTheme('${key}')">
-          <div class="card-body p-2 text-center">
-            <div style="width: 100%; height: 40px; background: linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary}); border-radius: 6px; margin-bottom: 8px;"></div>
-            <h6 style="color: ${theme.colors.primary}; margin: 0; font-size: 0.8em;">${theme.name}</h6>
-            <div class="d-flex justify-content-between align-items-center mt-1">
-              <small class="text-muted" style="font-size: 0.7em;">${theme.description}</small>
-              <span class="badge bg-warning text-dark" style="font-size: 0.6em;">${theme.price}pts</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    return `<select class="form-select form-select-sm" onchange="purchaseTheme(this.value); this.value=''" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);">
+      <option value="">Selecciona un tema premium...</option>
+      ${Object.entries(this.themes.premium).map(([key, theme]) => `<option value="${key}">${theme.name} - ${theme.price} pts</option>`).join('')}
+    </select>`;
   }
   
   renderPremiumFrames() {
-    return Object.entries(this.avatarFrames.premium).map(([key, frame]) => `
-      <div class="mb-2">
-        <div class="card frame-card" style="background: var(--bg-light); border: 1px solid var(--primary); cursor: pointer; opacity: ${this.hasPoints(frame.price) ? '1' : '0.6'};" onclick="purchaseFrame('${key}')">
-          <div class="card-body p-2 text-center">
-            <div style="width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0 auto 6px; ${frame.style}"></div>
-            <h6 style="color: var(--primary); margin: 0; font-size: 0.8em;">${frame.name}</h6>
-            <div class="d-flex justify-content-between align-items-center mt-1">
-              <small class="text-muted" style="font-size: 0.7em;">${frame.description}</small>
-              <span class="badge bg-warning text-dark" style="font-size: 0.6em;">${frame.price}pts</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    return `<select class="form-select form-select-sm" onchange="purchaseFrame(this.value); this.value=''" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);">
+      <option value="">Selecciona un marco premium...</option>
+      ${Object.entries(this.avatarFrames.premium).map(([key, frame]) => `<option value="${key}">${frame.name} - ${frame.price} pts</option>`).join('')}
+    </select>`;
   }
   
   renderVipThemes() {
-    return Object.entries(this.themes.vip).map(([key, theme]) => `
-      <div class="mb-2">
-        <div class="card" style="background: var(--bg-light); border: 2px solid ${theme.colors.primary}; cursor: ${this.hasVipAccess() ? 'pointer' : 'not-allowed'}; opacity: ${this.hasVipAccess() ? '1' : '0.6'};" ${this.hasVipAccess() ? `onclick="applyTheme('${key}')"` : ''}>
-          <div class="card-body p-2 text-center">
-            <div style="width: 100%; height: 30px; background: linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary}); border-radius: 4px; margin-bottom: 6px;"></div>
-            <small style="color: ${theme.colors.primary}; font-size: 0.7em;">${theme.name}</small>
-            <div class="badge bg-warning text-dark mt-1" style="font-size: 0.6em;">VIP</div>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    return `<select class="form-select form-select-sm" onchange="applyTheme(this.value); this.value=''" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);" ${this.hasVipAccess() ? '' : 'disabled'}>
+      <option value="">${this.hasVipAccess() ? 'Selecciona un tema VIP...' : 'Requiere VIP'}</option>
+      ${Object.entries(this.themes.vip).map(([key, theme]) => `<option value="${key}">${theme.name}</option>`).join('')}
+    </select>`;
   }
   
   renderVipFrames() {
-    return Object.entries(this.avatarFrames.vip).map(([key, frame]) => `
-      <div class="mb-2">
-        <div class="card" style="background: var(--bg-light); border: 1px solid var(--primary); cursor: ${this.hasVipAccess() ? 'pointer' : 'not-allowed'}; opacity: ${this.hasVipAccess() ? '1' : '0.6'};" ${this.hasVipAccess() ? `onclick="applyAvatarFrame('${key}')"` : ''}>
-          <div class="card-body p-2 text-center">
-            <div style="width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); margin: 0 auto 6px; ${frame.style}"></div>
-            <small style="color: var(--primary); font-size: 0.7em;">${frame.name}</small>
-            <div class="badge bg-warning text-dark mt-1" style="font-size: 0.6em;">VIP</div>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    return `<select class="form-select form-select-sm" onchange="applyAvatarFrame(this.value); this.value=''" style="background: var(--bg-dark); border: 1px solid var(--primary); color: var(--text-primary);" ${this.hasVipAccess() ? '' : 'disabled'}>
+      <option value="">${this.hasVipAccess() ? 'Selecciona un marco VIP...' : 'Requiere VIP'}</option>
+      ${Object.entries(this.avatarFrames.vip).map(([key, frame]) => `<option value="${key}">${frame.name}</option>`).join('')}
+    </select>`;
   }
   
   applyTheme(themeName) {
@@ -584,10 +517,19 @@ export class VipStore {
       return;
     }
     
-    body.removeAttribute('data-theme');
+    // Remover todas las clases de tema
+    body.className = body.className.split(' ').filter(c => !c.endsWith('-theme')).join(' ');
     
+    // Aplicar nuevo tema
     if (themeName !== 'default') {
-      body.setAttribute('data-theme', themeName);
+      body.classList.add(themeName + '-theme');
+    }
+    
+    // Crear copos de nieve para temas navideños
+    if (themeName === 'christmas' || themeName === 'funkyatlas-christmas') {
+      this.createSnowflakes();
+    } else {
+      document.querySelectorAll('.snowflake').forEach(el => el.remove());
     }
     
     localStorage.setItem('guestbook-theme', themeName);
@@ -600,6 +542,21 @@ export class VipStore {
       if (theme) {
         window.guestbookApp.ui.showNotification(`✅ ${theme.name} aplicado`, 'success');
       }
+    }
+  }
+  
+  createSnowflakes() {
+    document.querySelectorAll('.snowflake').forEach(el => el.remove());
+    for (let i = 0; i < 50; i++) {
+      const snowflake = document.createElement('div');
+      snowflake.className = 'snowflake';
+      snowflake.innerHTML = '❄️';
+      snowflake.style.left = Math.random() * 100 + '%';
+      snowflake.style.animationDuration = (Math.random() * 3 + 5) + 's';
+      snowflake.style.animationDelay = Math.random() * 5 + 's';
+      snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+      snowflake.style.opacity = Math.random() * 0.6 + 0.4;
+      document.body.appendChild(snowflake);
     }
   }
   
@@ -637,6 +594,10 @@ export class VipStore {
     const savedTheme = localStorage.getItem('guestbook-theme');
     if (savedTheme) {
       this.applyTheme(savedTheme);
+    }
+    // Crear copos si el tema guardado es navideño
+    if (savedTheme === 'christmas' || savedTheme === 'funkyatlas-christmas') {
+      setTimeout(() => this.createSnowflakes(), 100);
     }
   }
   
@@ -840,9 +801,9 @@ export class VipStore {
         <div class="card-header" style="background: var(--primary)11; border-bottom: 1px solid var(--primary);">
           <h6 style="color: var(--primary); margin: 0;">📋 Actividad Reciente</h6>
         </div>
-        <div class="card-body p-2">
+        <div class="card-body p-1">
           ${history.map(entry => `
-            <div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background: var(--bg-dark); border-radius: 6px; border-left: 3px solid ${entry.type === 'earned' ? '#28a745' : '#dc3545'};">
+            <div class="d-flex justify-content-between align-items-center mb-2 p-1" style="background: var(--bg-dark); border-radius: 6px; border-left: 3px solid ${entry.type === 'earned' ? '#28a745' : '#dc3545'};">
               <div>
                 <div style="color: ${entry.type === 'earned' ? '#28a745' : '#dc3545'}; font-weight: bold;">
                   ${entry.type === 'earned' ? '+' : '-'}${entry.amount} pts
@@ -951,9 +912,9 @@ export class VipStore {
           <div class="card-body text-center">
             <div style="font-size: 2.5em; margin-bottom: 10px;">${key === 'vipPerma' ? '💎' : '👑'}</div>
             <h5 style="color: #ffd700; margin-bottom: 10px;">${tag.name}</h5>
-            <p class="text-muted" style="font-size: 0.9em;">${tag.description}</p>
+            <p class="text-muted" style="font-size: 0.75em;">${tag.description}</p>
             <div class="mb-3">
-              <span class="badge bg-info" style="font-size: 0.8em;">
+              <span class="badge bg-info" style="font-size: 0.65em;">
                 ${tag.duration === 'permanent' ? 'Permanente' : `${tag.duration} días`}
               </span>
             </div>
@@ -1304,3 +1265,9 @@ export class VipStore {
     }
   }
 }
+
+
+
+
+
+

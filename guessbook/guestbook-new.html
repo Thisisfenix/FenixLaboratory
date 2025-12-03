@@ -30,71 +30,104 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../placeholder/styles.css">
   <link rel="stylesheet" href="mobile-enhancements.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
+  <script src="theme-adapter.js"></script>
   <script src="updates.js"></script>
   
   <style>
-    :root {
-      --primary: #ff6b35;
-      --bg-dark: #1a1a1a;
-      --bg-light: #2d2d2d;
-      --text-primary: #f0f0f0;
-      --text-secondary: #b0b0b0;
+    /* Adaptación de temas para Guestbook */
+    
+    /* Asegurar que las imágenes de dibujos sean visibles */
+    .drawing-img {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
-    [data-theme="neon"] {
-      --primary: #00ff88;
-      --bg-dark: #0a0a0a;
-      --bg-light: #1a1a1a;
+    /* Drawing cards adaptadas a temas */
+    .drawing-card {
+      background: var(--bg-light) !important;
+      border: 1px solid var(--primary) !important;
     }
-    [data-theme="retro"] {
-      --primary: #ff6b9d;
-      --bg-dark: #2d1b69;
-      --bg-light: #3e2a7a;
+    
+    .drawing-card .card-body {
+      background: var(--bg-light) !important;
     }
-    [data-theme="hacker"] {
-      --primary: #00ff00;
-      --bg-dark: #000000;
-      --bg-light: #0d1117;
+    
+    /* Botones adaptados */
+    .btn-neon {
+      border-color: var(--primary);
+      color: var(--primary);
     }
-    [data-theme="galaxy"] {
-      --primary: #8b5cf6;
-      --bg-dark: #1a0b2e;
-      --bg-light: #2d1b4e;
+    
+    .btn-neon:hover {
+      background: var(--primary);
+      color: var(--bg-dark);
     }
-    [data-theme="sunset"] {
-      --primary: #f59e0b;
-      --bg-dark: #2d1b0b;
-      --bg-light: #4e2d1b;
+    
+    /* Modal y comentarios */
+    .modal-content {
+      background: var(--bg-light) !important;
+      border: 2px solid var(--primary) !important;
     }
-    [data-theme="ocean"] {
-      --primary: #0ea5e9;
-      --bg-dark: #0b1a2d;
-      --bg-light: #1b2d4e;
+    
+    .modal-header {
+      border-bottom: 1px solid var(--primary) !important;
     }
-    [data-theme="purple"] {
-      --primary: #8b5cf6;
-      --bg-dark: #1e1b4b;
-      --bg-light: #312e81;
+    
+    .modal-title {
+      color: var(--primary) !important;
     }
-    [data-theme="blue"] {
-      --primary: #3b82f6;
-      --bg-dark: #1e3a8a;
-      --bg-light: #1d4ed8;
+    
+    /* Imágenes en modales - visibles sin fondo */
+    .modal-body img,
+    .image-modal img {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    
+    .form-control {
+      background: var(--bg-dark) !important;
+      border: 1px solid var(--primary) !important;
+      color: var(--text-primary) !important;
+    }
+    
+    .form-control:focus {
+      background: var(--bg-dark) !important;
+      border-color: var(--primary) !important;
+      color: var(--text-primary) !important;
+      box-shadow: 0 0 10px rgba(255, 107, 53, 0.3) !important;
+    }
+    
+    /* Herramientas de dibujo */
+    .control-section {
+      background: var(--bg-light);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 107, 53, 0.2);
+    }
+    
+    .btn-group-custom .btn {
+      background: var(--bg-dark);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+    
+    .btn-group-custom .btn.active,
+    .btn-group-custom .btn:hover {
+      background: var(--primary);
+      color: var(--bg-dark);
     }
     
     .color-btn.active {
       border-color: var(--primary) !important;
       box-shadow: 0 0 10px var(--primary);
-    }
-    
-    body {
-      background: var(--bg-dark);
-      color: var(--text-primary);
-      font-family: 'Space Grotesk', sans-serif;
-      touch-action: manipulation;
     }
     
     .canvas-container {
@@ -132,6 +165,7 @@
       cursor: crosshair;
       box-shadow: 0 4px 16px rgba(0,0,0,0.1);
       transition: transform 0.2s ease;
+      background: white; /* Fondo blanco por defecto */
     }
     
     #drawCanvas:hover {
@@ -231,12 +265,14 @@
     }
     
     .drawing-img {
-      width: 100%;
-      height: 200px;
-      object-fit: contain;
-      background: white;
+      width: 100% !important;
+      height: 200px !important;
+      object-fit: contain !important;
       border-radius: 4px;
       transition: transform 0.3s ease;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
     .drawing-card:hover .drawing-img {
@@ -1361,8 +1397,8 @@
     </div>
     
     <div class="text-center mb-4">
-      <h1 style="color: var(--primary);">🎨 Guestbook NEW</h1>
-      <p style="color: var(--text-secondary);">Sistema modular avanzado</p>
+      <h1 style="color: var(--primary);">🎨 Guestbook</h1>
+      <p style="color: var(--text-secondary);">Dibuja, comparte y comenta</p>
       <div class="d-flex justify-content-center gap-2 mb-3">
         <a href="../index.html" class="btn btn-outline-secondary btn-sm">
           🏠 Volver al Lab
@@ -1384,10 +1420,13 @@
         </div>
         
         <div style="position: relative; display: inline-block;">
+          <!-- Fondo GIF animado (z-index: 1) -->
           <div id="gifBackground" style="position: absolute; top: 0; left: 0; width: 600px; height: 400px; z-index: 1; display: none; border-radius: 8px; overflow: hidden;">
-            <img id="gifBackgroundImg" style="width: 100%; height: 100%; object-fit: cover;" alt="Fondo GIF">
+            <img id="gifBackgroundImg" style="width: 100%; height: 100%; object-fit: contain; image-rendering: auto;" alt="Fondo GIF">
           </div>
-          <canvas id="drawCanvas" width="600" height="400" style="position: relative; z-index: 2;"></canvas>
+          <!-- Canvas transparente encima (z-index: 2) -->
+          <canvas id="drawCanvas" width="600" height="400" style="position: relative; z-index: 2; background: transparent;"></canvas>
+          <!-- Contenedor para stickers GIF animados (z-index: 3) -->
           <div id="gifStickersContainer" style="position: absolute; top: 0; left: 0; width: 600px; height: 400px; z-index: 3; pointer-events: none;"></div>
         </div>
       </div>
@@ -1552,14 +1591,21 @@
               
               <div class="collapse mt-2" id="mediaTools">
                 <div class="mb-2">
+                  <label class="form-label text-light small mb-1">🌄 Fondo de Imagen</label>
                   <input type="file" id="bgUpload" accept=".png,.jpg,.jpeg,.gif" class="form-control form-control-sm mb-1">
                   <button id="setBgBtn" class="btn btn-outline-primary btn-sm w-100" disabled>🖼️ Aplicar Fondo</button>
-                  <small class="text-muted d-block mt-1">📸 PNG/JPG en canvas • 🎬 GIF como fondo animado</small>
+                  <button id="clearBgBtn" class="btn btn-outline-warning btn-sm w-100 mt-1">❌ Quitar Fondo</button>
+                  <small class="text-muted d-block mt-1">📸 PNG/JPG en canvas • 🎬 GIF como fondo visual animado<br>
+                  <strong style="color: var(--primary);">✨ Dibuja encima del GIF animado</strong><br>
+                  <span style="color: #ffc107;">⚠️ GIFs >800KB no se guardan en Firebase (solo locales)</span></small>
                 </div>
                 <div>
+                  <label class="form-label text-light small mb-1">🏷️ Stickers Personalizados</label>
                   <input type="file" id="stickerUpload" accept=".png,.jpg,.jpeg,.gif" class="form-control form-control-sm mb-1">
-                  <button id="placeStickerBtn" class="btn btn-outline-success btn-sm w-100" disabled>📌 Sticker</button>
-                  <small class="text-muted d-block mt-1">🖼️ PNG/JPG en canvas • 🎦 GIF como elemento animado</small>
+                  <button id="placeStickerBtn" class="btn btn-outline-success btn-sm w-100" disabled>📌 Colocar Sticker</button>
+                  <small class="text-muted d-block mt-1">🖼️ PNG/JPG en canvas • 🎦 GIF como elemento animado<br>
+                  <strong style="color: var(--primary);">✨ GIFs totalmente animados y arrastrables</strong><br>
+                  <span style="color: #ffc107;">⚠️ GIFs >800KB no se guardan en Firebase (solo locales)</span></small>
                 </div>
               </div>
               
@@ -2423,13 +2469,16 @@
         gifBackground.style.width = this.canvas.canvas.width + 'px';
         gifBackground.style.height = this.canvas.canvas.height + 'px';
         
-        // Hacer el canvas semi-transparente para que se vea el GIF
-        this.canvas.canvas.style.background = 'rgba(255, 255, 255, 0.1)';
+        // CRÍTICO: Hacer el canvas completamente transparente para que se vea el GIF
+        this.canvas.canvas.style.background = 'transparent';
+        
+        this.ui.showNotification('🎬 GIF de fondo aplicado. Dibuja encima!', 'success');
       }
       
       hideVisualGifBackground() {
         const gifBackground = document.getElementById('gifBackground');
         gifBackground.style.display = 'none';
+        // Restaurar fondo blanco del canvas
         this.canvas.canvas.style.background = 'white';
       }
       

@@ -154,13 +154,13 @@ export class GalleryManager {
     if (hasBackgroundGif || hasGifStickers) {
       imageContent = `
         <div style="position: relative; width: 100%; height: 200px; background: white; border-radius: 4px; overflow: hidden;">
-          ${hasBackgroundGif ? `<img src="${drawing.data.backgroundGif}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" alt="Fondo GIF animado" loading="lazy">` : ''}
-          <img src="${drawing.data.imagenData}" style="position: absolute; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" alt="Dibujo de ${drawing.data.autor}" loading="lazy">
-          ${hasGifStickers ? drawing.data.gifStickers.map(sticker => `<img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3; image-rendering: auto; pointer-events: none;" alt="Sticker GIF" loading="lazy">`).join('') : ''}
+          ${hasBackgroundGif ? `<img src="${drawing.data.backgroundGif}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;" alt="Fondo GIF">` : ''}
+          <img src="${drawing.data.imagenData}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" alt="Dibujo">
+          ${hasGifStickers ? drawing.data.gifStickers.map(sticker => `<img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3;" alt="Sticker">`).join('') : ''}
         </div>
       `;
     } else {
-      imageContent = `<img src="${drawing.data.imagenData}" class="drawing-img" style="width: 100%; height: 200px; object-fit: contain; background: white; border-radius: 4px; transition: transform 0.3s ease; image-rendering: auto; -webkit-image-rendering: auto;" loading="lazy">`;
+      imageContent = `<img src="${drawing.data.imagenData}" class="drawing-img" style="width: 100%; height: 200px; object-fit: contain; background: white; border-radius: 4px; transition: transform 0.3s ease;" loading="lazy">`;
     }
     
     const animatedBadge = isAnimated ? `
@@ -173,7 +173,7 @@ export class GalleryManager {
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
         <div class="card drawing-card h-100 ${rankClass}" data-id="${drawing.id}" style="background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-dark) 100%); border: 2px solid var(--primary); border-radius: 15px; overflow: hidden; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative;">
           ${rankBadge}
-          <div style="position: relative; overflow: hidden; cursor: pointer; transition: transform 0.3s ease;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${drawing.id}', ${isAnimated}, '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'").replace(/"/g, '&quot;') : ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;').replace(/'/g, "\\'") : 'null'})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="position: relative; overflow: hidden; cursor: pointer; transition: transform 0.3s ease;" onclick="viewImage('${drawing.data.imagenData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${drawing.id}', ${isAnimated}, ${hasBackgroundGif ? `'${drawing.data.backgroundGif.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null'}, ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;').replace(/'/g, "\\'") : 'null'})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
             ${imageContent}
             <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8em;">
               ${drawing.data.categoria}
@@ -205,7 +205,7 @@ export class GalleryManager {
                 <button class="btn btn-sm like-btn ${isLiked ? 'liked' : ''}" data-id="${drawing.id}" style="background: ${isLiked ? 'var(--primary)' : 'transparent'}; color: ${isLiked ? 'white' : 'var(--primary)'}; border: 2px solid var(--primary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;">
                   ❤️ <span class="like-count">${likes}</span>
                 </button>
-                <button class="btn btn-sm" onclick="event.stopPropagation(); viewImage('${drawing.data.imagenData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${drawing.id}', ${isAnimated}, '${hasBackgroundGif ? drawing.data.backgroundGif.replace(/'/g, "\\'").replace(/"/g, '&quot;') : ''}', ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;').replace(/'/g, "\\'") : 'null'})" style="background: transparent; color: var(--text-secondary); border: 2px solid var(--text-secondary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;" title="Ver comentarios">
+                <button class="btn btn-sm" onclick="event.stopPropagation(); viewImage('${drawing.data.imagenData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${drawing.id}', ${isAnimated}, ${hasBackgroundGif ? `'${drawing.data.backgroundGif.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null'}, ${hasGifStickers ? JSON.stringify(drawing.data.gifStickers).replace(/"/g, '&quot;').replace(/'/g, "\\'") : 'null'})" style="background: transparent; color: var(--text-secondary); border: 2px solid var(--text-secondary); border-radius: 25px; padding: 6px 12px; transition: all 0.3s ease; font-size: 0.8em;" title="Ver comentarios">
                   💬 ${comments.length}
                 </button>
               </div>
@@ -738,14 +738,19 @@ window.downloadImage = function(imageData, author) {
   link.click();
 };
 
-window.viewImage = async function(imageData, drawingId, isAnimated = false, backgroundGif = '', gifStickers = null) {
+window.viewImage = async function(imageData, drawingId, isAnimated = false, backgroundGif = null, gifStickers = null) {
   isAnimated = isAnimated === 'true' || isAnimated === true;
   const existingModal = document.querySelector('.image-modal');
   if (existingModal) existingModal.remove();
   
+  // Normalizar backgroundGif
+  if (backgroundGif === '' || backgroundGif === 'null' || backgroundGif === 'undefined') {
+    backgroundGif = null;
+  }
+  
   // Parsear stickers GIF si existen
   let parsedGifStickers = null;
-  if (gifStickers && gifStickers !== 'null' && gifStickers !== 'undefined') {
+  if (gifStickers && gifStickers !== 'null' && gifStickers !== 'undefined' && gifStickers !== '') {
     try {
       if (typeof gifStickers === 'string') {
         // Decodificar HTML entities si es necesario
@@ -791,7 +796,7 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   
   const imageSection = document.createElement('div');
   imageSection.style.cssText = `
-    ${isMobile ? 'flex: 0 0 35vh;' : 'flex: 1;'}
+    ${isMobile ? 'flex: 0 0 45vh;' : 'flex: 1;'}
     padding: ${isMobile ? '10px' : '20px'}; text-align: center;
     display: flex; flex-direction: column; justify-content: center;
     background: white; position: relative;
@@ -809,7 +814,11 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   `;
   
   const hasGifStickers = parsedGifStickers && parsedGifStickers.length > 0;
-  const hasBackgroundGif = backgroundGif && backgroundGif !== '';
+  const hasBackgroundGif = backgroundGif && backgroundGif !== null && backgroundGif !== '' && backgroundGif !== 'null';
+  
+  console.log('Modal - hasBackgroundGif:', hasBackgroundGif, 'backgroundGif length:', backgroundGif?.length);
+  console.log('Modal - hasGifStickers:', hasGifStickers, 'parsedGifStickers:', parsedGifStickers);
+  console.log('Modal - Renderizando GIF de fondo:', hasBackgroundGif ? 'SÍ' : 'NO');
   
   const animatedBadge = isAnimated ? `
     <div style="position: absolute; top: 15px; right: 15px; background: rgba(255, 107, 53, 0.9); color: white; padding: 8px 12px; border-radius: 20px; font-size: 0.9em; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
@@ -819,16 +828,33 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   
   // Crear contenido de imagen optimizado para móvil
   let imageContent = '';
-  const maxImageHeight = isMobile ? (isSmallMobile ? '20vh' : '25vh') : '70vh';
+  const maxImageHeight = isMobile ? (isSmallMobile ? '30vh' : '35vh') : '70vh';
   
   if (hasBackgroundGif || hasGifStickers) {
-    const containerStyle = `position: relative; max-width: 100%; max-height: ${maxImageHeight}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; display: inline-block; ${isMobile ? 'width: 100%;' : 'aspect-ratio: 3/2;'}`;
+    const containerStyle = `position: relative; width: 600px; height: 400px; max-width: 100%; max-height: ${maxImageHeight}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.3); background: white; margin: 0 auto;`;
+    
+    console.log('Construyendo HTML con GIF:', hasBackgroundGif, 'y stickers:', hasGifStickers);
+    
+    if (hasGifStickers) {
+      console.log('Generando HTML para', parsedGifStickers.length, 'stickers');
+      parsedGifStickers.forEach((sticker, i) => {
+        console.log(`Sticker ${i}:`, {
+          hasSrc: !!sticker.src,
+          srcLength: sticker.src?.length,
+          srcPreview: sticker.src?.substring(0, 50),
+          x: sticker.x,
+          y: sticker.y,
+          width: sticker.width,
+          height: sticker.height
+        });
+      });
+    }
     
     imageContent = `
       <div style="${containerStyle}">
-        ${hasBackgroundGif ? `<img src="${backgroundGif}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1; image-rendering: auto;" loading="lazy">` : ''}
-        <img src="${imageData}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" loading="lazy">
-        ${hasGifStickers ? parsedGifStickers.map(sticker => `<img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3; image-rendering: auto; pointer-events: none;" loading="lazy">`).join('') : ''}
+        ${hasBackgroundGif ? `<img src="${backgroundGif}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;" alt="GIF de fondo">` : ''}
+        <img src="${imageData}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; ${hasBackgroundGif ? 'mix-blend-mode: multiply; opacity: 0.9;' : ''}" alt="Dibujo">
+        ${hasGifStickers ? parsedGifStickers.map((sticker, idx) => `<img src="${sticker.src}" style="position: absolute; left: ${(sticker.x / 600) * 100}%; top: ${(sticker.y / 400) * 100}%; width: ${(sticker.width / 600) * 100}%; height: ${(sticker.height / 400) * 100}%; z-index: 3;" alt="Sticker ${idx}">` ).join('') : ''}
       </div>
     `;
   } else {
@@ -901,42 +927,36 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
   const currentUser = isLoggedIn ? window.guestbookApp.profiles.currentProfile : null;
   
   if (isMobile) {
-    // Layout horizontal para móviles: comentarios izquierda, formulario derecha
+    // Layout vertical para móviles: comentarios arriba, formulario abajo
     commentsSection.innerHTML = `
       ${userProfileHTML}
-      <div style="display: flex; gap: 8px; flex: 1; min-height: 0;">
-        <div style="width: 55%; display: flex; flex-direction: column;">
-          <div style="text-align: center; margin-bottom: 6px;">
-            <small style="color: var(--primary); font-weight: 600; font-size: 0.7em;">💬 Comentarios</small>
+      <div id="commentsContainer" class="comments-container" style="flex: 1; overflow-y: auto; margin-bottom: 15px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; min-height: 0;">
+        <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
+          <div class="spinner-border" style="color: var(--primary); width: 1.2rem; height: 1.2rem;" role="status"></div>
+          <p class="mt-2 mb-0" style="font-size: 0.85em;">Cargando comentarios...</p>
+        </div>
+      </div>
+      <div style="border-top: 2px solid var(--primary); padding-top: 12px; flex-shrink: 0;">
+        ${isLoggedIn ? `
+          <div style="text-align: center; margin-bottom: 10px; padding: 6px; background: var(--bg-dark); border-radius: 6px; border: 1px solid var(--primary);">
+            <small style="color: var(--primary); font-weight: 600; font-size: 0.75em;">👤 ${currentUser.username}</small>
           </div>
-          <div id="commentsContainer" class="comments-container" style="flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; min-height: 0;">
-            <div style="text-align: center; color: var(--text-secondary); padding: 15px;">
-              <div class="spinner-border" style="color: var(--primary); width: 1.2rem; height: 1.2rem;" role="status"></div>
-              <p class="mt-2 mb-0" style="font-size: 0.8em;">Cargando comentarios...</p>
+        ` : ''}
+        <div>
+          ${!isLoggedIn ? `<input type="text" id="commentAuthor" placeholder="Tu nombre" class="form-control mb-2" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 14px; padding: 0.5rem;" maxlength="50">` : ''}
+          <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+            <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="2" style="flex: 1; background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 14px; padding: 0.5rem;" maxlength="500"></textarea>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <input type="file" id="commentImage" accept="image/*" style="display: none;">
+              <button onclick="document.getElementById('commentImage').click()" style="background: var(--secondary); color: white; border: none; border-radius: 4px; padding: 6px; cursor: pointer; font-size: 0.8em;" title="Adjuntar imagen">
+                🖼️
+              </button>
             </div>
           </div>
+          <div id="commentImagePreview" style="display: none; margin-bottom: 6px;"></div>
+          <small style="color: var(--text-secondary); font-size: 0.75em; display: block; margin-bottom: 6px;">Máximo 500 caracteres</small>
         </div>
-        <div style="width: 45%; display: flex; flex-direction: column; border-left: 2px solid var(--primary); padding-left: 8px;">
-          <div style="text-align: center; margin-bottom: 6px;">
-            <small style="color: var(--primary); font-weight: 600; font-size: 0.7em;">✍️ Comentar</small>
-            ${isLoggedIn ? `<div style="font-size: 0.6em; color: var(--text-secondary); margin-top: 1px;">👤 ${currentUser.username}</div>` : ''}
-          </div>
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
-            ${!isLoggedIn ? `<input type="text" id="commentAuthor" placeholder="Tu nombre" class="form-control" style="background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); font-size: 12px; min-height: 32px; padding: 0.4rem;" maxlength="50">` : ''}
-            <div style="display: flex; gap: 4px;">
-              <textarea id="newComment" placeholder="Escribe un comentario..." class="form-control" rows="4" style="flex: 1; background: var(--bg-light); border: 2px solid var(--primary); color: var(--text-primary); resize: none; font-size: 12px; padding: 0.4rem;" maxlength="500"></textarea>
-              <div style="display: flex; flex-direction: column; gap: 3px;">
-                <input type="file" id="commentImage" accept="image/*" style="display: none;">
-                <button onclick="document.getElementById('commentImage').click()" style="background: var(--secondary); color: white; border: none; border-radius: 3px; padding: 4px; cursor: pointer; font-size: 0.6em; white-space: nowrap; min-width: 28px; min-height: 28px;" title="Adjuntar imagen">
-                  🖼️
-                </button>
-              </div>
-            </div>
-            <div id="commentImagePreview" style="display: none;"></div>
-            <small style="color: var(--text-secondary); font-size: 0.65em; text-align: center;">Máx 500 chars</small>
-            <button onclick="addComment('${drawingId}')" class="btn btn-primary" style="padding: 0.4rem; font-weight: 600; border-radius: 4px; min-height: 32px; font-size: 12px; margin-top: auto;">💭 Enviar</button>
-          </div>
-        </div>
+        <button onclick="addComment('${drawingId}')" class="btn btn-primary w-100" style="padding: 10px; font-weight: 600; border-radius: 6px; font-size: 14px;">💭 Comentar</button>
       </div>
     `;
   } else {

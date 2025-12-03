@@ -1,7 +1,7 @@
 {
-  "name": "FenixLaboratory v2.0.7",
+  "name": "FenixLaboratory v2.2.0",
   "short_name": "FenixLab",
-  "description": "PWA con guestbook completo, herramientas de dibujo y reorganización",
+  "description": "PWA con copos de nieve navideños, guestbook completo y herramientas de dibujo",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1a1a1a",

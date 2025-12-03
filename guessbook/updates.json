@@ -1,26 +1,50 @@
 {
   "proyecto": "Guestbook de Dibujos",
-  "version": "3.2.1",
-  "lastUpdate": "2024-11-13",
+  "version": "3.3.0",
+  "lastUpdate": "2024-11-14",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory/tree/main/guessbook",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/guessbook/",
   
   "info_version_actual": {
-    "numero": "3.2.1",
-    "fecha": "2024-11-13",
+    "numero": "3.3.0",
+    "fecha": "2024-11-14",
     "tipo": "major",
     "estado": "estable",
     "cambios_principales": [
-      "Sistema completo de amistades con solicitudes y gestión",
-      "Validación de perfiles para envío de solicitudes",
-      "Reglas de Firebase actualizadas para sistema social",
-      "Prevención de errores de permisos con verificación de dominio",
-      "Modal de amigos con pestañas para gestión completa"
+      "32 temas disponibles en VIP Store (11 gratis, 14 premium, 7 VIP)",
+      "Todos los temas de styles.css integrados al sistema",
+      "Interfaz compacta con dropdowns en lugar de cards",
+      "Sistema de puntos completamente funcional",
+      "Temas estacionales y especiales disponibles"
     ]
   },
   
   "updates": [
+    {
+      "version": "3.3.0",
+      "date": "2024-11-14",
+      "title": "🎨 32 Temas + VIP Store Completo",
+      "type": "major",
+      "features": [
+        "🎨 32 temas totales: 11 gratis, 14 premium, 7 VIP",
+        "🆓 Temas gratis: Original, Claro, Neon, Cyberpunk, Matrix, Synthwave, Ocean, Forest, Sunset, FunkyAtlas, FunkyAtlas Xmas",
+        "💰 Temas premium: Christmas, Halloween, Valentine, Easter, Summer, Autumn (100pts), Galaxy, Gold, Rainbow, Diamond (150pts), Vaporwave, Hacker, Neon City, Space (200pts)",
+        "👑 Temas VIP: Fire, Ice, Toxic, Royal, Steampunk, Hologram, Legendary",
+        "📦 Interfaz compacta con dropdowns en lugar de cards grandes",
+        "🎯 Todos los temas de styles.css integrados correctamente",
+        "💎 Sistema de puntos funcional con precios diferenciados",
+        "🎁 Bonificación diaria de 25 puntos",
+        "📊 Historial de puntos con estadísticas"
+      ],
+      "improvements": [
+        "✨ UI más limpia y eficiente en espacio vertical",
+        "🎨 Colores de preview correctos para cada tema",
+        "🔄 Dropdowns que resetean después de selección",
+        "💾 Persistencia de temas comprados en localStorage",
+        "🎯 Validación de acceso VIP para temas exclusivos"
+      ]
+    },
     {
       "version": "3.2.1",
       "date": "2024-11-13",

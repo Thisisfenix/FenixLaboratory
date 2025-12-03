@@ -359,7 +359,7 @@ export class ProfileManager {
       
       // Aplicar marco de avatar si existe
       if (this.currentProfile.avatarFrame && window.guestbookApp && window.guestbookApp.vipStore) {
-        window.guestbookApp.vipStore.updateProfileCircleFrame(this.currentProfile.avatarFrame);
+        window.guestbookApp.vipStore.updateProfileCircleFrame(circle, this.currentProfile.avatarFrame);
       }
       
       console.log('🔄 Perfil actualizado:', {

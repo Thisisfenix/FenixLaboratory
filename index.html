@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#ff6b35">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FenixLab v2.1.4">
+  <meta name="apple-mobile-web-app-title" content="FenixLab v2.2.0">
   <link rel="apple-touch-icon" href="favicon.svg">
   <!-- Discord/Social Media Embeds -->
   <meta property="og:title" content="🔬 FenixLaboratory - Experimentos raros y proyectos random">
@@ -42,1894 +42,8 @@
     crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-  <style>
-    :root {
-      --primary: #ff6b35;
-      --secondary: #f7931e;
-      --bg-dark: #1a1a1a;
-      --bg-light: #2d2d2d;
-      --text-primary: #f0f0f0;
-      --text-secondary: #b0b0b0;
-    }
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-primary);
-      font-family: 'Space Grotesk', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      line-height: 1.6;
-      scroll-behavior: smooth;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-    
-    /* Scrollbar personalizado para PC */
-    ::-webkit-scrollbar {
-      width: 12px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: var(--bg-dark);
-      border-radius: 6px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, var(--primary), var(--secondary));
-      border-radius: 6px;
-      border: 2px solid var(--bg-dark);
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, var(--secondary), var(--primary));
-    }
-    
-    /* Firefox scrollbar */
-    html {
-      scrollbar-width: thin;
-      scrollbar-color: var(--primary) var(--bg-dark);
-    }
-    .navbar {
-      background-color: rgba(10, 10, 18, 0.9);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(0, 240, 255, 0.1);
-      padding: 0.75rem 0;
-    }
-    .navbar-brand {
-      font-weight: 700;
-      color: var(--primary) !important;
-      letter-spacing: 1px;
-      position: relative;
-      font-size: 1.25rem;
-    }
-    .nav-link.active {
-      color: var(--primary) !important;
-      text-shadow: 0 0 10px var(--primary);
-    }
-    .navbar-nav {
-      gap: 0.5rem;
-    }
-    .nav-link {
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      padding: 0.4rem 0.6rem;
-      font-size: 0.85rem;
-      white-space: nowrap;
-    }
-    .nav-link:active {
-      transform: scale(0.95);
-      color: var(--primary) !important;
-    }
-    .btn-neon:active {
-      transform: scale(0.95);
-      box-shadow: 0 0 20px var(--primary);
-    }
-    .btn-outline-neon:active {
-      transform: scale(0.9);
-      box-shadow: 0 0 15px var(--primary);
-    }
-    .filter-btn:active {
-      transform: scale(0.95);
-      box-shadow: 0 0 10px var(--primary);
-    }
-    #theme-toggle:active {
-      transform: scale(0.9) rotate(180deg);
-    }
-    .hero {
-      padding: 6rem 2rem 4rem;
-      text-align: center;
-      background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-light) 100%);
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 2rem;
-      perspective: 100px;
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background:
-        radial-gradient(circle at 20% 30%, rgba(0, 240, 255, 0.1) 0%, transparent 20%),
-        radial-gradient(circle at 80% 70%, rgba(255, 0, 228, 0.1) 0%, transparent 20%);
-      z-index: -1;
-      transform: translateZ(-1px) scale(1.5);
-    }
-    .hero h1 {
-      font-weight: 700;
-      font-size: 2.8rem;
-      margin-bottom: 1rem;
-      color: var(--primary);
-      line-height: 1.2;
-    }
-    .hero p {
-      font-size: 1.1rem;
-      max-width: 600px;
-      margin: 0 auto 2rem auto;
-      color: var(--text-secondary);
-    }
-    .btn-neon {
-      background: transparent;
-      border: 2px solid var(--primary);
-      color: var(--primary);
-      font-weight: 500;
-      padding: 0.75rem 2rem;
-      border-radius: 4px;
-      transition: all 0.3s ease;
-      letter-spacing: 0.5px;
-      font-size: 0.95rem;
-    }
-    .btn-neon:hover {
-      color: var(--bg-dark);
-      background-color: var(--primary);
-    }
-    section {
-      padding: 4rem 0;
-      position: relative;
-    }
-    section h2 {
-      font-weight: 700;
-      margin-bottom: 3rem;
-      text-align: center;
-      font-size: 2.5rem;
-      position: relative;
-    }
-    .card {
-      background: var(--bg-light);
-      border: 1px solid rgba(0, 240, 255, 0.1);
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      min-height: 350px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
-    .card-img-top {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      filter: grayscale(30%);
-      transition: filter 0.3s ease;
-      background: var(--bg-dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .card-img-top::before {
-      content: "Preview no disponible";
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      display: none;
-    }
-    .card-img-top[src*="placeholder"]::before {
-      display: block;
-    }
-    .card:hover .card-img-top {
-      filter: grayscale(0%);
-    }
-    .card-body {
-      padding: 1.5rem;
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .card-title {
-      font-weight: 500;
-      font-size: 1.3rem;
-      margin-bottom: 1rem;
-      color: var(--primary);
-    }
-    .card-text {
-      flex-grow: 1;
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      margin-bottom: 1.5rem;
-    }
-    .btn-group {
-      margin-top: auto;
-      display: flex;
-      gap: 0.75rem;
-      justify-content: center;
-    }
-    .btn-outline-neon {
-      background: transparent;
-      border: 1px solid var(--primary);
-      color: var(--primary);
-      transition: all 0.3s ease;
-      border-radius: 4px;
-      padding: 0.5rem 1.25rem;
-      font-size: 0.85rem;
-    }
-    .btn-outline-neon:hover {
-      background: var(--primary);
-      color: var(--bg-dark);
-    }
-    #repos-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-    }
-    /* Skeleton loader */
-    .skeleton {
-      animation: skeleton-loading 1s linear infinite alternate;
-    }
-
-    @keyframes skeleton-loading {
-      0% {
-        background-color: var(--bg-light);
-      }
-      100% {
-        background-color: rgba(255, 255, 255, 0.05);
-      }
-    }
-    .skeleton-text {
-      width: 100%;
-      height: 1rem;
-      margin-bottom: 0.5rem;
-      border-radius: 0.25rem;
-    }
-    .profile-img {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid var(--primary);
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
-      margin-bottom: 1.5rem;
-    }
-    .social-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1px solid var(--primary);
-      color: var(--primary);
-      margin: 0 0.5rem;
-      transition: all 0.3s ease;
-    }
-    .social-btn:hover {
-      background: var(--primary);
-      color: var(--bg-dark);
-      transform: translateY(-2px);
-    }
-    .footer {
-      background: var(--bg-light);
-      color: var(--text-secondary);
-      padding: 2rem 1rem;
-      text-align: center;
-      border-top: 1px solid rgba(0, 240, 255, 0.1);
-      font-size: 0.9rem;
-      margin-top: auto;
-    }
-    .footer a {
-      color: var(--primary);
-      text-decoration: none;
-      transition: all 0.3s ease;
-    }
-    .footer a:hover {
-      text-decoration: underline;
-      text-shadow: 0 0 5px var(--primary);
-    }
-    #btn-top {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: var(--primary);
-      border: none;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      opacity: 0;
-      visibility: hidden;
-      z-index: 999;
-      box-shadow: 0 0 10px var(--primary);
-    }
-    #btn-top.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-    #btn-top:hover {
-      transform: translateY(-3px);
-    }
-    /* Efectos de partículas */
-    .particles {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: -1;
-      overflow: hidden;
-    }
-    .particle {
-      position: absolute;
-      background: var(--primary);
-      border-radius: 50%;
-      opacity: 0.3;
-      animation: float linear infinite;
-    }
-
-    @keyframes float {
-      0% {
-        transform: translateY(0) translateX(0);
-      }
-      100% {
-        transform: translateY(-100vh) translateX(20px);
-      }
-    }
-    /* Giscus */
-    .giscus {
-      background: var(--bg-light);
-      padding: 2rem;
-      border: 1px solid rgba(0, 240, 255, 0.1);
-    }
-    /* Panel de Temas */
-    .theme-panel {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--bg-light);
-      border: 2px solid var(--primary);
-      border-radius: 16px;
-      padding: 2rem;
-      max-width: 600px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      z-index: 10001;
-      display: none;
-    }
-    .theme-panel.show {
-      display: block;
-      animation: slideIn 0.3s ease;
-    }
-    .theme-panel h3 {
-      color: var(--primary);
-      text-align: center;
-      margin-bottom: 2rem;
-      font-size: 1.5rem;
-    }
-    .theme-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .theme-card {
-      background: var(--bg-dark);
-      border: 2px solid transparent;
-      border-radius: 12px;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    .theme-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--primary);
-    }
-    .theme-card.active {
-      border-color: var(--primary);
-      box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
-    }
-    .theme-preview {
-      width: 60px;
-      height: 40px;
-      border-radius: 8px;
-      margin: 0 auto 0.5rem;
-      position: relative;
-      overflow: hidden;
-    }
-    .theme-name {
-      font-size: 0.8rem;
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-    .theme-category {
-      font-size: 1.1rem;
-      color: var(--primary);
-      margin: 1.5rem 0 1rem;
-      font-weight: 600;
-      border-bottom: 1px solid var(--primary);
-      padding-bottom: 0.5rem;
-    }
-
-    /* Previews de temas */
-    .preview-dark { background: linear-gradient(45deg, #1a1a1a 50%, #ff6b35 50%); }
-    .preview-light { background: linear-gradient(45deg, #f8fafc 50%, #3182ce 50%); }
-    .preview-neon { background: linear-gradient(45deg, #0a0a0a 50%, #00ff41 50%); }
-    .preview-cyberpunk { background: linear-gradient(45deg, #0d1117 50%, #ff0080 50%); }
-    .preview-matrix { background: linear-gradient(45deg, #000000 50%, #00ff00 50%); }
-    .preview-synthwave { background: linear-gradient(45deg, #2d1b69 50%, #ff6b9d 50%); }
-    .preview-ocean { background: linear-gradient(45deg, #0f3460 50%, #00d4ff 50%); }
-    .preview-forest { background: linear-gradient(45deg, #1a3d2e 50%, #4ade80 50%); }
-    .preview-sunset { background: linear-gradient(45deg, #7c2d12 50%, #f97316 50%); }
-    .preview-christmas { background: linear-gradient(45deg, #0f172a 50%, #dc2626 50%); }
-    .preview-halloween { background: linear-gradient(45deg, #1c1917 50%, #f97316 50%); }
-    .preview-valentine { background: linear-gradient(45deg, #1f1726 50%, #ec4899 50%); }
-    .preview-easter { background: linear-gradient(45deg, #fef3c7 50%, #a855f7 50%); }
-    .preview-summer { background: linear-gradient(45deg, #fef3c7 50%, #06b6d4 50%); }
-    .preview-autumn { background: linear-gradient(45deg, #451a03 50%, #ea580c 50%); }
-    .preview-funkyatlas { background: linear-gradient(45deg, #0f0f1a 50%, #ff4444 50%); }
-    .preview-galaxy { background: linear-gradient(45deg, #0c0c0c 25%, #4c1d95 25%, #4c1d95 50%, #7c3aed 50%, #7c3aed 75%, #a855f7 75%); }
-    .preview-gold { background: linear-gradient(45deg, #451a03 50%, #fbbf24 50%); }
-    .preview-rainbow { background: linear-gradient(45deg, #ef4444 0%, #f97316 16%, #eab308 33%, #22c55e 50%, #3b82f6 66%, #8b5cf6 83%, #ec4899 100%); }
-    .preview-diamond { background: linear-gradient(45deg, #f8fafc 25%, #e2e8f0 25%, #e2e8f0 50%, #cbd5e1 50%, #cbd5e1 75%, #94a3b8 75%); }
-    .preview-custom { background: linear-gradient(45deg, #1a1a1a 25%, #ff6b35 25%, #ff6b35 50%, #f7931e 50%); }
-    .preview-vaporwave { background: linear-gradient(45deg, #ff006e 0%, #8338ec 25%, #3a86ff 50%, #06ffa5 75%, #ffbe0b 100%); }
-    .preview-hacker { background: linear-gradient(45deg, #000000 50%, #00ff00 50%); animation: glitch 2s infinite; }
-    .preview-neon-city { background: linear-gradient(45deg, #0a0a0a 25%, #ff0080 25%, #ff0080 50%, #00ffff 50%, #00ffff 75%, #ff8000 75%); }
-    .preview-space { background: linear-gradient(45deg, #000011 25%, #1a0033 25%, #1a0033 50%, #330066 50%, #330066 75%, #000000 75%); }
-    .preview-fire { background: linear-gradient(45deg, #ff0000 0%, #ff4500 25%, #ff8c00 50%, #ffd700 75%, #ff0000 100%); }
-    .preview-ice { background: linear-gradient(45deg, #e0f6ff 0%, #87ceeb 25%, #4682b4 50%, #191970 75%, #000080 100%); }
-    .preview-toxic { background: linear-gradient(45deg, #32cd32 0%, #7fff00 25%, #adff2f 50%, #00ff00 75%, #008000 100%); }
-    .preview-royal { background: linear-gradient(45deg, #4b0082 0%, #8a2be2 25%, #9932cc 50%, #ba55d3 75%, #dda0dd 100%); }
-    .preview-steampunk { background: linear-gradient(45deg, #8b4513 0%, #cd853f 25%, #daa520 50%, #b8860b 75%, #8b4513 100%); }
-    .preview-hologram { background: linear-gradient(45deg, transparent 0%, #00ffff 25%, transparent 50%, #ff00ff 75%, transparent 100%); }
-    .preview-legendary { background: linear-gradient(45deg, #ffd700 0%, #ffff00 12%, #ff8c00 25%, #ff0000 37%, #ff1493 50%, #8a2be2 62%, #0000ff 75%, #00ffff 87%, #ffd700 100%); animation: legendary-glow 3s infinite; }
-
-    .color-picker-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.75rem;
-    }
-    .color-picker-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-    .color-picker-item label {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-    .color-picker-item input[type="color"] {
-      width: 100%;
-      height: 30px;
-      border: 1px solid var(--primary);
-      border-radius: 4px;
-      background: transparent;
-      cursor: pointer;
-    }
-    .theme-editor {
-      background: var(--bg-dark);
-      border: 1px solid var(--primary);
-      border-radius: 8px;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-    .editor-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-    .editor-section h5 {
-      color: var(--primary);
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-    }
-    .editor-section label {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      display: block;
-      margin-bottom: 0.3rem;
-    }
-    .editor-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .editor-actions .btn {
-      flex: 1;
-      min-width: 120px;
-      font-size: 0.8rem;
-      padding: 0.4rem 0.8rem;
-    }
-
-    @media (max-width: 768px) {
-      .editor-grid {
-        grid-template-columns: 1fr;
-      }
-      .editor-actions {
-        flex-direction: column;
-      }
-    }
-    /* Temas */
-    body.light-theme { --bg-dark: #f8fafc; --bg-light: #ffffff; --text-primary: #1a202c; --text-secondary: #4a5568; --primary: #3182ce; --secondary: #805ad5; }
-    body.neon-theme { --bg-dark: #0a0a0a; --bg-light: #1a1a1a; --text-primary: #00ff41; --text-secondary: #00cc33; --primary: #00ff41; --secondary: #ff0080; }
-    body.cyberpunk-theme { --bg-dark: #0d1117; --bg-light: #161b22; --text-primary: #ff0080; --text-secondary: #c9d1d9; --primary: #ff0080; --secondary: #00d4ff; }
-    body.matrix-theme { --bg-dark: #000000; --bg-light: #0d1b0d; --text-primary: #00ff00; --text-secondary: #00cc00; --primary: #00ff00; --secondary: #008800; }
-    body.synthwave-theme { --bg-dark: #2d1b69; --bg-light: #3e2a7a; --text-primary: #ffd700; --text-secondary: #ffb347; --primary: #ff6b9d; --secondary: #c44569; }
-    body.ocean-theme { --bg-dark: #0f3460; --bg-light: #16537e; --text-primary: #e8f4fd; --text-secondary: #b8dff0; --primary: #00d4ff; --secondary: #0099cc; }
-    body.forest-theme { --bg-dark: #1a3d2e; --bg-light: #2d5a47; --text-primary: #ecfdf5; --text-secondary: #bbf7d0; --primary: #4ade80; --secondary: #22c55e; }
-    body.sunset-theme { --bg-dark: #7c2d12; --bg-light: #9a3412; --text-primary: #fed7aa; --text-secondary: #fdba74; --primary: #f97316; --secondary: #ea580c; }
-    body.christmas-theme { --bg-dark: #0f172a; --bg-light: #1e293b; --text-primary: #f1f5f9; --text-secondary: #cbd5e1; --primary: #dc2626; --secondary: #16a34a; }
-    body.halloween-theme { --bg-dark: #1c1917; --bg-light: #292524; --text-primary: #fbbf24; --text-secondary: #f59e0b; --primary: #f97316; --secondary: #7c2d12; }
-    body.valentine-theme { --bg-dark: #1f1726; --bg-light: #2e1f3e; --text-primary: #fce7f3; --text-secondary: #f9a8d4; --primary: #ec4899; --secondary: #be185d; }
-    body.easter-theme { --bg-dark: #fef3c7; --bg-light: #fef9c3; --text-primary: #451a03; --text-secondary: #78350f; --primary: #a855f7; --secondary: #7c3aed; }
-    body.summer-theme { --bg-dark: #fef3c7; --bg-light: #fefce8; --text-primary: #0c4a6e; --text-secondary: #0369a1; --primary: #06b6d4; --secondary: #0891b2; }
-    body.autumn-theme { --bg-dark: #451a03; --bg-light: #7c2d12; --text-primary: #fed7aa; --text-secondary: #fdba74; --primary: #ea580c; --secondary: #dc2626; }
-    body.funkyatlas-theme { --bg-dark: #0f0f1a; --bg-light: #2b1055; --text-primary: #ffffff; --text-secondary: #cccccc; --primary: #ff4444; --secondary: #7597de; }
-    body.galaxy-theme { --bg-dark: #0c0c0c; --bg-light: #1a1a2e; --text-primary: #e2e8f0; --text-secondary: #a855f7; --primary: #7c3aed; --secondary: #4c1d95; }
-    body.gold-theme { --bg-dark: #451a03; --bg-light: #78350f; --text-primary: #fef3c7; --text-secondary: #fbbf24; --primary: #f59e0b; --secondary: #d97706; }
-    body.rainbow-theme { --bg-dark: #1f2937; --bg-light: #374151; --text-primary: #f9fafb; --text-secondary: #d1d5db; --primary: #ec4899; --secondary: #8b5cf6; }
-    body.diamond-theme { --bg-dark: #f8fafc; --bg-light: #ffffff; --text-primary: #1e293b; --text-secondary: #475569; --primary: #0f172a; --secondary: #334155; }
-    body.custom-theme { --bg-dark: var(--custom-bg, #1a1a1a); --bg-light: var(--custom-bg-light, #2d2d2d); --text-primary: var(--custom-text, #f0f0f0); --text-secondary: var(--custom-text-secondary, #b0b0b0); --primary: var(--custom-primary, #ff6b35); --secondary: var(--custom-secondary, #f7931e); }
-    body.vaporwave-theme { --bg-dark: #1a0033; --bg-light: #330066; --text-primary: #ff006e; --text-secondary: #8338ec; --primary: #3a86ff; --secondary: #06ffa5; }
-    body.hacker-theme { --bg-dark: #000000; --bg-light: #001100; --text-primary: #00ff00; --text-secondary: #00cc00; --primary: #00ff00; --secondary: #008800; }
-    body.neon-city-theme { --bg-dark: #0a0a0a; --bg-light: #1a0a1a; --text-primary: #00ffff; --text-secondary: #ff0080; --primary: #ff8000; --secondary: #00ff80; }
-    body.space-theme { --bg-dark: #000011; --bg-light: #1a0033; --text-primary: #ffffff; --text-secondary: #ccccff; --primary: #6666ff; --secondary: #9999ff; }
-    body.fire-theme { --bg-dark: #330000; --bg-light: #660000; --text-primary: #ffff00; --text-secondary: #ff8c00; --primary: #ff4500; --secondary: #ff0000; }
-    body.ice-theme { --bg-dark: #001133; --bg-light: #003366; --text-primary: #e0f6ff; --text-secondary: #87ceeb; --primary: #4682b4; --secondary: #191970; }
-    body.toxic-theme { --bg-dark: #001100; --bg-light: #003300; --text-primary: #adff2f; --text-secondary: #7fff00; --primary: #32cd32; --secondary: #00ff00; }
-    body.royal-theme { --bg-dark: #2d1b69; --bg-light: #4b0082; --text-primary: #dda0dd; --text-secondary: #ba55d3; --primary: #9932cc; --secondary: #8a2be2; }
-    body.steampunk-theme { --bg-dark: #3d2914; --bg-light: #8b4513; --text-primary: #daa520; --text-secondary: #cd853f; --primary: #b8860b; --secondary: #8b4513; }
-    body.hologram-theme { --bg-dark: #000033; --bg-light: #001166; --text-primary: #00ffff; --text-secondary: #0099cc; --primary: #ff00ff; --secondary: #cc00cc; }
-    body.legendary-theme { --bg-dark: #1a0a00; --bg-light: #330f00; --text-primary: #ffd700; --text-secondary: #ffff00; --primary: #ff8c00; --secondary: #ff1493; }
-
-    
-    /* FunkyAtlas - Navbar */
-    body.funkyatlas-theme .navbar { background: linear-gradient(90deg, #2b1055, #7597de); border-bottom: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
-    body.funkyatlas-theme .navbar-brand { background: linear-gradient(to right, #ff4444, #ff9e9e); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(255, 68, 68, 0.7); }
-    body.funkyatlas-theme .nav-link { color: white !important; transition: all 0.3s ease; }
-    body.funkyatlas-theme .nav-link:hover { background-color: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-    
-    /* FunkyAtlas - Hero */
-    body.funkyatlas-theme .hero { background: linear-gradient(135deg, #0f0f1a 0%, #2b1055 100%); }
-    body.funkyatlas-theme .hero::before { background: radial-gradient(circle at 20% 30%, rgba(255, 68, 68, 0.2) 0%, transparent 20%), radial-gradient(circle at 80% 70%, rgba(117, 151, 222, 0.2) 0%, transparent 20%); }
-    body.funkyatlas-theme .hero h1 { background: linear-gradient(to right, #ff4444, #ff9e9e); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(255, 68, 68, 0.5); }
-    
-    /* FunkyAtlas - Cards */
-    body.funkyatlas-theme .card { background: linear-gradient(135deg, rgba(43, 16, 85, 0.6), rgba(117, 151, 222, 0.3)); border: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); border-radius: 12px; }
-    body.funkyatlas-theme .card:hover { transform: translateY(-15px) scale(1.02); box-shadow: 0 15px 30px rgba(255, 68, 68, 0.4); }
-    body.funkyatlas-theme .card-title { color: #ff4444; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); position: relative; padding-bottom: 0.3rem; }
-    body.funkyatlas-theme .card-title::after { content: ''; position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background: #ff4444; transition: width 0.3s ease; }
-    body.funkyatlas-theme .card:hover .card-title::after { width: 100%; }
-    body.funkyatlas-theme .card-text { color: #ffffff; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
-    
-    /* FunkyAtlas - Buttons */
-    body.funkyatlas-theme .btn-neon { border-color: #ff4444; color: #ff4444; box-shadow: 0 2px 6px rgba(255, 68, 68, 0.3); }
-    body.funkyatlas-theme .btn-neon:hover { background: #ff4444; color: white; box-shadow: 0 4px 12px rgba(255, 68, 68, 0.5); }
-    body.funkyatlas-theme .btn-outline-neon { border-color: #ff4444; color: #ff4444; }
-    body.funkyatlas-theme .btn-outline-neon:hover { background: #ff4444; color: white; }
-    
-    /* FunkyAtlas - Filters */
-    body.funkyatlas-theme .filters { background: linear-gradient(135deg, rgba(43, 16, 85, 0.6), rgba(117, 151, 222, 0.3)); border: 1px solid rgba(255, 68, 68, 0.3); }
-    body.funkyatlas-theme .search-box { background: rgba(15, 15, 26, 0.8); border-color: #ff4444; color: white; }
-    body.funkyatlas-theme .filter-btn { border-color: rgba(255, 255, 255, 0.3); color: rgba(255, 255, 255, 0.7); }
-    body.funkyatlas-theme .filter-btn.active { background: #ff4444; color: white; border-color: #ff4444; }
-    
-    /* FunkyAtlas - Theme Panel */
-    body.funkyatlas-theme .theme-panel { background: linear-gradient(135deg, rgba(43, 16, 85, 0.9), rgba(117, 151, 222, 0.6)); border-color: #ff4444; backdrop-filter: blur(15px); }
-    body.funkyatlas-theme .theme-card { background: rgba(15, 15, 26, 0.8); border-color: rgba(255, 68, 68, 0.3); }
-    body.funkyatlas-theme .theme-card:hover { border-color: #ff4444; box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3); }
-    body.funkyatlas-theme .theme-card.active { border-color: #ff4444; box-shadow: 0 0 15px rgba(255, 68, 68, 0.5); }
-    
-    /* FunkyAtlas - Footer */
-    body.funkyatlas-theme .footer { background: linear-gradient(90deg, #2b1055, #7597de); border-top: 1px solid rgba(255, 68, 68, 0.3); box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3); }
-    body.funkyatlas-theme .social-btn { border-color: #ff4444; color: #ff4444; }
-    body.funkyatlas-theme .social-btn:hover { background: #ff4444; color: white; }
-    
-    /* FunkyAtlas - Scrollbars */
-    body.funkyatlas-theme ::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #ff4444, #ff9e9e); }
-    body.funkyatlas-theme ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
-
-    /* Matrix Theme - Unique Aesthetics */
-    body.matrix-theme .navbar { background: linear-gradient(90deg, #000000, #001100); border-bottom: 1px solid #00ff00; box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3); }
-    body.matrix-theme .navbar-brand { font-family: 'Courier New', monospace; text-shadow: 0 0 10px #00ff00; animation: matrixGlow 2s infinite; }
-    body.matrix-theme .card { background: linear-gradient(135deg, rgba(0, 20, 0, 0.9), rgba(0, 40, 0, 0.7)); border: 1px solid #00ff00; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); }
-    body.matrix-theme .card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 10px 30px rgba(0, 255, 0, 0.4); }
-    body.matrix-theme .card-title { font-family: 'Courier New', monospace; color: #00ff00; text-shadow: 0 0 5px #00ff00; }
-    body.matrix-theme .btn-neon, body.matrix-theme .btn-outline-neon { font-family: 'Courier New', monospace; border-color: #00ff00; color: #00ff00; }
-    body.matrix-theme .btn-neon:hover, body.matrix-theme .btn-outline-neon:hover { background: #00ff00; color: #000000; box-shadow: 0 0 20px #00ff00; }
-    body.matrix-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 255, 0, 0.3) 1px, rgba(0, 255, 0, 0.3) 2px, transparent 2px, transparent 8px, rgba(0, 255, 0, 0.2) 8px, rgba(0, 255, 0, 0.2) 9px); z-index: -2; animation: matrixLines 15s linear infinite; }
-    
-    /* Cyberpunk Theme - Unique Aesthetics */
-    body.cyberpunk-theme .navbar { background: linear-gradient(90deg, #0d1117, #ff0080); border-bottom: 2px solid #00d4ff; box-shadow: 0 4px 20px rgba(255, 0, 128, 0.5); }
-    body.cyberpunk-theme .navbar-brand { background: linear-gradient(45deg, #ff0080, #00d4ff); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px #ff0080; }
-    body.cyberpunk-theme .card { background: linear-gradient(135deg, rgba(13, 17, 23, 0.9), rgba(255, 0, 128, 0.1)); border: 2px solid #ff0080; box-shadow: 0 0 30px rgba(255, 0, 128, 0.3); position: relative; overflow: hidden; }
-    body.cyberpunk-theme .card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent); animation: cyberpunkScan 3s infinite; }
-    body.cyberpunk-theme .card:hover { transform: translateY(-15px) rotateX(5deg); box-shadow: 0 20px 40px rgba(255, 0, 128, 0.6); }
-    body.cyberpunk-theme .card-title { color: #00d4ff; text-shadow: 0 0 10px #00d4ff; position: relative; }
-    body.cyberpunk-theme .card-title::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #ff0080, #00d4ff); animation: cyberpunkLine 2s infinite; }
-    body.cyberpunk-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 80%, rgba(255, 0, 128, 0.25) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.2) 0%, transparent 50%); z-index: -2; animation: cyberpunkPulse 8s ease-in-out infinite; }
-    
-    /* Ocean Theme - Unique Aesthetics */
-    body.ocean-theme .navbar { background: linear-gradient(90deg, #0f3460, #16537e); border-bottom: 2px solid rgba(0, 212, 255, 0.5); box-shadow: 0 4px 15px rgba(0, 100, 200, 0.3); }
-    body.ocean-theme .hero::before { background: radial-gradient(circle at 30% 40%, rgba(0, 212, 255, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(22, 83, 126, 0.4) 0%, transparent 50%); animation: oceanWaves 6s ease-in-out infinite; }
-    body.ocean-theme .card { background: linear-gradient(135deg, rgba(15, 52, 96, 0.8), rgba(22, 83, 126, 0.6)); border: 1px solid rgba(0, 212, 255, 0.3); box-shadow: 0 8px 32px rgba(0, 100, 200, 0.2); backdrop-filter: blur(10px); }
-    body.ocean-theme .card:hover { transform: translateY(-8px); box-shadow: 0 16px 48px rgba(0, 212, 255, 0.4); }
-    body.ocean-theme .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #00d4ff, transparent); animation: oceanShimmer 3s ease-in-out infinite; }
-    
-    /* Fire Theme - Unique Aesthetics */
-    body.fire-theme .navbar { background: linear-gradient(90deg, #330000, #660000); border-bottom: 2px solid #ff4500; box-shadow: 0 4px 20px rgba(255, 69, 0, 0.5); }
-    body.fire-theme .navbar-brand { color: #ff4500; text-shadow: 0 0 10px #ff4500, 0 0 20px #ff0000; animation: fireFlicker 1.5s infinite; }
-    body.fire-theme .card { background: linear-gradient(135deg, rgba(51, 0, 0, 0.9), rgba(102, 0, 0, 0.7)); border: 2px solid #ff4500; box-shadow: 0 0 30px rgba(255, 69, 0, 0.4); position: relative; }
-    body.fire-theme .card::before { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(45deg, #ff0000, #ff4500, #ff8c00, #ffd700); z-index: -1; border-radius: inherit; animation: fireGlow 2s ease-in-out infinite; }
-    body.fire-theme .card:hover { transform: translateY(-12px) scale(1.03); box-shadow: 0 20px 50px rgba(255, 69, 0, 0.6); }
-    body.fire-theme .card-title { color: #ffd700; text-shadow: 0 0 10px #ff4500; }
-    
-    /* Steampunk Theme - Unique Aesthetics */
-    body.steampunk-theme .navbar { background: linear-gradient(90deg, #3d2914, #8b4513); border-bottom: 3px solid #b8860b; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 4px 15px rgba(0, 0, 0, 0.5); }
-    body.steampunk-theme .navbar-brand { color: #daa520; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-weight: bold; }
-    body.steampunk-theme .card { background: linear-gradient(135deg, rgba(61, 41, 20, 0.9), rgba(139, 69, 19, 0.7)); border: 3px solid #b8860b; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 25px rgba(0, 0, 0, 0.4); position: relative; }
-    body.steampunk-theme .card::before { content: '⚙️'; position: absolute; top: 10px; right: 10px; font-size: 1.2rem; opacity: 0.3; animation: steamGear 4s linear infinite; }
-    body.steampunk-theme .card:hover { transform: translateY(-8px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 15px 35px rgba(184, 134, 11, 0.3); }
-    body.steampunk-theme .card-title { color: #daa520; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8); font-family: serif; }
-    
-    /* Neon Theme - Unique Aesthetics */
-    body.neon-theme .navbar { background: linear-gradient(90deg, #0a0a0a, #1a1a1a); border-bottom: 2px solid #00ff41; box-shadow: 0 0 20px rgba(0, 255, 65, 0.5); }
-    body.neon-theme .navbar-brand { color: #00ff41; text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41; animation: neonPulse 2s ease-in-out infinite; }
-    body.neon-theme .card { background: rgba(26, 26, 26, 0.8); border: 2px solid #00ff41; box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.1); }
-    body.neon-theme .card:hover { transform: translateY(-10px); box-shadow: 0 0 40px rgba(0, 255, 65, 0.6), inset 0 0 30px rgba(0, 255, 65, 0.2); }
-    body.neon-theme .card-title { color: #00ff41; text-shadow: 0 0 10px #00ff41; }
-    body.neon-theme .card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 1px solid #00ff41; opacity: 0; animation: neonBorder 3s infinite; }
-    body.neon-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, rgba(0, 255, 65, 0.15) 0px, transparent 2px, transparent 100px, rgba(0, 255, 65, 0.1) 102px); z-index: -2; animation: neonGrid 10s linear infinite; }
-    
-    /* Vaporwave Theme - Unique Aesthetics */
-    body.vaporwave-theme .navbar { background: linear-gradient(90deg, #1a0033, #330066); border-bottom: 2px solid #ff006e; box-shadow: 0 4px 20px rgba(255, 0, 110, 0.4); }
-    body.vaporwave-theme .navbar-brand { background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: vaporwaveShift 4s ease-in-out infinite; }
-    body.vaporwave-theme .card { background: linear-gradient(135deg, rgba(26, 0, 51, 0.9), rgba(51, 0, 102, 0.7)); border: 2px solid #ff006e; box-shadow: 0 8px 32px rgba(255, 0, 110, 0.3); position: relative; overflow: hidden; }
-    body.vaporwave-theme .card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(58, 134, 255, 0.3), transparent); animation: vaporwaveScan 4s infinite; }
-    body.vaporwave-theme .card:hover { transform: translateY(-12px) rotateY(5deg); box-shadow: 0 20px 50px rgba(255, 0, 110, 0.5); }
-    
-    /* Animations */
-    @keyframes matrixGlow { 0%, 100% { text-shadow: 0 0 10px #00ff00; } 50% { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; } }
-    @keyframes cyberpunkScan { 0% { left: -100%; } 100% { left: 100%; } }
-    @keyframes cyberpunkLine { 0% { width: 0; } 50% { width: 100%; } 100% { width: 0; } }
-    @keyframes oceanWaves { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-    @keyframes oceanShimmer { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-    @keyframes fireFlicker { 0%, 100% { text-shadow: 0 0 10px #ff4500, 0 0 20px #ff0000; } 50% { text-shadow: 0 0 20px #ff4500, 0 0 30px #ff0000, 0 0 40px #ff8c00; } }
-    @keyframes fireGlow { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
-    @keyframes steamGear { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes neonPulse { 0%, 100% { text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41; } 50% { text-shadow: 0 0 20px #00ff41, 0 0 30px #00ff41, 0 0 40px #00ff41; } }
-    @keyframes neonBorder { 0%, 100% { opacity: 0; } 50% { opacity: 0.8; } }
-    @keyframes vaporwaveShift { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-    @keyframes vaporwaveScan { 0% { left: -100%; } 100% { left: 100%; } }
-
-    /* Animated Backgrounds for Each Theme */
-    body.ocean-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, rgba(0, 100, 200, 0.3) 25%, transparent 25%), linear-gradient(-45deg, rgba(0, 212, 255, 0.25) 25%, transparent 25%); background-size: 60px 60px; z-index: -2; animation: oceanFlow 15s linear infinite; }
-    body.fire-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 30% 70%, rgba(255, 69, 0, 0.4) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(255, 140, 0, 0.3) 0%, transparent 50%); z-index: -2; animation: fireWaves 6s ease-in-out infinite; }
-    body.steampunk-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(184, 134, 11, 0.15) 0deg, transparent 30deg, rgba(139, 69, 19, 0.12) 60deg, transparent 90deg); z-index: -2; animation: steamGears 30s linear infinite; }
-    body.vaporwave-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, rgba(255, 0, 110, 0.25), rgba(131, 56, 236, 0.2), rgba(58, 134, 255, 0.25)); z-index: -2; animation: vaporwaveGradient 12s ease-in-out infinite; }
-    body.forest-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 40% 60%, rgba(74, 222, 128, 0.25) 0%, transparent 50%), radial-gradient(circle at 80% 40%, rgba(34, 197, 94, 0.2) 0%, transparent 50%); z-index: -2; animation: forestBreeze 10s ease-in-out infinite; }
-    body.sunset-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(249, 115, 22, 0.25) 0%, rgba(234, 88, 12, 0.2) 50%, rgba(124, 45, 18, 0.15) 100%); z-index: -2; animation: sunsetGlow 15s ease-in-out infinite; }
-    body.galaxy-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(2px 2px at 20px 30px, rgba(124, 58, 237, 0.8), transparent), radial-gradient(2px 2px at 40px 70px, rgba(168, 85, 247, 0.6), transparent), radial-gradient(1px 1px at 90px 40px, rgba(196, 181, 253, 0.4), transparent); background-size: 100px 100px; z-index: -2; animation: galaxyTwinkle 20s linear infinite; }
-    body.gold-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.25) 0%, transparent 20%, rgba(245, 158, 11, 0.15) 40%); z-index: -2; animation: goldShimmer 8s ease-in-out infinite; }
-    body.rainbow-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2), rgba(234, 179, 8, 0.2), rgba(34, 197, 94, 0.2), rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2)); background-size: 400% 400%; z-index: -2; animation: rainbowShift 10s ease-in-out infinite; }
-    body.diamond-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(226, 232, 240, 0.2) 0deg, rgba(203, 213, 225, 0.15) 60deg, rgba(148, 163, 184, 0.18) 120deg, transparent 180deg); background-size: 80px 80px; z-index: -2; animation: diamondSparkle 12s linear infinite; }
-    body.hacker-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, rgba(0, 255, 0, 0.15) 0px, transparent 1px, transparent 20px, rgba(0, 204, 0, 0.1) 21px); z-index: -2; animation: hackerScan 5s linear infinite; }
-    body.space-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(1px 1px at 25px 25px, rgba(102, 102, 255, 0.8), transparent), radial-gradient(1px 1px at 75px 75px, rgba(153, 153, 255, 0.6), transparent), radial-gradient(2px 2px at 125px 25px, rgba(255, 255, 255, 0.4), transparent); background-size: 150px 150px; z-index: -2; animation: spaceFloat 25s linear infinite; }
-    body.ice-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, rgba(224, 246, 255, 0.25) 0px, transparent 2px, transparent 20px, rgba(135, 206, 235, 0.2) 22px); z-index: -2; animation: iceCrystals 18s linear infinite; }
-    body.toxic-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 30% 40%, rgba(50, 205, 50, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(0, 255, 0, 0.25) 0%, transparent 50%); z-index: -2; animation: toxicBubbles 12s ease-in-out infinite; }
-    body.royal-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.25) 0%, transparent 30%, rgba(186, 85, 211, 0.15) 60%); z-index: -2; animation: royalElegance 15s ease-in-out infinite; }
-    body.hologram-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.15) 0px, transparent 2px, transparent 10px, rgba(255, 0, 255, 0.15) 12px, transparent 14px, transparent 24px); z-index: -2; animation: hologramFlicker 3s ease-in-out infinite; }
-    body.legendary-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.3) 0%, transparent 30%), radial-gradient(circle at 80% 80%, rgba(255, 20, 147, 0.25) 0%, transparent 30%), radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.2) 0%, transparent 40%); z-index: -2; animation: legendaryAura 8s ease-in-out infinite; }
-
-    /* Christmas Theme */
-    body.christmas-theme .navbar { background: linear-gradient(90deg, #0f172a, #1e293b); border-bottom: 2px solid #dc2626; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3); }
-    body.christmas-theme .card { background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.7)); border: 2px solid #dc2626; box-shadow: 0 0 20px rgba(22, 163, 74, 0.2); }
-    body.christmas-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent), radial-gradient(2px 2px at 40px 70px, rgba(220, 38, 38, 0.6), transparent), radial-gradient(1px 1px at 90px 40px, rgba(22, 163, 74, 0.4), transparent); background-size: 100px 100px; z-index: -2; animation: christmasSnow 8s linear infinite; }
-
-    /* Halloween Theme */
-    body.halloween-theme .navbar { background: linear-gradient(90deg, #1c1917, #292524); border-bottom: 2px solid #f97316; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); }
-    body.halloween-theme .card { background: linear-gradient(135deg, rgba(28, 25, 23, 0.9), rgba(41, 37, 36, 0.7)); border: 2px solid #f97316; box-shadow: 0 0 25px rgba(124, 45, 18, 0.3); }
-    body.halloween-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 30% 40%, rgba(249, 115, 22, 0.35) 0%, transparent 30%), radial-gradient(circle at 70% 80%, rgba(124, 45, 18, 0.25) 0%, transparent 25%); z-index: -2; animation: halloweenGlow 10s ease-in-out infinite; }
-
-    /* Valentine Theme */
-    body.valentine-theme .navbar { background: linear-gradient(90deg, #1f1726, #2e1f3e); border-bottom: 2px solid #ec4899; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4); }
-    body.valentine-theme .card { background: linear-gradient(135deg, rgba(31, 23, 38, 0.9), rgba(46, 31, 62, 0.7)); border: 2px solid #ec4899; box-shadow: 0 0 20px rgba(190, 24, 93, 0.3); }
-    body.valentine-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 25% 25%, rgba(236, 72, 153, 0.3) 0%, transparent 20%), radial-gradient(circle at 75% 75%, rgba(190, 24, 93, 0.25) 0%, transparent 25%); z-index: -2; animation: valentineHearts 15s ease-in-out infinite; }
-
-    /* Easter Theme */
-    body.easter-theme .navbar { background: linear-gradient(90deg, #fef3c7, #fef9c3); border-bottom: 2px solid #a855f7; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3); }
-    body.easter-theme .card { background: linear-gradient(135deg, rgba(254, 243, 199, 0.9), rgba(254, 249, 195, 0.8)); border: 2px solid #a855f7; box-shadow: 0 0 20px rgba(124, 58, 237, 0.2); }
-    body.easter-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.25) 0%, transparent 15%, rgba(124, 58, 237, 0.15) 30%); z-index: -2; animation: easterSpring 12s ease-in-out infinite; }
-
-    /* Summer Theme */
-    body.summer-theme .navbar { background: linear-gradient(90deg, #fef3c7, #fefce8); border-bottom: 2px solid #06b6d4; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
-    body.summer-theme .card { background: linear-gradient(135deg, rgba(254, 243, 199, 0.9), rgba(254, 252, 232, 0.8)); border: 2px solid #06b6d4; box-shadow: 0 0 20px rgba(8, 145, 178, 0.2); }
-    body.summer-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.3) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(8, 145, 178, 0.25) 0%, transparent 35%); z-index: -2; animation: summerSun 20s ease-in-out infinite; }
-
-    /* Autumn Theme */
-    body.autumn-theme .navbar { background: linear-gradient(90deg, #451a03, #7c2d12); border-bottom: 2px solid #ea580c; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4); }
-    body.autumn-theme .card { background: linear-gradient(135deg, rgba(69, 26, 3, 0.9), rgba(124, 45, 18, 0.7)); border: 2px solid #ea580c; box-shadow: 0 0 20px rgba(220, 38, 38, 0.2); }
-    body.autumn-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, rgba(234, 88, 12, 0.25) 0px, transparent 2px, transparent 30px, rgba(220, 38, 38, 0.2) 32px, transparent 34px, transparent 60px); z-index: -2; animation: autumnLeaves 18s linear infinite; }
-
-    /* Background Animations */
-    @keyframes matrixLines { 0% { transform: translateY(0); } 100% { transform: translateY(9px); } }
-    @keyframes cyberpunkPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
-    @keyframes oceanFlow { 0% { background-position: 0 0; } 100% { background-position: 60px 60px; } }
-    @keyframes fireWaves { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-    @keyframes steamGears { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes neonGrid { 0% { background-position: 0 0; } 100% { background-position: 100px 0; } }
-    @keyframes vaporwaveGradient { 0%, 100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(180deg); } }
-    @keyframes synthwaveLines { 0% { transform: translateY(0); } 100% { transform: translateY(42px); } }
-    @keyframes forestBreeze { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
-    @keyframes sunsetGlow { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
-    @keyframes galaxyTwinkle { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
-    @keyframes goldShimmer { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-    @keyframes rainbowShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    @keyframes diamondSparkle { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes hackerScan { 0% { background-position: 0 0; } 100% { background-position: 21px 0; } }
-    @keyframes spaceFloat { 0% { background-position: 0 0; } 100% { background-position: 150px 150px; } }
-    @keyframes iceCrystals { 0% { background-position: 0 0; } 100% { background-position: 22px 22px; } }
-    @keyframes toxicBubbles { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-    @keyframes royalElegance { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-    @keyframes hologramFlicker { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.4; } }
-    @keyframes legendaryAura { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
-    @keyframes snowfall { 0% { transform: translateY(-100vh); } 100% { transform: translateY(100vh); } }
-    @keyframes batsFlying { 0% { transform: translateX(-100vw); } 100% { transform: translateX(100vw); } }
-    @keyframes heartsFloat { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
-    @keyframes bunnyHop { 0%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-10px); } 50% { transform: translateY(-5px); } }
-    @keyframes sunRays { 0%, 100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } }
-    @keyframes leavesfall { 0% { transform: translateY(-100vh) rotate(0deg); } 100% { transform: translateY(100vh) rotate(360deg); } }
-    @keyframes christmasSnow { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }
-    @keyframes halloweenGlow { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
-    @keyframes valentineHearts { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-    @keyframes easterSpring { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } }
-    @keyframes summerSun { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.05) rotate(180deg); } }
-    @keyframes autumnLeaves { 0% { background-position: 0 0; } 100% { background-position: 62px 62px; } }
-
-    /* Complete Missing Theme Aesthetics */
-    
-    /* Light Theme - Fix navbar text */
-    body.light-theme .navbar { background: linear-gradient(90deg, #f8fafc, #ffffff); border-bottom: 2px solid #3182ce; box-shadow: 0 4px 15px rgba(49, 130, 206, 0.2); }
-    body.light-theme .navbar-brand { color: #3182ce !important; text-shadow: none; }
-    body.light-theme .nav-link { color: #1a202c !important; }
-    body.light-theme .card { background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8)); border: 2px solid #3182ce; box-shadow: 0 8px 25px rgba(49, 130, 206, 0.15); }
-    body.light-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, rgba(49, 130, 206, 0.05) 0px, transparent 2px, transparent 20px, rgba(128, 90, 213, 0.03) 22px); z-index: -2; animation: lightShimmer 12s ease-in-out infinite; }
-    
-    /* Synthwave Theme - Complete Aesthetics */
-    body.synthwave-theme .navbar { background: linear-gradient(90deg, #2d1b69, #3e2a7a); border-bottom: 2px solid #ff6b9d; box-shadow: 0 4px 20px rgba(255, 107, 157, 0.4); }
-    body.synthwave-theme .navbar-brand { background: linear-gradient(45deg, #ffd700, #ff6b9d); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 15px #ff6b9d; }
-    body.synthwave-theme .card { background: linear-gradient(135deg, rgba(45, 27, 105, 0.9), rgba(62, 42, 122, 0.7)); border: 2px solid #ff6b9d; box-shadow: 0 0 25px rgba(255, 107, 157, 0.3); }
-    body.synthwave-theme .card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 15px 40px rgba(255, 107, 157, 0.5); }
-    body.synthwave-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 107, 157, 0.25) 0px, transparent 2px, transparent 40px, rgba(196, 69, 105, 0.2) 42px); z-index: -2; animation: synthwaveLines 8s linear infinite; }
-    
-    /* Forest Theme - Complete Aesthetics */
-    body.forest-theme .navbar { background: linear-gradient(90deg, #1a3d2e, #2d5a47); border-bottom: 2px solid #4ade80; box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3); }
-    body.forest-theme .navbar-brand { color: #4ade80; text-shadow: 0 0 10px #4ade80; }
-    body.forest-theme .card { background: linear-gradient(135deg, rgba(26, 61, 46, 0.9), rgba(45, 90, 71, 0.7)); border: 2px solid #4ade80; box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2); }
-    body.forest-theme .card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(74, 222, 128, 0.4); }
-    
-    /* Sunset Theme - Complete Aesthetics */
-    body.sunset-theme .navbar { background: linear-gradient(90deg, #7c2d12, #9a3412); border-bottom: 2px solid #f97316; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); }
-    body.sunset-theme .navbar-brand { color: #f97316; text-shadow: 0 0 15px #f97316; }
-    body.sunset-theme .card { background: linear-gradient(135deg, rgba(124, 45, 18, 0.9), rgba(154, 52, 18, 0.7)); border: 2px solid #f97316; box-shadow: 0 8px 25px rgba(234, 88, 12, 0.3); }
-    body.sunset-theme .card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(249, 115, 22, 0.5); }
-    
-    /* Ocean Theme - Complete Aesthetics */
-    body.ocean-theme .navbar-brand { color: #00d4ff; text-shadow: 0 0 15px #00d4ff; }
-    body.ocean-theme .card-title { color: #00d4ff; text-shadow: 0 0 8px #00d4ff; }
-    
-    /* Neon City Theme - Complete Aesthetics */
-    body.neon-city-theme .navbar { background: linear-gradient(90deg, #0a0a0a, #1a0a1a); border-bottom: 2px solid #ff8000; box-shadow: 0 4px 20px rgba(255, 128, 0, 0.5); }
-    body.neon-city-theme .navbar-brand { background: linear-gradient(45deg, #ff0080, #00ffff, #ff8000); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: neonCityGlow 3s ease-in-out infinite; }
-    body.neon-city-theme .card { background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(26, 10, 26, 0.7)); border: 2px solid #ff0080; box-shadow: 0 0 30px rgba(255, 0, 128, 0.4); }
-    body.neon-city-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, rgba(255, 0, 128, 0.1) 0px, transparent 2px, transparent 50px, rgba(0, 255, 255, 0.08) 52px, transparent 54px, transparent 100px, rgba(255, 128, 0, 0.06) 102px); z-index: -2; animation: neonCityLines 6s linear infinite; }
-    
-    /* Additional Missing Animations */
-    @keyframes lightShimmer { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
-    @keyframes neonCityGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
-    @keyframes neonCityLines { 0% { background-position: 0 0; } 100% { background-position: 102px 0; } }
-    
-    /* Fix navbar text for all light themes */
-    body.easter-theme .nav-link { color: #451a03 !important; }
-    body.summer-theme .nav-link { color: #0c4a6e !important; }
-    body.diamond-theme .nav-link { color: #1e293b !important; }
-    body.diamond-theme .navbar-brand { color: #0f172a !important; text-shadow: none; }
-
-    /* Filtros y búsqueda */
-    .filters {
-      background: var(--bg-light);
-      padding: 2rem;
-      border-radius: 8px;
-      margin-bottom: 3rem;
-      border: 1px solid rgba(0, 240, 255, 0.1);
-    }
-    .search-box {
-      background: var(--bg-dark);
-      border: 1px solid var(--primary);
-      color: var(--text-primary);
-      border-radius: 4px;
-      padding: 0.75rem;
-    }
-    .filter-btn {
-      background: transparent;
-      border: 1px solid var(--text-secondary);
-      color: var(--text-secondary);
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      margin: 0.25rem;
-      transition: all 0.3s ease;
-    }
-    .filter-btn.active {
-      background: var(--primary);
-      color: var(--bg-dark);
-      border-color: var(--primary);
-    }
-    /* Paginación */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-top: 2rem;
-    }
-    .page-btn {
-      background: transparent;
-      border: 1px solid var(--primary);
-      color: var(--primary);
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .page-btn:hover,
-    .page-btn.active {
-      background: var(--primary);
-      color: var(--bg-dark);
-    }
-    /* Botón para nerds */
-    .nerd-btn {
-      position: fixed;
-      bottom: 6rem;
-      right: 2rem;
-      background: var(--secondary);
-      border: none;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: 998;
-      box-shadow: 0 0 10px var(--secondary);
-    }
-    .nerd-btn:hover {
-      transform: scale(1.1) rotate(360deg);
-    }
-    /* Panel para nerds */
-    .nerd-panel {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--bg-light);
-      border: 2px solid var(--primary);
-      border-radius: 12px;
-      padding: 2rem;
-      max-width: 500px;
-      width: 90%;
-      z-index: 10000;
-      box-shadow: 0 0 30px rgba(255, 107, 53, 0.3);
-      display: none;
-    }
-    .nerd-panel.show {
-      display: block;
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translate(-50%, -60%);
-      }
-      to {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-      }
-    }
-    .nerd-panel h3 {
-      color: var(--primary);
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-    .nerd-info {
-      font-size: 0.9rem;
-      line-height: 1.6;
-      margin-bottom: 0.5rem;
-    }
-    .close-panel {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-    .panel-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 9999;
-      display: none;
-    }
-    .panel-overlay.show {
-      display: block;
-    }
-    /* Lazy loading */
-    img[loading="lazy"] {
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    img[loading="lazy"].loaded {
-      opacity: 1;
-    }
-    /* Sistema de carga por secciones */
-    .section-loading {
-      text-align: center;
-      padding: 2rem;
-      opacity: 1;
-      transition: opacity 0.3s ease;
-    }
-    .section-loading.loaded {
-      opacity: 0;
-      height: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    .mini-loader {
-      width: 30px;
-      height: 30px;
-      border: 2px solid rgba(0, 240, 255, 0.3);
-      border-top: 2px solid var(--primary);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 0.5rem;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-    .loading-text {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-    /* Sección de créditos */
-    .credits-section {
-      display: none;
-      padding: 8rem 2rem 4rem;
-      min-height: 100vh;
-    }
-    .credits-section.active {
-      display: block;
-    }
-    .json-viewer {
-      background: var(--bg-light);
-      border: 1px solid var(--primary);
-      border-radius: 8px;
-      padding: 2rem;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1rem;
-      line-height: 1.8;
-      overflow-x: auto;
-      color: var(--text-primary);
-    }
-    .credit-item {
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background: var(--bg-dark);
-      border-radius: 6px;
-      border-left: 3px solid var(--primary);
-    }
-    .credit-key {
-      color: var(--primary);
-      font-weight: 600;
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-    }
-    .credit-value {
-      color: var(--text-secondary);
-      margin-left: 1rem;
-    }
-    .credit-list {
-      list-style: none;
-      padding-left: 1rem;
-    }
-    .credit-list li {
-      margin-bottom: 0.3rem;
-      color: var(--text-secondary);
-    }
-    .credit-list li:before {
-      content: "→ ";
-      color: var(--primary);
-      font-weight: bold;
-    }
-    .credit-link {
-      color: var(--primary);
-      text-decoration: none;
-    }
-    .credit-link:hover {
-      text-decoration: underline;
-    }
-    .main-content {
-      transition: opacity 0.3s ease;
-    }
-    .main-content.hidden {
-      display: none;
-    }
-    /* Nuevo diseño de créditos */
-    .credit-header {
-      text-align: center;
-      margin-bottom: 3rem;
-      padding: 2rem;
-      background: linear-gradient(135deg, var(--bg-light), var(--bg-dark));
-      border-radius: 12px;
-      border: 1px solid var(--primary);
-    }
-    .credit-badge {
-      display: inline-block;
-      background: var(--primary);
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: bold;
-      margin-bottom: 1rem;
-    }
-    .credit-header h3 {
-      color: var(--primary);
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-    .credit-section {
-      margin-bottom: 2rem;
-      padding: 1.5rem;
-      background: var(--bg-light);
-      border-radius: 8px;
-      border-left: 4px solid var(--primary);
-    }
-    .credit-section h4 {
-      color: var(--primary);
-      margin-bottom: 1rem;
-      font-size: 1.3rem;
-    }
-    .social-links {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-top: 0.5rem;
-    }
-    .social-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: var(--bg-dark);
-      color: var(--primary);
-      text-decoration: none;
-      border-radius: 6px;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-    }
-    .social-link:hover {
-      background: var(--primary);
-      color: white;
-      transform: translateY(-2px);
-    }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.5rem;
-    }
-    .feature-item {
-      padding: 0.5rem;
-      background: var(--bg-dark);
-      border-radius: 4px;
-      font-size: 0.9rem;
-    }
-    .features-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .features-list > div {
-      padding: 0.5rem;
-      background: var(--bg-dark);
-      border-radius: 6px;
-      border-left: 3px solid var(--primary);
-      font-size: 0.9rem;
-    }
-    .future-plans {
-      display: grid;
-      gap: 0.5rem;
-    }
-    .plan-item {
-      padding: 0.75rem;
-      background: var(--bg-dark);
-      border-radius: 6px;
-      border-left: 3px solid var(--secondary);
-    }
-    .final-message {
-      text-align: center;
-    }
-    .message-box {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-    .message-box i {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-    /* PWA Install Button Animation */
-    @keyframes pulse {
-      0% { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-      50% { box-shadow: 0 4px 20px rgba(255, 107, 53, 0.6); }
-      100% { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    }
-    /* Mini panel de créditos */
-    .credits-mini-panel {
-      position: fixed;
-      bottom: 2rem;
-      left: 2rem;
-      background: var(--bg-light);
-      border: 2px solid var(--primary);
-      border-radius: 12px;
-      padding: 1rem;
-      max-width: 300px;
-      z-index: 10002;
-      display: none;
-      animation: slideInLeft 0.3s ease;
-    }
-    .credits-mini-panel.show {
-      display: block;
-    }
-
-    @keyframes slideInLeft {
-      from {
-        opacity: 0;
-        transform: translateX(-100%);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    .credits-mini-panel h4 {
-      color: var(--primary);
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-    }
-    .credits-mini-panel p {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-    }
-    .credits-mini-panel a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-    .credits-mini-panel a:hover {
-      text-decoration: underline;
-    }
-    .close-credits {
-      position: absolute;
-      top: 5px;
-      right: 10px;
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 1.2rem;
-    }
-    /* Parallax optimizado para Android */
-    .parallax-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 120%;
-      z-index: -3;
-      will-change: transform;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .parallax-bg { transform: none !important; }
-    }
-    /* Transiciones de página */
-    .page-transition {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: all 0.6s ease;
-    }
-    .page-transition.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    /* Timeline en cards */
-    .card-timeline {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-    .commit-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--primary);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    /* Sistema de logros */
-    .achievements-panel {
-      position: fixed;
-      top: 50%;
-      right: -100%;
-      transform: translateY(-50%);
-      background: var(--bg-light);
-      border: 2px solid var(--primary);
-      border-radius: 12px;
-      padding: 1.5rem;
-      width: 350px;
-      max-height: 80vh;
-      overflow-y: auto;
-      z-index: 10003;
-      transition: right 0.3s ease;
-      display: none;
-    }
-    .achievements-panel.show {
-      right: 10px;
-      display: block;
-    }
-    .achievement-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem;
-      margin-bottom: 0.5rem;
-      background: var(--bg-dark);
-      border-radius: 8px;
-      border-left: 3px solid transparent;
-    }
-    .achievement-item.unlocked {
-      border-left-color: var(--primary);
-      box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
-    }
-    .achievement-icon {
-      font-size: 1.5rem;
-      width: 40px;
-      text-align: center;
-    }
-    .achievement-item.unlocked .achievement-icon {
-      color: var(--primary);
-    }
-    .achievement-item:not(.unlocked) .achievement-icon {
-      color: var(--text-secondary);
-      opacity: 0.5;
-    }
-    .achievement-info h4 {
-      margin: 0;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-    }
-    .achievement-info p {
-      margin: 0;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-    .points-badge {
-      background: var(--primary);
-      color: white;
-      padding: 0.2rem 0.5rem;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      font-weight: bold;
-    }
-    /* Notificación de logro */
-    .achievement-notification {
-      position: fixed;
-      top: 2rem;
-      right: -100%;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: white;
-      padding: 1rem;
-      border-radius: 8px;
-      z-index: 10004;
-      transition: right 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      width: 300px;
-      max-width: 90vw;
-    }
-    .achievement-notification.show {
-      right: 1rem;
-    }
-    /* Temas premium */
-    .premium-theme {
-      position: relative;
-    }
-    .premium-theme.locked {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    .premium-theme.locked::before {
-      content: '🔒';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2rem;
-      z-index: 10;
-    }
-    .theme-cost {
-      position: absolute;
-      bottom: 5px;
-      right: 5px;
-      background: var(--primary);
-      color: white;
-      padding: 0.2rem 0.5rem;
-      border-radius: 8px;
-      font-size: 0.7rem;
-      font-weight: bold;
-    }
-    .premium-theme.owned .theme-cost {
-      background: #22c55e;
-    }
-    .premium-theme.owned .theme-cost::before {
-      content: '✓ ';
-    }
-    /* Efectos especiales para temas premium */
-    body.galaxy-theme .card { background: linear-gradient(135deg, rgba(28, 25, 46, 0.8), rgba(76, 29, 149, 0.3)); box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
-    body.gold-theme .card { background: linear-gradient(135deg, rgba(120, 53, 15, 0.8), rgba(251, 191, 36, 0.2)); box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
-    body.rainbow-theme .card { background: linear-gradient(135deg, rgba(55, 65, 81, 0.8), rgba(139, 92, 246, 0.2)); box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
-    body.diamond-theme .card { background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(226, 232, 240, 0.7)); box-shadow: 0 0 20px rgba(15, 23, 42, 0.1); }
-
-    /* Asegurar visibilidad del indicador de racha en todos los temas */
-    body.light-theme .streak-indicator,
-    body.easter-theme .streak-indicator,
-    body.summer-theme .streak-indicator,
-    body.diamond-theme .streak-indicator {
-      color: #f97316 !important;
-      background: rgba(0, 0, 0, 0.6);
-    }
-    /* Cursores personalizados */
-    .cursor-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-    }
-    .cursor-grid:has(.cursor-item:nth-child(5)) {
-      grid-template-columns: repeat(3, 1fr);
-    }
-    .cursor-item {
-      background: var(--bg-dark);
-      border: 2px solid transparent;
-      border-radius: 8px;
-      padding: 0.75rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    .cursor-item:hover {
-      border-color: var(--primary);
-    }
-    .cursor-item.active {
-      border-color: var(--primary);
-      background: rgba(255, 107, 53, 0.1);
-    }
-    .cursor-item.locked {
-      opacity: 0.6;
-    }
-    .cursor-item.locked::before {
-      content: '🔒';
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      font-size: 0.8rem;
-    }
-    .cursor-preview {
-      font-size: 1.5rem;
-      margin-bottom: 0.25rem;
-    }
-    .cursor-name {
-      font-size: 0.8rem;
-      color: var(--text-primary);
-      margin-bottom: 0.25rem;
-    }
-    .cursor-cost {
-      font-size: 0.7rem;
-      color: var(--primary);
-      font-weight: bold;
-    }
-    .cursor-item.owned .cursor-cost {
-      color: #22c55e;
-    }
-    .cursor-item.owned .cursor-cost::before {
-      content: '✓ ';
-    }
-    /* Indicador de tema estacional */
-    .seasonal-indicator {
-      font-size: 0.8rem;
-      color: var(--primary);
-      font-weight: normal;
-    }
-    .seasonal-theme.current-season {
-      border: 2px solid var(--primary);
-      box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
-      animation: seasonalPulse 2s infinite;
-    }
-
-    @keyframes seasonalPulse {
-      0%, 100% { box-shadow: 0 0 15px rgba(255, 107, 53, 0.4); }
-      50% { box-shadow: 0 0 25px rgba(255, 107, 53, 0.6); }
-    }
-    /* Indicador de racha */
-    .streak-indicator {
-      font-size: 0.7rem;
-      color: var(--secondary) !important;
-      font-weight: bold;
-      display: inline-flex;
-      align-items: center;
-      text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
-      background: rgba(0, 0, 0, 0.3);
-      padding: 0.1rem 0.3rem;
-      border-radius: 8px;
-      margin-left: 0.25rem;
-    }
-    /* Indicador de sincronización */
-    .sync-indicator {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      background: var(--bg-light);
-      color: var(--primary);
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      z-index: 10000;
-      opacity: 0;
-      transform: translateX(100%);
-      transition: all 0.3s ease;
-      border: 1px solid var(--primary);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-    .sync-indicator.show {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    .sync-indicator.syncing {
-      animation: pulse 1s infinite;
-    }
-    .streak-fire {
-      animation: fireGlow 1s ease-in-out infinite alternate;
-    }
-    @keyframes fireGlow {
-      0% { text-shadow: 0 0 5px #f97316; }
-      100% { text-shadow: 0 0 15px #f97316, 0 0 25px #ea580c; }
-    }
-    @keyframes glitch {
-      0%, 100% { filter: hue-rotate(0deg); }
-      20% { filter: hue-rotate(90deg); }
-      40% { filter: hue-rotate(180deg); }
-      60% { filter: hue-rotate(270deg); }
-      80% { filter: hue-rotate(360deg); }
-    }
-    @keyframes legendary-glow {
-      0%, 100% { box-shadow: 0 0 20px #ffd700; }
-      50% { box-shadow: 0 0 40px #ff1493, 0 0 60px #8a2be2; }
-    }
-    @keyframes fadeOut {
-      0% { opacity: 1; transform: scale(1); }
-      100% { opacity: 0; transform: scale(0.5) translateY(-20px); }
-    }
-    @keyframes slideInUpdate {
-      0% { transform: translateX(100%); opacity: 0; }
-      100% { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOutUpdate {
-      0% { transform: translateX(0); opacity: 1; }
-      100% { transform: translateX(100%); opacity: 0; }
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    /* 🎮 ESTILOS PARA GAMIFICACIÓN AVANZADA */
-    .badge-item {
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .badge-item.maxed {
-      background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
-      color: white;
-      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
-      animation: badgeGlow 2s ease-in-out infinite;
-    }
-    .badge-item.maxed::before {
-      content: '🏆';
-      position: absolute;
-      top: 5px;
-      right: 10px;
-      font-size: 1.2rem;
-      animation: bounce 1s ease-in-out infinite;
-    }
-    .event-item {
-      position: relative;
-      overflow: hidden;
-      animation: eventPulse 3s ease-in-out infinite;
-    }
-    .event-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      animation: eventShine 2s infinite;
-    }
-    .combo-indicator {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #ff6b35, #f7931e);
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      font-size: 1.5rem;
-      font-weight: bold;
-      z-index: 10005;
-      animation: comboAppear 0.5s ease, comboDisappear 0.5s ease 2s;
-      pointer-events: none;
-      box-shadow: 0 8px 25px rgba(255, 107, 53, 0.5);
-    }
-    .double-points-active {
-      animation: doublePointsGlow 2s ease-in-out infinite;
-    }
-    .theme-festival-active .theme-card {
-      animation: festivalShimmer 3s ease-in-out infinite;
-    }
-    /* Animaciones para gamificación */
-    @keyframes badgeGlow {
-      0%, 100% { box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3); }
-      50% { box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6); }
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
-    }
-    @keyframes eventPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-    }
-    @keyframes eventShine {
-      0% { left: -100%; }
-      100% { left: 100%; }
-    }
-    @keyframes comboAppear {
-      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-      100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    }
-    @keyframes comboDisappear {
-      0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-    }
-    @keyframes doublePointsGlow {
-      0%, 100% { text-shadow: 0 0 10px #ff6b35; }
-      50% { text-shadow: 0 0 20px #ff6b35, 0 0 30px #f7931e; }
-    }
-    @keyframes festivalShimmer {
-      0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 53, 0.3); }
-      50% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.6); }
-    }
-    /* Optimizaciones móviles */
-    @media (max-width: 768px) {
-      .hero { padding: 4rem 1rem 2rem; }
-      .hero h1 { font-size: 2rem; }
-      .theme-panel { width: 95%; padding: 1rem; }
-      .achievements-panel { width: 95%; right: -100%; }
-      .achievements-panel.show { right: 2.5%; }
-      .nerd-panel { width: 95%; }
-      /* Optimizar créditos para móviles */
-      .credits-section { padding: 6rem 1rem 2rem; }
-      .json-viewer { padding: 1rem; font-size: 0.9rem; }
-      .credit-header { padding: 1rem; margin-bottom: 1.5rem; }
-      .credit-header h3 { font-size: 1.5rem; }
-      .credit-section { padding: 1rem; margin-bottom: 1rem; }
-      .credit-section h4 { font-size: 1.1rem; }
-      .credit-item { padding: 0.75rem; margin-bottom: 0.75rem; }
-      .features-grid { grid-template-columns: 1fr; gap: 0.25rem; }
-      .feature-item { padding: 0.4rem; font-size: 0.8rem; }
-      .social-links { flex-direction: column; gap: 0.5rem; }
-      .social-link { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
-      .plan-item { padding: 0.5rem; font-size: 0.85rem; }
-      .message-box { padding: 1rem; }
-      .message-box i { font-size: 1.5rem; }
-      /* Mejorar tarjetas en móviles */
-      #repos-container { 
-        grid-template-columns: 1fr; 
-        gap: 1.5rem; 
-        padding: 0 0.5rem;
-      }
-      .card { 
-        min-height: 280px;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        margin-bottom: 1rem;
-      }
-      
-      .card-img-top {
-        height: 160px;
-        object-fit: cover;
-      }
-      .card-body {
-        padding: 1.25rem;
-      }
-      .card-title {
-        font-size: 1.1rem;
-        margin-bottom: 0.75rem;
-        line-height: 1.3;
-      }
-      .card-text {
-        font-size: 0.9rem;
-        line-height: 1.4;
-        margin-bottom: 1rem;
-      }
-      .btn-group { 
-        flex-direction: row;
-        gap: 0.5rem;
-        justify-content: space-between;
-      }
-      .btn-outline-neon {
-        flex: 1;
-        padding: 0.6rem 0.8rem;
-        font-size: 0.8rem;
-        white-space: nowrap;
-      }
-      .filter-btn { margin: 0.1rem; padding: 0.4rem 0.8rem; font-size: 0.8rem; }
-      .theme-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-      .theme-card { padding: 0.5rem; }
-      .theme-preview { width: 40px; height: 25px; }
-      .theme-name { font-size: 0.7rem; }
-      .cursor-grid { grid-template-columns: repeat(2, 1fr); }
-      .social-btn { width: 35px; height: 35px; }
-      .navbar-brand { font-size: 1rem; }
-      .nav-link { font-size: 0.75rem; padding: 0.3rem 0.4rem; }
-      section { padding: 2rem 0; }
-      section h2 { font-size: 2rem; }
-      .navbar-nav { overflow-x: auto; flex-wrap: nowrap; }
-      .navbar-collapse { overflow: visible; }
-      /* Fix para botón de puntos en móvil */
-      #achievements-btn {
-        font-size: 0.7rem !important;
-        padding: 0.25rem 0.5rem !important;
-        gap: 0.15rem !important;
-      }
-      #points-display {
-        font-size: 0.75rem;
-      }
-      .streak-indicator {
-        font-size: 0.6rem;
-        padding: 0.05rem 0.2rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .hero h1 { font-size: 1.8rem; }
-      .theme-panel, .achievements-panel, .nerd-panel { padding: 0.8rem; }
-      .achievement-item { padding: 0.5rem; }
-      .points-badge { font-size: 0.6rem; padding: 0.1rem 0.3rem; }
-      .filter-btn { font-size: 0.7rem; padding: 0.3rem 0.6rem; }
-      /* Créditos aún más compactos */
-      .credits-section { padding: 5rem 0.5rem 1rem; }
-      .json-viewer { padding: 0.75rem; font-size: 0.85rem; }
-      .credit-header { padding: 0.75rem; }
-      .credit-header h3 { font-size: 1.3rem; }
-      .credit-section { padding: 0.75rem; }
-      .credit-section h4 { font-size: 1rem; }
-      .credit-item { padding: 0.5rem; }
-      .social-link { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
-      .message-box { padding: 0.75rem; }
-      .credit-badge { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
-      /* Tarjetas aún más optimizadas para móviles pequeños */
-      .card {
-        min-height: 260px;
-        margin-bottom: 1rem;
-      }
-      
-      .card-img-top {
-        height: 140px;
-      }
-      .card-body {
-        padding: 1rem;
-      }
-      .card-title {
-        font-size: 1rem;
-      }
-      .card-text {
-        font-size: 0.85rem;
-      }
-      .btn-outline-neon {
-        padding: 0.5rem 0.6rem;
-        font-size: 0.75rem;
-      }
-    }
-    /* Deadly Pursuer - Siempre oscuro */
-    #deadly-pursuer {
-      background: #0a0a0a !important;
-      padding: 4rem 0 !important;
-    }
-    #deadly-pursuer h2 {
-      color: #ff0000 !important;
-      text-shadow: 0 0 20px #ff0000 !important;
-    }
-    .deadly-pursuer-card {
-      background: #0a0a0a !important;
-      border: 2px solid #ff0000 !important;
-      box-shadow: 0 0 30px rgba(255, 0, 0, 0.3) !important;
-    }
-    .deadly-pursuer-card * {
-      color: #ff4444 !important;
-    }
-    .deadly-pursuer-card .card-title {
-      color: #ff0000 !important;
-      text-shadow: 0 0 10px #ff0000 !important;
-    }
-    
-    /* Modal de advertencia */
-    .deadly-warning-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      z-index: 10000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-    .deadly-warning-content {
-      background: #0a0a0a;
-      border: 3px solid #ff0000;
-      padding: 2rem;
-      border-radius: 10px;
-      text-align: center;
-      max-width: 500px;
-      box-shadow: 0 0 50px #ff0000;
-    }
-    .deadly-warning-content h3 {
-      color: #ff0000 !important;
-      text-shadow: 0 0 15px #ff0000;
-      margin-bottom: 1rem;
-    }
-    .deadly-warning-content p {
-      color: #ff6666 !important;
-      margin-bottom: 2rem;
-    }
-    .deadly-warning-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-    }
-    .deadly-btn {
-      padding: 0.75rem 1.5rem;
-      border: 2px solid #ff0000;
-      background: transparent;
-      color: #ff0000 !important;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .deadly-btn:hover {
-      background: #ff0000;
-      color: white !important;
-      box-shadow: 0 0 20px #ff0000;
-    }
-    
-    /* Optimizaciones RAM para móviles */
-    @media (max-width: 768px) {
-      /* Deshabilitar efectos pesados */
-      .card:hover { transform: none !important; }
-      .parallax-bg { display: none !important; }
-      .particles { display: none !important; }
-      /* Deshabilitar backgrounds animados */
-      body::before { display: none !important; }
-      /* Simplificar animaciones */
-      * { 
-        animation-duration: 0.1s !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.1s !important;
-      }
-      /* Optimizar imágenes */
-      .card-img-top { will-change: auto !important; }
-      /* Reducir complejidad visual */
-      .theme-panel { backdrop-filter: none !important; }
-      .navbar { backdrop-filter: none !important; }
-      /* Mejorar tarjetas para móviles */
-      .card { 
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-        background: var(--bg-light) !important;
-        border: 1px solid rgba(255, 107, 53, 0.2) !important;
-      }
-      .navbar { box-shadow: none !important; backdrop-filter: none !important; background: var(--bg-dark) !important; }
-      
-      /* Deshabilitar text-shadow excepto en títulos importantes */
-      * { text-shadow: none !important; }
-      .card-title { text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
-      /* Mejorar legibilidad en móviles */
-      .card-text {
-        color: var(--text-primary) !important;
-        opacity: 0.9;
-      }
-      /* Botones más grandes para touch */
-      .btn-outline-neon {
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      /* Deshabilitar Matrix Rain en móviles */
-      #matrix-canvas { display: none !important; }
-    }
-  </style>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="placeholder/styles.css">
 </head>
 <body>
   <!-- Navbar -->
@@ -1973,7 +87,7 @@
           </li>
           <li class="nav-item">
             <button id="updates-btn" class="nav-link" aria-label="Ver actualizaciones">
-              <i class="bi bi-arrow-up-circle me-1"></i> v2.1.4
+              <i class="bi bi-arrow-up-circle me-1"></i> v2.2.0
             </button>
           </li>
         </ul>
@@ -2196,6 +310,10 @@
       <div class="theme-card" data-theme="funkyatlas">
         <div class="theme-preview preview-funkyatlas"></div>
         <div class="theme-name">FunkyAtlas</div>
+      </div>
+      <div class="theme-card seasonal-theme" data-theme="funkyatlas-christmas">
+        <div class="theme-preview preview-funkyatlas-christmas"></div>
+        <div class="theme-name">FunkyAtlas Xmas</div>
       </div>
     </div>
 
@@ -2612,6 +730,7 @@
   </script>
   
   <!-- Scripts -->
+  <script src="achievements.js"></script>
   <script>
     // Deadly Pursuer Warning System
     function showDeadlyPursuerWarning() {
@@ -2744,6 +863,26 @@
       }, { passive: true });
     });
     
+    // Inicializar sistema de logros
+    const achievementSystem = new AchievementSystem('fenix-lab-game');
+    const achievements = achievementSystem.achievements;
+    const dailyChallenges = achievementSystem.dailyChallenges;
+    const weeklyChallenges = achievementSystem.weeklyChallenges;
+    const premiumThemes = achievementSystem.premiumThemes;
+    const cursors = achievementSystem.cursors;
+    const premiumEffects = achievementSystem.premiumEffects;
+    
+    // gameData como getter para siempre obtener la referencia actual
+    Object.defineProperty(window, 'gameData', {
+      get: () => achievementSystem.gameData
+    });
+
+    // Listener para notificaciones de logros
+    window.addEventListener('achievement-unlocked', (e) => {
+      showAchievementNotification(e.detail);
+      updatePointsDisplay();
+    });
+
     const user = 'thisisfenix';
     let allRepos = [];
     let filteredRepos = [];
@@ -2989,8 +1128,6 @@
       displayRepos(filteredRepos, 1);
     }
 
-
-
     // Cache para repos
     const CACHE_KEY = 'fenix-repos-cache';
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
@@ -3133,7 +1270,7 @@
 
     function setTheme(theme) {
       const body = document.body;
-      const themes = ['light-theme', 'neon-theme', 'cyberpunk-theme', 'matrix-theme', 'synthwave-theme', 'ocean-theme', 'forest-theme', 'sunset-theme', 'christmas-theme', 'halloween-theme', 'valentine-theme', 'easter-theme', 'summer-theme', 'autumn-theme', 'funkyatlas-theme', 'galaxy-theme', 'gold-theme', 'rainbow-theme', 'diamond-theme', 'custom-theme', 'vaporwave-theme', 'hacker-theme', 'neon-city-theme', 'space-theme', 'fire-theme', 'ice-theme', 'toxic-theme', 'royal-theme', 'steampunk-theme', 'hologram-theme', 'legendary-theme'];
+      const themes = ['light-theme', 'neon-theme', 'cyberpunk-theme', 'matrix-theme', 'synthwave-theme', 'ocean-theme', 'forest-theme', 'sunset-theme', 'christmas-theme', 'halloween-theme', 'valentine-theme', 'easter-theme', 'summer-theme', 'autumn-theme', 'funkyatlas-theme', 'funkyatlas-christmas-theme', 'galaxy-theme', 'gold-theme', 'rainbow-theme', 'diamond-theme', 'custom-theme', 'vaporwave-theme', 'hacker-theme', 'neon-city-theme', 'space-theme', 'fire-theme', 'ice-theme', 'toxic-theme', 'royal-theme', 'steampunk-theme', 'hologram-theme', 'legendary-theme'];
       
       themes.forEach(t => body.classList.remove(t));
       
@@ -3145,6 +1282,13 @@
         applyCustomTheme();
       }
       
+      // Crear copos de nieve para temas navideños
+      if (theme === 'christmas' || theme === 'funkyatlas-christmas') {
+        createSnowflakes();
+      } else {
+        removeSnowflakes();
+      }
+      
       document.querySelectorAll('.theme-card').forEach(card => {
         card.classList.remove('active');
         if (card.dataset.theme === theme) {
@@ -3153,6 +1297,30 @@
       });
       
       localStorage.setItem('theme', theme);
+    }
+    
+    function createSnowflakes() {
+      // Eliminar copos existentes primero
+      removeSnowflakes();
+      
+      const snowflakeCount = 50;
+      const snowflakes = ['❄', '❅', '❆'];
+      
+      for (let i = 0; i < snowflakeCount; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.className = 'snowflake';
+        snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+        snowflake.style.left = Math.random() * 100 + '%';
+        snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        snowflake.style.animationDelay = Math.random() * 5 + 's';
+        snowflake.style.fontSize = (Math.random() * 1 + 0.5) + 'em';
+        snowflake.style.opacity = Math.random() * 0.6 + 0.4;
+        document.body.appendChild(snowflake);
+      }
+    }
+    
+    function removeSnowflakes() {
+      document.querySelectorAll('.snowflake').forEach(snowflake => snowflake.remove());
     }
 
     function applyCustomTheme() {
@@ -3174,16 +1342,12 @@
     }
 
     function buyCursor(cursor, cost) {
-      if (gameData.points >= cost && !gameData.unlockedCursors.has(cursor)) {
-        gameData.points -= cost;
-        gameData.unlockedCursors.add(cursor);
+      const result = achievementSystem.buyCursor(cursor, cost);
+      if (result) {
         updatePointsDisplay();
         updateCursorShop();
-        saveGameData();
-        showAchievementNotification({ name: `Cursor ${cursors[cursor].name} desbloqueado!`, points: 0 });
-        return true;
       }
-      return false;
+      return result;
     }
 
     function loadTheme() {
@@ -3322,7 +1486,6 @@ async function showCredits() {
       creditsSection.classList.add('active');
       creditsSection.style.display = 'block';
     }
-    
     const response = await fetch('credits.json');
     const credits = await response.json();
     
@@ -3518,7 +1681,6 @@ async function showCredits() {
       showMainContent();
     }
 
-    // Funcionalidad de actualizaciones
     async function showUpdates() {
       try {
         hideAllSections();
@@ -3609,275 +1771,49 @@ async function showCredits() {
         if (updatesViewer) updatesViewer.innerHTML = '<p style="color: var(--text-secondary);">Error al cargar updates.json: ' + error.message + '</p>';
       }
     }
-    
-
-
-    // Sistema de logros y puntajes AVANZADO
-    let gameData = {
-      points: 0,
-      timeOnSite: 0,
-      themesUsed: new Set(),
-      projectsViewed: new Set(),
-      unlockedThemes: new Set(['dark', 'light', 'neon', 'cyberpunk', 'matrix', 'synthwave', 'ocean', 'forest', 'sunset', 'christmas', 'halloween', 'valentine', 'easter', 'summer', 'autumn', 'funkyatlas']),
-      visitedSocials: new Set(),
-      browsersUsed: new Set(),
-      demosTested: new Set(),
-      codeViewed: new Set(),
-      effectsPurchased: new Set(),
-      customColors: { bg: '#1a1a1a', text: '#f0f0f0', primary: '#ff6b35', secondary: '#f7931e' },
-      autoSeasonalThemes: true,
-      pushNotifications: true,
-      autoDayNight: false,
-      streak: 0,
-      weeklyStreak: 0,
-      monthlyStreak: 0,
-      lastVisit: null,
-      lastWeeklyVisit: null,
-      lastMonthlyVisit: null,
-      hasScrolledToBottom: false,
-      searchCount: 0,
-      filterCount: 0,
-      activeCursor: 'default',
-      unlockedCursors: new Set(['default']),
-      themeChangeCount: 0,
-      clickCount: 0,
-      lastClickTime: 0,
-      fastClicks: 0,
-      weekendVisits: { saturday: false, sunday: false },
-      dailyChallenges: {},
-      weeklyChallenges: {},
-      completedChallenges: 0,
-      completedWeeklyChallenges: 0,
-      activeEffects: {},
-      leaderboardName: '',
-      githubStats: { followers: 0, repos: 0, stars: 0 },
-      installSource: 'web',
-      lastSyncTime: 0,
-      // 🎮 SISTEMA DE BADGES/MEDALLAS AVANZADO
-      badges: {
-        'explorer': { unlocked: false, category: 'exploration', level: 0, maxLevel: 5 },
-        'collector': { unlocked: false, category: 'collection', level: 0, maxLevel: 10 },
-        'social': { unlocked: false, category: 'social', level: 0, maxLevel: 3 },
-        'developer': { unlocked: false, category: 'development', level: 0, maxLevel: 7 },
-        'time-warrior': { unlocked: false, category: 'time', level: 0, maxLevel: 5 },
-        'theme-master': { unlocked: false, category: 'customization', level: 0, maxLevel: 8 },
-        'streak-legend': { unlocked: false, category: 'consistency', level: 0, maxLevel: 10 },
-        'challenge-champion': { unlocked: false, category: 'challenges', level: 0, maxLevel: 5 }
-      },
-      // 🎯 SISTEMA DE NIVELES CON BENEFICIOS
-      level: 1,
-      experience: 0,
-      experienceToNext: 100,
-      levelBenefits: {
-        2: { type: 'discount', value: 5, desc: '5% descuento en temas premium' },
-        5: { type: 'bonus', value: 2, desc: 'Doble puntos los fines de semana' },
-        10: { type: 'unlock', value: 'exclusive-themes', desc: 'Acceso a temas exclusivos' },
-        15: { type: 'multiplier', value: 1.5, desc: '50% más puntos por logros' },
-        20: { type: 'unlock', value: 'beta-features', desc: 'Acceso a funciones beta' }
-      },
-      // 📅 EVENTOS ESPECIALES
-      specialEvents: {
-        'double-points': { active: false, endTime: null, multiplier: 2 },
-        'theme-festival': { active: false, endTime: null, discount: 50 },
-        'streak-boost': { active: false, endTime: null, bonus: 10 }
-      },
-      achievements: {
-        'first-visit': false,
-        'theme-explorer': false,
-        'project-hunter': false,
-        'time-master': false,
-        'theme-collector': false,
-        'funky-fan': false,
-        'big-spender': false,
-        'premium-collector': false,
-        'streak-starter': false,
-        'streak-master': false,
-        'streak-legend': false,
-        'scroll-master': false,
-        'search-explorer': false,
-        'filter-expert': false,
-        'night-owl': false,
-        'speed-demon': false,
-        'theme-addict': false,
-        'early-bird': false,
-        'weekend-warrior': false,
-        'legendary-hunter': false,
-        'challenge-master': false,
-        'github-star': false,
-        'github-popular': false,
-        'social-butterfly': false,
-        'code-reviewer': false,
-        'demo-master': false,
-        'mobile-user': false,
-        'desktop-power': false,
-        'multi-browser': false,
-        'seasonal-fan': false,
-        'cursor-collector': false,
-        'effect-master': false,
-        'leaderboard-king': false,
-        'marathon-runner': false,
-        'pwa-installer': false,
-        'pwa-user': false,
-        'perfectionist': false,
-        // 🆕 NUEVOS LOGROS PARA GAMIFICACIÓN AVANZADA
-        'badge-collector': false,
-        'level-master': false,
-        'event-participant': false,
-        'weekly-warrior': false,
-        'monthly-champion': false,
-        'combo-master': false,
-        'explorer-elite': false,
-        'customization-king': false
-      }
-    };
-
-    const cursors = {
-      'default': { cost: 0, name: 'Normal', css: 'auto' },
-      'neon': { cost: 50, name: 'Neón', css: 'crosshair' },
-      'fire': { cost: 75, name: 'Fuego', css: 'pointer' },
-      'diamond': { cost: 100, name: 'Diamante', css: 'help' }
-    };
-
-    const premiumThemes = {
-      'galaxy': { cost: 100, name: 'Galaxia' },
-      'gold': { cost: 150, name: 'Oro' },
-      'rainbow': { cost: 200, name: 'Arcoíris' },
-      'diamond': { cost: 300, name: 'Diamante' },
-      'vaporwave': { cost: 400, name: 'Vaporwave' },
-      'hacker': { cost: 500, name: 'Hacker Elite' },
-      'neon-city': { cost: 600, name: 'Ciudad Neón' },
-      'space': { cost: 700, name: 'Espacio Profundo' },
-      'fire': { cost: 800, name: 'Llamas Infernales' },
-      'ice': { cost: 900, name: 'Hielo Ártico' },
-      'toxic': { cost: 1000, name: 'Tóxico Nuclear' },
-      'royal': { cost: 1200, name: 'Realeza' },
-      'steampunk': { cost: 1500, name: 'Steampunk' },
-      'hologram': { cost: 2000, name: 'Holograma' },
-      'legendary': { cost: 5000, name: 'Legendario' }
-    };
-
-    const premiumEffects = {
-      'matrix-rain': { cost: 300, name: 'Lluvia Matrix', duration: 30000 },
-      'mouse-particles': { cost: 200, name: 'Partículas Mouse', duration: 60000 }
-    };
-
-    const achievements = {
-      'first-visit': { name: 'Primera Visita', desc: 'Bienvenido al laboratorio', points: 10, icon: '🎉' },
-      'theme-explorer': { name: 'Explorador de Temas', desc: 'Cambia de tema por primera vez', points: 15, icon: '🎨' },
-      'project-hunter': { name: 'Cazador de Proyectos', desc: 'Ve 5 proyectos diferentes', points: 25, icon: '🔍' },
-      'time-master': { name: 'Maestro del Tiempo', desc: 'Pasa 5 minutos en el sitio', points: 30, icon: '⏰' },
-      'theme-collector': { name: 'Coleccionista', desc: 'Prueba 5 temas diferentes', points: 50, icon: '🌈' },
-      'funky-fan': { name: 'Fan de FunkyAtlas', desc: 'Usa el tema FunkyAtlas', points: 20, icon: '🎵' },
-      'big-spender': { name: 'Gran Gastador', desc: 'Compra tu primer tema premium', points: 25, icon: '💰' },
-      'premium-collector': { name: 'Coleccionista Premium', desc: 'Desbloquea todos los temas premium', points: 100, icon: '💎' },
-      'streak-starter': { name: 'Comenzando la Racha', desc: 'Visita 3 días consecutivos', points: 30, icon: '🔥' },
-      'streak-master': { name: 'Maestro de la Constancia', desc: 'Visita 7 días consecutivos', points: 70, icon: '🏆' },
-      'streak-legend': { name: 'Leyenda Imparable', desc: 'Visita 30 días consecutivos', points: 300, icon: '👑' },
-      'scroll-master': { name: 'Explorador Completo', desc: 'Llega hasta el final de la página', points: 5, icon: '📜' },
-      'search-explorer': { name: 'Buscador Activo', desc: 'Usa la búsqueda 5 veces', points: 15, icon: '🔍' },
-      'filter-expert': { name: 'Experto en Filtros', desc: 'Cambia filtros 10 veces', points: 20, icon: '🎨' },
-      'night-owl': { name: 'Búho Nocturno', desc: 'Visita entre 12AM-6AM', points: 25, icon: '🦉' },
-      'speed-demon': { name: 'Demonio Veloz', desc: 'Navega súper rápido (5 clicks en 3s)', points: 30, icon: '⚡' },
-      'theme-addict': { name: 'Adicto a Temas', desc: 'Cambia tema 20 veces', points: 40, icon: '🎭' },
-      'early-bird': { name: 'Madrugador', desc: 'Visita antes de las 7AM', points: 20, icon: '🐦' },
-      'weekend-warrior': { name: 'Guerrero de Fin de Semana', desc: 'Visita en sábado y domingo', points: 35, icon: '🏖️' },
-      'legendary-hunter': { name: 'Cazador Legendario', desc: 'Desbloquea el tema Legendario', points: 200, icon: '🏹' },
-      'challenge-master': { name: 'Maestro de Desafíos', desc: 'Completa 10 desafíos diarios', points: 100, icon: '🎯' },
-      'github-star': { name: 'Estrella de GitHub', desc: 'Acumula 50+ estrellas en repos', points: 75, icon: '⭐' },
-      'github-popular': { name: 'Popular en GitHub', desc: 'Consigue 10+ seguidores', points: 50, icon: '👥' },
-      'social-butterfly': { name: 'Mariposa Social', desc: 'Visita todas las redes sociales', points: 30, icon: '🦋' },
-      'code-reviewer': { name: 'Revisor de Código', desc: 'Ve el código de 10 proyectos', points: 40, icon: '👨💻' },
-      'demo-master': { name: 'Maestro de Demos', desc: 'Prueba 5 demos diferentes', points: 35, icon: '🚀' },
-      'mobile-user': { name: 'Usuario Móvil', desc: 'Visita desde dispositivo móvil', points: 15, icon: '📱' },
-      'desktop-power': { name: 'Poder de Escritorio', desc: 'Visita desde PC/Mac', points: 10, icon: '🖥️' },
-      'multi-browser': { name: 'Multi-Navegador', desc: 'Usa 3 navegadores diferentes', points: 45, icon: '🌐' },
-      'seasonal-fan': { name: 'Fan Estacional', desc: 'Usa 3 temas estacionales', points: 60, icon: '🍂' },
-      'cursor-collector': { name: 'Coleccionista de Cursores', desc: 'Desbloquea todos los cursores', points: 80, icon: '🖱️' },
-      'effect-master': { name: 'Maestro de Efectos', desc: 'Compra 3 efectos premium', points: 90, icon: '✨' },
-      'leaderboard-king': { name: 'Rey del Ranking', desc: 'Llega al top 3 del leaderboard', points: 120, icon: '👑' },
-      'marathon-runner': { name: 'Corredor de Maratón', desc: 'Pasa 30+ minutos en el sitio', points: 100, icon: '🏃' },
-      'pwa-installer': { name: 'Instalador Pro', desc: 'Instala la app como PWA', points: 50, icon: '📱' },
-      'pwa-user': { name: 'Usuario PWA', desc: 'Usa la app instalada', points: 25, icon: '🚀' },
-      'perfectionist': { name: 'Perfeccionista', desc: 'Completa todos los logros', points: 1000, icon: '💯' },
-      // 🆕 NUEVOS LOGROS PARA GAMIFICACIÓN AVANZADA
-      'badge-collector': { name: 'Coleccionista de Medallas', desc: 'Desbloquea 5 badges diferentes', points: 150, icon: '🏅' },
-      'level-master': { name: 'Maestro de Niveles', desc: 'Alcanza el nivel 10', points: 200, icon: '🏆' },
-      'event-participant': { name: 'Participante de Eventos', desc: 'Participa en un evento especial', points: 75, icon: '🎪' },
-      'weekly-warrior': { name: 'Guerrero Semanal', desc: 'Mantén racha semanal por 4 semanas', points: 120, icon: '📅' },
-      'monthly-champion': { name: 'Campeón Mensual', desc: 'Mantén racha mensual por 3 meses', points: 300, icon: '🗓️' },
-      'combo-master': { name: 'Maestro de Combos', desc: 'Consigue 5 logros en una sesión', points: 100, icon: '🔥' },
-      'explorer-elite': { name: 'Explorador Elite', desc: 'Maximiza badge de Explorer', points: 250, icon: '🗺️' },
-      'customization-king': { name: 'Rey de Personalización', desc: 'Maximiza badge de Theme Master', points: 400, icon: '👑' }
-    };
 
     function loadGameData() {
-      const saved = localStorage.getItem('fenix-lab-game');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        gameData = { ...gameData, ...parsed };
-        gameData.themesUsed = new Set(parsed.themesUsed || []);
-        gameData.projectsViewed = new Set(parsed.projectsViewed || []);
-        gameData.unlockedThemes = new Set(parsed.unlockedThemes || ['dark', 'light', 'neon', 'cyberpunk', 'matrix', 'synthwave', 'ocean', 'forest', 'sunset', 'christmas', 'halloween', 'valentine', 'easter', 'summer', 'autumn', 'funkyatlas']);
-        gameData.customColors = parsed.customColors || { bg: '#1a1a1a', text: '#f0f0f0', primary: '#ff6b35', secondary: '#f7931e' };
-        gameData.autoSeasonalThemes = parsed.autoSeasonalThemes !== false;
-        gameData.unlockedCursors = new Set(parsed.unlockedCursors || ['default']);
-        gameData.visitedSocials = new Set(Array.isArray(parsed.visitedSocials) ? parsed.visitedSocials : []);
-        gameData.browsersUsed = new Set(Array.isArray(parsed.browsersUsed) ? parsed.browsersUsed : []);
-        gameData.demosTested = new Set(Array.isArray(parsed.demosTested) ? parsed.demosTested : []);
-        gameData.codeViewed = new Set(Array.isArray(parsed.codeViewed) ? parsed.codeViewed : []);
-        gameData.effectsPurchased = new Set(Array.isArray(parsed.effectsPurchased) ? parsed.effectsPurchased : []);
-        // 🆕 Cargar datos de gamificación avanzada
-        gameData.badges = parsed.badges || gameData.badges;
-        gameData.level = parsed.level || 1;
-        gameData.experience = parsed.experience || 0;
-        gameData.experienceToNext = parsed.experienceToNext || 100;
-        gameData.specialEvents = parsed.specialEvents || gameData.specialEvents;
-        gameData.weeklyStreak = parsed.weeklyStreak || 0;
-        gameData.monthlyStreak = parsed.monthlyStreak || 0;
-        gameData.weeklyChallenges = parsed.weeklyChallenges || {};
-        gameData.completedWeeklyChallenges = parsed.completedWeeklyChallenges || 0;
-      }
+      achievementSystem.load();
       updatePointsDisplay();
-      checkAchievement('first-visit');
+      updateCursorShop();
     }
 
     function saveGameData() {
-      const toSave = {
-        ...gameData,
-        themesUsed: Array.from(gameData.themesUsed),
-        projectsViewed: Array.from(gameData.projectsViewed),
-        unlockedThemes: Array.from(gameData.unlockedThemes),
-        unlockedCursors: Array.from(gameData.unlockedCursors),
-        visitedSocials: Array.from(gameData.visitedSocials),
-        browsersUsed: Array.from(gameData.browsersUsed),
-        demosTested: Array.from(gameData.demosTested),
-        codeViewed: Array.from(gameData.codeViewed),
-        effectsPurchased: Array.from(gameData.effectsPurchased)
-      };
-      localStorage.setItem('fenix-lab-game', JSON.stringify(toSave));
+      achievementSystem.save();
     }
 
     function addPoints(points) {
-      // 🎯 Aplicar multiplicadores de eventos especiales
-      let finalPoints = points;
-      if (gameData.specialEvents['double-points'].active) {
-        finalPoints *= gameData.specialEvents['double-points'].multiplier;
-      }
-      
-      // 🏆 Aplicar beneficios de nivel
-      const levelBenefit = gameData.levelBenefits[gameData.level];
-      if (levelBenefit && levelBenefit.type === 'multiplier') {
-        finalPoints *= levelBenefit.value;
-      }
-      
-      gameData.points += finalPoints;
-      gameData.experience += Math.floor(finalPoints / 2); // XP = puntos / 2
-      
-      // 📈 Verificar subida de nivel
-      checkLevelUp();
-      
+      achievementSystem.addPoints(points);
       updatePointsDisplay();
-      saveGameData();
+    }
+
+    function checkAchievement(id) {
+      achievementSystem.checkAchievement(id);
+    }
+
+    function checkDailyVisit() {
+      achievementSystem.checkDailyVisit();
+      updatePointsDisplay();
+    }
+
+    function updateChallenge(id, increment) {
+      achievementSystem.updateChallenge(id, increment);
+    }
+
+    function updateWeeklyChallenge(id, increment) {
+      achievementSystem.updateWeeklyChallenge(id, increment);
+    }
+
+    function updateBadgeProgress(badgeId, progress) {
+      achievementSystem.updateBadgeProgress(badgeId, progress);
+    }
+
+    function showAchievementNotification(achievement) {
+      const notification = document.getElementById('achievement-notification');
+      document.getElementById('notification-text').textContent = `${achievement.name} (+${achievement.points} pts)`;
+      notification.classList.add('show');
+      if (notification.hideTimeout) clearTimeout(notification.hideTimeout);
+      notification.hideTimeout = setTimeout(() => notification.classList.remove('show'), 3000);
     }
 
     function updatePointsDisplay() {
@@ -3886,133 +1822,67 @@ async function showCredits() {
       if (totalPoints) totalPoints.textContent = gameData.points;
       const streakDisplay = document.getElementById('streak-display');
       if (streakDisplay) streakDisplay.textContent = gameData.streak;
-      const searchCount = document.getElementById('search-count');
-      if (searchCount) searchCount.textContent = gameData.searchCount;
-      const filterCount = document.getElementById('filter-count');
-      if (filterCount) filterCount.textContent = gameData.filterCount;
-      const challengesCount = document.getElementById('challenges-count');
-      if (challengesCount) challengesCount.textContent = gameData.completedChallenges;
-      
-      // GitHub stats
-      const followers = document.getElementById('github-followers');
-      if (followers) followers.textContent = gameData.githubStats.followers;
-      const repos = document.getElementById('github-repos');
-      if (repos) repos.textContent = gameData.githubStats.repos;
-      const stars = document.getElementById('github-stars');
-      if (stars) stars.textContent = gameData.githubStats.stars;
-      
-      // 🆕 Actualizar displays de gamificación avanzada
       const levelDisplay = document.getElementById('level-display');
       if (levelDisplay) levelDisplay.textContent = gameData.level;
       const xpDisplay = document.getElementById('xp-display');
       if (xpDisplay) xpDisplay.textContent = `${gameData.experience}/${gameData.experienceToNext}`;
-      const weeklyStreakDisplay = document.getElementById('weekly-streak-display');
-      if (weeklyStreakDisplay) weeklyStreakDisplay.textContent = gameData.weeklyStreak;
-      const monthlyStreakDisplay = document.getElementById('monthly-streak-display');
-      if (monthlyStreakDisplay) monthlyStreakDisplay.textContent = gameData.monthlyStreak;
-      
       updateStreakDisplay();
       updateTitle();
-      updateDailyChallengesDisplay();
-      updateWeeklyChallengesDisplay();
-      updateBadgesDisplay();
-      updateSpecialEventsDisplay();
+    }
+
+    function updateStreakDisplay() {
+      const indicator = document.getElementById('streak-indicator');
+      if (gameData.streak > 0) {
+        indicator.textContent = `🔥${gameData.streak}`;
+        if (gameData.streak >= 7) indicator.classList.add('streak-fire');
+      } else {
+        indicator.textContent = '';
+        indicator.classList.remove('streak-fire');
+      }
+    }
+
+    function updateTitle() {
+      const titleDisplay = document.getElementById('user-title');
+      const title = achievementSystem.getTitle();
+      if (titleDisplay) titleDisplay.textContent = title;
     }
 
     function updateDailyChallengesDisplay() {
       const container = document.getElementById('daily-challenges');
       if (!container) return;
-      
       const today = new Date().toDateString();
       const todayChallenges = gameData.dailyChallenges[today] || {};
-      
       let html = '<h5 style="color: var(--primary); margin-bottom: 0.5rem;">🎯 Desafíos Diarios</h5>';
       Object.entries(dailyChallenges).forEach(([id, challenge]) => {
         const progress = todayChallenges[id] || { completed: false, progress: 0 };
         const isCompleted = progress.completed;
         const progressText = challenge.target ? `${progress.progress}/${challenge.target}` : (isCompleted ? 'Completado' : 'Pendiente');
-        
-        html += `
-          <div class="achievement-item ${isCompleted ? 'unlocked' : ''}" style="margin-bottom: 0.5rem; padding: 0.5rem;">
-            <div class="achievement-icon" style="font-size: 1rem;">${isCompleted ? '✅' : '🎯'}</div>
-            <div class="achievement-info">
-              <h4 style="font-size: 0.8rem;">${challenge.desc}</h4>
-              <p style="font-size: 0.7rem;">${progressText} - ${challenge.reward} pts</p>
-            </div>
-          </div>
-        `;
+        html += `<div class="achievement-item ${isCompleted ? 'unlocked' : ''}" style="margin-bottom: 0.5rem; padding: 0.5rem;"><div class="achievement-icon" style="font-size: 1rem;">${isCompleted ? '✅' : '🎯'}</div><div class="achievement-info"><h4 style="font-size: 0.8rem;">${challenge.desc}</h4><p style="font-size: 0.7rem;">${progressText} - ${challenge.reward} pts</p></div></div>`;
       });
-      
       container.innerHTML = html;
     }
-    
+
     function updateWeeklyChallengesDisplay() {
       const container = document.getElementById('weekly-challenges');
       if (!container) return;
-      
-      const thisWeek = getWeekString(new Date());
+      const thisWeek = achievementSystem.getWeekString(new Date());
       const weekChallenges = gameData.weeklyChallenges[thisWeek] || {};
-      
       let html = '<h5 style="color: var(--secondary); margin-bottom: 0.5rem;">📅 Desafíos Semanales</h5>';
       Object.entries(weeklyChallenges).forEach(([id, challenge]) => {
         const progress = weekChallenges[id] || { completed: false, progress: 0 };
         const isCompleted = progress.completed;
         const progressText = `${progress.progress}/${challenge.target}`;
-        
-        html += `
-          <div class="achievement-item ${isCompleted ? 'unlocked' : ''}" style="margin-bottom: 0.5rem; padding: 0.5rem;">
-            <div class="achievement-icon" style="font-size: 1rem;">${isCompleted ? '🏆' : '📅'}</div>
-            <div class="achievement-info">
-              <h4 style="font-size: 0.8rem;">${challenge.desc}</h4>
-              <p style="font-size: 0.7rem;">${progressText} - ${challenge.reward} pts</p>
-            </div>
-          </div>
-        `;
+        html += `<div class="achievement-item ${isCompleted ? 'unlocked' : ''}" style="margin-bottom: 0.5rem; padding: 0.5rem;"><div class="achievement-icon" style="font-size: 1rem;">${isCompleted ? '🏆' : '📅'}</div><div class="achievement-info"><h4 style="font-size: 0.8rem;">${challenge.desc}</h4><p style="font-size: 0.7rem;">${progressText} - ${challenge.reward} pts</p></div></div>`;
       });
-      
       container.innerHTML = html;
     }
 
-    function getTitle() {
-      // 🏆 Títulos basados en nivel en lugar de solo puntos
-      if (gameData.level >= 20) return '👑 Leyenda';
-      if (gameData.level >= 15) return '🏆 Maestro';
-      if (gameData.level >= 10) return '⭐ Veterano';
-      if (gameData.level >= 5) return '🌟 Explorador';
-      return '🔰 Novato';
-    }
-
-    function updateTitle() {
-      const titleDisplay = document.getElementById('user-title');
-      const title = getTitle();
-      if (titleDisplay) titleDisplay.textContent = title;
-    }
-
-    function buyCursor(cursor, cost) {
-      if (gameData.points >= cost && !gameData.unlockedCursors.has(cursor)) {
-        gameData.points -= cost;
-        gameData.unlockedCursors.add(cursor);
-        updatePointsDisplay();
-        updateCursorShop();
-        saveGameData();
-        showAchievementNotification({ name: `Cursor ${cursors[cursor].name} desbloqueado!`, points: 0 });
-        return true;
-      }
-      return false;
-    }
-
     function setCursor(cursor) {
-      // Verificar que el cursor existe
-      if (!cursors[cursor]) {
-        cursor = 'default';
-      }
-      
+      if (!cursors[cursor]) cursor = 'default';
       gameData.activeCursor = cursor;
       document.body.style.cursor = cursors[cursor].css;
       saveGameData();
     }
-
-
 
     function updateCursorShop() {
       document.querySelectorAll('.cursor-item').forEach(item => {
@@ -4027,25 +1897,12 @@ async function showCredits() {
           item.classList.remove('owned');
         }
         
-        if (cursors[gameData.activeCursor] && gameData.activeCursor === cursor) {
+        if (gameData.activeCursor === cursor) {
           item.classList.add('active');
         } else {
           item.classList.remove('active');
         }
       });
-    }
-
-    function updateStreakDisplay() {
-      const indicator = document.getElementById('streak-indicator');
-      if (gameData.streak > 0) {
-        indicator.textContent = `🔥${gameData.streak}`;
-        if (gameData.streak >= 7) {
-          indicator.classList.add('streak-fire');
-        }
-      } else {
-        indicator.textContent = '';
-        indicator.classList.remove('streak-fire');
-      }
     }
 
     // Notificaciones push
@@ -4394,162 +2251,24 @@ async function showCredits() {
     }
 
     function buyTheme(theme, cost) {
-      if (gameData.points >= cost && !gameData.unlockedThemes.has(theme)) {
-        gameData.points -= cost;
-        gameData.unlockedThemes.add(theme);
+      const result = achievementSystem.buyTheme(theme, cost);
+      if (result) {
         updatePointsDisplay();
         updatePremiumThemes();
-        saveGameData();
-        
-        // Logros
-        if (Object.keys(premiumThemes).every(t => gameData.unlockedThemes.has(t))) {
-          checkAchievement('premium-collector');
-        }
-        if (!gameData.achievements['big-spender']) {
-          checkAchievement('big-spender');
-        }
-        
-        showAchievementNotification({ name: `Tema ${premiumThemes[theme].name} desbloqueado!`, points: 0 });
-        return true;
       }
-      return false;
+      return result;
     }
 
-    // 🎯 SISTEMA DE DESAFÍOS DIARIOS Y SEMANALES AVANZADO
-    const dailyChallenges = {
-      'visit-morning': { desc: 'Visita antes de las 10AM', reward: 20, check: () => new Date().getHours() < 10 },
-      'use-search': { desc: 'Busca 3 proyectos', reward: 15, target: 3, current: 0 },
-      'change-theme': { desc: 'Cambia de tema 5 veces', reward: 25, target: 5, current: 0 },
-      'scroll-bottom': { desc: 'Llega al final de la página', reward: 10, check: () => gameData.hasScrolledToBottom },
-      'spend-time': { desc: 'Pasa 10 minutos en el sitio', reward: 30, target: 600, current: 0 },
-      'social-visit': { desc: 'Visita 2 redes sociales', reward: 25, target: 2, current: 0 },
-      'demo-test': { desc: 'Prueba 1 demo', reward: 20, target: 1, current: 0 },
-      'code-view': { desc: 'Ve código de 2 proyectos', reward: 30, target: 2, current: 0 }
-    };
 
-    const weeklyChallenges = {
-      'theme-explorer': { desc: 'Usa 10 temas diferentes esta semana', reward: 100, target: 10, current: 0 },
-      'project-master': { desc: 'Ve 15 proyectos esta semana', reward: 150, target: 15, current: 0 },
-      'search-expert': { desc: 'Realiza 20 búsquedas esta semana', reward: 80, target: 20, current: 0 },
-      'time-champion': { desc: 'Pasa 2 horas total esta semana', reward: 200, target: 7200, current: 0 },
-      'streak-keeper': { desc: 'Mantén racha diaria toda la semana', reward: 300, target: 7, current: 0 }
-    };
-
-    function initDailyChallenges() {
-      const today = new Date().toDateString();
-      if (!gameData.dailyChallenges[today]) {
-        gameData.dailyChallenges[today] = {};
-        Object.keys(dailyChallenges).forEach(key => {
-          gameData.dailyChallenges[today][key] = { completed: false, progress: 0 };
-        });
-        saveGameData();
-      }
-      
-      // 📅 INICIALIZAR DESAFÍOS SEMANALES
-      initWeeklyChallenges();
-    }
-    
-    function initWeeklyChallenges() {
-      const thisWeek = getWeekString(new Date());
-      if (!gameData.weeklyChallenges[thisWeek]) {
-        gameData.weeklyChallenges[thisWeek] = {};
-        Object.keys(weeklyChallenges).forEach(key => {
-          gameData.weeklyChallenges[thisWeek][key] = { completed: false, progress: 0 };
-        });
-        saveGameData();
-      }
-    }
-
-    function updateChallenge(challengeId, increment = 1) {
-      const today = new Date().toDateString();
-      const challenge = dailyChallenges[challengeId];
-      
-      if (!gameData.dailyChallenges[today]) {
-        gameData.dailyChallenges[today] = {};
-      }
-      
-      if (!gameData.dailyChallenges[today][challengeId]) {
-        gameData.dailyChallenges[today][challengeId] = { completed: false, progress: 0 };
-      }
-      
-      const progress = gameData.dailyChallenges[today][challengeId];
-      
-      if (!progress.completed) {
-        progress.progress += increment;
-        if (challenge.target && progress.progress >= challenge.target) {
-          completeChallenge(challengeId);
-        } else if (challenge.check && challenge.check()) {
-          completeChallenge(challengeId);
-        }
-        saveGameData();
-      }
-    }
-
-    function completeChallenge(challengeId) {
-      const today = new Date().toDateString();
-      const challenge = dailyChallenges[challengeId];
-      gameData.dailyChallenges[today][challengeId].completed = true;
-      gameData.completedChallenges++;
-      addPoints(challenge.reward);
-      
-      if (gameData.completedChallenges >= 10) {
-        checkAchievement('challenge-master');
-      }
-      
-      showAchievementNotification({ name: `Desafío completado: ${challenge.desc}`, points: challenge.reward });
-      saveGameData();
-    }
-    
-    function completeWeeklyChallenge(challengeId) {
-      const thisWeek = getWeekString(new Date());
-      const challenge = weeklyChallenges[challengeId];
-      gameData.weeklyChallenges[thisWeek][challengeId].completed = true;
-      gameData.completedWeeklyChallenges++;
-      addPoints(challenge.reward);
-      
-      showAchievementNotification({ name: `🏆 Desafío semanal completado: ${challenge.desc}`, points: challenge.reward });
-      saveGameData();
-    }
-    
-    function updateWeeklyChallenge(challengeId, increment = 1) {
-      const thisWeek = getWeekString(new Date());
-      const challenge = weeklyChallenges[challengeId];
-      
-      if (!gameData.weeklyChallenges[thisWeek]) {
-        gameData.weeklyChallenges[thisWeek] = {};
-      }
-      
-      if (!gameData.weeklyChallenges[thisWeek][challengeId]) {
-        gameData.weeklyChallenges[thisWeek][challengeId] = { completed: false, progress: 0 };
-      }
-      
-      const progress = gameData.weeklyChallenges[thisWeek][challengeId];
-      
-      if (!progress.completed) {
-        progress.progress += increment;
-        if (progress.progress >= challenge.target) {
-          completeWeeklyChallenge(challengeId);
-        }
-        saveGameData();
-      }
-    }
 
     function checkTimeBasedAchievements() {
       const hour = new Date().getHours();
       const day = new Date().getDay();
-      
-      // Búho nocturno (12AM-6AM)
-      if (hour >= 0 && hour < 6) {
-        checkAchievement('night-owl');
-      }
-      
-      // Madrugador (antes de 7AM)
+      if (hour >= 0 && hour < 6) checkAchievement('night-owl');
       if (hour < 7) {
         checkAchievement('early-bird');
         updateChallenge('visit-morning');
       }
-      
-      // Fin de semana
       if (day === 6) gameData.weekendVisits.saturday = true;
       if (day === 0) gameData.weekendVisits.sunday = true;
       if (gameData.weekendVisits.saturday && gameData.weekendVisits.sunday) {
@@ -4575,11 +2294,13 @@ async function showCredits() {
     // Efectos premium
     function buyEffect(effectId) {
       const effect = premiumEffects[effectId];
+      if (!effect) return false;
+      
       if (gameData.points >= effect.cost) {
-        gameData.points -= effect.cost;
-        gameData.activeEffects[effectId] = Date.now() + effect.duration;
+        achievementSystem.gameData.points -= effect.cost;
+        achievementSystem.gameData.activeEffects[effectId] = Date.now() + effect.duration;
+        achievementSystem.save();
         updatePointsDisplay();
-        saveGameData();
         
         if (effectId === 'matrix-rain') activateMatrixRain();
         if (effectId === 'mouse-particles') activateMouseParticles();
@@ -4957,66 +2678,14 @@ async function showCredits() {
       }
     }
 
-    // 🎮 FUNCIONES DEL SISTEMA DE GAMIFICACIÓN AVANZADA
-    
-    function checkLevelUp() {
-      while (gameData.experience >= gameData.experienceToNext) {
-        gameData.experience -= gameData.experienceToNext;
-        gameData.level += 1;
-        gameData.experienceToNext = Math.floor(gameData.experienceToNext * 1.2); // Incremento del 20%
-        
-        showAchievementNotification({
-          name: `🎆 ¡Nivel ${gameData.level} alcanzado!`,
-          points: gameData.level * 10
-        });
-        
-        // Verificar beneficios de nivel
-        const benefit = gameData.levelBenefits[gameData.level];
-        if (benefit) {
-          showAchievementNotification({
-            name: `🎁 Beneficio desbloqueado: ${benefit.desc}`,
-            points: 0
-          });
-        }
-        
-        if (gameData.level === 10) checkAchievement('level-master');
-        
-        addPoints(gameData.level * 10); // Bonus por subir de nivel
-      }
-    }
-    
-    function updateBadgeProgress(badgeId, progress) {
-      const badge = gameData.badges[badgeId];
-      if (!badge || badge.level >= badge.maxLevel) return;
-      
-      badge.level += progress;
-      if (badge.level >= badge.maxLevel) {
-        badge.unlocked = true;
-        showAchievementNotification({
-          name: `🏅 Badge ${badgeId} maximizado!`,
-          points: 50
-        });
-        addPoints(50);
-        
-        // Verificar logros de badges
-        const unlockedBadges = Object.values(gameData.badges).filter(b => b.unlocked).length;
-        if (unlockedBadges >= 5) checkAchievement('badge-collector');
-        if (badgeId === 'explorer' && badge.level >= badge.maxLevel) checkAchievement('explorer-elite');
-        if (badgeId === 'theme-master' && badge.level >= badge.maxLevel) checkAchievement('customization-king');
-      }
-    }
-    
     function updateBadgesDisplay() {
       const container = document.getElementById('badges-display');
       if (!container) return;
-      
       let html = '<h5 style="color: var(--primary); margin-bottom: 1rem;">🏅 Badges/Medallas</h5>';
-      
       Object.entries(gameData.badges).forEach(([id, badge]) => {
         const progress = Math.min(badge.level, badge.maxLevel);
         const percentage = (progress / badge.maxLevel) * 100;
         const isMaxed = badge.level >= badge.maxLevel;
-        
         html += `
           <div class="badge-item ${isMaxed ? 'maxed' : ''}" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-dark); border-radius: 8px; border-left: 3px solid ${isMaxed ? 'var(--primary)' : 'var(--text-secondary)'}">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -5030,69 +2699,31 @@ async function showCredits() {
           </div>
         `;
       });
-      
       container.innerHTML = html;
     }
     
-    function activateSpecialEvent(eventId, duration = 3600000) { // 1 hora por defecto
-      const event = gameData.specialEvents[eventId];
-      if (!event) return;
-      
-      event.active = true;
-      event.endTime = Date.now() + duration;
-      
-      const eventNames = {
-        'double-points': '🔥 Doble Puntos',
-        'theme-festival': '🎆 Festival de Temas',
-        'streak-boost': '⚡ Boost de Racha'
-      };
-      
-      showAchievementNotification({
-        name: `🎪 Evento especial: ${eventNames[eventId]} activado!`,
-        points: 0
-      });
-      
-      checkAchievement('event-participant');
-      
-      // Auto-desactivar cuando termine
-      setTimeout(() => {
-        event.active = false;
-        event.endTime = null;
-        showAchievementNotification({
-          name: `🎪 Evento ${eventNames[eventId]} terminado`,
-          points: 0
-        });
-        saveGameData();
-      }, duration);
-      
-      saveGameData();
+    function activateSpecialEvent(eventId, duration = 3600000) {
+      achievementSystem.activateSpecialEvent(eventId, duration);
     }
     
     function updateSpecialEventsDisplay() {
       const container = document.getElementById('special-events');
       if (!container) return;
-      
       const activeEvents = Object.entries(gameData.specialEvents).filter(([id, event]) => event.active);
-      
       if (activeEvents.length === 0) {
         container.innerHTML = '';
         return;
       }
-      
       let html = '<h5 style="color: var(--primary); margin-bottom: 1rem;">🎪 Eventos Especiales Activos</h5>';
-      
       activeEvents.forEach(([id, event]) => {
         const timeLeft = Math.max(0, event.endTime - Date.now());
         const minutes = Math.floor(timeLeft / 60000);
-        
         const eventInfo = {
           'double-points': { name: 'Doble Puntos', icon: '🔥', desc: `${event.multiplier}x puntos` },
           'theme-festival': { name: 'Festival de Temas', icon: '🎆', desc: `${event.discount}% descuento` },
           'streak-boost': { name: 'Boost de Racha', icon: '⚡', desc: `+${event.bonus} puntos extra` }
         };
-        
         const info = eventInfo[id];
-        
         html += `
           <div class="event-item" style="margin-bottom: 0.5rem; padding: 0.75rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 8px; color: white;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -5107,32 +2738,24 @@ async function showCredits() {
           </div>
         `;
       });
-      
       container.innerHTML = html;
     }
     
-    // Activar eventos especiales en fechas especiales
     function checkSpecialDates() {
       const now = new Date();
       const month = now.getMonth() + 1;
       const day = now.getDate();
       const hour = now.getHours();
-      
-      // Doble puntos los fines de semana
       if ((now.getDay() === 6 || now.getDay() === 0) && !gameData.specialEvents['double-points'].active) {
-        activateSpecialEvent('double-points', 24 * 60 * 60 * 1000); // Todo el día
+        activateSpecialEvent('double-points', 24 * 60 * 60 * 1000);
       }
-      
-      // Festival de temas en fechas especiales
       if ((month === 12 && day === 25) || (month === 10 && day === 31) || (month === 2 && day === 14)) {
         if (!gameData.specialEvents['theme-festival'].active) {
           activateSpecialEvent('theme-festival', 24 * 60 * 60 * 1000);
         }
       }
-      
-      // Boost de racha en horas pico (7-9 PM)
       if (hour >= 19 && hour <= 21 && !gameData.specialEvents['streak-boost'].active) {
-        activateSpecialEvent('streak-boost', 2 * 60 * 60 * 1000); // 2 horas
+        activateSpecialEvent('streak-boost', 2 * 60 * 60 * 1000);
       }
     }
     
@@ -5204,7 +2827,6 @@ async function showCredits() {
       const gradients = document.getElementById('editor-gradients').checked;
       const animations = document.getElementById('editor-animations').checked;
       const opacity = document.getElementById('editor-opacity').value;
-      
       const root = document.documentElement;
       root.style.setProperty('--bg-dark', bg);
       root.style.setProperty('--bg-light', bgLight);
@@ -5212,17 +2834,9 @@ async function showCredits() {
       root.style.setProperty('--text-secondary', textSec);
       root.style.setProperty('--primary', primary);
       root.style.setProperty('--secondary', secondary);
-      
-      if (!shadows) {
-        root.style.setProperty('--box-shadow', 'none');
-      }
-      
-      if (!animations) {
-        root.style.setProperty('--animation-duration', '0s');
-      }
-      
+      if (!shadows) root.style.setProperty('--box-shadow', 'none');
+      if (!animations) root.style.setProperty('--animation-duration', '0s');
       document.body.style.opacity = opacity;
-      
       if (!preview) {
         gameData.customColors = { bg, bgLight, text, textSec, primary, secondary };
         gameData.editorSettings = { shadows, gradients, animations, opacity };
@@ -5230,10 +2844,13 @@ async function showCredits() {
         saveGameData();
       }
     }
-    
+
     document.addEventListener('DOMContentLoaded', async () => {
       loadGameData();
-      initDailyChallenges();
+      updateDailyChallengesDisplay();
+      updateWeeklyChallengesDisplay();
+      updateBadgesDisplay();
+      updateSpecialEventsDisplay();
       checkDailyVisit();
       checkTimeBasedAchievements();
       fetchRepos();
@@ -5250,10 +2867,7 @@ async function showCredits() {
       updateCursorShop();
       setCursor(gameData.activeCursor);
       await updateLeaderboardDisplay();
-      
-      // Detectar dispositivo y navegador
       detectDeviceAndBrowser();
-      
       // Agregar listeners a redes sociales
       document.querySelectorAll('.social-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -5263,10 +2877,7 @@ async function showCredits() {
           if (href.includes('tiktok')) trackSocialClick('tiktok');
         });
       });
-      
-      // Tracking de clicks rápidos
       document.addEventListener('click', trackFastClicks);
-      
       // Optimizaciones para móviles
       if (/Mobi|Android/i.test(navigator.userAgent)) {
         // Deshabilitar efectos pesados
@@ -5283,63 +2894,40 @@ async function showCredits() {
         // Simplificar animaciones
         document.documentElement.style.setProperty('--animation-speed', '0.1s');
         
-        // Limpiar timers innecesarios cada 30s para liberar RAM
         setInterval(() => {
           if (window.gc) window.gc();
         }, 30000);
       }
-      
-      // Verificar tema Matrix para activar lluvia de código
       checkMatrixTheme();
-      
       // Verificar cada vez que cambie el tema
       const observer = new MutationObserver(() => {
         checkMatrixTheme();
       });
       observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-      
-      // Inicializar funcionalidades
       if (gameData.pushNotifications) requestNotificationPermission();
       if (gameData.autoDayNight) {
         checkAutoDayNight();
         setInterval(checkAutoDayNight, 60000);
       }
-      
-      // PWA Completa sin Service Worker
       initCompletePWA();
-      
-      // Sistema de sincronización entre dispositivos
       initCloudSync();
-      
-      // Sistema de actualización automática - con delay inicial
       setTimeout(checkForUpdates, 2000);
-      
-      // Verificar actualizaciones cada 5 minutos para evitar errores
       setInterval(checkForUpdates, 300000);
-      
-      // Detectar Play Store y otros app stores
       detectAppStore();
-      
-      // PWA Install Prompt - Oculto por defecto
       let deferredPrompt;
       let installButton = null;
-      
       window.addEventListener('beforeinstallprompt', (e) => {
         console.log('📱 PWA install prompt disponible');
         e.preventDefault();
         deferredPrompt = e;
       });
-      
       function showInstallButton() {
-        if (installButton) return; // Evitar duplicados
-        
+        if (installButton) return;
         installButton = document.createElement('button');
         installButton.innerHTML = '📱 Instalar App';
         installButton.style.cssText = 'position: fixed; bottom: 20px; left: 20px; z-index: 9999; background: var(--primary); color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: none;';
         installButton.addEventListener('click', installPWA);
         document.body.appendChild(installButton);
-        
-        // Solo mostrar si el usuario hace scroll o después de 10 segundos
         setTimeout(() => {
           if (installButton && deferredPrompt) {
             installButton.style.display = 'block';
@@ -5347,24 +2935,20 @@ async function showCredits() {
           }
         }, 10000);
       }
-      
       async function installPWA() {
         if (!deferredPrompt) {
           console.log('❌ No hay prompt de instalación disponible');
           return;
         }
-        
         try {
           deferredPrompt.prompt();
           const { outcome } = await deferredPrompt.userChoice;
           console.log('📱 Resultado instalación:', outcome);
-          
           if (outcome === 'accepted') {
             showAchievementNotification({ name: '🎉 App instalada correctamente!', points: 50 });
             addPoints(50);
             checkAchievement('pwa-installer');
           }
-          
           deferredPrompt = null;
           if (installButton) {
             installButton.remove();
@@ -5374,16 +2958,11 @@ async function showCredits() {
           console.error('❌ Error en instalación PWA:', error);
         }
       }
-      
-      // Detectar si ya está instalada como PWA
       if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
         console.log('📱 Ejecutándose como PWA');
         checkAchievement('pwa-user');
-        // No mostrar botón de instalación si ya está instalada
         deferredPrompt = null;
       }
-      
-      // Agregar evento para mostrar botón manualmente (para testing)
       window.showPWAInstall = () => {
         if (deferredPrompt) {
           showInstallButton();
@@ -5391,13 +2970,9 @@ async function showCredits() {
           console.log('❌ No hay prompt de instalación disponible');
         }
       };
-      
-      // Función para recargar sin cache
       window.forceUpdate = () => {
         window.location.reload(true);
       };
-      
-      // Función para verificar actualizaciones mejorada
       async function checkForUpdates() {
         try {
           const response = await fetch('./updates.json?t=' + Date.now());
@@ -5405,13 +2980,10 @@ async function showCredits() {
             throw new Error(`HTTP ${response.status}`);
           }
           const data = await response.json();
-          const currentVersion = '2.0.6';
-          
+          const currentVersion = '2.2.0';
           if (data.version !== currentVersion) {
             console.log('🆕 Nueva versión disponible:', data.version);
             showUpdateNotification(data.version, data.updates[0]);
-            
-            // Auto-update en PWA standalone
             if (window.matchMedia('(display-mode: standalone)').matches) {
               setTimeout(() => {
                 if (confirm('🚀 Nueva versión disponible. ¿Actualizar ahora?')) {
@@ -5424,22 +2996,17 @@ async function showCredits() {
           console.log('❌ Error verificando actualizaciones:', error.message);
         }
       }
-      
       function showUpdateNotification(newVersion, updateInfo) {
         const notification = document.getElementById('achievement-notification');
         const features = updateInfo?.features?.slice(0, 2).join(', ') || 'Nuevas mejoras';
         document.getElementById('notification-text').textContent = `🆕 v${newVersion}: ${features}`;
         notification.classList.add('show');
-        
-        // Añadir botón de actualización
         notification.style.cursor = 'pointer';
         notification.onclick = () => {
           // Sincronizar antes de actualizar
           if (cloudSyncEnabled) syncToCloud();
           setTimeout(() => window.location.reload(true), 500);
         };
-        
-        // Auto-cerrar después de 15 segundos
         setTimeout(() => {
           notification.classList.remove('show');
           notification.onclick = null;
@@ -5518,7 +3085,7 @@ async function showCredits() {
           if (gameData.themesUsed.size === 1) checkAchievement('theme-explorer');
           if (gameData.themesUsed.size >= 5) checkAchievement('theme-collector');
           if (gameData.themeChangeCount >= 20) checkAchievement('theme-addict');
-          if (theme === 'funkyatlas') {
+          if (theme === 'funkyatlas' || theme === 'funkyatlas-christmas') {
             checkAchievement('funky-fan');
             showCreditsPanel();
           }

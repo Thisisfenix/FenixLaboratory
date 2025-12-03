@@ -559,12 +559,19 @@
     </style>
 </head>
 <body>
-    <div id="loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;">
+    <div id="loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; cursor: pointer;" onclick="if(typeof loadedAssets !== 'undefined' && loadedAssets >= totalAssets) initAudio()">
         <div style="color: #ff0000; font-size: 32px; margin-bottom: 30px; text-shadow: 0 0 20px #ff0000;">CARGANDO...</div>
         <div style="width: 300px; height: 20px; background: #222; border: 2px solid #ff0000; border-radius: 10px; overflow: hidden;">
             <div id="loadBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff0000, #ff6666); transition: width 0.3s;"></div>
         </div>
         <div id="loadText" style="color: #fff; margin-top: 20px; font-size: 16px;">Inicializando...</div>
+        <div id="clickPrompt" style="color: #ffd700; margin-top: 40px; font-size: 20px; animation: pulse 1.5s infinite; display: none;">👆 HAZ CLIC PARA CONTINUAR 👆</div>
+        <style>
+            @keyframes pulse {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.05); }
+            }
+        </style>
     </div>
     
     <div id="intro" style="display: none;">
@@ -629,6 +636,10 @@
         <div class="chapter-item locked" id="chapter3Item" onclick="loadChapter(3)">
             <div style="font-size: 16px; font-weight: bold;">CAPÍTULO 3</div>
             <div style="font-size: 12px; color: #666; margin-top: 4px;">🔒 Completa Cap 2</div>
+        </div>
+        <div class="chapter-item locked" id="chapter4Item" onclick="loadChapter(4)">
+            <div style="font-size: 16px; font-weight: bold;">CAPÍTULO 4</div>
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">🔒 Completa Cap 3</div>
         </div>
     </div>
     
@@ -867,16 +878,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="chapter2.js"></script>
     <script src="chapter3.js"></script>
+    <script src="chapter4.js"></script>
     <script src="secretCode.js"></script>
-    <script>
-        // Inicializar Chapter 3
-        let chapter3;
-        window.addEventListener('load', () => {
-            if(typeof Chapter3 !== 'undefined') {
-                chapter3 = new Chapter3();
-            }
-        });
-    </script>
     <script>
         let scene, camera, renderer, lamp, chest, flashlight, table, door, exitDoor, ceilingLight, mysteryDoor, gisselPainting, platforms = [], obstacles = [], doorFragments = [];
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
@@ -1042,23 +1045,29 @@
             document.getElementById('loadText').textContent = `${asset}... ${Math.floor(loadingProgress)}%`;
             
             if(loadedAssets >= totalAssets) {
-                // Detectar consola y saltar pantalla de carga más rápido
-                const gamepads = navigator.getGamepads();
-                const hasGamepad = gamepads && gamepads[0];
-                const delay = hasGamepad ? 100 : 500;
-                
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('intro').style.display = 'flex';
-                    hideIntro();
-                }, delay);
+                // Mostrar prompt para hacer clic
+                document.getElementById('loadText').textContent = 'Listo para iniciar';
+                document.getElementById('clickPrompt').style.display = 'block';
             }
+        }
+        
+        function startGame() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('intro').style.display = 'flex';
+            hideIntro();
         }
 
         // Detectar carga de Three.js
         if(typeof THREE !== 'undefined') {
             updateLoading('Three.js cargado');
         }
+        
+        // Precargar audios para la barra de loading
+        const footstepPreload = new Audio('stuff/stepsound.mp3');
+        footstepPreload.addEventListener('canplaythrough', () => updateLoading('Audio: Pasos'), { once: true });
+        
+        const flashlightPreload = new Audio('stuff/flashlight.mp3');
+        flashlightPreload.addEventListener('canplaythrough', () => updateLoading('Audio: Linterna'), { once: true });
         
         // Actualizar controles en intro y HUD según dispositivo
         window.addEventListener('load', () => {
@@ -1162,24 +1171,13 @@
             // Breathing
             breathingSound = createBreathingSound();
             
-            // Footstep audio
+            // Footstep audio (ya precargado)
             footstepAudio = new Audio('stuff/stepsound.mp3');
             footstepAudio.volume = 0.3;
-            footstepAudio.addEventListener('canplaythrough', () => updateLoading('Audio: Pasos'), { once: true });
             
-            // Flashlight audio
+            // Flashlight audio (ya precargado)
             flashlightAudio = new Audio('stuff/flashlight.mp3');
             flashlightAudio.volume = 0.4;
-            flashlightAudio.addEventListener('canplaythrough', () => updateLoading('Audio: Linterna'), { once: true });
-            
-            // Solo cargar audios críticos al inicio
-            footstepAudio = new Audio('stuff/stepsound.mp3');
-            footstepAudio.volume = 0.3;
-            footstepAudio.addEventListener('canplaythrough', () => updateLoading('Audio: Pasos'), { once: true });
-            
-            flashlightAudio = new Audio('stuff/flashlight.mp3');
-            flashlightAudio.volume = 0.4;
-            flashlightAudio.addEventListener('canplaythrough', () => updateLoading('Audio: Linterna'), { once: true });
             
             // Cargar resto en background
             setTimeout(() => {
@@ -1197,6 +1195,11 @@
             
             audioInitialized = true;
             initFootstepPool();
+            
+            // Iniciar juego después de inicializar audio
+            if(loadedAssets >= totalAssets) {
+                startGame();
+            }
         }
 
         function createHeartbeatSound() {
@@ -1824,9 +1827,7 @@
             }, 2000);
         }
 
-        // Inicializar audio con interacción del usuario
-        document.addEventListener('click', initAudio, { once: true });
-        document.addEventListener('keydown', initAudio, { once: true });
+        // Audio se inicializa al hacer clic en la pantalla de carga
 
         function init() {
             scene = new THREE.Scene();
@@ -2646,6 +2647,12 @@
                 chapter3Item.classList.remove('locked');
                 chapter3Item.querySelector('div:last-child').innerHTML = '<span style="color: #44ff44;">✔️ Desbloqueado</span>';
             }
+            
+            const chapter4Item = document.getElementById('chapter4Item');
+            if(localStorage.getItem('chapter3Completed') === 'true') {
+                chapter4Item.classList.remove('locked');
+                chapter4Item.querySelector('div:last-child').innerHTML = '<span style="color: #44ff44;">✔️ Desbloqueado</span>';
+            }
         }
 
         function loadChapter(num) {
@@ -2661,6 +2668,12 @@
                 return;
             }
             
+            if(num === 4 && localStorage.getItem('chapter3Completed') !== 'true') {
+                showMonologue('🔒 Capítulo 4 bloqueado - Completa el Capítulo 3');
+                vibrateGamepad(200, 0.3, 0.3);
+                return;
+            }
+            
             if(num === 1) {
                 location.reload();
             } else if(num === 2) {
@@ -2672,9 +2685,19 @@
                 toggleChapters();
                 if(typeof chapter3 !== 'undefined') {
                     stopAllChapter1Audio();
+                    while(scene.children.length > 0) scene.remove(scene.children[0]);
                     chapter3.start();
                 } else {
                     showMonologue('❌ Error: Capítulo 3 no disponible');
+                }
+            } else if(num === 4) {
+                toggleChapters();
+                if(typeof chapter4 !== 'undefined') {
+                    stopAllChapter1Audio();
+                    while(scene.children.length > 0) scene.remove(scene.children[0]);
+                    chapter4.start();
+                } else {
+                    showMonologue('❌ Error: Capítulo 4 no disponible');
                 }
             }
         }
@@ -2900,6 +2923,22 @@
 
         function animate() {
             requestAnimationFrame(animate);
+
+            if(chapter4 && chapter4.active) {
+                stopAllChapter1Audio();
+                const delta = 0.016;
+                chapter4.update(delta);
+                renderer.render(scene, camera);
+                return;
+            }
+
+            if(chapter3 && chapter3.active) {
+                stopAllChapter1Audio();
+                const delta = 0.016;
+                chapter3.update(delta);
+                renderer.render(scene, camera);
+                return;
+            }
 
             if(chapter2.active) {
                 stopAllChapter1Audio();

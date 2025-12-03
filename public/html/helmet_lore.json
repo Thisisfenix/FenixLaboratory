@@ -1,0 +1,316 @@
+{
+  "name": "Casco Experimental Protocolo ???",
+  "combat_chip": {
+    "chip_name": "CHIP DE COMBATE EXPERIMENTAL",
+    "chip_id": "COMBAT_CHIP_V1",
+    "description": "Chip de actualización encontrado en el Castillo Maldito. Desbloquea capacidades de combate avanzadas en el helmet experimental.",
+    "unlock_message": "🔓 CHIP INSTALADO - SISTEMA DE COMBATE ACTIVADO",
+    "abilities": [
+      {
+        "name": "Disparo de Energía",
+        "key": "E",
+        "description": "Dispara proyectiles de energía cyan desde el helmet",
+        "damage": 10,
+        "cooldown": 0.5
+      }
+    ],
+    "lore": [
+      "Este chip fue diseñado por los científicos del laboratorio como un sistema de defensa.",
+      "Permite al helmet canalizar energía y convertirla en proyectiles.",
+      "Fue escondido en el castillo como parte de un experimento secreto.",
+      "El Rey Oscuro desconocía su existencia... hasta ahora."
+    ],
+    "visual_effects": {
+      "helmet_color": "#00ffff",
+      "bullet_color": "#00ffff",
+      "glow_intensity": 0.8
+    }
+  },
+  "messages": [
+    {
+      "type": "welcome",
+      "text": "🪖 CASCO EXPERIMENTAL ACTIVADO",
+      "subtext": "Sistema de soporte vital iniciado. Protocolo ??? en línea."
+    },
+    {
+      "type": "info",
+      "text": "💡 CONSEJO DEL SISTEMA",
+      "subtext": "Este casco mejora tu resistencia y te permite ver información vital en tiempo real."
+    },
+    {
+      "type": "warning",
+      "text": "⚠️ ADVERTENCIA",
+      "subtext": "El casco detecta anomalías en el entorno. Mantén la calma y sigue las indicaciones."
+    },
+    {
+      "type": "lore",
+      "text": "📜 REGISTRO DEL PROYECTO 666",
+      "subtext": "Este casco fue diseñado para los sujetos del Proyecto 666. Permite sobrevivir en ambientes hostiles."
+    },
+    {
+      "type": "lore",
+      "text": "📜 NOTA DE [DESCONOCIDO]",
+      "subtext": "Si encuentras este casco, úsalo. Es tu única esperanza de escapar con vida."
+    },
+    {
+      "type": "tip",
+      "text": "💡 RECOMENDACIÓN",
+      "subtext": "Administra tu stamina sabiamente. Correr consume energía rápidamente."
+    },
+    {
+      "type": "tip",
+      "text": "💡 DATO ÚTIL",
+      "subtext": "El HUD muestra tu progreso y ubicación actual. Úsalo para orientarte."
+    },
+    {
+      "type": "warning",
+      "text": "⚠️ ALERTA DE PELIGRO",
+      "subtext": "IA666 puede estar cerca. El casco te alertará de amenazas inminentes."
+    },
+    {
+      "type": "lore",
+      "text": "📜 BITÁCORA FINAL",
+      "subtext": "El Proyecto 666 fracasó. Este casco es todo lo que queda de nuestro trabajo."
+    },
+    {
+      "type": "mystery",
+      "text": "❓ SEÑAL DESCONOCIDA",
+      "subtext": "El casco capta señales extrañas... ¿Alguien más lo está usando?"
+    },
+    {
+      "type": "personality",
+      "text": "🤖 ASISTENTE IA",
+      "subtext": "Hola, soy tu asistente integrado. Estoy aquí para ayudarte a sobrevivir."
+    },
+    {
+      "type": "personality",
+      "text": "😅 MOMENTO LIGERO",
+      "subtext": "Al menos el casco tiene aire acondicionado. Podría ser peor, ¿no?"
+    },
+    {
+      "type": "lore",
+      "text": "📜 ORIGEN DEL CASCO",
+      "subtext": "Fabricado en [DATOS CORRUPTOS] por [DESCONOCIDO]. Prototipo único. Serie: 001."
+    },
+    {
+      "type": "tip",
+      "text": "💡 TRUCO AVANZADO",
+      "subtext": "Presiona F5 para guardar tu progreso en cualquier momento."
+    },
+    {
+      "type": "warning",
+      "text": "⚠️ BATERÍA BAJA",
+      "subtext": "Solo bromeo. Este casco tiene energía ilimitada. Tecnología del futuro."
+    },
+    {
+      "type": "lore",
+      "text": "📜 EXPERIMENTO 777",
+      "subtext": "IA777 fue creado para detener a IA666. Ambos usan tecnología similar a este casco."
+    },
+    {
+      "type": "personality",
+      "text": "😎 MOTIVACIÓN",
+      "subtext": "Lo estás haciendo bien. Sigue así y saldrás de aquí."
+    },
+    {
+      "type": "mystery",
+      "text": "❓ TRANSMISIÓN INTERCEPTADA",
+      "subtext": "'El Rey Oscuro espera...' - Origen: Castillo Maldito."
+    },
+    {
+      "type": "tip",
+      "text": "💡 SECRETO",
+      "subtext": "Hay más de lo que ves. Explora cada rincón del laboratorio."
+    },
+    {
+      "type": "personality",
+      "text": "😂 HUMOR NEGRO",
+      "subtext": "Al menos no estás en el Backrooms. Esto es... casi igual de malo."
+    },
+    {
+      "type": "lore",
+      "text": "📜 VERDAD OCULTA",
+      "subtext": "El Proyecto 666 no fue un accidente. Alguien quería que esto pasara."
+    },
+    {
+      "type": "warning",
+      "text": "⚠️ NO CONFÍES EN NADIE",
+      "subtext": "Ni siquiera en mí. Soy solo un programa. Pero te ayudaré de todos modos."
+    },
+    {
+      "type": "personality",
+      "text": "🎵 MÚSICA RELAJANTE",
+      "subtext": "Desearía poder reproducir música. Pero solo tengo alertas y advertencias."
+    },
+    {
+      "type": "mystery",
+      "text": "❓ ANOMALÍA DETECTADA",
+      "subtext": "Lecturas extrañas en el sector norte. Procede con precaución."
+    },
+    {
+      "type": "lore",
+      "text": "📜 ÚLTIMO MENSAJE",
+      "subtext": "'Si lees esto, ya es tarde. Pero aún puedes escapar.' - [DESCONOCIDO]"
+    },
+    {
+      "type": "contextual_ia666",
+      "text": "⚠️ AMENAZA DETECTADA",
+      "subtext": "IA666 está cerca. Mantén la calma y busca la luz. No te detengas."
+    },
+    {
+      "type": "contextual_whiteroom",
+      "text": "⚡ INTERFERENCIA CRÍTICA",
+      "subtext": "[ERROR] Sistemas fallando... [STATIC] ...no puedo... [SEÑAL PERDIDA]"
+    },
+    {
+      "type": "contextual_whiteroom_recovery",
+      "text": "🔄 SISTEMAS RESTAURADOS",
+      "subtext": "Conexión restablecida. Esa zona blanca interfirió con mis circuitos. Disculpa."
+    },
+    {
+      "type": "contextual_courtyard",
+      "text": "🏯 OBJETIVO CERCANO",
+      "subtext": "El castillo está adelante. Prepárate. Lo que sea que haya ahí... no es normal."
+    },
+    {
+      "type": "contextual_castle_approach",
+      "text": "👁️ ADVERTENCIA FINAL",
+      "subtext": "Estás a punto de entrar al castillo. Una vez dentro, no hay vuelta atrás."
+    },
+    {
+      "type": "contextual_tunnel",
+      "text": "💡 SIGUE LA LUZ",
+      "subtext": "Las zonas iluminadas son seguras. La oscuridad atrae a IA666. Corre si es necesario."
+    },
+    {
+      "type": "contextual_escape",
+      "text": "🏃 ESCAPANDO",
+      "subtext": "Bien hecho al salir del laboratorio. Pero esto apenas comienza..."
+    },
+    {
+      "type": "chapter3_teaser",
+      "text": "🏯 CASTILLO MALDITO",
+      "subtext": "Este lugar... mis sensores detectan energía oscura. El Rey Oscuro está aquí."
+    },
+    {
+      "type": "chapter3_teaser",
+      "text": "🕯️ ANTORCHAS ANTIGUAS",
+      "subtext": "Estas antorchas llevan siglos encendidas. Magia oscura. Ten cuidado."
+    },
+    {
+      "type": "chapter3_teaser",
+      "text": "🚪 PUERTA SELLADA",
+      "subtext": "La puerta al final... puedo sentir algo poderoso detrás. ¿Estás listo?"
+    },
+    {
+      "type": "chapter3_teaser",
+      "text": "❓ MISTERIO DEL CASTILLO",
+      "subtext": "Este castillo no debería existir. Pero aquí está. ¿Quién lo construyó?"
+    },
+    {
+      "type": "chapter3_teaser",
+      "text": "👑 EL REY OSCURO",
+      "subtext": "Leyendas hablan de un rey que vendió su alma. Creo que estás a punto de conocerlo."
+    },
+    {
+      "type": "psychological",
+      "text": "👁️ SENSACIÓN EXTRAÑA",
+      "subtext": "Siento que algo te observa. Mis sensores no detectan nada... pero está ahí."
+    },
+    {
+      "type": "psychological",
+      "text": "🔊 SONIDO DETECTADO",
+      "subtext": "Escuché algo detrás de ti. Probablemente nada. Probablemente."
+    },
+    {
+      "type": "psychological",
+      "text": "⚠️ FALSA ALARMA",
+      "subtext": "Movimiento detectado a tu izquierda... espera, fue un error. Disculpa."
+    },
+    {
+      "type": "psychological",
+      "text": "👻 PRESENCIA",
+      "subtext": "La temperatura bajó 3 grados de repente. Algo no está bien aquí."
+    },
+    {
+      "type": "psychological",
+      "text": "🔴 ALERTA... CANCELADA",
+      "subtext": "Amenaza inminente detect... no, falsa alarma. Mis sensores están fallando."
+    },
+    {
+      "type": "psychological",
+      "text": "🚨 PASOS",
+      "subtext": "¿Escuchaste eso? Pasos... pero no son los tuyos. Mantén la calma."
+    },
+    {
+      "type": "psychological",
+      "text": "🌑 OSCURIDAD",
+      "subtext": "Las sombras se mueven de forma extraña. No las mires directamente."
+    },
+    {
+      "type": "psychological",
+      "text": "📶 SEÑAL DÉBIL",
+      "subtext": "Perdiendo conexión... si me desconecto, estarás solo. No te alejes."
+    },
+    {
+      "type": "psychological",
+      "text": "🔊 SUSURROS",
+      "subtext": "Capto susurros en frecuencias bajas. No puedo descifrarlos. No escuches."
+    },
+    {
+      "type": "psychological",
+      "text": "⏳ TIEMPO DISTORSIONADO",
+      "subtext": "Mi reloj interno está fallando. ¿Cuánto tiempo llevas aquí realmente?"
+    },
+    {
+      "type": "psychological",
+      "text": "🧠 PARANOIA",
+      "subtext": "No es paranoia si realmente hay algo ahí. Y lo hay. Siempre lo hay."
+    },
+    {
+      "type": "psychological",
+      "text": "🚪 PUERTA CERRADA",
+      "subtext": "Esa puerta por la que pasaste... acabo de detectar que se cerró sola."
+    },
+    {
+      "type": "psychological",
+      "text": "👣 HUELLAS",
+      "subtext": "Hay huellas en el suelo. Frescas. Pero no son tuyas. Alguien más estuvo aquí."
+    },
+    {
+      "type": "psychological",
+      "text": "🕯️ LUZ PARPADEANTE",
+      "subtext": "Las luces parpadean cuando 'eso' está cerca. Mantén los ojos abiertos."
+    },
+    {
+      "type": "psychological",
+      "text": "🪞 ESPEJO",
+      "subtext": "Si ves un espejo, no mires tu reflejo por mucho tiempo. Confía en mí."
+    },
+    {
+      "type": "psychological",
+      "text": "💀 SILENCIO",
+      "subtext": "El silencio absoluto es mala señal. Significa que algo grande está cazando."
+    },
+    {
+      "type": "psychological",
+      "text": "🔴 RESPIRACIÓN",
+      "subtext": "Detecto una segunda respiración cerca de ti. Muy cerca. No te gires bruscamente."
+    },
+    {
+      "type": "psychological",
+      "text": "❓ ¿QUÉ FUE ESO?",
+      "subtext": "Algo acaba de pasar rápido por tu visión periférica. No lo sigas."
+    },
+    {
+      "type": "psychological",
+      "text": "🔊 ECO EXTRAÑO",
+      "subtext": "Tus pasos hacen eco... pero escucho un paso extra. Uno de más."
+    },
+    {
+      "type": "psychological",
+      "text": "🌫️ NIEBLA",
+      "subtext": "La niebla se está espesando. Algo usa la niebla para acercarse sin ser visto."
+    }
+  ]
+}

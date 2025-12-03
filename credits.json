@@ -1,6 +1,6 @@
 {
   "que es esto wey": "FenixLaboratory",
-  "version": "2.0.6",
+  "version": "2.2.0",
   "descripcion": "Donde subo mis experimentos raros",
   "estado": "Funciona (creo)",
   "hosting": "GitHub Pages",
@@ -25,7 +25,8 @@
     "Modo oscuro",
     "Animaciones",
     "Responsive",
-    "Panel para nerds 🤓"
+    "Panel para nerds 🤓",
+    "Copos de nieve en tema navideño ❄️"
   ],
 
   "creditos": {
