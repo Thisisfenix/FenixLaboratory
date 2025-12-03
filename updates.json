@@ -1,26 +1,61 @@
 {
   "proyecto": "FenixLaboratory",
-  "version": "2.2.0",
-  "lastUpdate": "2024-11-14",
+  "version": "2.2.1",
+  "lastUpdate": "2025-01-15",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.2.0",
-    "fecha": "2024-11-14",
-    "tipo": "major",
+    "numero": "2.2.1",
+    "fecha": "2025-01-15",
+    "tipo": "new",
     "estado": "estable",
     "cambios_principales": [
-      "Sistema de logros reworkeado completamente",
-      "Guestbook con 32 temas integrados al VIP Store",
-      "Interfaz VIP Store compacta con dropdowns",
-      "Sistema de puntos y compras funcional",
-      "Temas premium y VIP exclusivos"
+      "Plushie hunt: 40 plushies escondidos por todo el laboratorio",
+      "3 comportamientos especiales: Runner, Shy, Invisible",
+      "Sistema de progreso sincronizado con localStorage",
+      "Soporte completo para móvil con eventos touch",
+      "Panel de progreso con contador 0/40"
     ]
   },
   
   "updates": [
+    {
+      "version": "2.2.1",
+      "date": "2025-01-15",
+      "title": "🧸 Plushie Hunt Update - Sistema de Búsqueda de Peluches",
+      "type": "new",
+      "features": [
+        "🧸 40 plushies escondidos por todo el laboratorio",
+        "🎯 Plushie hunt: 20 de Gissel + 20 de Molly",
+        "🎮 3 comportamientos especiales con mecánicas únicas",
+        "🏃 Runner: Huye 3 veces antes de ser capturado",
+        "😳 Shy: Necesita 5 hovers para aparecer completamente",
+        "👻 Invisible: Parpadea cada 2 segundos, timing perfecto requerido",
+        "🔍 Explora todas las páginas para encontrarlos",
+        "🔗 Algunos plushies te llevan a otras páginas",
+        "📱 Soporte completo para móvil con eventos touch",
+        "💾 Progreso sincronizado con localStorage",
+        "📊 Panel informativo con progreso individual",
+        "🔄 Botón de reset para reiniciar la búsqueda"
+      ],
+      "behaviors": [
+        "🏃 Runner: Se mueve a posición aleatoria al pasar el mouse, necesitas 3 clicks",
+        "😳 Shy: Se vuelve casi invisible, necesitas 5 hovers para que aparezca",
+        "👻 Invisible: Parpadea visible/invisible cada 2s, timing crítico",
+        "😊 Normal: Click directo para recolectar"
+      ],
+      "technical": [
+        "📱 Touch events: touchend, touchstart, touchcancel",
+        "🎯 Detección de hover mejorada para móvil",
+        "💾 localStorage: plushie-progress y plushie-collected",
+        "🔗 Sistema de links entre páginas para plushies especiales",
+        "🎨 Rutas relativas automáticas según la página actual",
+        "⚡ Animaciones CSS optimizadas para rendimiento",
+        "🎮 z-index alto (10000) para visibilidad garantizada"
+      ]
+    },
     {
       "version": "2.2.0",
       "date": "2024-11-14",

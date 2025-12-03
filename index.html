@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🔬 FenixLaboratory - Donde subo mis experimentos raros</title>
+  <title>🔬 FenixLaboratory v2.2.1 - Plushie Hunt Update</title>
   <meta name="description"
     content="Mi rinconcito donde pongo todos mis proyectos random de GitHub. Con logros, temas chéveres y cosas que hago cuando me aburro. Nada fancy, solo diversión." />
   <meta name="keywords"
@@ -16,11 +16,11 @@
   <meta name="theme-color" content="#ff6b35">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FenixLab v2.2.0">
+  <meta name="apple-mobile-web-app-title" content="FenixLab v2.2.1">
   <link rel="apple-touch-icon" href="favicon.svg">
   <!-- Discord/Social Media Embeds -->
   <meta property="og:title" content="🔬 FenixLaboratory - Experimentos raros y proyectos random">
-  <meta property="og:description" content="Mi rinconcito donde pongo todos mis proyectos de GitHub. Con logros, temas chéveres, gamificación avanzada y cosas que hago cuando me aburro. ¡Más de 50 temas, sistema de puntos y desafíos diarios!">
+  <meta property="og:description" content="Mi rinconcito donde pongo todos mis proyectos de GitHub. ¡Nuevo en v2.2.1: 40 plushies escondidos con comportamientos especiales! Sistema de logros, temas y gamificación completa.">
   <meta property="og:image" content="https://thisisfenix.github.io/FenixLaboratory/preview.png">
   <meta property="og:url" content="https://thisisfenix.github.io/FenixLaboratory/">
   <meta property="og:type" content="website">
@@ -29,7 +29,7 @@
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="🔬 FenixLaboratory - Experimentos raros">
-  <meta name="twitter:description" content="Donde pongo mis proyectos random y experimentos que hago cuando me aburro. Sistema de logros, temas premium y gamificación completa.">
+  <meta name="twitter:description" content="v2.2.1 Plushie Hunt Update: 40 peluches escondidos con 3 comportamientos especiales. Sistema de logros, temas premium y gamificación completa.">
   <meta name="twitter:image" content="https://thisisfenix.github.io/FenixLaboratory/preview.png">
   <meta name="twitter:creator" content="@AntiAnkush">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,7 +87,12 @@
           </li>
           <li class="nav-item">
             <button id="updates-btn" class="nav-link" aria-label="Ver actualizaciones">
-              <i class="bi bi-arrow-up-circle me-1"></i> v2.2.0
+              <i class="bi bi-arrow-up-circle me-1"></i> v2.2.1
+            </button>
+          </li>
+          <li class="nav-item">
+            <button id="plushie-btn" class="nav-link" aria-label="Ver progreso de peluches">
+              🧸 <span id="plushie-progress" style="font-weight: bold;">0/40</span>
             </button>
           </li>
         </ul>
@@ -731,6 +736,7 @@
   
   <!-- Scripts -->
   <script src="achievements.js"></script>
+  <script src="plushie-system.js"></script>
   <script>
     // Deadly Pursuer Warning System
     function showDeadlyPursuerWarning() {
@@ -2980,7 +2986,7 @@ async function showCredits() {
             throw new Error(`HTTP ${response.status}`);
           }
           const data = await response.json();
-          const currentVersion = '2.2.0';
+          const currentVersion = '2.2.1';
           if (data.version !== currentVersion) {
             console.log('🆕 Nueva versión disponible:', data.version);
             showUpdateNotification(data.version, data.updates[0]);

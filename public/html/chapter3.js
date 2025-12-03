@@ -462,11 +462,36 @@ class Chapter3 {
         throne.position.set(0, 2.5, -15);
         scene.add(throne);
         
-        // Rey Oscuro
-        this.boss = new THREE.Mesh(
-            new THREE.BoxGeometry(1.5, 3, 0.8),
-            new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff0000, emissiveIntensity: 0.5 })
+        // Rey Oscuro - Más intimidante
+        this.boss = new THREE.Group();
+        
+        // Cuerpo principal
+        const body = new THREE.Mesh(
+            new THREE.BoxGeometry(1.8, 3.5, 1),
+            new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xff0000, emissiveIntensity: 0.7 })
         );
+        this.boss.add(body);
+        
+        // Corona
+        const crown = new THREE.Mesh(
+            new THREE.ConeGeometry(0.8, 1, 8),
+            new THREE.MeshStandardMaterial({ color: 0x8b0000, emissive: 0xff0000, emissiveIntensity: 0.8 })
+        );
+        crown.position.y = 2.5;
+        this.boss.add(crown);
+        
+        // Ojos brillantes
+        const eyeL = new THREE.Mesh(
+            new THREE.SphereGeometry(0.15, 8, 8),
+            new THREE.MeshBasicMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 2 })
+        );
+        eyeL.position.set(-0.3, 1, 0.4);
+        this.boss.add(eyeL);
+        
+        const eyeR = eyeL.clone();
+        eyeR.position.x = 0.3;
+        this.boss.add(eyeR);
+        
         this.boss.position.set(0, 3.5, -15);
         scene.add(this.boss);
         
@@ -501,6 +526,10 @@ class Chapter3 {
     finalBattle() {
         this.phase = 'battle';
         this.bossAttacking = true;
+        this.bossPhase = 1;
+        this.bossAttackPattern = 0;
+        this.bossMovementTimer = 0;
+        this.bossTargetPosition = new THREE.Vector3(0, 3.5, -15);
         showMonologue('¡BATALLA FINAL! Presiona E para disparar');
         
         // Barra de HP del boss
@@ -527,16 +556,144 @@ class Chapter3 {
     }
     
     shoot() {
+        // Crear proyectil mejorado
         const bullet = new THREE.Mesh(
-            new THREE.SphereGeometry(0.2, 8, 8),
-            new THREE.MeshBasicMaterial({ color: 0x00ffff })
+            new THREE.SphereGeometry(0.3, 12, 12),
+            new THREE.MeshBasicMaterial({ 
+                color: 0x00ffff, 
+                emissive: 0x00ffff, 
+                emissiveIntensity: 1 
+            })
         );
         bullet.position.copy(camera.position);
         const dir = new THREE.Vector3();
         camera.getWorldDirection(dir);
-        bullet.userData.velocity = dir.multiplyScalar(0.8);
+        bullet.userData.velocity = dir.multiplyScalar(1.2);
+        bullet.userData.life = 0;
+        
+        // Efecto de luz
+        const light = new THREE.PointLight(0x00ffff, 2, 5);
+        bullet.add(light);
+        
         scene.add(bullet);
         this.bullets.push(bullet);
+        
+        // Sonido de disparo (si existe)
+        if(this.shootSound) {
+            this.shootSound.currentTime = 0;
+            this.shootSound.play().catch(() => {});
+        }
+    }
+    
+    performBossAttack() {
+        const damage = this.bossPhase * 8; // 8, 16, 24 damage
+        this.playerHP -= damage;
+        
+        const playerHPFill = document.getElementById('playerHPFill');
+        if(playerHPFill) {
+            playerHPFill.style.width = (this.playerHP / 100 * 100) + '%';
+            if(this.playerHP < 30) playerHPFill.style.background = 'linear-gradient(90deg, #ff0000, #ff4444)';
+        }
+        
+        const phaseAttacks = {
+            1: [
+                'Rey Oscuro: "Patético mortal..."',
+                'Rey Oscuro: "No puedes vencerme..."',
+                '¡Ataque de energía oscura!'
+            ],
+            2: [
+                'Rey Oscuro: "¡SIENTE MI PODER!"',
+                'Rey Oscuro: "La realidad se desmorona..."',
+                '¡Ataque devastador!'
+            ],
+            3: [
+                'Rey Oscuro: "¡ESTO TERMINA AHORA!"',
+                'Rey Oscuro: "¡DESTRUIRÉ TODO!"',
+                '¡ATAQUE FINAL DESESPERADO!'
+            ]
+        };
+        
+        const attacks = phaseAttacks[this.bossPhase];
+        showMonologue(attacks[Math.floor(Math.random() * attacks.length)]);
+        
+        // Efecto visual de ataque
+        this.createAttackEffect();
+        
+        if(this.playerHP <= 0 && !this.monologuesShown['player_defeated']) {
+            this.monologuesShown['player_defeated'] = true;
+            showMonologue('Has sido derrotado por el Rey Oscuro...');
+            setTimeout(() => location.reload(), 3000);
+        }
+    }
+    
+    spawnBossProjectile() {
+        const projectile = new THREE.Mesh(
+            new THREE.SphereGeometry(0.4, 8, 8),
+            new THREE.MeshBasicMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 1 })
+        );
+        projectile.position.copy(this.boss.position);
+        
+        const dir = new THREE.Vector3();
+        dir.subVectors(camera.position, this.boss.position).normalize();
+        projectile.userData.velocity = dir.multiplyScalar(0.3);
+        projectile.userData.life = 0;
+        
+        scene.add(projectile);
+        if(!this.bossProjectiles) this.bossProjectiles = [];
+        this.bossProjectiles.push(projectile);
+    }
+    
+    createTempObstacle() {
+        const obstacle = new THREE.Mesh(
+            new THREE.BoxGeometry(2, 4, 2),
+            new THREE.MeshStandardMaterial({ 
+                color: 0x330000, 
+                emissive: 0xff0000, 
+                emissiveIntensity: 0.3,
+                transparent: true,
+                opacity: 0.8
+            })
+        );
+        obstacle.position.set(
+            (Math.random() - 0.5) * 20,
+            2,
+            (Math.random() - 0.5) * 20
+        );
+        scene.add(obstacle);
+        
+        // Remover después de 5 segundos
+        setTimeout(() => {
+            scene.remove(obstacle);
+        }, 5000);
+    }
+    
+    createAttackEffect() {
+        const effect = new THREE.Mesh(
+            new THREE.RingGeometry(1, 3, 16),
+            new THREE.MeshBasicMaterial({ 
+                color: 0xff0000, 
+                transparent: true, 
+                opacity: 0.8 
+            })
+        );
+        effect.position.copy(camera.position);
+        effect.lookAt(camera.position.x, camera.position.y + 1, camera.position.z);
+        scene.add(effect);
+        
+        // Animar y remover
+        let scale = 0;
+        const animateEffect = () => {
+            scale += 0.2;
+            effect.scale.setScalar(scale);
+            effect.material.opacity = 1 - (scale / 5);
+            
+            if(scale < 5) {
+                requestAnimationFrame(animateEffect);
+            } else {
+                scene.remove(effect);
+            }
+        };
+        animateEffect();
     }
 
     finishChapter() {
@@ -562,17 +719,57 @@ class Chapter3 {
         }, 2000);
     }
     
+    createImpactEffect(position) {
+        const particles = [];
+        for(let i = 0; i < 8; i++) {
+            const particle = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 4, 4),
+                new THREE.MeshBasicMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 1 })
+            );
+            particle.position.copy(position);
+            particle.userData.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.3,
+                (Math.random() - 0.5) * 0.3,
+                (Math.random() - 0.5) * 0.3
+            );
+            scene.add(particle);
+            particles.push(particle);
+        }
+        
+        // Animar partículas
+        let life = 0;
+        const animateParticles = () => {
+            life += 0.05;
+            particles.forEach(p => {
+                p.position.add(p.userData.velocity);
+                p.material.opacity = 1 - life;
+                p.scale.setScalar(1 - life);
+            });
+            
+            if(life < 1) {
+                requestAnimationFrame(animateParticles);
+            } else {
+                particles.forEach(p => scene.remove(p));
+            }
+        };
+        animateParticles();
+    }
+    
     startCorruptionSequence() {
         let glitchCount = 0;
         const glitchInterval = setInterval(() => {
             this.showGlitchEffect();
             
-            // Mensajes de corrupción
+            // Mensajes de corrupción más dramáticos
             const messages = [
                 'ERROR: REALIDAD.EXE HA DEJADO DE FUNCIONAR',
                 'ADVERTENCIA: SIMULACIÓN COMPROMETIDA',
                 'SISTEMA: CARGANDO PROTOCOLO DE EMERGENCIA',
-                'ALERTA: ENTRANDO A ZONA CORRUPTA'
+                'ALERTA: ENTRANDO A ZONA CORRUPTA',
+                'PELIGRO: INTEGRIDAD DIMENSIONAL AL 15%',
+                'CRÍTICO: COLAPSO INMINENTE',
+                'EVACUACIÓN: IMPOSIBLE',
+                'DESTINO: DESCONOCIDO'
             ];
             
             if(glitchCount < messages.length) {
@@ -581,11 +778,11 @@ class Chapter3 {
             
             glitchCount++;
             
-            if(glitchCount >= 8) {
+            if(glitchCount >= 10) {
                 clearInterval(glitchInterval);
                 this.transitionToChapter4();
             }
-        }, 800);
+        }, 600);
     }
     
     transitionToChapter4() {
@@ -1184,19 +1381,32 @@ class Chapter3 {
             camera.position.x = Math.max(-18, Math.min(18, camera.position.x));
             camera.position.z = Math.max(-18, Math.min(18, camera.position.z));
             
-            // Actualizar balas
+            // Actualizar balas del jugador
             for(let i = this.bullets.length - 1; i >= 0; i--) {
                 const bullet = this.bullets[i];
                 bullet.position.add(bullet.userData.velocity);
+                bullet.userData.life += delta;
+                
+                // Efecto de trail
+                bullet.rotation.x += 0.1;
+                bullet.rotation.y += 0.1;
                 
                 // Colisión con boss
-                if(this.boss && bullet.position.distanceTo(this.boss.position) < 1.5) {
-                    this.bossHP -= 10;
+                if(this.boss && bullet.position.distanceTo(this.boss.position) < 2) {
+                    const damage = 12 + Math.floor(Math.random() * 8); // 12-20 damage
+                    this.bossHP -= damage;
+                    
+                    // Efecto de impacto
+                    this.createImpactEffect(bullet.position);
+                    
                     scene.remove(bullet);
                     this.bullets.splice(i, 1);
                     
                     const bossHPFill = document.getElementById('bossHPFill');
-                    if(bossHPFill) bossHPFill.style.width = (this.bossHP / this.bossMaxHP * 100) + '%';
+                    if(bossHPFill) {
+                        bossHPFill.style.width = (this.bossHP / this.bossMaxHP * 100) + '%';
+                        if(this.bossHP < 30) bossHPFill.style.background = 'linear-gradient(90deg, #ff0000, #ff6666)';
+                    }
                     
                     if(this.bossHP <= 0 && !this.monologuesShown['boss_defeated']) {
                         this.monologuesShown['boss_defeated'] = true;
@@ -1209,54 +1419,101 @@ class Chapter3 {
                     continue;
                 }
                 
-                // Remover si está lejos
-                if(bullet.position.length() > 50) {
+                // Remover si está lejos o muy viejo
+                if(bullet.position.length() > 50 || bullet.userData.life > 5) {
                     scene.remove(bullet);
                     this.bullets.splice(i, 1);
                 }
             }
             
-            // Ataques del boss
-            if(this.bossAttacking && this.boss) {
-                this.bossAttackTimer += delta;
-                
-                // Animación de ataque
-                this.boss.position.y = 3.5 + Math.sin(Date.now() * 0.005) * 0.3;
-                this.boss.rotation.y += 0.02;
-                
-                // Ataque cada 3 segundos
-                if(this.bossAttackTimer >= 3) {
-                    this.bossAttackTimer = 0;
-                    this.playerHP -= 15;
+            // Actualizar proyectiles del boss
+            if(this.bossProjectiles) {
+                for(let i = this.bossProjectiles.length - 1; i >= 0; i--) {
+                    const proj = this.bossProjectiles[i];
+                    proj.position.add(proj.userData.velocity);
+                    proj.userData.life += delta;
                     
-                    const playerHPFill = document.getElementById('playerHPFill');
-                    if(playerHPFill) playerHPFill.style.width = (this.playerHP / 100 * 100) + '%';
+                    // Efecto visual
+                    proj.rotation.x += 0.15;
+                    proj.rotation.z += 0.15;
                     
-                    const attacks = [
-                        '¡El Rey Oscuro ataca!',
-                        'Rey Oscuro: "Inútil resistir..."',
-                        'Rey Oscuro: "Eres parte del experimento..."',
-                        'Rey Oscuro: "La verdad te destruirá..."'
-                    ];
-                    showMonologue(attacks[Math.floor(Math.random() * attacks.length)]);
+                    // Colisión con jugador
+                    if(proj.position.distanceTo(camera.position) < 1.5) {
+                        this.playerHP -= 20;
+                        const playerHPFill = document.getElementById('playerHPFill');
+                        if(playerHPFill) {
+                            playerHPFill.style.width = (this.playerHP / 100 * 100) + '%';
+                            if(this.playerHP < 30) playerHPFill.style.background = 'linear-gradient(90deg, #ff0000, #ff4444)';
+                        }
+                        
+                        showMonologue('¡Impacto directo!');
+                        scene.remove(proj);
+                        this.bossProjectiles.splice(i, 1);
+                        continue;
+                    }
                     
-                    if(this.playerHP <= 0 && !this.monologuesShown['player_defeated']) {
-                        this.monologuesShown['player_defeated'] = true;
-                        showMonologue('Has sido derrotado...');
-                        setTimeout(() => location.reload(), 2000);
+                    // Remover si está lejos o muy viejo
+                    if(proj.position.length() > 50 || proj.userData.life > 8) {
+                        scene.remove(proj);
+                        this.bossProjectiles.splice(i, 1);
                     }
                 }
+            }
+            
+            // Ataques del boss - Sistema de fases
+            if(this.bossAttacking && this.boss) {
+                this.bossAttackTimer += delta;
+                this.bossMovementTimer += delta;
                 
-                // Glitches cuando el boss está bajo de HP
-                if(this.bossHP < 50 && Math.random() < 0.01 && !this.monologuesShown['boss_glitch_' + Date.now()]) {
-                    const key = 'boss_glitch_' + Math.floor(Date.now() / 5000);
+                // Determinar fase según HP
+                if(this.bossHP > 66) this.bossPhase = 1;
+                else if(this.bossHP > 33) this.bossPhase = 2;
+                else this.bossPhase = 3;
+                
+                // Movimiento del boss
+                if(this.bossMovementTimer >= 2) {
+                    this.bossMovementTimer = 0;
+                    const positions = [
+                        new THREE.Vector3(0, 3.5, -15),
+                        new THREE.Vector3(-8, 3.5, -10),
+                        new THREE.Vector3(8, 3.5, -10),
+                        new THREE.Vector3(0, 3.5, -5)
+                    ];
+                    this.bossTargetPosition = positions[Math.floor(Math.random() * positions.length)];
+                }
+                
+                // Interpolar posición
+                this.boss.position.lerp(this.bossTargetPosition, 0.02);
+                this.boss.position.y += Math.sin(Date.now() * 0.008) * 0.5;
+                this.boss.rotation.y += 0.03;
+                
+                // Patrones de ataque por fase
+                const attackInterval = this.bossPhase === 1 ? 3 : this.bossPhase === 2 ? 2 : 1.5;
+                
+                if(this.bossAttackTimer >= attackInterval) {
+                    this.bossAttackTimer = 0;
+                    this.performBossAttack();
+                }
+                
+                // Efectos especiales por fase
+                if(this.bossPhase >= 2 && Math.random() < 0.005) {
+                    this.spawnBossProjectile();
+                }
+                
+                if(this.bossPhase >= 3 && Math.random() < 0.01) {
+                    this.createTempObstacle();
+                }
+                
+                // Glitches intensos en fase 3
+                if(this.bossPhase === 3 && Math.random() < 0.02) {
+                    const key = 'boss_glitch_' + Math.floor(Date.now() / 3000);
                     if(!this.monologuesShown[key]) {
                         this.monologuesShown[key] = true;
                         this.showGlitchEffect();
                         const glitchMessages = [
-                            'ERROR: DATOS CORRUPTOS',
-                            'ADVERTENCIA: REALIDAD INESTABLE',
-                            'SISTEMA: FALLO EN LA MATRIZ'
+                            'ERROR: REALIDAD FRAGMENTÁNDOSE',
+                            'ADVERTENCIA: COLAPSO DIMENSIONAL',
+                            'SISTEMA: PROTOCOLO DE EMERGENCIA ACTIVADO'
                         ];
                         showMonologue(glitchMessages[Math.floor(Math.random() * glitchMessages.length)]);
                     }

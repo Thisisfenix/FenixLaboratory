@@ -1,7 +1,7 @@
 {
-  "name": "FenixLaboratory v2.2.0",
+  "name": "FenixLaboratory v2.2.1",
   "short_name": "FenixLab",
-  "description": "PWA con copos de nieve navideños, guestbook completo y herramientas de dibujo",
+  "description": "PWA con 40 plushies escondidos, guestbook completo y sistema de logros",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1a1a1a",
@@ -56,6 +56,13 @@
       "short_name": "Logros",
       "description": "Ver mis logros y puntos",
       "url": "./index.html#logros",
+      "icons": [{ "src": "favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Plushie Hunt",
+      "short_name": "Plushies",
+      "description": "Buscar los 40 plushies escondidos",
+      "url": "./index.html",
       "icons": [{ "src": "favicon.svg", "sizes": "96x96" }]
     }
   ]
