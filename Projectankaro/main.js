@@ -380,22 +380,49 @@ function startGame() {
     }, 100);
 }
 
-// Animation loop
-let lastTime = 0;
+// Animation loop optimizado
 let frameCount = 0;
+let fpsCounter = 0;
+let lastFPSTime = 0;
+let currentFPS = 60;
+
+// Pools para evitar allocaciones
+const tempVector = new THREE.Vector3();
+const collisionChecks = [];
+
 function animate(time) {
     requestAnimationFrame(animate);
     
-    if (time - lastTime < 16.67) return;
-    lastTime = time;
+    // Control de FPS adaptativo
+    const delta = engine.update(time);
+    if (delta === null) return; // Skip frame
     
-    const delta = engine.update();
+    // Track performance
+    if (typeof performanceManager !== 'undefined') {
+        performanceManager.trackFrameTime(delta);
+    }
+    
+    // Contador de FPS
+    fpsCounter++;
+    if (time - lastFPSTime >= 1000) {
+        currentFPS = fpsCounter;
+        fpsCounter = 0;
+        lastFPSTime = time;
+        
+        // Ajustar calidad según FPS
+        if (currentFPS < 30) {
+            engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+        } else if (currentFPS > 50) {
+            engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        }
+    }
     
     if (gameState === 'lobby') {
         lobby.update(delta);
         playerManager.update(delta);
         
-        if (playerManager.localPlayer && playerManager.localPlayer.position && frameCount % 6 === 0) {
+        // Reducir frecuencia de broadcast
+        if (playerManager.localPlayer && playerManager.localPlayer.position && frameCount % 10 === 0) {
             supabaseNetwork.broadcastPosition(playerManager.localPlayer.position);
         }
     } else if (gameState === 'game') {
@@ -403,7 +430,8 @@ function animate(time) {
         playerManager.update(delta);
         game.update(delta);
         
-        if (frameCount % 10 === 0) updateMissionsUI();
+        // UI updates menos frecuentes
+        if (frameCount % 30 === 0) updateMissionsUI();
         
         if (playerManager.localPlayer) {
             const player = playerManager.localPlayer;
@@ -411,54 +439,78 @@ function animate(time) {
             const py = player.position.y;
             const pz = player.position.z;
             
-            for (let i = 0; i < game.items.length; i++) {
-                const item = game.items[i];
-                if (!item.userData.collected) {
-                    const dx = px - item.position.x;
-                    const dz = pz - item.position.z;
-                    if (dx * dx + dz * dz < 4) game.collectItem(player, item);
-                }
-            }
-            
-            for (let i = 0; i < game.fuses.length; i++) {
-                const fuse = game.fuses[i];
-                if (!fuse.userData.collected) {
-                    const dx = px - fuse.position.x;
-                    const dz = pz - fuse.position.z;
-                    if (dx * dx + dz * dz < 4) game.collectFuse(player, fuse);
-                }
-            }
-            
-            if (gameplay.keys['KeyE']) {
-                for (let i = 0; i < game.generators.length; i++) {
-                    const gen = game.generators[i];
-                    if (!gen.userData.repaired) {
-                        const dx = px - gen.position.x;
-                        const dz = pz - gen.position.z;
-                        if (dx * dx + dz * dz < 9) game.repairGenerator(player, gen);
+            // Optimizar collision checks - solo cada 3 frames
+            if (frameCount % 3 === 0) {
+                // Items
+                for (let i = 0; i < game.items.length; i++) {
+                    const item = game.items[i];
+                    if (!item.userData.collected) {
+                        tempVector.set(px - item.position.x, 0, pz - item.position.z);
+                        if (tempVector.lengthSq() < 4) game.collectItem(player, item);
                     }
                 }
                 
-                for (let i = 0; i < game.levers.length; i++) {
-                    const lever = game.levers[i];
-                    if (!lever.userData.activated) {
-                        const dx = px - lever.position.x;
-                        const dz = pz - lever.position.z;
-                        if (dx * dx + dz * dz < 4) game.activateLever(player, lever);
+                // Fuses
+                for (let i = 0; i < game.fuses.length; i++) {
+                    const fuse = game.fuses[i];
+                    if (!fuse.userData.collected) {
+                        tempVector.set(px - fuse.position.x, 0, pz - fuse.position.z);
+                        if (tempVector.lengthSq() < 4) game.collectFuse(player, fuse);
                     }
                 }
             }
             
-            game.checkEscape(player);
+            // Interacciones solo cuando se presiona E
+            if (gameplay.keys['KeyE'] && frameCount % 5 === 0) {
+                // Generators
+                for (let i = 0; i < game.generators.length; i++) {
+                    const gen = game.generators[i];
+                    if (!gen.userData.repaired) {
+                        tempVector.set(px - gen.position.x, 0, pz - gen.position.z);
+                        if (tempVector.lengthSq() < 9) game.repairGenerator(player, gen);
+                    }
+                }
+                
+                // Levers
+                for (let i = 0; i < game.levers.length; i++) {
+                    const lever = game.levers[i];
+                    if (!lever.userData.activated) {
+                        tempVector.set(px - lever.position.x, 0, pz - lever.position.z);
+                        if (tempVector.lengthSq() < 4) game.activateLever(player, lever);
+                    }
+                }
+            }
+            
+            // Check escape menos frecuente
+            if (frameCount % 10 === 0) {
+                game.checkEscape(player);
+            }
         }
         
-        if (playerManager.localPlayer && playerManager.localPlayer.position && frameCount % 3 === 0) {
+        // Network updates menos frecuentes
+        if (playerManager.localPlayer && playerManager.localPlayer.position && frameCount % 5 === 0) {
             supabaseNetwork.broadcastPosition(playerManager.localPlayer.position);
         }
     }
     
     engine.render();
     frameCount++;
+    
+    // Reset frameCount para evitar overflow
+    if (frameCount > 10000) frameCount = 0;
+}
+
+// Performance monitoring
+function showFPSCounter() {
+    const fpsDisplay = document.createElement('div');
+    fpsDisplay.id = 'fpsCounter';
+    fpsDisplay.style.cssText = 'position:fixed;top:10px;right:10px;background:rgba(0,0,0,0.8);color:#0f0;padding:5px 10px;font-family:monospace;font-size:12px;z-index:1000;border-radius:3px;';
+    document.body.appendChild(fpsDisplay);
+    
+    setInterval(() => {
+        fpsDisplay.textContent = `FPS: ${currentFPS}`;
+        fpsDisplay.style.color = currentFPS < 30 ? '#f00' : currentFPS < 50 ? '#ff0' : '#0f0';
+    }, 1000);
 }
 
 // Start - Esperar a que todo cargue
@@ -471,6 +523,11 @@ function tryInit() {
     if (typeof THREE !== 'undefined') {
         console.log('THREE.js loaded, initializing...');
         init();
+        
+        // Mostrar contador FPS en desarrollo
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            showFPSCounter();
+        }
     } else if (loadAttempts < maxAttempts) {
         console.log(`Waiting for THREE.js... (${loadAttempts}/${maxAttempts})`);
         setTimeout(tryInit, 500);

@@ -2922,8 +2922,8 @@
         }
 
         let lastTime = 0;
-        const targetFPS = 60;
-        const frameTime = 1000 / targetFPS;
+        const maxFPS = Math.min(screen.refreshRate || 60, 120); // Detectar refresh rate
+        const frameTime = 1000 / maxFPS;
 
         function animate(currentTime) {
             requestAnimationFrame(animate);

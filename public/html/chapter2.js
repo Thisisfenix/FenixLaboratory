@@ -49,8 +49,9 @@ class Chapter2 {
         this.targetHeight = 1.6;
         this.currentHeight = 1.6;
         
-        // Limitador de framerate para 144Hz
-        this.maxDelta = 1/60; // Limitar a 60 FPS equivalente
+        // Limitador de framerate adaptativo
+        this.maxFPS = Math.min(screen.refreshRate || 60, 120);
+        this.maxDelta = 1/this.maxFPS;
         
         // Sistemas de exploración
         this.terminalsRead = 0;

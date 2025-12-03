@@ -2,9 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Project Ankaro - Multiplayer Horror Game</title>
     <link rel="icon" type="image/png" href="../public/assets/icons/ankush.png">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script">
+    <link rel="preload" href="styles.css" as="style">
     
     <!-- Discord/Social Media Embeds -->
     <meta property="og:title" content="Project Ankaro - Multiplayer Horror Game">
@@ -85,31 +92,60 @@
     </div>
     
     <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
     
     <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    
     
     <!-- PeerJS for Voice -->
-    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js" defer></script>
     
     <!-- Engine Core -->
-    <script src="engine.js"></script>
+    <script src="engine.js" defer></script>
+    
+    <!-- Performance Manager -->
+    <script src="performance.js" defer></script>
     
     <!-- Platform Detection -->
-    <script src="platform.js"></script>
+    <script src="platform.js" defer></script>
     
     <!-- Game Modules -->
-    <script src="supabase.js"></script>
-    <script src="voice.js"></script>
-    <script src="audio.js"></script>
-    <script src="player.js"></script>
-    <script src="lobby.js"></script>
-    <script src="network.js"></script>
-    <script src="gameplay.js"></script>
-    <script src="game.js"></script>
+    <script src="supabase.js" defer></script>
+    <script src="voice.js" defer></script>
+    <script src="audio.js" defer></script>
+    <script src="player.js" defer></script>
+    <script src="lobby.js" defer></script>
+    <script src="network.js" defer></script>
+    <script src="gameplay.js" defer></script>
+    <script src="game.js" defer></script>
     
     <!-- Init -->
-    <script src="main.js"></script>
+    <script src="main.js" defer></script>
+    
+    <!-- Performance optimizations -->
+    <script>
+        // Disable context menu for better mobile performance
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        
+        // Prevent zoom on mobile
+        document.addEventListener('touchstart', e => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+        
+        // Optimize for high refresh rate displays
+        if (screen.refreshRate > 60) {
+            document.documentElement.style.setProperty('--target-fps', Math.min(screen.refreshRate, 120));
+        }
+        
+        // Memory management
+        let memoryWarningShown = false;
+        setInterval(() => {
+            if (performance.memory && performance.memory.usedJSHeapSize > 100 * 1024 * 1024 && !memoryWarningShown) {
+                console.warn('High memory usage detected, consider reloading');
+                memoryWarningShown = true;
+            }
+        }, 30000);
+    </script>
 </body>
 </html>

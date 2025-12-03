@@ -22,8 +22,9 @@ class Chapter4 {
         this.randomEvents = [];
         this.monologuesShown = {};
         
-        // Limitador de framerate para 144Hz
-        this.maxDelta = 1/60; // Limitar a 60 FPS equivalente
+        // Limitador de framerate adaptativo
+        this.maxFPS = Math.min(screen.refreshRate || 60, 120);
+        this.maxDelta = 1/this.maxFPS;
     }
 
     start() {
