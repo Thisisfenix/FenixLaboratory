@@ -161,14 +161,20 @@ class SecurityManager {
   }
 
   async verifyIntegrity() {
-    if (window.isAdminLoggedIn && !await this.validateSession()) {
-      console.warn('⚠️ Sesión inválida detectada');
-      this.forceLogout();
+    // No verificar integridad si no hay usuario logueado
+    if (!window.currentUser) return;
+    
+    // Admins no necesitan token de sesión en Firebase
+    if (window.currentUser.role === 'admin') {
+      return;
     }
     
-    if (window.currentUser && !this.sessionToken) {
-      console.warn('⚠️ Usuario sin sesión válida');
-      this.forceLogout();
+    // Solo verificar sesión para moderadores
+    if (window.currentUser.role === 'moderator') {
+      if (!await this.validateSession()) {
+        console.warn('⚠️ Sesión de moderador inválida');
+        this.forceLogout();
+      }
     }
   }
 
