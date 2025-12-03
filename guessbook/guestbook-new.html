@@ -5547,5 +5547,52 @@
       }, { passive: true });
     }
   </script>
+  
+  <!-- Sistema de Seguridad v2.2.1 -->
+  <script src="js/security.js"></script>
+  
+  <!-- Validación adicional de permisos -->
+  <script>
+    // Verificar que el usuario tenga permisos reales en Firebase
+    async function verifyUserPermissions() {
+      if (!window.currentUser || !window.isAdminLoggedIn) return;
+      
+      try {
+        // Verificar si el usuario tiene tag de MOD o ADMIN en Firebase
+        const username = window.currentUser.username || window.currentUser.name;
+        const userDoc = await window.app.firebase.db.collection('user_profiles')
+          .where('username', '==', username)
+          .limit(1)
+          .get();
+        
+        if (userDoc.empty) {
+          console.warn('⚠️ Usuario no encontrado en base de datos');
+          window.securityManager.forceLogout();
+          return;
+        }
+        
+        const userData = userDoc.docs[0].data();
+        const tags = userData.tags || [];
+        
+        // Verificar que tenga tag de MOD o ADMIN
+        if (!tags.includes('MOD') && !tags.includes('ADMIN') && !tags.includes('OWNER')) {
+          console.warn('⚠️ Usuario sin permisos de moderación');
+          alert('⚠️ No tienes permisos de moderador. Acceso denegado.');
+          window.securityManager.forceLogout();
+          return;
+        }
+        
+        console.log('✅ Permisos verificados:', tags);
+      } catch (error) {
+        console.error('Error verificando permisos:', error);
+      }
+    }
+    
+    // Verificar permisos al cargar y cada 30 segundos
+    setTimeout(() => {
+      verifyUserPermissions();
+      setInterval(verifyUserPermissions, 30000);
+    }, 2000);
+  </script>
 </body>
 </html>
