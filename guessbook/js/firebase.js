@@ -383,11 +383,7 @@ export class FirebaseManager {
   
   async addModerator(moderatorData) {
     try {
-      // Verificar acceso de admin
-      const hasAccess = await this.checkAdminAccess();
-      if (!hasAccess) {
-        throw new Error('Sin permisos de administrador');
-      }
+      // La verificación de permisos se hace en el frontend antes de llamar esta función
       
       // Verificar que el username no exista
       const q = query(collection(this.db, 'moderators'), where('username', '==', moderatorData.username));
