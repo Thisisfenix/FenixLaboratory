@@ -22,11 +22,18 @@ window.loginAdmin = async function() {
     
     const currentProfile = window.guestbookApp.profiles.currentProfile;
     
+    // Obtener usuario de la base de datos
+    const user = window.guestbookApp.profiles.users.get(currentProfile.username.toLowerCase());
+    if (!user) {
+      alert('❌ Error: Usuario no encontrado en la base de datos');
+      return;
+    }
+    
     // Verificar contraseña del perfil (hasheada)
     const passwordHash = await window.guestbookApp.profiles.hashPassword(password);
     const legacyHash = window.guestbookApp.profiles.legacyHashPassword(password);
     
-    if (currentProfile.passwordHash !== passwordHash && currentProfile.passwordHash !== legacyHash) {
+    if (user.passwordHash !== passwordHash && user.passwordHash !== legacyHash) {
       alert('❌ Contraseña incorrecta');
       return;
     }

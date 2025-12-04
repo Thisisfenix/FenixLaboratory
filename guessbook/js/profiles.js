@@ -1295,6 +1295,28 @@ export class ProfileManager {
     
     if (saveBtn) {
       saveBtn.addEventListener('click', async () => {
+        // Pedir contraseña para confirmar cambios
+        const password = prompt('🔒 Ingresa tu contraseña para confirmar los cambios:');
+        if (!password) {
+          alert('⚠️ Debes ingresar tu contraseña para actualizar el perfil');
+          return;
+        }
+        
+        // Verificar contraseña
+        const user = this.users.get(this.currentProfile.username.toLowerCase());
+        if (!user) {
+          alert('❌ Error: Usuario no encontrado');
+          return;
+        }
+        
+        const currentHash = await this.hashPassword(password);
+        const legacyHash = this.legacyHashPassword(password);
+        
+        if (user.passwordHash !== currentHash && user.passwordHash !== legacyHash) {
+          alert('❌ Contraseña incorrecta');
+          return;
+        }
+        
         // Preservar datos actuales antes de guardar
         const preservedData = {
           avatar: this.currentProfile.avatar,
