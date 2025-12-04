@@ -29,12 +29,19 @@
         }
         .monologue {
             position: fixed;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 18px;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 20px;
             pointer-events: none;
             opacity: 0;
             transition: opacity 1s;
-            text-shadow: 2px 2px 6px #000;
+            text-shadow: 0 0 10px rgba(255,0,0,0.8), 2px 2px 8px #000;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 25px;
+            border-radius: 8px;
+            border-left: 4px solid #ff0000;
+            backdrop-filter: blur(5px);
+            max-width: 500px;
+            letter-spacing: 1px;
         }
         #intro {
             position: fixed;
@@ -42,7 +49,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000;
+            background: linear-gradient(135deg, #000000 0%, #1a0000 50%, #000000 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -50,6 +57,19 @@
             z-index: 2000;
             opacity: 1;
             transition: opacity 2s;
+            overflow: hidden;
+        }
+        #intro::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, transparent 70%);
+            animation: pulseBackground 8s ease-in-out infinite;
+        }
+        @keyframes pulseBackground {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.6; }
         }
         #intro.hidden {
             opacity: 0;
@@ -57,15 +77,19 @@
         }
         .intro-text {
             color: #fff;
-            font-size: 24px;
+            font-size: 28px;
             text-align: center;
             margin: 20px;
             opacity: 0;
             animation: fadeInOut 4s ease-in-out;
+            text-shadow: 0 0 20px rgba(255,0,0,0.8), 0 0 40px rgba(255,0,0,0.4);
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
         }
         @keyframes fadeInOut {
-            0%, 100% { opacity: 0; }
-            20%, 80% { opacity: 1; }
+            0%, 100% { opacity: 0; transform: translateY(20px); }
+            20%, 80% { opacity: 1; transform: translateY(0); }
         }
         #location {
             position: fixed;
@@ -77,21 +101,38 @@
             pointer-events: none;
             z-index: 100;
             transition: opacity 1s;
+            background: rgba(0,0,0,0.9);
+            padding: 40px 60px;
+            border: 3px solid #ff0000;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(255,0,0,0.6), inset 0 0 30px rgba(255,0,0,0.2);
         }
         #location.show {
             opacity: 1;
+            animation: locationPulse 2s ease-in-out;
+        }
+        @keyframes locationPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
         }
         .location-title {
-            font-size: 48px;
+            font-size: 56px;
             color: #ff0000;
-            text-shadow: 0 0 30px #ff0000;
-            margin-bottom: 10px;
-            letter-spacing: 8px;
+            text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000, 0 0 90px #ff0000;
+            margin-bottom: 15px;
+            letter-spacing: 12px;
+            font-weight: bold;
+            animation: glitchText 0.3s infinite;
+        }
+        @keyframes glitchText {
+            0%, 100% { text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000; }
+            50% { text-shadow: 2px 0 30px #ff0000, -2px 0 60px #00ffff; }
         }
         .location-subtitle {
-            font-size: 24px;
-            color: rgba(255, 255, 255, 0.8);
-            text-shadow: 2px 2px 8px #000;
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 2px 2px 8px #000, 0 0 20px rgba(255,0,0,0.5);
+            letter-spacing: 4px;
         }
         #lore {
             position: fixed;
@@ -1666,8 +1707,41 @@
             playHallwayAudio();
         }
 
+        function triggerLightning() {
+            const flash = document.createElement('div');
+            flash.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(255,255,255,0.8); z-index: 95; pointer-events: none;
+            `;
+            document.body.appendChild(flash);
+            
+            scene.children.forEach(child => {
+                if(child instanceof THREE.AmbientLight) {
+                    child.intensity = 3;
+                }
+            });
+            
+            setTimeout(() => {
+                flash.remove();
+                scene.children.forEach(child => {
+                    if(child instanceof THREE.AmbientLight) {
+                        child.intensity = 0;
+                    }
+                });
+            }, 100);
+            
+            if(thunderAudio) {
+                setTimeout(() => {
+                    const thunder = thunderAudio.cloneNode();
+                    thunder.volume = 0.5 * masterVolume;
+                    thunder.play().catch(() => {});
+                }, 300);
+            }
+            
+            vibrateGamepad(200, 0.4, 0.4);
+        }
+
         function loadGrassZone() {
-            // Cargar audios de zona de pasto
             chaseAudio = new Audio('stuff/2019chase.mp3');
             chaseAudio.volume = 0.7 * masterVolume;
             chaseAudio.loop = true;
@@ -1678,6 +1752,9 @@
             rainAudio = new Audio('stuff/lluvia.mp3');
             rainAudio.volume = 0.4 * masterVolume;
             rainAudio.loop = true;
+            
+            thunderAudio = new Audio('stuff/disparo.mp3');
+            thunderAudio.volume = 0.5 * masterVolume;
             
             grassWalkAudio = new Audio('stuff/caminarpasto.mp3');
             grassWalkAudio.volume = 0.3 * masterVolume;
@@ -3427,6 +3504,65 @@
                 }
             }
 
+            // Animar partículas de polvo
+            if(dustParticles.length > 0) {
+                dustParticles.forEach(dust => {
+                    dust.position.add(dust.userData.velocity);
+                    if(dust.position.y > 4) dust.position.y = 0.5;
+                    if(dust.position.y < 0.5) dust.position.y = 4;
+                });
+            }
+            
+            // Animar vapor
+            if(steamParticles.length > 0) {
+                steamParticles.forEach(steam => {
+                    steam.position.add(steam.userData.velocity);
+                    if(steam.position.y > steam.userData.maxY) {
+                        steam.position.y = steam.userData.startY;
+                        steam.position.x += (Math.random() - 0.5) * 0.5;
+                    }
+                });
+            }
+            
+            // Animar chispas eléctricas
+            if(sparkParticles.length > 0) {
+                sparkParticles.forEach(spark => {
+                    const sp = spark.userData.sparkPoint;
+                    sp.timer++;
+                    
+                    if(sp.timer >= sp.interval) {
+                        spark.userData.life++;
+                        spark.material.opacity = Math.min(1, spark.userData.life / 10);
+                        spark.position.add(spark.userData.velocity);
+                        
+                        if(spark.userData.life >= spark.userData.maxLife) {
+                            spark.userData.life = 0;
+                            spark.material.opacity = 0;
+                            spark.position.copy(sp.position);
+                            sp.timer = 0;
+                        }
+                    }
+                });
+            }
+            
+            // Luces parpadeantes
+            if(flickeringLights.length > 0) {
+                flickeringLights.forEach(light => {
+                    if(Math.random() < light.userData.flickerSpeed) {
+                        light.intensity = Math.random() < 0.3 ? 0 : light.userData.baseIntensity * (0.5 + Math.random() * 0.5);
+                    }
+                });
+            }
+            
+            // Relámpagos en zona de césped
+            if(onGrass && !killerChasing) {
+                lightningTimer++;
+                if(lightningTimer > 200 + Math.random() * 300) {
+                    lightningTimer = 0;
+                    triggerLightning();
+                }
+            }
+            
             // Animar cables colgantes
             if(hangingCables.length > 0) {
                 const time = Date.now() * 0.001;
@@ -3794,6 +3930,13 @@
             }, 5000);
         }
 
+        let dustParticles = [];
+        let lightningTimer = 0;
+        let thunderAudio;
+        let sparkParticles = [];
+        let steamParticles = [];
+        let flickeringLights = [];
+
         function createStartRoom() {
             const roomMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.9, metalness: 0, flatShading: true });
             
@@ -3806,6 +3949,70 @@
             floor.position.z = -5;
             floor.receiveShadow = true;
             scene.add(floor);
+            
+            // Partículas de polvo flotando
+            for(let i = 0; i < 30; i++) {
+                const dust = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.02, 4, 4),
+                    new THREE.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.3 })
+                );
+                dust.position.set(
+                    (Math.random() - 0.5) * 8,
+                    Math.random() * 3 + 0.5,
+                    -5 + (Math.random() - 0.5) * 8
+                );
+                dust.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.002,
+                    Math.random() * 0.005 + 0.002,
+                    (Math.random() - 0.5) * 0.002
+                );
+                scene.add(dust);
+                dustParticles.push(dust);
+            }
+            
+            // Silla rota
+            const brokenChair = new THREE.Group();
+            const seat = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 0.05, 0.4),
+                new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.9 })
+            );
+            seat.position.y = 0.3;
+            seat.rotation.z = 0.3;
+            brokenChair.add(seat);
+            
+            const leg1 = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.03, 0.3, 6),
+                new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.9 })
+            );
+            leg1.position.set(-0.15, 0.15, -0.15);
+            brokenChair.add(leg1);
+            
+            const leg2 = leg1.clone();
+            leg2.position.set(0.15, 0.1, 0.15);
+            leg2.rotation.z = 0.2;
+            brokenChair.add(leg2);
+            
+            brokenChair.position.set(-3, 0, -7);
+            scene.add(brokenChair);
+            
+            // Grietas con luz filtrándose
+            for(let i = 0; i < 3; i++) {
+                const crack = new THREE.Mesh(
+                    new THREE.PlaneGeometry(0.1, 1.5),
+                    new THREE.MeshBasicMaterial({ color: 0xff6600, transparent: true, opacity: 0.4 })
+                );
+                crack.position.set(
+                    i === 0 ? -4.9 : (i === 1 ? 4.9 : (Math.random() - 0.5) * 8),
+                    2 + Math.random(),
+                    -10 + Math.random() * 2
+                );
+                crack.rotation.y = i === 0 ? Math.PI / 2 : (i === 1 ? -Math.PI / 2 : 0);
+                scene.add(crack);
+                
+                const crackLight = new THREE.PointLight(0xff6600, 0.3, 3);
+                crackLight.position.copy(crack.position);
+                scene.add(crackLight);
+            }
 
             // Paredes
             const walls = [
@@ -3922,6 +4129,46 @@
             const grassMat = new THREE.MeshStandardMaterial({ color: 0x1a3a0a, roughness: 1, metalness: 0 });
             const bushMat = new THREE.MeshStandardMaterial({ color: 0x2a4a1a, roughness: 0.9, metalness: 0 });
             
+            // Niebla densa a nivel del suelo
+            for(let z = 1000; z < 1800; z += 40) {
+                for(let i = 0; i < 8; i++) {
+                    const fog = new THREE.Mesh(
+                        new THREE.SphereGeometry(1.5, 6, 6),
+                        new THREE.MeshBasicMaterial({ color: 0xaaaaaa, transparent: true, opacity: 0.15 })
+                    );
+                    fog.position.set(
+                        (Math.random() - 0.5) * 10,
+                        0.3,
+                        z + (Math.random() - 0.5) * 35
+                    );
+                    fog.scale.set(1, 0.4, 1);
+                    scene.add(fog);
+                }
+            }
+            
+            // Árboles caídos como obstáculos (cada 100m)
+            for(let z = 1050; z < 1800; z += 100) {
+                const fallenTree = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.3, 0.4, 4, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.9 })
+                );
+                fallenTree.rotation.z = Math.PI / 2;
+                fallenTree.position.set((Math.random() - 0.5) * 6, 0.3, z);
+                scene.add(fallenTree);
+                obstacles.push(fallenTree);
+            }
+            
+            // Charcos más grandes (cada 60m)
+            for(let z = 1020; z < 1800; z += 60) {
+                const puddle = new THREE.Mesh(
+                    new THREE.CircleGeometry(1.2, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x1a3a4a, roughness: 0.1, metalness: 0.9 })
+                );
+                puddle.rotation.x = -Math.PI / 2;
+                puddle.position.set((Math.random() - 0.5) * 6, 0.01, z);
+                scene.add(puddle);
+            }
+            
             // Pasto alto (cada 30m)
             for(let z = 1000; z < 1800; z += 30) {
                 for(let i = 0; i < 8; i++) {
@@ -3977,11 +4224,81 @@
         }
         
         function createSecondHallwayAmbience(pipeMat, bloodMat, crackMat) {
-            // TEMÁTICA INDUSTRIAL - Paredes de metal oxidado
             const metalMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9, metalness: 0.6 });
             const rustMat = new THREE.MeshStandardMaterial({ color: 0x5a3a2a, roughness: 1, metalness: 0.3 });
             
-            // Tuberías industriales grandes (cada 80m)
+            // Luces rojas de emergencia (cada 50m)
+            for(let z = 1820; z < 2500; z += 50) {
+                const emergencyLight = new THREE.PointLight(0xff0000, 1.5, 15);
+                emergencyLight.position.set((Math.random() - 0.5) * 4, 3.5, z);
+                emergencyLight.userData.flickerSpeed = 0.1;
+                emergencyLight.userData.baseIntensity = 1.5;
+                scene.add(emergencyLight);
+                flickeringLights.push(emergencyLight);
+            }
+            
+            // Barriles metálicos (cada 70m)
+            for(let z = 1850; z < 2500; z += 70) {
+                const barrel = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.4, 0.4, 1, 8),
+                    rustMat
+                );
+                barrel.position.set((Math.random() - 0.5) * 7, 0.5, z + (Math.random() - 0.5) * 10);
+                scene.add(barrel);
+            }
+            
+            // Cajas metálicas (cada 60m)
+            for(let z = 1870; z < 2500; z += 60) {
+                for(let i = 0; i < 2; i++) {
+                    const crate = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.8, 0.8, 0.8),
+                        metalMat
+                    );
+                    crate.position.set(
+                        (Math.random() - 0.5) * 6,
+                        0.4,
+                        z + i * 2
+                    );
+                    crate.rotation.y = Math.random() * Math.PI;
+                    scene.add(crate);
+                }
+            }
+            
+            // Señales de peligro luminosas (cada 90m)
+            for(let z = 1900; z < 2500; z += 90) {
+                const side = Math.random() > 0.5 ? -4.9 : 4.9;
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, 256, 256);
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.moveTo(128, 40);
+                ctx.lineTo(220, 200);
+                ctx.lineTo(36, 200);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 80px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('!', 128, 170);
+                const texture = new THREE.CanvasTexture(canvas);
+                const sign = new THREE.Mesh(
+                    new THREE.PlaneGeometry(1.5, 1.5),
+                    new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+                );
+                sign.position.set(side, 2.5, z);
+                sign.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
+                scene.add(sign);
+                
+                const signLight = new THREE.PointLight(0xff0000, 0.8, 5);
+                signLight.position.copy(sign.position);
+                scene.add(signLight);
+            }
+            
+            // Tuberías con vapor (cada 80m)
             for(let z = 1850; z < 2500; z += 80) {
                 const bigPipe = new THREE.Mesh(
                     new THREE.CylinderGeometry(0.3, 0.3, 60, 8),
@@ -3990,6 +4307,53 @@
                 bigPipe.rotation.z = Math.PI / 2;
                 bigPipe.position.set(Math.random() > 0.5 ? -4.7 : 4.7, 3, z);
                 scene.add(bigPipe);
+                
+                // Vapor saliendo
+                for(let i = 0; i < 3; i++) {
+                    const steam = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.2, 6, 6),
+                        new THREE.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.3 })
+                    );
+                    steam.position.copy(bigPipe.position);
+                    steam.position.x += (Math.random() - 0.5) * 2;
+                    steam.position.y -= 0.5;
+                    steam.userData.velocity = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.02,
+                        Math.random() * 0.03 + 0.02,
+                        (Math.random() - 0.5) * 0.02
+                    );
+                    steam.userData.maxY = bigPipe.position.y + 1.5;
+                    steam.userData.startY = steam.position.y;
+                    scene.add(steam);
+                    steamParticles.push(steam);
+                }
+            }
+            
+            // Puntos de chispas eléctricas (cada 100m)
+            for(let z = 1880; z < 2500; z += 100) {
+                const sparkPoint = {
+                    position: new THREE.Vector3((Math.random() - 0.5) * 6, 2.5 + Math.random(), z),
+                    timer: Math.random() * 100,
+                    interval: 80 + Math.random() * 40
+                };
+                
+                for(let i = 0; i < 5; i++) {
+                    const spark = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.05, 4, 4),
+                        new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0 })
+                    );
+                    spark.position.copy(sparkPoint.position);
+                    spark.userData.sparkPoint = sparkPoint;
+                    spark.userData.velocity = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.05,
+                        -Math.random() * 0.05 - 0.02,
+                        (Math.random() - 0.5) * 0.05
+                    );
+                    spark.userData.life = 0;
+                    spark.userData.maxLife = 20 + Math.random() * 20;
+                    scene.add(spark);
+                    sparkParticles.push(spark);
+                }
             }
             
             // Zonas estratégicas de cadenas (3 zonas concentradas)
@@ -4081,9 +4445,98 @@
         }
         
         function createHallwayAmbience(pipeMat, bloodMat, crackMat) {
+            // Luces parpadeantes (cada 60m)
+            for(let z = 30; z < 1000; z += 60) {
+                const flickerLight = new THREE.PointLight(0xffaa66, 0.8, 20);
+                flickerLight.position.set((Math.random() - 0.5) * 4, 3.5, z);
+                flickerLight.userData.flickerSpeed = 0.05 + Math.random() * 0.1;
+                flickerLight.userData.baseIntensity = 0.8;
+                scene.add(flickerLight);
+                flickeringLights.push(flickerLight);
+            }
+            
+            // Puertas semi-abiertas con luz roja (cada 120m)
+            for(let z = 80; z < 1000; z += 120) {
+                const side = Math.random() > 0.5 ? -4.8 : 4.8;
+                const doorFrame = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.2, 2.5, 1.5),
+                    new THREE.MeshStandardMaterial({ color: 0x3a2a1a, roughness: 0.9 })
+                );
+                doorFrame.position.set(side, 1.25, z);
+                scene.add(doorFrame);
+                
+                const door = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.15, 2.3, 1.3),
+                    new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.9 })
+                );
+                door.position.set(side * 0.9, 1.25, z + 0.3);
+                door.rotation.y = side < 0 ? -0.5 : 0.5;
+                scene.add(door);
+                
+                const redLight = new THREE.PointLight(0xff0000, 1.2, 8);
+                redLight.position.set(side * 0.8, 1.5, z);
+                scene.add(redLight);
+            }
+            
+            // Muebles volcados (cada 90m)
+            for(let z = 60; z < 1000; z += 90) {
+                const furniture = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.8, 0.4, 0.6),
+                    new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.9 })
+                );
+                furniture.position.set((Math.random() - 0.5) * 6, 0.2, z);
+                furniture.rotation.set(Math.random() * 0.5, Math.random() * Math.PI, Math.random() * 0.5);
+                scene.add(furniture);
+            }
+            
+            // Grafitis en paredes (cada 100m)
+            const graffitis = ['CORRE', 'NO MIRES ATRÁS', 'ÉL VIENE', 'SALIDA →', 'AYUDA'];
+            for(let z = 70; z < 1000; z += 100) {
+                const side = Math.random() > 0.5 ? -4.9 : 4.9;
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'rgba(0,0,0,0)';
+                ctx.fillRect(0, 0, 256, 128);
+                ctx.fillStyle = '#aa0000';
+                ctx.font = 'bold 40px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(graffitis[Math.floor(Math.random() * graffitis.length)], 128, 70);
+                const texture = new THREE.CanvasTexture(canvas);
+                const graffiti = new THREE.Mesh(
+                    new THREE.PlaneGeometry(2, 1),
+                    new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+                );
+                graffiti.position.set(side, 1.5, z);
+                graffiti.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
+                scene.add(graffiti);
+            }
+            
+            // Efectos de polvo/humo (cada 80m)
+            for(let z = 50; z < 1000; z += 80) {
+                for(let i = 0; i < 5; i++) {
+                    const smoke = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.15, 6, 6),
+                        new THREE.MeshBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.2 })
+                    );
+                    smoke.position.set(
+                        (Math.random() - 0.5) * 8,
+                        Math.random() * 2 + 0.5,
+                        z + (Math.random() - 0.5) * 10
+                    );
+                    smoke.userData.velocity = new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.01,
+                        Math.random() * 0.02 + 0.01,
+                        (Math.random() - 0.5) * 0.01
+                    );
+                    scene.add(smoke);
+                    dustParticles.push(smoke);
+                }
+            }
+            
             // Tuberías en las paredes (cada 100m)
             for(let z = 50; z < 1000; z += 100) {
-                // Tubería izquierda
                 const pipeL = new THREE.Mesh(
                     new THREE.CylinderGeometry(0.15, 0.15, 50, 6),
                     pipeMat
@@ -4092,7 +4545,6 @@
                 pipeL.position.set(-4.8, 2.5, z);
                 scene.add(pipeL);
                 
-                // Tubería derecha
                 const pipeR = pipeL.clone();
                 pipeR.position.set(4.8, 2.5, z);
                 scene.add(pipeR);

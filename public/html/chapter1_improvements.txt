@@ -1,0 +1,75 @@
+MEJORAS VISUALES PARA EL MAPA DEL CAPÍTULO 1
+==============================================
+
+ZONA 1: HABITACIÓN INICIAL (0-10m)
+-----------------------------------
+✅ Ya tiene: Mesa, linterna, cuadro de Gissel, luz de techo
+❌ LE FALTA:
+- Sombras más dramáticas
+- Partículas de polvo flotando
+- Grietas en las paredes con luz filtrándose
+- Objetos decorativos (silla rota, libros tirados)
+- Efecto de niebla sutil al salir
+
+ZONA 2: PASILLO OSCURO (0-1000m)
+---------------------------------
+✅ Ya tiene: Tuberías, cables, manchas de sangre, grietas rojas, puertas cerradas
+❌ LE FALTA:
+- Luces parpadeantes intermitentes
+- Más variedad de obstáculos (escombros, muebles volcados)
+- Charcos con reflejos
+- Sombras proyectadas dinámicas
+- Efectos de partículas (polvo, humo)
+- Sonidos ambientales más variados
+- Puertas semi-abiertas con luz roja
+- Grafitis en las paredes
+
+ZONA 3: CÉSPED CON LLUVIA (1000-1800m)
+---------------------------------------
+✅ Ya tiene: Pasto, arbustos, árboles, lluvia
+❌ LE FALTA:
+- Relámpagos ocasionales que iluminan todo
+- Charcos de agua más grandes
+- Niebla densa a nivel del suelo
+- Árboles caídos como obstáculos
+- Rocas grandes
+- Efectos de viento (pasto moviéndose)
+- Sonido de truenos
+- Iluminación ambiental más oscura
+- Más vegetación densa
+
+ZONA 4: PASILLO INDUSTRIAL (1800-2500m)
+----------------------------------------
+✅ Ya tiene: Paredes metálicas, tuberías, ventiladores, máquinas, cadenas
+❌ LE FALTA:
+- Luces rojas de emergencia parpadeando
+- Vapor saliendo de tuberías
+- Chispas eléctricas ocasionales
+- Más cables colgantes
+- Cajas metálicas apiladas
+- Barriles oxidados
+- Señales de peligro luminosas
+- Piso de rejilla metálica en algunas secciones
+- Más efectos de óxido y deterioro
+- Luces estroboscópicas en zonas específicas
+
+EFECTOS GLOBALES FALTANTES:
+---------------------------
+- Sistema de partículas más robusto
+- Iluminación volumétrica (god rays)
+- Oclusión ambiental
+- Reflejos en superficies mojadas
+- Sombras dinámicas de mejor calidad
+- Efectos de post-procesamiento (bloom, aberración cromática)
+- Transiciones más suaves entre zonas
+- Más variedad en texturas
+- Detalles en paredes (grietas, manchas, grafitis)
+- Objetos interactivos decorativos
+
+PRIORIDAD ALTA:
+---------------
+1. Relámpagos en zona de césped
+2. Luces parpadeantes en pasillo
+3. Vapor/humo en zona industrial
+4. Más obstáculos variados
+5. Efectos de partículas mejorados

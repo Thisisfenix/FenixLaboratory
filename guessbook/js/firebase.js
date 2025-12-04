@@ -315,14 +315,40 @@ export class FirebaseManager {
     }
   }
   
-  async checkAdminAccess() {
+  async checkAdminAccess(password) {
     try {
       // Verificar dominio autorizado
       const currentDomain = window.location.hostname;
       const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
       
-      if (authorizedDomains.includes(currentDomain)) {
-        return { role: 'admin', permissions: ['all'] };
+      if (!authorizedDomains.includes(currentDomain)) {
+        return false;
+      }
+      
+      // Verificar contraseña desde Firebase
+      if (!password) {
+        return false;
+      }
+      
+      try {
+        const docRef = doc(this.db, 'system_config', 'admin_credentials');
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          
+          // Verificar contraseña de admin
+          if (data.adminPassword && password === data.adminPassword) {
+            return { role: 'admin', permissions: ['all'] };
+          }
+          
+          // Verificar contraseña de moderador
+          if (data.moderatorPassword && password === data.moderatorPassword) {
+            return { role: 'moderator_access', permissions: ['moderate'] };
+          }
+        }
+      } catch (error) {
+        console.error('Error verificando credenciales:', error);
       }
       
       return false;

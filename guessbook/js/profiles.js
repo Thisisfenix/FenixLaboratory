@@ -49,6 +49,9 @@ export class ProfileManager {
       if (firebaseUsers) {
         this.users = new Map(firebaseUsers.map(user => [user.username.toLowerCase(), user]));
         console.log(`✅ ${this.users.size} usuarios cargados desde Firebase`);
+        
+        // Migrar hashes antiguos automáticamente
+        await this.migrateOldHashes();
       }
     } catch (error) {
       console.warn('Error cargando usuarios desde Firebase:', error);
@@ -58,6 +61,38 @@ export class ProfileManager {
         const usersArray = JSON.parse(savedUsers);
         this.users = new Map(usersArray.map(user => [user.username.toLowerCase(), user]));
       }
+    }
+  }
+  
+  async migrateOldHashes() {
+    let migratedCount = 0;
+    const usersToMigrate = [];
+    
+    // Detectar usuarios con hash antiguo (hash corto, menos de 20 caracteres)
+    for (const [username, user] of this.users.entries()) {
+      if (user.passwordHash && user.passwordHash.length < 20) {
+        usersToMigrate.push({ username, user });
+      }
+    }
+    
+    if (usersToMigrate.length === 0) {
+      console.log('✅ Todos los usuarios ya tienen hash seguro');
+      return;
+    }
+    
+    console.log(`🔄 Migrando ${usersToMigrate.length} usuarios a hash seguro...`);
+    console.warn('⚠️ NOTA: Los usuarios deberán usar su contraseña original en el próximo login');
+    
+    // NO podemos migrar sin la contraseña original
+    // Solo marcar para migración en el próximo login
+    for (const { username, user } of usersToMigrate) {
+      user.needsHashMigration = true;
+      migratedCount++;
+    }
+    
+    if (migratedCount > 0) {
+      await this.saveUsers();
+      console.log(`✅ ${migratedCount} usuarios marcados para migración en próximo login`);
     }
   }
   
@@ -133,30 +168,24 @@ export class ProfileManager {
     return Math.random().toString(36).substring(2) + Date.now().toString(36);
   }
   
-  hashPassword(password) {
-    // Hash simple pero consistente entre dispositivos
-    let hash = 0;
-    if (password.length === 0) return hash.toString();
-    
-    for (let i = 0; i < password.length; i++) {
-      const char = password.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convertir a 32bit
-    }
-    
-    // Asegurar que siempre sea positivo y consistente
-    return Math.abs(hash).toString();
+  async hashPassword(password) {
+    // Usar Web Crypto API para hash seguro (SHA-256)
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + 'FenixGuestbook2024'); // Salt fijo
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
   
   legacyHashPassword(password) {
-    // Hash original para compatibilidad
+    // Hash original para compatibilidad con cuentas antiguas
     let hash = 0;
     for (let i = 0; i < password.length; i++) {
       const char = password.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
       hash = hash & hash;
     }
-    return hash.toString();
+    return Math.abs(hash).toString();
   }
   
   async saveProfile() {
@@ -1358,12 +1387,31 @@ export class ProfileManager {
       return;
     }
     
-    const currentHash = this.hashPassword(password);
+    const currentHash = await this.hashPassword(password);
     const legacyHash = this.legacyHashPassword(password);
     
-    if (expectedHash !== currentHash && expectedHash !== legacyHash && expectedHash !== password) {
+    // Solo comparar con hashes, NUNCA con contraseña en texto plano
+    if (expectedHash !== currentHash && expectedHash !== legacyHash) {
       alert('❌ Contraseña incorrecta');
       return;
+    }
+    
+    // Si usó hash legacy, actualizar a hash seguro automáticamente
+    if (expectedHash === legacyHash) {
+      console.log('🔄 Migrando de hash legacy a SHA-256...');
+      user.passwordHash = currentHash;
+      user.needsHashMigration = false;
+      this.users.set(username.toLowerCase(), user);
+      await this.saveUsers();
+      
+      try {
+        await this.firebase.saveUserCredentials(username, currentHash, user);
+        console.log('✅ Hash actualizado en Firebase');
+      } catch (error) {
+        console.warn('Error actualizando hash en Firebase:', error);
+      }
+      
+      alert('🔐 Tu contraseña ha sido actualizada a un sistema más seguro (SHA-256)');
     }
     
     // Si tenemos credenciales de Firebase pero no usuario local, crear usuario local
@@ -1471,10 +1519,13 @@ export class ProfileManager {
       following: []
     };
     
-    // Guardar credenciales individuales en Firebase
+    // Guardar credenciales individuales en Firebase con hash seguro
+    const secureHash = await this.hashPassword(password);
+    newUser.passwordHash = secureHash;
+    
     try {
-      await this.firebase.saveUserCredentials(username, this.hashPassword(password), newUser);
-      console.log('✅ Credenciales guardadas en Firebase');
+      await this.firebase.saveUserCredentials(username, secureHash, newUser);
+      console.log('✅ Credenciales guardadas en Firebase con hash SHA-256');
     } catch (error) {
       console.warn('Error guardando credenciales en Firebase:', error);
     }

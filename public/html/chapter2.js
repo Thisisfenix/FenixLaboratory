@@ -14,6 +14,19 @@ class Chapter2 {
         this.poolIndex = 0;
         this.footstepTimer = 0;
         this.footstepInterval = 1000;
+        this.dustParticles = [];
+        this.steamParticles = [];
+        this.sparkParticles = [];
+        this.flickeringLights = [];
+        this.lightningTimer = 0;
+        this.thunderAudio = null;
+        this.dripParticles = [];
+        this.fogParticles = [];
+        this.glowParticles = [];
+        this.shadowEntities = [];
+        this.fallingDebris = [];
+        this.dataParticles = [];
+        this.energyBeams = [];
         this.runAudio = null;
         this.runAudioPlaying = false;
         this.exhaustedAudio = null;
@@ -628,6 +641,124 @@ class Chapter2 {
         this.createOptionalCollectibles();
         this.spawnGisselCyber();
         this.startDynamicEvents();
+        this.createLabDustParticles();
+        this.createLabFlickeringLights();
+        this.createLabSteamVents();
+        this.createLabSparks();
+        this.createLabDrips();
+    }
+    
+    createLabDustParticles() {
+        for(let i = 0; i < 100; i++) {
+            const dust = new THREE.Mesh(
+                new THREE.SphereGeometry(0.03, 4, 4),
+                new THREE.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.2 })
+            );
+            dust.position.set(
+                (Math.random() - 0.5) * 80,
+                Math.random() * 5 + 0.5,
+                (Math.random() - 0.5) * 80
+            );
+            dust.userData.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.003,
+                Math.random() * 0.006 + 0.003,
+                (Math.random() - 0.5) * 0.003
+            );
+            scene.add(dust);
+            this.dustParticles.push(dust);
+        }
+    }
+    
+    createLabFlickeringLights() {
+        for(let i = 0; i < 20; i++) {
+            const light = new THREE.PointLight(0xffaa66, 0.8, 15);
+            light.position.set(
+                (Math.random() - 0.5) * 70,
+                3 + Math.random(),
+                (Math.random() - 0.5) * 70
+            );
+            light.userData.flickerSpeed = 0.05 + Math.random() * 0.1;
+            light.userData.baseIntensity = 0.8;
+            scene.add(light);
+            this.flickeringLights.push(light);
+        }
+    }
+    
+    createLabSteamVents() {
+        const ventPositions = [
+            { x: -28, z: 28, y: 6 },
+            { x: 28, z: 28, y: 6 },
+            { x: -28, z: -28, y: 6 },
+            { x: 28, z: -28, y: 6 }
+        ];
+        
+        ventPositions.forEach(pos => {
+            for(let i = 0; i < 5; i++) {
+                const steam = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.15, 6, 6),
+                    new THREE.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.3 })
+                );
+                steam.position.set(pos.x, pos.y - 0.5, pos.z);
+                steam.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    Math.random() * 0.03 + 0.02,
+                    (Math.random() - 0.5) * 0.02
+                );
+                steam.userData.maxY = pos.y + 2;
+                steam.userData.startY = pos.y - 0.5;
+                scene.add(steam);
+                this.steamParticles.push(steam);
+            }
+        });
+    }
+    
+    createLabSparks() {
+        const sparkZones = [
+            { x: 0, y: 7, z: 0 },
+            { x: -15, y: 7, z: 0 },
+            { x: 15, y: 7, z: 0 },
+            { x: 0, y: 7, z: -15 },
+            { x: 0, y: 7, z: 15 }
+        ];
+        
+        sparkZones.forEach(zone => {
+            for(let i = 0; i < 5; i++) {
+                const spark = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.05, 4, 4),
+                    new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0 })
+                );
+                spark.position.copy(zone);
+                spark.userData.zone = zone;
+                spark.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.05,
+                    -Math.random() * 0.05 - 0.02,
+                    (Math.random() - 0.5) * 0.05
+                );
+                spark.userData.life = 0;
+                spark.userData.maxLife = 20 + Math.random() * 20;
+                spark.userData.timer = Math.random() * 100;
+                scene.add(spark);
+                this.sparkParticles.push(spark);
+            }
+        });
+    }
+    
+    createLabDrips() {
+        for(let i = 0; i < 30; i++) {
+            const drip = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 4, 4),
+                new THREE.MeshBasicMaterial({ color: 0x4488aa, transparent: true, opacity: 0.6 })
+            );
+            drip.position.set(
+                (Math.random() - 0.5) * 70,
+                4,
+                (Math.random() - 0.5) * 70
+            );
+            drip.userData.velocity = -0.05;
+            drip.userData.startY = 4;
+            scene.add(drip);
+            this.dripParticles.push(drip);
+        }
     }
 
     createBlockedDoor() {
@@ -1785,6 +1916,64 @@ class Chapter2 {
         
         let nearNote = null;
         
+        // Actualizar partículas de polvo
+        if(this.dustParticles.length > 0) {
+            this.dustParticles.forEach(dust => {
+                dust.position.add(dust.userData.velocity);
+                if(dust.position.y > 6) dust.position.y = 0.5;
+                if(dust.position.y < 0.5) dust.position.y = 6;
+            });
+        }
+        
+        // Actualizar vapor
+        if(this.steamParticles.length > 0) {
+            this.steamParticles.forEach(steam => {
+                steam.position.add(steam.userData.velocity);
+                if(steam.position.y > steam.userData.maxY) {
+                    steam.position.y = steam.userData.startY;
+                    steam.position.x += (Math.random() - 0.5) * 0.5;
+                }
+            });
+        }
+        
+        // Actualizar chispas
+        if(this.sparkParticles.length > 0) {
+            this.sparkParticles.forEach(spark => {
+                spark.userData.timer++;
+                if(spark.userData.timer >= 80) {
+                    spark.userData.life++;
+                    spark.material.opacity = Math.min(1, spark.userData.life / 10);
+                    spark.position.add(spark.userData.velocity);
+                    
+                    if(spark.userData.life >= spark.userData.maxLife) {
+                        spark.userData.life = 0;
+                        spark.material.opacity = 0;
+                        spark.position.copy(spark.userData.zone);
+                        spark.userData.timer = 0;
+                    }
+                }
+            });
+        }
+        
+        // Actualizar goteos
+        if(this.dripParticles.length > 0) {
+            this.dripParticles.forEach(drip => {
+                drip.position.y += drip.userData.velocity;
+                if(drip.position.y < 0) {
+                    drip.position.y = drip.userData.startY;
+                }
+            });
+        }
+        
+        // Luces parpadeantes
+        if(this.flickeringLights.length > 0) {
+            this.flickeringLights.forEach(light => {
+                if(Math.random() < light.userData.flickerSpeed) {
+                    light.intensity = Math.random() < 0.3 ? 0 : light.userData.baseIntensity * (0.5 + Math.random() * 0.5);
+                }
+            });
+        }
+        
         // Actualizar objetos flotantes en fase exploring
         if(this.floatingObjects && this.floatingObjects.length > 0) {
             const time = Date.now() * 0.001;
@@ -1967,6 +2156,12 @@ class Chapter2 {
         // Luz ambiental para que Lambert funcione
         const ambient = new THREE.AmbientLight(0x404040, 0.8);
         scene.add(ambient);
+        
+        // Crear efectos visuales del túnel
+        this.createTunnelFog();
+        this.createTunnelDrips();
+        this.createTunnelDebris();
+        this.createTunnelFlickeringLights();
         
         // Materiales reutilizables con emissive para que se vean
         const floorMat1 = new THREE.MeshLambertMaterial({ color: 0x2a2a2a, emissive: 0x1a1a1a, emissiveIntensity: 0.3 });
@@ -2162,6 +2357,84 @@ class Chapter2 {
         this.playTunnelAmbient();
     }
     
+    createTunnelFog() {
+        for(let i = 0; i < 80; i++) {
+            const fog = new THREE.Mesh(
+                new THREE.SphereGeometry(1.5, 6, 6),
+                new THREE.MeshBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.15 })
+            );
+            fog.position.set(
+                (Math.random() - 0.5) * 14,
+                Math.random() * 2,
+                Math.random() * 1500 - 40
+            );
+            fog.scale.set(1, 0.4, 1);
+            fog.userData.velocity = (Math.random() - 0.5) * 0.01;
+            scene.add(fog);
+            this.fogParticles.push(fog);
+        }
+    }
+    
+    createTunnelDrips() {
+        for(let i = 0; i < 50; i++) {
+            const drip = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 4, 4),
+                new THREE.MeshBasicMaterial({ color: 0x4488aa, transparent: true, opacity: 0.6 })
+            );
+            drip.position.set(
+                (Math.random() - 0.5) * 14,
+                5,
+                Math.random() * 1500 - 40
+            );
+            drip.userData.velocity = -0.08;
+            drip.userData.startY = 5;
+            scene.add(drip);
+            this.dripParticles.push(drip);
+        }
+    }
+    
+    createTunnelDebris() {
+        for(let i = 0; i < 15; i++) {
+            const debris = new THREE.Mesh(
+                new THREE.BoxGeometry(0.3, 0.3, 0.3),
+                new THREE.MeshBasicMaterial({ color: 0x2a2a2a })
+            );
+            debris.position.set(
+                (Math.random() - 0.5) * 12,
+                5,
+                Math.random() * 1500 - 40
+            );
+            debris.userData.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.02,
+                -0.05,
+                (Math.random() - 0.5) * 0.02
+            );
+            debris.userData.angularVel = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.1,
+                (Math.random() - 0.5) * 0.1,
+                (Math.random() - 0.5) * 0.1
+            );
+            debris.userData.active = false;
+            scene.add(debris);
+            this.fallingDebris.push(debris);
+        }
+    }
+    
+    createTunnelFlickeringLights() {
+        for(let i = 0; i < 30; i++) {
+            const light = new THREE.PointLight(0xff0000, 0, 10);
+            light.position.set(
+                (Math.random() - 0.5) * 12,
+                3.5,
+                i * 50
+            );
+            light.userData.flickerSpeed = 0.1;
+            light.userData.baseIntensity = 1.2;
+            scene.add(light);
+            this.flickeringLights.push(light);
+        }
+    }
+    
     playTunnelAmbient() {
         if(!this.audioContext) return;
         const osc = this.audioContext.createOscillator();
@@ -2184,6 +2457,59 @@ class Chapter2 {
             if(distanceEl) {
                 distanceEl.textContent = `Distancia: ${Math.floor(camera.position.z)}m`;
             }
+        }
+        
+        // Actualizar niebla del túnel
+        if(this.fogParticles.length > 0) {
+            this.fogParticles.forEach(fog => {
+                fog.position.x += fog.userData.velocity;
+                if(Math.abs(fog.position.x) > 7) fog.userData.velocity *= -1;
+            });
+        }
+        
+        // Actualizar goteos del túnel
+        if(this.dripParticles.length > 0) {
+            this.dripParticles.forEach(drip => {
+                drip.position.y += drip.userData.velocity;
+                if(drip.position.y < 0) {
+                    drip.position.y = drip.userData.startY;
+                }
+            });
+        }
+        
+        // Activar escombros cayendo aleatoriamente
+        if(this.fallingDebris.length > 0 && Math.random() < 0.002) {
+            const inactive = this.fallingDebris.find(d => !d.userData.active);
+            if(inactive) {
+                inactive.userData.active = true;
+                inactive.position.y = 5;
+            }
+        }
+        
+        // Actualizar escombros cayendo
+        if(this.fallingDebris.length > 0) {
+            this.fallingDebris.forEach(debris => {
+                if(debris.userData.active) {
+                    debris.position.add(debris.userData.velocity);
+                    debris.rotation.x += debris.userData.angularVel.x;
+                    debris.rotation.y += debris.userData.angularVel.y;
+                    debris.rotation.z += debris.userData.angularVel.z;
+                    
+                    if(debris.position.y < 0) {
+                        debris.userData.active = false;
+                        debris.position.y = 5;
+                    }
+                }
+            });
+        }
+        
+        // Luces parpadeantes del túnel
+        if(this.flickeringLights.length > 0) {
+            this.flickeringLights.forEach(light => {
+                if(Math.random() < light.userData.flickerSpeed) {
+                    light.intensity = Math.random() < 0.7 ? 0 : light.userData.baseIntensity;
+                }
+            });
         }
         
         // Actualizar gamepad
@@ -2759,12 +3085,34 @@ class Chapter2 {
             new THREE.LineBasicMaterial({ color: 0xff00ff, linewidth: 3 })
         );
         scene.add(beam);
+        this.energyBeams.push(beam);
         
         // Animación de rayo parpadeante
         setInterval(() => {
             beam.material.opacity = Math.random() > 0.5 ? 1 : 0.3;
             beam.material.transparent = true;
         }, 200);
+        
+        // Partículas de datos flotando
+        for(let i = 0; i < 30; i++) {
+            const data = new THREE.Mesh(
+                new THREE.BoxGeometry(0.1, 0.1, 0.1),
+                new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0x00ffff : 0xff0000, transparent: true, opacity: 0.7 })
+            );
+            data.position.set(
+                (Math.random() - 0.5) * 20,
+                Math.random() * 6 + 1,
+                (Math.random() - 0.5) * 20
+            );
+            data.userData.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.02,
+                Math.random() * 0.02,
+                (Math.random() - 0.5) * 0.02
+            );
+            data.userData.angularVel = (Math.random() - 0.5) * 0.1;
+            scene.add(data);
+            this.dataParticles.push(data);
+        }
         
         // Puerta de salida épica
         const exitDoor = new THREE.Mesh(
@@ -2790,6 +3138,22 @@ class Chapter2 {
         camera.lookAt(0, 1.6, 0);
         showMonologue('Una sala... hojas en las paredes...');
         
+        // Actualizar partículas de datos en loop
+        this.rivalryParticleInterval = setInterval(() => {
+            if(this.phase !== 'rivalry') {
+                clearInterval(this.rivalryParticleInterval);
+                return;
+            }
+            if(this.dataParticles.length > 0) {
+                this.dataParticles.forEach(data => {
+                    data.position.add(data.userData.velocity);
+                    data.rotation.y += data.userData.angularVel;
+                    if(data.position.y > 7) data.position.y = 1;
+                    if(data.position.y < 1) data.position.y = 7;
+                });
+            }
+        }, 50);
+        
         setTimeout(() => {
             showMonologue('IA777 vs IA666... La rivalidad eterna.');
             setTimeout(() => {
@@ -2808,6 +3172,8 @@ class Chapter2 {
         this.showContextualMessage('contextual_whiteroom');
         this.flashlightBroken = false;
         this.clearScene();
+        this.glowParticles = [];
+        this.shadowEntities = [];
         
         const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
         
@@ -2880,6 +3246,43 @@ class Chapter2 {
         camera.position.set(0, 1.6, -18);
         camera.lookAt(0, 1.6, 0);
         
+        // Partículas brillantes flotando
+        for(let i = 0; i < 50; i++) {
+            const glow = new THREE.Mesh(
+                new THREE.SphereGeometry(0.1, 6, 6),
+                new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 })
+            );
+            glow.position.set(
+                (Math.random() - 0.5) * 40,
+                Math.random() * 8 + 1,
+                (Math.random() - 0.5) * 40
+            );
+            glow.userData.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.01,
+                Math.random() * 0.01,
+                (Math.random() - 0.5) * 0.01
+            );
+            scene.add(glow);
+            this.glowParticles.push(glow);
+        }
+        
+        // Sombras que aparecen y desaparecen
+        for(let i = 0; i < 5; i++) {
+            const shadow = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 1.6, 0.4),
+                new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0 })
+            );
+            shadow.position.set(
+                (Math.random() - 0.5) * 30,
+                0.8,
+                (Math.random() - 0.5) * 30
+            );
+            shadow.userData.timer = Math.random() * 200;
+            shadow.userData.visible = false;
+            scene.add(shadow);
+            this.shadowEntities.push(shadow);
+        }
+        
         showMonologue('Todo es... blanco...');
         setTimeout(() => showMonologue('Tan vacío... tan silencioso...'), 3000);
     }
@@ -2887,6 +3290,39 @@ class Chapter2 {
     updateWhiteRoom(delta) {
         // Actualizar gamepad
         this.updateGamepad();
+        
+        // Actualizar partículas brillantes
+        if(this.glowParticles.length > 0) {
+            this.glowParticles.forEach(glow => {
+                glow.position.add(glow.userData.velocity);
+                if(glow.position.y > 9) glow.position.y = 1;
+                if(glow.position.y < 1) glow.position.y = 9;
+                glow.material.opacity = 0.2 + Math.sin(Date.now() * 0.002) * 0.2;
+            });
+        }
+        
+        // Actualizar sombras
+        if(this.shadowEntities.length > 0) {
+            this.shadowEntities.forEach(shadow => {
+                shadow.userData.timer++;
+                if(shadow.userData.timer > 200) {
+                    if(!shadow.userData.visible && Math.random() < 0.01) {
+                        shadow.userData.visible = true;
+                        shadow.material.opacity = 0.3;
+                        shadow.userData.timer = 0;
+                    } else if(shadow.userData.visible && shadow.userData.timer > 100) {
+                        shadow.userData.visible = false;
+                        shadow.material.opacity = 0;
+                        shadow.userData.timer = 0;
+                        shadow.position.set(
+                            (Math.random() - 0.5) * 30,
+                            0.8,
+                            (Math.random() - 0.5) * 30
+                        );
+                    }
+                }
+            });
+        }
         
         // Movimiento LENTO
         this.velocity.x = 0;
@@ -3078,6 +3514,12 @@ class Chapter2 {
             });
         });
         
+        // Crear efectos del patio
+        this.createCourtyardLightning();
+        this.createCourtyardFog();
+        this.createCourtyardPuddles();
+        this.createCourtyardLeaves();
+        
         // Lluvia INTENSA (400 partículas)
         this.rainParticles = [];
         for(let i = 0; i < 400; i++) {
@@ -3189,6 +3631,71 @@ class Chapter2 {
         }, 3000);
     }
     
+    createCourtyardLightning() {
+        this.lightningTimer = 0;
+        const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
+        if(!this.thunderAudio) {
+            this.thunderAudio = new Audio('stuff/disparo.mp3');
+            this.thunderAudio.volume = 0.5 * vol;
+        }
+    }
+    
+    createCourtyardFog() {
+        for(let i = 0; i < 60; i++) {
+            const fog = new THREE.Mesh(
+                new THREE.SphereGeometry(2, 6, 6),
+                new THREE.MeshBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.2 })
+            );
+            fog.position.set(
+                (Math.random() - 0.5) * 30,
+                0.5,
+                Math.random() * 500
+            );
+            fog.scale.set(1, 0.3, 1);
+            fog.userData.velocity = (Math.random() - 0.5) * 0.02;
+            scene.add(fog);
+            this.fogParticles.push(fog);
+        }
+    }
+    
+    createCourtyardPuddles() {
+        for(let i = 0; i < 40; i++) {
+            const puddle = new THREE.Mesh(
+                new THREE.CircleGeometry(0.8, 8),
+                new THREE.MeshBasicMaterial({ color: 0x2a4a5a, transparent: true, opacity: 0.6 })
+            );
+            puddle.rotation.x = -Math.PI / 2;
+            puddle.position.set(
+                (Math.random() - 0.5) * 25,
+                0.01,
+                Math.random() * 500
+            );
+            scene.add(puddle);
+        }
+    }
+    
+    createCourtyardLeaves() {
+        for(let i = 0; i < 50; i++) {
+            const leaf = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.1, 0.15),
+                new THREE.MeshBasicMaterial({ color: 0x1a2a0a, transparent: true, opacity: 0.7 })
+            );
+            leaf.position.set(
+                (Math.random() - 0.5) * 30,
+                Math.random() * 5 + 1,
+                Math.random() * 500
+            );
+            leaf.userData.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.05,
+                -Math.random() * 0.03 - 0.02,
+                (Math.random() - 0.5) * 0.05
+            );
+            leaf.userData.angularVel = (Math.random() - 0.5) * 0.1;
+            scene.add(leaf);
+            this.fallingDebris.push(leaf);
+        }
+    }
+    
     updateCourtyard(delta) {
         // Actualizar gamepad
         this.updateGamepad();
@@ -3295,6 +3802,35 @@ class Chapter2 {
             }
         }
         
+        // Relámpagos
+        this.lightningTimer++;
+        if(this.lightningTimer > 150 + Math.random() * 200) {
+            this.lightningTimer = 0;
+            this.triggerCourtYardLightning();
+        }
+        
+        // Actualizar niebla del patio
+        if(this.fogParticles.length > 0) {
+            this.fogParticles.forEach(fog => {
+                fog.position.x += fog.userData.velocity;
+                if(Math.abs(fog.position.x) > 15) fog.userData.velocity *= -1;
+            });
+        }
+        
+        // Actualizar hojas cayendo
+        if(this.fallingDebris.length > 0) {
+            this.fallingDebris.forEach(leaf => {
+                if(leaf.userData.velocity) {
+                    leaf.position.add(leaf.userData.velocity);
+                    leaf.rotation.z += leaf.userData.angularVel;
+                    if(leaf.position.y < 0) {
+                        leaf.position.y = Math.random() * 5 + 1;
+                        leaf.position.x = (Math.random() - 0.5) * 30;
+                    }
+                }
+            });
+        }
+        
         // Actualizar lluvia
         if(this.rainParticles) {
             for(let rain of this.rainParticles) {
@@ -3394,6 +3930,38 @@ class Chapter2 {
         }, 2000);
     }
 
+    triggerCourtYardLightning() {
+        const flash = document.createElement('div');
+        flash.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:95;pointer-events:none;';
+        document.body.appendChild(flash);
+        
+        scene.children.forEach(child => {
+            if(child instanceof THREE.AmbientLight) {
+                child.intensity = 2;
+            }
+        });
+        
+        setTimeout(() => {
+            flash.remove();
+            scene.children.forEach(child => {
+                if(child instanceof THREE.AmbientLight) {
+                    child.intensity = 0.3;
+                }
+            });
+        }, 100);
+        
+        if(this.thunderAudio) {
+            setTimeout(() => {
+                const thunder = this.thunderAudio.cloneNode();
+                const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
+                thunder.volume = 0.5 * vol;
+                thunder.play().catch(() => {});
+            }, 300);
+        }
+        
+        vibrateGamepad(200, 0.4, 0.4);
+    }
+    
     playRainAmbient() {
         const vol = typeof masterVolume !== 'undefined' ? masterVolume : 1.0;
         if(!this.chapter2RainAudio) {

@@ -696,7 +696,7 @@
               <div class="mb-3">
                 <label class="form-label text-light">Acceso al Panel</label>
                 <input type="password" id="adminPassword" class="form-control" placeholder="Contraseña de acceso">
-                <small class="text-muted">Admin: Contraseña especial | Moderador: Contraseña especial</small>
+                <small class="text-muted">Las contraseñas se verifican desde Firebase. Contacta al administrador para obtener acceso.</small>
               </div>
               <button onclick="loginAdmin()" class="btn btn-primary">🔓 Acceder</button>
             </div>
@@ -4519,7 +4519,7 @@
       }
       
       try {
-        const authResult = await app.firebase.checkAdminAccess();
+        const authResult = await app.firebase.checkAdminAccess(password);
         if (authResult && authResult.role) {
           if (authResult.role === 'moderator_access') {
             // Mostrar panel de moderador
