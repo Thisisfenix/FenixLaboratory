@@ -206,8 +206,12 @@ class PlushieSystem {
     // Movimiento automático cada 3-5 segundos
     const autoMove = () => {
       if (!tired && stamina > 0) {
-        const newLeft = Math.random() * 80 + 5;
-        const newTop = Math.random() * 70 + 10;
+        const rect = container.getBoundingClientRect();
+        const plushieSize = parseInt(pos.size) || 25;
+        const maxLeft = Math.min(85, ((rect.width - plushieSize) / rect.width) * 100);
+        const maxTop = Math.min(85, ((rect.height - plushieSize) / rect.height) * 100);
+        const newLeft = Math.random() * (maxLeft - 5) + 5;
+        const newTop = Math.random() * (maxTop - 5) + 5;
         plushie.style.left = newLeft + '%';
         plushie.style.top = newTop + '%';
         plushie.style.transition = 'all 0.5s ease';
@@ -219,8 +223,12 @@ class PlushieSystem {
     const runnerHover = () => {
       if (stamina > 0 && !tired) {
         stamina--;
-        const newLeft = Math.random() * 80 + 5;
-        const newTop = Math.random() * 70 + 10;
+        const rect = container.getBoundingClientRect();
+        const plushieSize = parseInt(pos.size) || 25;
+        const maxLeft = Math.min(85, ((rect.width - plushieSize) / rect.width) * 100);
+        const maxTop = Math.min(85, ((rect.height - plushieSize) / rect.height) * 100);
+        const newLeft = Math.random() * (maxLeft - 5) + 5;
+        const newTop = Math.random() * (maxTop - 5) + 5;
         plushie.style.left = newLeft + '%';
         plushie.style.top = newTop + '%';
         plushie.style.transform = 'scale(0.8)';
