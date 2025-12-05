@@ -480,7 +480,10 @@ class PlushieSystem {
             🎯 ¡Buena suerte en la búsqueda!
           </div>
         </div>
-        <button onclick="localStorage.removeItem('plushie-progress'); localStorage.removeItem('plushie-collected'); location.reload();" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">🔄 Resetear Progreso</button>
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button onclick="plushieSystem.showLeaderboard()" style="flex: 1; padding: 0.5rem 1rem; background: var(--secondary); color: white; border: none; border-radius: 6px; cursor: pointer;">🏆 Leaderboard</button>
+          <button onclick="localStorage.removeItem('plushie-progress'); localStorage.removeItem('plushie-collected'); location.reload();" style="flex: 1; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">🔄 Reset</button>
+        </div>
       </div>
     `;
     panel.style.cssText = `
@@ -547,7 +550,8 @@ class PlushieSystem {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI5MjU5NzcsImV4cCI6MjA0ODUwMTk3N30.sb_publishable_22tdy3zG8Tazz3Xn_A9rAQ_dRTlwmTc',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4OTksImV4cCI6MjA3NzYyMTg5OX0.DANmzSkPqCjOuIylHLXCYw8B0VU7b14THBf8V4Kdz_M',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4OTksImV4cCI6MjA3NzYyMTg5OX0.DANmzSkPqCjOuIylHLXCYw8B0VU7b14THBf8V4Kdz_M',
           'Prefer': 'return=minimal'
         },
         body: JSON.stringify(completionData)
@@ -568,7 +572,8 @@ class PlushieSystem {
     try {
       const response = await fetch('https://obvuetxkfodulfdbjhri.supabase.co/rest/v1/completions?order=timestamp.asc&limit=1', {
         headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI5MjU5NzcsImV4cCI6MjA0ODUwMTk3N30.sb_publishable_22tdy3zG8Tazz3Xn_A9rAQ_dRTlwmTc'
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4OTksImV4cCI6MjA3NzYyMTg5OX0.DANmzSkPqCjOuIylHLXCYw8B0VU7b14THBf8V4Kdz_M',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4OTksImV4cCI6MjA3NzYyMTg5OX0.DANmzSkPqCjOuIylHLXCYw8B0VU7b14THBf8V4Kdz_M'
         }
       });
       
@@ -580,6 +585,71 @@ class PlushieSystem {
       console.log('Error obteniendo primer completador:', error);
     }
     return null;
+  }
+
+  async showLeaderboard() {
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10001;';
+    
+    panel.innerHTML = `
+      <div class="plushie-panel-content">
+        <button class="close-panel" onclick="this.parentElement.parentElement.remove()">&times;</button>
+        <h3>🏆 Leaderboard Global</h3>
+        <div id="leaderboard-content" style="text-align: center; padding: 2rem;">
+          <div style="font-size: 2rem;">⏳</div>
+          <div>Cargando...</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(panel);
+    panel.addEventListener('click', (e) => {
+      if (e.target === panel) panel.remove();
+    });
+    
+    try {
+      const response = await fetch('https://obvuetxkfodulfdbjhri.supabase.co/rest/v1/completions?order=timestamp.asc&limit=10', {
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4OTksImV4cCI6MjA3NzYyMTg5OX0.DANmzSkPqCjOuIylHLXCYw8B0VU7b14THBf8V4Kdz_M',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4OTksImV4cCI6MjA3NzYyMTg5OX0.DANmzSkPqCjOuIylHLXCYw8B0VU7b14THBf8V4Kdz_M'
+        }
+      });
+      
+      const content = document.getElementById('leaderboard-content');
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.length === 0) {
+          content.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary);">👀 Aún no hay completadores.<br>¡Sé el primero!</div>';
+        } else {
+          let html = '<div style="text-align: left;">';
+          data.forEach((entry, index) => {
+            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+            const date = new Date(entry.timestamp).toLocaleString('es-MX');
+            const bgColor = index === 0 ? 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.2))' : 'var(--bg-light)';
+            const borderColor = index === 0 ? '#FFD700' : 'var(--primary)';
+            html += `
+              <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: ${bgColor}; border-radius: 8px; border-left: 3px solid ${borderColor};">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span style="font-size: 1.2rem; margin-right: 0.5rem;">${medal}</span>
+                    <strong>${entry.name}</strong>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary);">${date}</div>
+                </div>
+              </div>
+            `;
+          });
+          html += '</div>';
+          content.innerHTML = html;
+        }
+      } else {
+        content.innerHTML = '<div style="padding: 2rem; color: #ff6666;">❌ Error al cargar leaderboard</div>';
+      }
+    } catch (error) {
+      document.getElementById('leaderboard-content').innerHTML = '<div style="padding: 2rem; color: #ff6666;">❌ Error de conexión</div>';
+    }
   }
 }
 
