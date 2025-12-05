@@ -434,6 +434,9 @@ class PlushieSystem {
         <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem;">
           📅 Inicio: 2 dic 2025 | Fin: 1 ene 2026
         </div>
+        <a href="https://funkyatlas.abelitogamer.com/Hope/Hope.html" target="_blank" style="display: block; margin-top: 0.5rem;">
+          <img id="meditating-dog" src="${basePath}placeholder/perromeditando.png" style="width: 80px; height: 80px; opacity: 0; transition: opacity 5s ease; cursor: pointer; margin: 0 auto; display: block;" alt="Perro meditando">
+        </a>
       </div>
     ` : '';
     
@@ -509,6 +512,14 @@ class PlushieSystem {
         }
       };
       const timerInterval = setInterval(updateTimer, 1000);
+    }
+    
+    // Fade in del perro meditando
+    const dogImg = document.getElementById('meditating-dog');
+    if (dogImg) {
+      setTimeout(() => {
+        dogImg.style.opacity = '1';
+      }, 100);
     }
   }
 
