@@ -1,11 +1,23 @@
 // Sistema de Plushies escondidos en la página
 class PlushieSystem {
   constructor() {
+    this.startDate = new Date('2025-12-02T00:00:00');
+    this.endDate = new Date('2026-01-01T00:00:00');
     this.progress = this.loadProgress();
     this.init();
   }
 
+  isEventActive() {
+    const now = new Date();
+    return now >= this.startDate && now < this.endDate;
+  }
+
   init() {
+    if (!this.isEventActive()) {
+      const btn = document.getElementById('plushie-btn');
+      if (btn) btn.style.display = 'none';
+      return;
+    }
     document.getElementById('plushie-btn')?.addEventListener('click', () => this.showPanel());
     this.spawnPlushies();
     this.updateCounter();
@@ -16,56 +28,89 @@ class PlushieSystem {
     return saved ? JSON.parse(saved) : { gissel: 0, molly: 0 };
   }
 
+  showDialogue(text, plushie) {
+    const bubble = document.createElement('div');
+    bubble.textContent = text;
+    bubble.style.cssText = `
+      position: absolute;
+      background: white;
+      color: black;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      white-space: nowrap;
+      z-index: 10001;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      pointer-events: none;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-5px);
+    `;
+    plushie.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 2500);
+  }
+
   saveProgress() {
     localStorage.setItem('plushie-progress', JSON.stringify(this.progress));
   }
 
   spawnPlushies() {
+    if (!this.isEventActive()) return;
     const collected = JSON.parse(localStorage.getItem('plushie-collected') || '[]');
     
-    // Posiciones estratégicas y troll por sección
+    // 40 Plushies: 20 Gissel + 20 Molly con diálogos
     const positions = [
-      // Hero - 3 Gissel, 2 Molly
-      { section: 'hero', type: 'gissel', left: '5%', top: '15%', size: '25px', behavior: 'shy' },
-      { section: 'hero', type: 'gissel', left: '92%', top: '80%', size: '20px' },
-      { section: 'hero', type: 'gissel', left: '50%', top: '5%', size: '15px', behavior: 'runner' },
-      { section: 'hero', type: 'molly', left: '15%', top: '85%', size: '30px' },
-      { section: 'hero', type: 'molly', left: '88%', top: '12%', size: '18px', behavior: 'shy' },
+      // Hero - 4 Gissel, 4 Molly
+      { section: 'hero', type: 'gissel', left: '5%', top: '15%', size: '25px', behavior: 'shy', dialogue: '¡Hola! 💜' },
+      { section: 'hero', type: 'gissel', left: '92%', top: '80%', size: '20px', dialogue: '¿Me encontraste?' },
+      { section: 'hero', type: 'gissel', left: '50%', top: '5%', size: '15px', behavior: 'runner', dialogue: '¡No me atrapes!' },
+      { section: 'hero', type: 'gissel', left: '75%', top: '50%', size: '22px', dialogue: 'Descuido gogog se le ve todo' },
+      { section: 'hero', type: 'molly', left: '15%', top: '85%', size: '30px', dialogue: 'Hey qué haces baboso', sound: 'ahhh.m4a' },
+      { section: 'hero', type: 'molly', left: '88%', top: '12%', size: '18px', behavior: 'shy', dialogue: 'Te estoy vigilando...' },
+      { section: 'hero', type: 'molly', left: '35%', top: '65%', size: '24px', dialogue: '💀' },
+      { section: 'hero', type: 'molly', left: '60%', top: '30%', size: '20px', dialogue: 'Qué miras' },
       
-      // Proyectos - 5 Gissel, 4 Molly
-      { section: 'proyectos', type: 'gissel', left: '3%', top: '25%', size: '22px', behavior: 'runner' },
-      { section: 'proyectos', type: 'gissel', left: '95%', top: '45%', size: '28px' },
-      { section: 'proyectos', type: 'gissel', left: '48%', top: '8%', size: '16px', behavior: 'invisible' },
-      { section: 'proyectos', type: 'gissel', left: '70%', top: '75%', size: '24px', behavior: 'shy' },
-      { section: 'proyectos', type: 'gissel', left: '25%', top: '92%', size: '20px' },
-      { section: 'proyectos', type: 'molly', left: '10%', top: '60%', size: '26px', behavior: 'runner' },
-      { section: 'proyectos', type: 'molly', left: '85%', top: '20%', size: '19px', behavior: 'invisible' },
-      { section: 'proyectos', type: 'molly', left: '55%', top: '88%', size: '23px' },
-      { section: 'proyectos', type: 'molly', left: '2%', top: '5%', size: '17px', behavior: 'shy' },
+      // Proyectos - 5 Gissel, 5 Molly
+      { section: 'proyectos', type: 'gissel', left: '3%', top: '25%', size: '22px', behavior: 'runner', dialogue: '¡Corre corre!' },
+      { section: 'proyectos', type: 'gissel', left: '95%', top: '45%', size: '28px', dialogue: 'Mira estos proyectos 😍' },
+      { section: 'proyectos', type: 'gissel', left: '48%', top: '8%', size: '16px', behavior: 'invisible', dialogue: '¿Me ves?' },
+      { section: 'proyectos', type: 'gissel', left: '70%', top: '75%', size: '24px', behavior: 'shy', dialogue: 'Soy tímida...' },
+      { section: 'proyectos', type: 'gissel', left: '25%', top: '92%', size: '20px', dialogue: '¡Aquí abajo!' },
+      { section: 'proyectos', type: 'molly', left: '10%', top: '60%', size: '26px', behavior: 'runner', dialogue: 'No me toques', sound: 'ahhh.m4a' },
+      { section: 'proyectos', type: 'molly', left: '85%', top: '20%', size: '19px', behavior: 'invisible', dialogue: 'Modo stealth activado' },
+      { section: 'proyectos', type: 'molly', left: '55%', top: '88%', size: '23px', dialogue: 'Qué miras' },
+      { section: 'proyectos', type: 'molly', left: '2%', top: '5%', size: '17px', behavior: 'shy', dialogue: 'Zzz...' },
+      { section: 'proyectos', type: 'molly', left: '40%', top: '50%', size: '21px', dialogue: 'Hey baboso', sound: 'ahhh.m4a' },
       
-      // Comentarios - 4 Gissel, 3 Molly
-      { section: 'comentarios', type: 'gissel', left: '8%', top: '30%', size: '25px', behavior: 'runner' },
-      { section: 'comentarios', type: 'gissel', left: '90%', top: '65%', size: '21px', behavior: 'invisible' },
-      { section: 'comentarios', type: 'gissel', left: '45%', top: '15%', size: '18px' },
-      { section: 'comentarios', type: 'gissel', left: '65%', top: '82%', size: '27px', behavior: 'shy' },
-      { section: 'comentarios', type: 'molly', left: '20%', top: '70%', size: '24px', behavior: 'runner' },
-      { section: 'comentarios', type: 'molly', left: '93%', top: '25%', size: '20px' },
-      { section: 'comentarios', type: 'molly', left: '35%', top: '90%', size: '16px', behavior: 'invisible' },
+      // Comentarios - 4 Gissel, 4 Molly
+      { section: 'comentarios', type: 'gissel', left: '8%', top: '30%', size: '25px', behavior: 'runner', dialogue: '¡Weee!' },
+      { section: 'comentarios', type: 'gissel', left: '90%', top: '65%', size: '21px', behavior: 'invisible', dialogue: 'Boo!' },
+      { section: 'comentarios', type: 'gissel', left: '45%', top: '15%', size: '18px', dialogue: 'Lee los comentarios 💬' },
+      { section: 'comentarios', type: 'gissel', left: '65%', top: '82%', size: '27px', behavior: 'shy', dialogue: 'Ehehe...' },
+      { section: 'comentarios', type: 'molly', left: '20%', top: '70%', size: '24px', behavior: 'runner', dialogue: 'Atrápame si puedes' },
+      { section: 'comentarios', type: 'molly', left: '93%', top: '25%', size: '20px', dialogue: 'Qué onda', sound: 'ahhh.m4a' },
+      { section: 'comentarios', type: 'molly', left: '35%', top: '90%', size: '16px', behavior: 'invisible', dialogue: 'Invisible mode' },
+      { section: 'comentarios', type: 'molly', left: '55%', top: '45%', size: '22px', dialogue: 'Gogog' },
       
-      // Guestbook - 2 Gissel, 2 Molly (link a otra página)
-      { section: 'guestbook', type: 'gissel', left: '12%', top: '40%', size: '23px', link: 'guessbook/guestbook-new.html' },
-      { section: 'guestbook', type: 'gissel', left: '87%', top: '55%', size: '26px' },
-      { section: 'guestbook', type: 'molly', left: '60%', top: '45%', size: '25px', link: 'guessbook/guestbook-new.html' },
-      { section: 'guestbook', type: 'molly', left: '25%', top: '65%', size: '21px' },
+      // Guestbook - 3 Gissel, 3 Molly
+      { section: 'guestbook', type: 'gissel', left: '12%', top: '40%', size: '23px', behavior: 'shy', dialogue: 'Dibuja algo bonito 🎨' },
+      { section: 'guestbook', type: 'gissel', left: '87%', top: '55%', size: '26px', dialogue: '¡Firma el guestbook!' },
+      { section: 'guestbook', type: 'gissel', left: '45%', top: '20%', size: '19px', dialogue: 'Arte everywhere' },
+      { section: 'guestbook', type: 'molly', left: '60%', top: '45%', size: '25px', behavior: 'runner', dialogue: 'No toques mis dibujos' },
+      { section: 'guestbook', type: 'molly', left: '25%', top: '65%', size: '21px', dialogue: 'Baboso detected', sound: 'ahhh.m4a' },
+      { section: 'guestbook', type: 'molly', left: '75%', top: '80%', size: '20px', dialogue: 'Zzz...', sound: 'ahhh.m4a' },
       
-      // Deadly Pursuer - 2 Gissel, 3 Molly (link a otra página)
-      { section: 'deadly-pursuer', type: 'gissel', left: '42%', top: '50%', size: '16px', link: 'public/index.html' },
-      { section: 'deadly-pursuer', type: 'gissel', left: '78%', top: '88%', size: '15px' },
-      { section: 'deadly-pursuer', type: 'molly', left: '52%', top: '30%', size: '18px', link: 'public/index.html' },
-      { section: 'deadly-pursuer', type: 'molly', left: '18%', top: '70%', size: '15px', link: 'public/index.html' },
-      { section: 'deadly-pursuer', type: 'molly', left: '88%', top: '15%', size: '16px' },
+      // Deadly Pursuer - 4 Gissel, 4 Molly
+      { section: 'deadly-pursuer', type: 'gissel', left: '42%', top: '50%', size: '16px', behavior: 'invisible', dialogue: 'Survivor mode ON' },
+      { section: 'deadly-pursuer', type: 'gissel', left: '78%', top: '88%', size: '15px', dialogue: '¡Juega conmigo!' },
+      { section: 'deadly-pursuer', type: 'gissel', left: '15%', top: '25%', size: '18px', dialogue: 'Escapé de Molly 🏃' },
+      { section: 'deadly-pursuer', type: 'gissel', left: '65%', top: '60%', size: '17px', dialogue: 'Ayuda!' },
+      { section: 'deadly-pursuer', type: 'molly', left: '52%', top: '30%', size: '18px', behavior: 'runner', dialogue: 'Te voy a atrapar' },
+      { section: 'deadly-pursuer', type: 'molly', left: '18%', top: '70%', size: '15px', behavior: 'shy', dialogue: 'Killer mode' },
+      { section: 'deadly-pursuer', type: 'molly', left: '88%', top: '15%', size: '16px', dialogue: 'Rage activado 🔥' },
+      { section: 'deadly-pursuer', type: 'molly', left: '30%', top: '45%', size: '19px', dialogue: 'Ven aquí baboso', sound: 'ahhh.m4a' },
       
-      // Páginas externas - 6 Gissel, 8 Molly
+      // Páginas externas - Guestbook (2 Gissel, 2 Molly), Deadly Pursuer (2 Gissel, 2 Molly)
       { page: 'guessbook/guestbook-new.html', type: 'gissel', selector: 'body', left: '5%', top: '20%', size: '22px', behavior: 'runner' },
       { page: 'guessbook/guestbook-new.html', type: 'gissel', selector: 'body', left: '92%', top: '60%', size: '18px', behavior: 'invisible' },
       { page: 'guessbook/guestbook-new.html', type: 'gissel', selector: 'body', left: '45%', top: '85%', size: '20px' },
@@ -112,6 +157,7 @@ class PlushieSystem {
     plushie.dataset.type = pos.type;
     plushie.dataset.index = index;
     plushie.dataset.behavior = pos.behavior || 'normal';
+    plushie.posData = pos;
     
     const initialOpacity = pos.behavior === 'invisible' ? '0.3' : '0.85';
     plushie.style.cssText = `
@@ -126,37 +172,22 @@ class PlushieSystem {
       opacity: ${initialOpacity};
     `;
     
-    if (pos.link) {
-      plushie.style.cursor = 'pointer';
-      plushie.title = '¡Click para ir a otra página!';
-    }
-    
     const handleInteraction = (e) => {
       e.stopPropagation();
       e.preventDefault();
-      if (pos.link) {
-        window.location.href = pos.link;
-      } else {
-        this.collectPlushie(pos.type, plushie, index);
-      }
+      this.collectPlushie(pos.type, plushie, index, pos.sound);
     };
     
     plushie.addEventListener('click', handleInteraction);
     plushie.addEventListener('touchend', handleInteraction);
     
-    // Comportamientos especiales
-    if (pos.behavior === 'runner') {
-      this.makeRunner(plushie, container);
-    } else if (pos.behavior === 'shy') {
-      this.makeShy(plushie);
-    } else if (pos.behavior === 'invisible') {
-      this.makeInvisible(plushie);
-    }
-    
     const handleHoverStart = () => {
       if (pos.behavior !== 'runner') {
         plushie.style.transform = 'scale(1.3) rotate(15deg)';
         plushie.style.opacity = '1';
+      }
+      if (pos.dialogue) {
+        this.showDialogue(pos.dialogue, plushie);
       }
     };
     
@@ -172,32 +203,70 @@ class PlushieSystem {
     plushie.addEventListener('mouseleave', handleHoverEnd);
     plushie.addEventListener('touchcancel', handleHoverEnd);
     
+    // Comportamientos especiales
+    if (pos.behavior === 'runner') {
+      this.makeRunner(plushie, container);
+    } else if (pos.behavior === 'shy') {
+      this.makeShy(plushie);
+    } else if (pos.behavior === 'invisible') {
+      this.makeInvisible(plushie);
+    }
+    
     container.style.position = 'relative';
     container.appendChild(plushie);
   }
 
   makeRunner(plushie, container) {
-    let clicks = 0;
-    const originalHandler = plushie.onclick;
+    let stamina = 5;
+    let tired = false;
     
-    plushie.addEventListener('mouseenter', () => {
-      if (clicks < 3) {
-        const rect = container.getBoundingClientRect();
+    // Movimiento automático cada 3-5 segundos
+    const autoMove = () => {
+      if (!tired && stamina > 0) {
+        const newLeft = Math.random() * 80 + 5;
+        const newTop = Math.random() * 70 + 10;
+        plushie.style.left = newLeft + '%';
+        plushie.style.top = newTop + '%';
+        plushie.style.transition = 'all 0.5s ease';
+      }
+      setTimeout(autoMove, Math.random() * 2000 + 3000);
+    };
+    autoMove();
+    
+    const runnerHover = () => {
+      if (stamina > 0 && !tired) {
+        stamina--;
         const newLeft = Math.random() * 80 + 5;
         const newTop = Math.random() * 70 + 10;
         plushie.style.left = newLeft + '%';
         plushie.style.top = newTop + '%';
         plushie.style.transform = 'scale(0.8)';
         setTimeout(() => plushie.style.transform = '', 200);
+        
+        if (plushie.posData?.dialogue) {
+          this.showDialogue(plushie.posData.dialogue, plushie);
+        }
+        
+        if (stamina === 0) {
+          tired = true;
+          plushie.style.filter = 'grayscale(0.5)';
+          plushie.style.opacity = '0.6';
+          setTimeout(() => {
+            stamina = 5;
+            tired = false;
+            plushie.style.filter = '';
+            plushie.style.opacity = '0.85';
+          }, 5000);
+        }
       }
-    });
+    };
+    
+    plushie.addEventListener('mouseenter', runnerHover);
     
     const originalClick = plushie.onclick;
     plushie.onclick = (e) => {
-      clicks++;
-      if (clicks >= 3) {
-        plushie.style.animation = 'shake 0.3s';
-        setTimeout(() => originalClick?.call(plushie, e), 300);
+      if (tired) {
+        originalClick?.call(plushie, e);
       }
     };
   }
@@ -233,6 +302,12 @@ class PlushieSystem {
       collected.push(index);
       localStorage.setItem('plushie-collected', JSON.stringify(collected));
       
+      if (element.posData?.sound) {
+        const audio = new Audio(`placeholder/${element.posData.sound}`);
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+      }
+      
       this.updateCounter();
       
       element.style.animation = 'plushieCollect 0.5s ease-out';
@@ -252,17 +327,122 @@ class PlushieSystem {
   updateCounter() {
     const total = this.progress.gissel + this.progress.molly;
     document.getElementById('plushie-progress').textContent = `${total}/40`;
+    this.updateEventBadge();
+  }
+
+  updateEventBadge() {
+    const total = this.progress.gissel + this.progress.molly;
+    const badgeContainer = document.getElementById('event-badge-container');
+    if (!badgeContainer) return;
+    
+    const percentage = (total / 40) * 100;
+    const isActive = this.isEventActive();
+    const timeLeft = this.getTimeRemaining();
+    const isComplete = total === 40;
+    
+    let badgeHTML = '';
+    if (isComplete) {
+      // Badge dorado especial cuando completas todo
+      badgeHTML = `
+        <div style="margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,165,0,0.3)); border: 2px solid #FFD700; border-radius: 12px; box-shadow: 0 0 20px rgba(255,215,0,0.4); animation: pulse 2s infinite;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.5rem;">🏆</span>
+            <div style="flex: 1;">
+              <strong style="color: #FFD700; text-shadow: 0 0 10px rgba(255,215,0,0.5);">¡COLECCIÓN COMPLETA!</strong>
+              <div style="font-size: 0.7rem; color: #FFA500;">${isActive ? '⏰ Evento activo' : '🎉 Evento finalizado'}</div>
+            </div>
+          </div>
+          <div style="background: rgba(255,215,0,0.2); height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 0.5rem;">
+            <div style="background: linear-gradient(90deg, #FFD700, #FFA500); height: 100%; width: 100%; box-shadow: 0 0 10px #FFD700;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #FFD700;">
+            <span>💜 Gissel: 20/20 ✔️</span>
+            <span>🔪 Molly: 20/20 ✔️</span>
+            <span style="font-weight: bold;">40/40 🎉</span>
+          </div>
+        </div>
+      `;
+    } else if (isActive && timeLeft) {
+      badgeHTML = `
+        <div style="margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, rgba(255,107,53,0.2), rgba(247,147,30,0.2)); border: 2px solid var(--primary); border-radius: 12px;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.5rem;">🧸</span>
+            <div style="flex: 1;">
+              <strong style="color: var(--primary);">Evento: Búsqueda de Peluches</strong>
+              <div style="font-size: 0.7rem; color: var(--text-secondary);">⏰ ${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m restantes</div>
+            </div>
+          </div>
+          <div style="background: var(--bg-light); height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 0.5rem;">
+            <div style="background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; width: ${percentage}%; transition: width 0.3s ease;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+            <span>💜 Gissel: ${this.progress.gissel}/20</span>
+            <span>🔪 Molly: ${this.progress.molly}/20</span>
+            <span style="font-weight: bold; color: var(--primary);">${total}/40</span>
+          </div>
+        </div>
+      `;
+    } else if (!isActive && total > 0) {
+      badgeHTML = `
+        <div style="margin-bottom: 1rem; padding: 1rem; background: rgba(128,128,128,0.1); border: 2px solid #666; border-radius: 12px; opacity: 0.7;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.5rem;">🧸</span>
+            <div style="flex: 1;">
+              <strong style="color: #999;">Evento Finalizado</strong>
+              <div style="font-size: 0.7rem; color: var(--text-secondary);">2 dic - 1 ene 2026</div>
+            </div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">
+            Tu progreso: ${total}/40 peluches (💜 ${this.progress.gissel} | 🔪 ${this.progress.molly})
+          </div>
+        </div>
+      `;
+    }
+    
+    badgeContainer.innerHTML = badgeHTML;
+  }
+
+  getTimeRemaining() {
+    const now = new Date();
+    const diff = this.endDate - now;
+    if (diff <= 0) return null;
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    return { days, hours, minutes, seconds };
   }
 
   showPanel() {
+    if (!this.isEventActive()) {
+      alert('🧸 El evento de peluches finalizó el 1 de enero de 2026. ¡Gracias por participar!');
+      return;
+    }
     const basePath = window.location.pathname.includes('guessbook') || window.location.pathname.includes('public') || window.location.pathname.includes('Projectankaro') ? '../' : '';
     const panel = document.createElement('div');
     panel.className = 'plushie-panel';
+    
+    const timeLeft = this.getTimeRemaining();
+    const timerHTML = timeLeft ? `
+      <div style="margin: 1rem 0; padding: 0.75rem; background: rgba(255,107,53,0.2); border: 2px solid var(--primary); border-radius: 8px; text-align: center;">
+        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">⏰ Evento termina en:</div>
+        <div id="plushie-timer" style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">
+          ${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s
+        </div>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          📅 Inicio: 2 dic 2025 | Fin: 1 ene 2026
+        </div>
+      </div>
+    ` : '';
+    
     panel.innerHTML = `
       <div class="plushie-panel-content">
         <button class="close-panel" onclick="this.parentElement.parentElement.remove()">&times;</button>
         <h3>🧸 Búsqueda de Peluches</h3>
         <p>¡Oh no! Gissel y Molly perdieron sus peluches por toda la página.</p>
+        ${timerHTML}
         <div style="margin: 1rem 0;">
           <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
             <img src="${basePath}placeholder/gisselplushie.png" style="width: 40px; height: 40px;">
@@ -314,6 +494,22 @@ class PlushieSystem {
     panel.addEventListener('click', (e) => {
       if (e.target === panel) panel.remove();
     });
+    
+    // Actualizar temporizador cada segundo
+    const timerElement = document.getElementById('plushie-timer');
+    if (timerElement) {
+      const updateTimer = () => {
+        const timeLeft = this.getTimeRemaining();
+        if (timeLeft) {
+          timerElement.textContent = `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`;
+        } else {
+          clearInterval(timerInterval);
+          panel.remove();
+          alert('🧸 El evento de peluches ha finalizado. ¡Gracias por participar!');
+        }
+      };
+      const timerInterval = setInterval(updateTimer, 1000);
+    }
   }
 
   showNotification(message) {

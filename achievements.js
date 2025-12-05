@@ -112,6 +112,20 @@ class AchievementSystem {
       'weekly-warrior': { name: 'Guerrero Semanal', desc: 'Mantén racha semanal por 4 semanas', points: 120, icon: '📅' },
       'monthly-champion': { name: 'Campeón Mensual', desc: 'Mantén racha mensual por 3 meses', points: 300, icon: '🗓️' },
       'combo-master': { name: 'Maestro de Combos', desc: 'Consigue 5 logros en una sesión', points: 100, icon: '🔥' },
+      'plushie-collector': { name: 'Coleccionista de Peluches', desc: 'Encuentra los 40 peluches escondidos', points: 500, icon: '🧸' },
+      'gissel-fan': { name: 'Fan de Gissel', desc: 'Encuentra los 20 peluches de Gissel', points: 250, icon: '💜' },
+      'molly-hunter': { name: 'Cazador de Molly', desc: 'Encuentra los 20 peluches de Molly', points: 250, icon: '🔪' },
+      'guestbook-artist': { name: 'Artista del Guestbook', desc: 'Crea 10 dibujos en el guestbook', points: 100, icon: '🎨' },
+      'social-butterfly': { name: 'Mariposa Social', desc: 'Visita todas las redes sociales', points: 50, icon: '🦋' },
+      'deadly-player': { name: 'Jugador Mortal', desc: 'Juega Deadly Pursuer', points: 75, icon: '🎮' },
+      'ankaro-explorer': { name: 'Explorador de Ankaro', desc: 'Entra a Project Ankaro', points: 75, icon: '👻' },
+      'comment-king': { name: 'Rey de Comentarios', desc: 'Deja 5 comentarios', points: 50, icon: '💬' },
+      'like-master': { name: 'Maestro de Likes', desc: 'Da 20 likes en el guestbook', points: 40, icon: '❤️' },
+      'midnight-visitor': { name: 'Visitante de Medianoche', desc: 'Visita exactamente a las 12:00 AM', points: 50, icon: '🌙' },
+      'speed-reader': { name: 'Lector Veloz', desc: 'Lee el README completo', points: 30, icon: '📖' },
+      'theme-hoarder': { name: 'Acaparador de Temas', desc: 'Desbloquea 15 temas', points: 150, icon: '🎨' },
+      'point-millionaire': { name: 'Millonario de Puntos', desc: 'Acumula 10,000 puntos', points: 500, icon: '💰' },
+      'loyal-visitor': { name: 'Visitante Leal', desc: 'Visita 50 días diferentes', points: 200, icon: '🏅' },
       'perfectionist': { name: 'Perfeccionista', desc: 'Completa todos los logros', points: 1000, icon: '💯' }
     };
   }
@@ -241,7 +255,11 @@ class AchievementSystem {
   // Verificar logro
   checkAchievement(id) {
     if (!this.gameData.achievements[id] && this.achievements[id]) {
-      this.gameData.achievements[id] = true;
+      this.gameData.achievements[id] = {
+        unlocked: true,
+        date: new Date().toISOString(),
+        timestamp: Date.now()
+      };
       this.addPoints(this.achievements[id].points);
       this.showNotification(this.achievements[id]);
       this.save();

@@ -1,29 +1,52 @@
 {
   "proyecto": "FenixLaboratory",
-  "version": "2.2.1",
-  "lastUpdate": "2025-01-15",
+  "version": "2.2.2",
+  "lastUpdate": "2025-12-04",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.2.1",
-    "fecha": "2025-01-15",
-    "tipo": "new",
+    "numero": "2.2.2",
+    "fecha": "2025-12-04",
+    "tipo": "bugfix",
     "estado": "estable",
     "cambios_principales": [
-      "Plushie hunt: 40 plushies escondidos por todo el laboratorio",
-      "3 comportamientos especiales: Runner, Shy, Invisible",
-      "Sistema de progreso sincronizado con localStorage",
-      "Soporte completo para móvil con eventos touch",
-      "Panel de progreso con contador 0/40"
+      "Peluches ahora hablan cuando les pasas el mouse",
+      "Runners se mueven solos y se cansan después de correr",
+      "Sonido de grito cuando agarras un peluche",
+      "13 logros nuevos agregados al sistema",
+      "Fecha de desbloqueo en cada logro"
     ]
   },
   
   "updates": [
     {
+      "version": "2.2.2",
+      "date": "2025-12-04",
+      "title": "🔧 Mejoras y Nuevos Logros",
+      "type": "bugfix",
+      "features": [
+        "💬 Los peluches ahora hablan cuando les pasas el mouse",
+        "🏃 Runners se mueven solos cada 3-5 segundos",
+        "😴 Runners se cansan después de 5 intentos de escape",
+        "🔊 Sonido de grito cuando agarras un peluche (solo Molly)",
+        "🏆 13 logros nuevos: Fan de Gissel, Cazador de Molly, Artista del Guestbook, y más",
+        "📅 Fecha de desbloqueo guardada en cada logro",
+        "🎯 Logro especial por encontrar los 40 peluches (500 pts)",
+        "💰 Millonario de Puntos: acumula 10,000 puntos",
+        "🌙 Visitante de Medianoche: visita exactamente a las 12:00 AM"
+      ],
+      "fixes": [
+        "✅ Diálogos ahora funcionan correctamente en todos los peluches",
+        "✅ Runners ya no se quedan atascados",
+        "✅ Sistema de stamina funciona perfectamente",
+        "✅ Sonidos solo se reproducen al atrapar, no al hover"
+      ]
+    },
+    {
       "version": "2.2.1",
-      "date": "2025-01-15",
+      "date": "2025-12-03",
       "title": "🧸 Plushie Hunt Update - Sistema de Búsqueda de Peluches",
       "type": "new",
       "features": [
@@ -54,6 +77,10 @@
         "🎨 Rutas relativas automáticas según la página actual",
         "⚡ Animaciones CSS optimizadas para rendimiento",
         "🎮 z-index alto (10000) para visibilidad garantizada"
+      ],
+      "fixes": [
+        "🐛 Corregidos emojis corruptos en guestbook-new.html",
+        "🐛 Restaurado archivo desde GitHub usando curl"
       ]
     },
     {

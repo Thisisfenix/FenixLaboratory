@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🔬 FenixLaboratory v2.2.1 - Plushie Hunt Update</title>
+  <title>🔬 FenixLaboratory v2.2.2 - Mejoras y Nuevos Logros</title>
   <meta name="description"
     content="Mi rinconcito donde pongo todos mis proyectos random de GitHub. Con logros, temas chéveres y cosas que hago cuando me aburro. Nada fancy, solo diversión." />
   <meta name="keywords"
@@ -16,11 +16,11 @@
   <meta name="theme-color" content="#ff6b35">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FenixLab v2.2.1">
+  <meta name="apple-mobile-web-app-title" content="FenixLab v2.2.2">
   <link rel="apple-touch-icon" href="favicon.svg">
   <!-- Discord/Social Media Embeds -->
   <meta property="og:title" content="🔬 FenixLaboratory - Experimentos raros y proyectos random">
-  <meta property="og:description" content="Mi rinconcito donde pongo todos mis proyectos de GitHub. ¡Nuevo en v2.2.1: 40 plushies escondidos con comportamientos especiales! Sistema de logros, temas y gamificación completa.">
+  <meta property="og:description" content="Mi rinconcito donde pongo todos mis proyectos de GitHub. ¡Nuevo en v2.2.2: Peluches que hablan, runners que se cansan, 13 logros nuevos y más! Sistema de logros, temas y gamificación completa.">
   <meta property="og:image" content="https://thisisfenix.github.io/FenixLaboratory/preview.png">
   <meta property="og:url" content="https://thisisfenix.github.io/FenixLaboratory/">
   <meta property="og:type" content="website">
@@ -29,7 +29,7 @@
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="🔬 FenixLaboratory - Experimentos raros">
-  <meta name="twitter:description" content="v2.2.1 Plushie Hunt Update: 40 peluches escondidos con 3 comportamientos especiales. Sistema de logros, temas premium y gamificación completa.">
+  <meta name="twitter:description" content="v2.2.2 Mejoras: Peluches que hablan, runners con stamina, sonidos al atrapar, 13 logros nuevos con fechas. Sistema de logros, temas premium y gamificación completa.">
   <meta name="twitter:image" content="https://thisisfenix.github.io/FenixLaboratory/preview.png">
   <meta name="twitter:creator" content="@AntiAnkush">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,7 +87,7 @@
           </li>
           <li class="nav-item">
             <button id="updates-btn" class="nav-link" aria-label="Ver actualizaciones">
-              <i class="bi bi-arrow-up-circle me-1"></i> v2.2.1
+              <i class="bi bi-arrow-up-circle me-1"></i> v2.2.2
             </button>
           </li>
           <li class="nav-item">
@@ -572,6 +572,10 @@
       <div class="points-badge mt-2" style="background: #22c55e;">Búsquedas: <span id="search-count">0</span></div>
       <div class="points-badge mt-2" style="background: #8b5cf6;">Filtros: <span id="filter-count">0</span></div>
       <div class="points-badge mt-2" style="background: #06b6d4;">Desafíos: <span id="challenges-count">0</span></div>
+    </div>
+
+    <div class="mb-3">
+      <div id="event-badge-container"></div>
     </div>
 
     <div class="mb-3">
@@ -2986,7 +2990,7 @@ async function showCredits() {
             throw new Error(`HTTP ${response.status}`);
           }
           const data = await response.json();
-          const currentVersion = '2.2.1';
+          const currentVersion = '2.2.2';
           if (data.version !== currentVersion) {
             console.log('🆕 Nueva versión disponible:', data.version);
             showUpdateNotification(data.version, data.updates[0]);
@@ -3122,6 +3126,9 @@ async function showCredits() {
               panel.classList.remove('show');
             } else {
               panel.classList.add('show');
+              if (typeof plushieSystem !== 'undefined' && plushieSystem) {
+                plushieSystem.updateEventBadge();
+              }
             }
           }
         });

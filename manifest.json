@@ -1,7 +1,7 @@
 {
-  "name": "FenixLaboratory v2.2.1",
+  "name": "FenixLaboratory v2.2.2",
   "short_name": "FenixLab",
-  "description": "PWA con 40 plushies escondidos, guestbook completo y sistema de logros",
+  "description": "PWA con peluches que hablan, 13 logros nuevos, guestbook completo y sistema de logros",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1a1a1a",
