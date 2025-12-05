@@ -343,6 +343,7 @@ class AchievementSystem {
   updateChallenge(challengeId, increment = 1) {
     const today = new Date().toDateString();
     const challenge = this.dailyChallenges[challengeId];
+    if (!challenge) return;
     
     if (!this.gameData.dailyChallenges[today]) {
       this.gameData.dailyChallenges[today] = {};

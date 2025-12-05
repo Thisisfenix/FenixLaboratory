@@ -3,35 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🔬 FenixLaboratory v2.2.2 - Mejoras y Nuevos Logros</title>
-  <meta name="description"
-    content="Mi rinconcito donde pongo todos mis proyectos random de GitHub. Con logros, temas chéveres y cosas que hago cuando me aburro. Nada fancy, solo diversión." />
-  <meta name="keywords"
-    content="experimentos raros, proyectos random, ThisIsFenix, GitHub, temas chéveres, logros, diversión, código">
-  <meta name="author" content="ThisIsFenix">
+  <title>🔬 FenixLaboratory v2.2.2 - Experimentos y Proyectos</title>
+  <meta name="description" content="Portfolio interactivo con juegos multijugador, guestbook artístico y sistema de logros. Deadly Pursuer, Project Ankaro y más." />
   <link rel="icon" type="image/png" href="public/assets/icons/ankush.png">
-  <link rel="canonical" href="https://thisisfenix.github.io/FenixLaboratory/">
-  <!-- PWA Manifest -->
+  
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ff6b35">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FenixLab v2.2.2">
   <link rel="apple-touch-icon" href="favicon.svg">
-  <!-- Discord/Social Media Embeds -->
-  <meta property="og:title" content="🔬 FenixLaboratory - Experimentos raros y proyectos random">
-  <meta property="og:description" content="Mi rinconcito donde pongo todos mis proyectos de GitHub. ¡Nuevo en v2.2.2: Peluches que hablan, runners que se cansan, 13 logros nuevos y más! Sistema de logros, temas y gamificación completa.">
+  
+  <!-- Social Media -->
+  <meta property="og:title" content="🔬 FenixLaboratory - Experimentos y Proyectos">
+  <meta property="og:description" content="Portfolio interactivo con juegos multijugador, guestbook artístico y sistema de logros." />
   <meta property="og:image" content="https://thisisfenix.github.io/FenixLaboratory/preview.png">
   <meta property="og:url" content="https://thisisfenix.github.io/FenixLaboratory/">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="FenixLaboratory">
-  
-  <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="🔬 FenixLaboratory - Experimentos raros">
-  <meta name="twitter:description" content="v2.2.2 Mejoras: Peluches que hablan, runners con stamina, sonidos al atrapar, 13 logros nuevos con fechas. Sistema de logros, temas premium y gamificación completa.">
   <meta name="twitter:image" content="https://thisisfenix.github.io/FenixLaboratory/preview.png">
-  <meta name="twitter:creator" content="@AntiAnkush">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap"
@@ -681,9 +670,7 @@
       </div>
     </div>
   </div>
- 
 
-  
   <div class="nerd-panel" id="name-panel">
     <button class="close-panel" id="close-name-panel">&times;</button>
     <h3>🏆 LEADERBOARD</h3>
@@ -739,8 +726,10 @@
   </script>
   
   <!-- Scripts -->
-  <script src="achievements.js"></script>
-  <script src="plushie-system.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/plushie-system.js"></script>
+  <script src="js/repos.js"></script>
+  <script src="js/themes.js"></script>
   <script>
     // Deadly Pursuer Warning System
     function showDeadlyPursuerWarning() {
@@ -790,9 +779,14 @@
     }
     
     // Manejo de errores global optimizado
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    
     window.addEventListener('error', function(e) {
       if (e.filename && !e.filename.includes('extension')) {
         console.error('Error:', e.error?.message || e.message);
+        if (isMobile) {
+          alert(`❌ Error: ${e.error?.message || e.message}\nArchivo: ${e.filename}\nLínea: ${e.lineno}`);
+        }
       }
       return true;
     });
@@ -800,6 +794,9 @@
     window.addEventListener('unhandledrejection', function(e) {
       if (!e.reason?.message?.includes('extension')) {
         console.error('Promise rechazada:', e.reason);
+        if (isMobile) {
+          alert(`❌ Promise Error: ${e.reason}`);
+        }
       }
       e.preventDefault();
     });
@@ -893,290 +890,7 @@
       updatePointsDisplay();
     });
 
-    const user = 'thisisfenix';
-    let allRepos = [];
-    let filteredRepos = [];
-    let currentPage = 1;
-    const reposPerPage = 4;
-
-    // Sistema de carga por secciones
-    function showSection(sectionId, loadingId) {
-      const loading = document.getElementById(loadingId);
-      const section = document.getElementById(sectionId);
-
-      if (loading) {
-        loading.classList.add('loaded');
-      }
-      if (section) {
-        section.style.display = 'block';
-      }
-    }
-
-    function loadImage(imgElement, localSrc, remoteSrc, placeholderSrc) {
-      imgElement.src = localSrc;
-      imgElement.onerror = () => {
-        imgElement.onerror = () => imgElement.src = placeholderSrc;
-        imgElement.src = remoteSrc;
-      };
-    }
-
-    function displayRepos(repos, page = 1) {
-      const container = document.getElementById('repos-container');
-      container.innerHTML = '';
-
-      // Project Ankaro card
-      if (page === 1) {
-        const ankaroCard = document.createElement('div');
-        ankaroCard.className = 'card';
-        ankaroCard.style.border = '2px solid var(--primary)';
-        ankaroCard.innerHTML = `
-          <div class="card-img-top" style="background: linear-gradient(135deg, #1a1a2e, #16213e); height: 180px; display: flex; align-items: center; justify-content: center; font-size: 4rem;">🎮</div>
-          <div class="card-body">
-            <h3 class="card-title">Project Ankaro</h3>
-            <p class="card-text">Juego multijugador 3D de horror con voz en tiempo real, mecánicas de supervivencia y soporte para móvil/gamepad.</p>
-            <div class="btn-group">
-              <a href="Projectankaro/index.html" class="btn btn-outline-neon"><i class="bi bi-joystick me-1"></i> Jugar</a>
-            </div>
-          </div>
-        `;
-        container.appendChild(ankaroCard);
-      }
-
-      const startIndex = (page - 1) * reposPerPage;
-      const endIndex = startIndex + reposPerPage;
-      const paginatedRepos = repos.slice(startIndex, endIndex);
-
-      paginatedRepos.forEach(repo => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.setAttribute('tabindex', '0');
-        card.setAttribute('data-language', repo.language ? repo.language.toLowerCase() : 'other');
-
-        const img = document.createElement('img');
-        img.className = 'card-img-top';
-        img.alt = `Vista previa de ${repo.name}`;
-
-        const localImagePath = `img/localPreviews/${repo.name}.png`;
-        const remoteImagePath = `https://raw.githubusercontent.com/${user}/${repo.name}/main/preview.png`;
-        const placeholderImage = 'placeholder/GHbDEIgXMAACVEi.jpg';
-
-        loadImage(img, localImagePath, remoteImagePath, placeholderImage);
-
-        const body = document.createElement('div');
-        body.className = 'card-body';
-
-        const title = document.createElement('h3');
-        title.className = 'card-title';
-        title.textContent = repo.name.replace(/-/g, ' ');
-
-        const timeline = document.createElement('div');
-        timeline.className = 'card-timeline';
-        const commitDate = new Date(repo.updated_at);
-        const daysSince = Math.floor((new Date() - commitDate) / (1000 * 60 * 60 * 24));
-        timeline.innerHTML = `
-          <div class="commit-dot"></div>
-          <span>Actualizado hace ${daysSince} días</span>
-        `;
-
-        const desc = document.createElement('p');
-        desc.className = 'card-text';
-        desc.textContent = repo.description || 'Sin descripción';
-
-        const btnGroup = document.createElement('div');
-        btnGroup.className = 'btn-group';
-
-        const btnCode = document.createElement('a');
-        btnCode.className = 'btn btn-outline-neon';
-        btnCode.href = repo.html_url;
-        btnCode.target = '_blank';
-        btnCode.innerHTML = '<i class="bi bi-code me-1"></i> Código';
-
-        const btnDemo = document.createElement('a');
-        btnDemo.className = 'btn btn-outline-neon';
-        btnDemo.href = `https://${user}.github.io/${repo.name}`;
-        btnDemo.target = '_blank';
-        btnDemo.innerHTML = '<i class="bi bi-box-arrow-up-right me-1"></i> Demo';
-
-        btnGroup.appendChild(btnCode);
-        btnGroup.appendChild(btnDemo);
-
-        body.appendChild(title);
-        body.appendChild(timeline);
-        body.appendChild(desc);
-        body.appendChild(btnGroup);
-
-        card.appendChild(img);
-        card.appendChild(body);
-        container.appendChild(card);
-        
-        // Tracking para logros
-        card.addEventListener('click', () => {
-          gameData.projectsViewed.add(repo.name);
-          updateWeeklyChallenge('project-master');
-          updateBadgeProgress('explorer', 1);
-          updateBadgeProgress('developer', 1);
-          if (gameData.projectsViewed.size >= 5) {
-            checkAchievement('project-hunter');
-          }
-          saveGameData();
-        });
-        
-        btnCode.addEventListener('click', () => trackCodeView(repo.name));
-        btnDemo.addEventListener('click', () => trackDemo(repo.name));
-      });
-
-      // Añadir card de "Próximamente" al final
-      const comingSoonCard = document.createElement('div');
-      comingSoonCard.className = 'card';
-      comingSoonCard.style.cssText = 'border: 2px dashed var(--primary); opacity: 0.7;';
-      
-      const comingSoonImg = document.createElement('div');
-      comingSoonImg.className = 'card-img-top';
-      comingSoonImg.style.cssText = `
-        background-image: url('placeholder/GzyBNcWWsAEcgbH.jpg');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-      `;
-      
-      const comingSoonBody = document.createElement('div');
-      comingSoonBody.className = 'card-body';
-      comingSoonBody.innerHTML = `
-        <h5 class="card-title" style="text-align: center;">Próximamente</h5>
-        <p class="card-text" style="text-align: center;">Algo relacionado con awshuck está en camino... 👀<br><small style="opacity: 0.7;">Más detalles en updates.json</small></p>
-        <div class="d-flex justify-content-center align-items-center mb-3">
-          <small style="color: var(--text-secondary);">
-            <i class="fas fa-clock me-1"></i>En desarrollo
-          </small>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-outline-neon" disabled>
-            <i class="fas fa-hourglass-half me-1"></i>Esperando
-          </button>
-        </div>
-      `;
-      
-      comingSoonCard.appendChild(comingSoonImg);
-      comingSoonCard.appendChild(comingSoonBody);
-      container.appendChild(comingSoonCard);
-
-      updatePagination(repos.length, page);
-    }
-
-    function updatePagination(totalRepos, currentPage) {
-      const pagination = document.getElementById('pagination');
-      const totalPages = Math.ceil(totalRepos / reposPerPage);
-
-      if (totalPages <= 1) {
-        pagination.innerHTML = '';
-        return;
-      }
-
-      let paginationHTML = '';
-
-      if (currentPage > 1) {
-        paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage - 1})">Anterior</button>`;
-      }
-
-      for (let i = 1; i <= totalPages; i++) {
-        const activeClass = i === currentPage ? 'active' : '';
-        paginationHTML += `<button class="page-btn ${activeClass}" onclick="changePage(${i})">${i}</button>`;
-      }
-
-      if (currentPage < totalPages) {
-        paginationHTML += `<button class="page-btn" onclick="changePage(${currentPage + 1})">Siguiente</button>`;
-      }
-
-      pagination.innerHTML = paginationHTML;
-    }
-
-    function changePage(page) {
-      currentPage = page;
-      displayRepos(filteredRepos, page);
-    }
-
-    function filterRepos(language) {
-      if (language === 'all') {
-        filteredRepos = allRepos;
-      } else {
-        filteredRepos = allRepos.filter(repo =>
-          repo.language && repo.language.toLowerCase() === language
-        );
-      }
-      currentPage = 1;
-      displayRepos(filteredRepos, 1);
-    }
-
-    function searchRepos(query) {
-      if (!query) {
-        filteredRepos = allRepos;
-      } else {
-        filteredRepos = allRepos.filter(repo =>
-          repo.name.toLowerCase().includes(query.toLowerCase()) ||
-          (repo.description && repo.description.toLowerCase().includes(query.toLowerCase()))
-        );
-      }
-      currentPage = 1;
-      displayRepos(filteredRepos, 1);
-    }
-
-    function sortRepos(sortBy) {
-      filteredRepos.sort((a, b) => {
-        switch (sortBy) {
-          case 'stars':
-            return b.stargazers_count - a.stargazers_count;
-          case 'name':
-            return a.name.localeCompare(b.name);
-          case 'created':
-            return new Date(a.created_at) - new Date(b.created_at);
-          case 'updated':
-          default:
-            return new Date(b.updated_at) - new Date(a.updated_at);
-        }
-      });
-      currentPage = 1;
-      displayRepos(filteredRepos, 1);
-    }
-
-    // Cache para repos
-    const CACHE_KEY = 'fenix-repos-cache';
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
-    
-    async function fetchRepos() {
-      try {
-        // Verificar cache primero
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            allRepos = data;
-            filteredRepos = data;
-            displayRepos(data);
-            return;
-          }
-        }
-        
-        const response = await fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=100`);
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
-
-        const repos = await response.json();
-        
-        // Guardar en cache
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          data: repos,
-          timestamp: Date.now()
-        }));
-        
-        allRepos = repos;
-        filteredRepos = repos;
-        displayRepos(repos);
-
-      } catch (error) {
-        console.error('Error al cargar repositorios:', error);
-        const container = document.getElementById('repos-container');
-        container.innerHTML = '<p class="text-center">Error al cargar los proyectos. Intente más tarde.</p>';
-      }
-    }
+    // Las funciones de repos ahora están en repos.js
 
     function createParticles() {
       const container = document.getElementById('particles');
@@ -1278,79 +992,6 @@
       type();
     }
 
-    function setTheme(theme) {
-      const body = document.body;
-      const themes = ['light-theme', 'neon-theme', 'cyberpunk-theme', 'matrix-theme', 'synthwave-theme', 'ocean-theme', 'forest-theme', 'sunset-theme', 'christmas-theme', 'halloween-theme', 'valentine-theme', 'easter-theme', 'summer-theme', 'autumn-theme', 'funkyatlas-theme', 'funkyatlas-christmas-theme', 'galaxy-theme', 'gold-theme', 'rainbow-theme', 'diamond-theme', 'custom-theme', 'vaporwave-theme', 'hacker-theme', 'neon-city-theme', 'space-theme', 'fire-theme', 'ice-theme', 'toxic-theme', 'royal-theme', 'steampunk-theme', 'hologram-theme', 'legendary-theme'];
-      
-      themes.forEach(t => body.classList.remove(t));
-      
-      if (theme !== 'dark') {
-        body.classList.add(theme + '-theme');
-      }
-      
-      if (theme === 'custom') {
-        applyCustomTheme();
-      }
-      
-      // Crear copos de nieve para temas navideños
-      if (theme === 'christmas' || theme === 'funkyatlas-christmas') {
-        createSnowflakes();
-      } else {
-        removeSnowflakes();
-      }
-      
-      document.querySelectorAll('.theme-card').forEach(card => {
-        card.classList.remove('active');
-        if (card.dataset.theme === theme) {
-          card.classList.add('active');
-        }
-      });
-      
-      localStorage.setItem('theme', theme);
-    }
-    
-    function createSnowflakes() {
-      // Eliminar copos existentes primero
-      removeSnowflakes();
-      
-      const snowflakeCount = 50;
-      const snowflakes = ['❄', '❅', '❆'];
-      
-      for (let i = 0; i < snowflakeCount; i++) {
-        const snowflake = document.createElement('div');
-        snowflake.className = 'snowflake';
-        snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
-        snowflake.style.left = Math.random() * 100 + '%';
-        snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
-        snowflake.style.animationDelay = Math.random() * 5 + 's';
-        snowflake.style.fontSize = (Math.random() * 1 + 0.5) + 'em';
-        snowflake.style.opacity = Math.random() * 0.6 + 0.4;
-        document.body.appendChild(snowflake);
-      }
-    }
-    
-    function removeSnowflakes() {
-      document.querySelectorAll('.snowflake').forEach(snowflake => snowflake.remove());
-    }
-
-    function applyCustomTheme() {
-      const colors = gameData.customColors;
-      document.documentElement.style.setProperty('--custom-bg', colors.bg);
-      document.documentElement.style.setProperty('--custom-bg-light', colors.bg + '33');
-      document.documentElement.style.setProperty('--custom-text', colors.text);
-      document.documentElement.style.setProperty('--custom-text-secondary', colors.text + '99');
-      document.documentElement.style.setProperty('--custom-primary', colors.primary);
-      document.documentElement.style.setProperty('--custom-secondary', colors.secondary);
-    }
-
-    function showCustomColors() {
-      document.getElementById('custom-colors').style.display = 'block';
-      document.getElementById('bg-color').value = gameData.customColors.bg;
-      document.getElementById('text-color').value = gameData.customColors.text;
-      document.getElementById('primary-color').value = gameData.customColors.primary;
-      document.getElementById('secondary-color').value = gameData.customColors.secondary;
-    }
-
     function buyCursor(cursor, cost) {
       const result = achievementSystem.buyCursor(cursor, cost);
       if (result) {
@@ -1359,75 +1000,6 @@
       }
       return result;
     }
-
-    function loadTheme() {
-      const seasonalTheme = getSeasonalTheme();
-      const savedTheme = localStorage.getItem('theme') || seasonalTheme || 'dark';
-      
-      // Si hay tema estacional y no se ha cambiado manualmente hoy
-      const lastThemeChange = localStorage.getItem('last-theme-change');
-      const today = new Date().toDateString();
-      
-      if (seasonalTheme && lastThemeChange !== today && gameData.autoSeasonalThemes) {
-        setTheme(seasonalTheme);
-        showSeasonalNotification(seasonalTheme);
-      } else {
-        setTheme(savedTheme);
-      }
-    }
-
-    function getSeasonalTheme() {
-      const now = new Date();
-      const month = now.getMonth() + 1; // 1-12
-      const day = now.getDate();
-      
-      // Halloween (Octubre)
-      if (month === 10) return 'halloween';
-      
-      // Navidad (Diciembre)
-      if (month === 12) return 'christmas';
-      
-      // San Valentín (14 de febrero)
-      if (month === 2 && day === 14) return 'valentine';
-      
-      // Pascua (Abril - aproximado)
-      if (month === 4) return 'easter';
-      
-      // Verano (Junio-Agosto)
-      if (month >= 6 && month <= 8) return 'summer';
-      
-      // Otoño (Septiembre-Noviembre)
-      if (month >= 9 && month <= 11) return 'autumn';
-      
-      return null;
-    }
-
-    function showSeasonalNotification(theme) {
-      const themeNames = {
-        'halloween': '🎃 Halloween',
-        'christmas': '🎄 Navidad', 
-        'valentine': '💕 San Valentín',
-        'easter': '🐰 Pascua',
-        'summer': '☀️ Verano',
-        'autumn': '🍂 Otoño'
-      };
-      
-      const notification = document.getElementById('achievement-notification');
-      document.getElementById('notification-text').textContent = `Tema ${themeNames[theme]} activado automáticamente`;
-      notification.classList.add('show');
-      setTimeout(() => notification.classList.remove('show'), 4000);
-    }
-
-    function showThemePanel() {
-      document.getElementById('theme-overlay').classList.add('show');
-      document.getElementById('theme-panel').classList.add('show');
-    }
-
-    function hideThemePanel() {
-      document.getElementById('theme-overlay').classList.remove('show');
-      document.getElementById('theme-panel').classList.remove('show');
-    }
-
 
     function updateActiveNav() {
       const sections = document.querySelectorAll('section');
@@ -1664,7 +1236,6 @@ async function showCredits() {
   }
 }
 
-    
     function hideAllSections() {
       const mainContent = document.getElementById('main-content');
       const creditsSection = document.getElementById('credits-section');
@@ -1952,21 +1523,6 @@ async function showCredits() {
       }, timeUntilReminder);
     }
 
-    // Modo automático día/noche
-    function checkAutoDayNight() {
-      if (!gameData.autoDayNight) return;
-      
-      const hour = new Date().getHours();
-      const isDayTime = hour >= 6 && hour < 20;
-      const currentTheme = localStorage.getItem('theme') || 'dark';
-      
-      if (isDayTime && currentTheme === 'dark') {
-        setTheme('light');
-      } else if (!isDayTime && currentTheme === 'light') {
-        setTheme('dark');
-      }
-    }
-
     function checkDailyVisit() {
       const today = new Date().toDateString();
       const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -2213,63 +1769,6 @@ async function showCredits() {
         list.appendChild(item);
       });
     }
-
-    function updatePremiumThemes() {
-      document.querySelectorAll('.premium-theme').forEach(card => {
-        const theme = card.dataset.theme;
-        const isUnlocked = gameData.unlockedThemes.has(theme);
-        
-        if (isUnlocked) {
-          card.classList.remove('locked');
-          card.classList.add('owned');
-        } else {
-          card.classList.add('locked');
-          card.classList.remove('owned');
-        }
-      });
-    }
-
-    function updateSeasonalIndicator() {
-      const currentSeason = getSeasonalTheme();
-      const indicator = document.getElementById('seasonal-indicator');
-      
-      // Limpiar clases anteriores
-      document.querySelectorAll('.seasonal-theme').forEach(card => {
-        card.classList.remove('current-season');
-      });
-      
-      if (currentSeason) {
-        const seasonNames = {
-          'halloween': '(Activo: Halloween 🎃)',
-          'christmas': '(Activo: Navidad 🎄)', 
-          'valentine': '(Activo: San Valentín 💕)',
-          'easter': '(Activo: Pascua 🐰)',
-          'summer': '(Activo: Verano ☀️)',
-          'autumn': '(Activo: Otoño 🍂)'
-        };
-        
-        indicator.textContent = seasonNames[currentSeason] || '';
-        
-        // Resaltar el tema actual
-        const currentCard = document.querySelector(`[data-theme="${currentSeason}"]`);
-        if (currentCard) {
-          currentCard.classList.add('current-season');
-        }
-      } else {
-        indicator.textContent = '';
-      }
-    }
-
-    function buyTheme(theme, cost) {
-      const result = achievementSystem.buyTheme(theme, cost);
-      if (result) {
-        updatePointsDisplay();
-        updatePremiumThemes();
-      }
-      return result;
-    }
-
-
 
     function checkTimeBasedAchievements() {
       const hour = new Date().getHours();
@@ -2826,34 +2325,7 @@ async function showCredits() {
       saveGameData();
     }
 
-    function applyEditorTheme(preview = false) {
-      const bg = document.getElementById('editor-bg').value;
-      const bgLight = document.getElementById('editor-bg-light').value;
-      const text = document.getElementById('editor-text').value;
-      const textSec = document.getElementById('editor-text-sec').value;
-      const primary = document.getElementById('editor-primary').value;
-      const secondary = document.getElementById('editor-secondary').value;
-      const shadows = document.getElementById('editor-shadows').checked;
-      const gradients = document.getElementById('editor-gradients').checked;
-      const animations = document.getElementById('editor-animations').checked;
-      const opacity = document.getElementById('editor-opacity').value;
-      const root = document.documentElement;
-      root.style.setProperty('--bg-dark', bg);
-      root.style.setProperty('--bg-light', bgLight);
-      root.style.setProperty('--text-primary', text);
-      root.style.setProperty('--text-secondary', textSec);
-      root.style.setProperty('--primary', primary);
-      root.style.setProperty('--secondary', secondary);
-      if (!shadows) root.style.setProperty('--box-shadow', 'none');
-      if (!animations) root.style.setProperty('--animation-duration', '0s');
-      document.body.style.opacity = opacity;
-      if (!preview) {
-        gameData.customColors = { bg, bgLight, text, textSec, primary, secondary };
-        gameData.editorSettings = { shadows, gradients, animations, opacity };
-        setTheme('custom');
-        saveGameData();
-      }
-    }
+
 
     document.addEventListener('DOMContentLoaded', async () => {
       loadGameData();
@@ -2867,7 +2339,6 @@ async function showCredits() {
       updateGitHubStats();
       createParticles();
       typeWriterEffect();
-      loadTheme();
       setupLazyLoading();
       setupParallax();
       setupPageTransitions();
@@ -3057,62 +2528,7 @@ async function showCredits() {
       document.getElementById('updates-btn').addEventListener('click', showUpdates);
       
       // Event listeners para temas
-      document.getElementById('theme-panel-btn').addEventListener('click', showThemePanel);
-      document.getElementById('close-theme-panel').addEventListener('click', hideThemePanel);
-      document.getElementById('theme-overlay').addEventListener('click', hideThemePanel);
-      
-      document.querySelectorAll('.theme-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-          const theme = e.target.closest('.theme-card').dataset.theme;
-          const cost = parseInt(card.dataset.cost);
-          
-          if (card.classList.contains('premium-theme') && !gameData.unlockedThemes.has(theme)) {
-            if (buyTheme(theme, cost)) {
-              setTheme(theme);
-              hideThemePanel();
-              if (theme === 'custom') showCustomColors();
-            } else {
-              alert(`Necesitas ${cost} puntos para desbloquear este tema. Tienes ${gameData.points} puntos.`);
-              return;
-            }
-          } else {
-            setTheme(theme);
-            hideThemePanel();
-            if (theme === 'custom') showCustomColors();
-          }
-          
-          // Marcar que el usuario cambió tema manualmente hoy
-          localStorage.setItem('last-theme-change', new Date().toDateString());
-          
-          // Sistema de logros para temas
-          gameData.themesUsed.add(theme);
-          gameData.themeChangeCount++;
-          updateChallenge('change-theme');
-          updateWeeklyChallenge('theme-explorer');
-          updateBadgeProgress('theme-master', 1);
-          updateBadgeProgress('customization', 1);
-          
-          if (gameData.themesUsed.size === 1) checkAchievement('theme-explorer');
-          if (gameData.themesUsed.size >= 5) checkAchievement('theme-collector');
-          if (gameData.themeChangeCount >= 20) checkAchievement('theme-addict');
-          if (theme === 'funkyatlas' || theme === 'funkyatlas-christmas') {
-            checkAchievement('funky-fan');
-            showCreditsPanel();
-          }
-          if (theme === 'legendary') {
-            checkAchievement('legendary-hunter');
-          }
-          
-          // Verificar si todos los logros están completos
-          const allAchievements = Object.keys(achievements);
-          const completedAchievements = allAchievements.filter(id => gameData.achievements[id]);
-          if (completedAchievements.length === allAchievements.length - 1) { // -1 porque perfectionist se completa al final
-            checkAchievement('perfectionist');
-          }
-          
-          saveGameData();
-        });
-      });
+      initThemeListeners();
       
       // Event listeners para logros - ARREGLADO
       const achievementsBtn = document.getElementById('achievements-btn');
@@ -3140,41 +2556,6 @@ async function showCredits() {
           if (panel) {
             panel.classList.remove('show');
           }
-        });
-      }
-      
-      // Event listeners para cursores
-      document.querySelectorAll('.cursor-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-          const cursor = e.target.closest('.cursor-item').dataset.cursor;
-          const cost = parseInt(item.dataset.cost) || 0;
-          
-          if (item.classList.contains('locked') && cost > 0) {
-            if (buyCursor(cursor, cost)) {
-              setCursor(cursor);
-            } else {
-              alert(`Necesitas ${cost} puntos para este cursor. Tienes ${gameData.points} puntos.`);
-            }
-          } else if (gameData.unlockedCursors.has(cursor)) {
-            setCursor(cursor);
-            updateCursorShop();
-          }
-        });
-      });
-      
-      // Event listener para colores custom
-      const applyCustomBtn = document.getElementById('apply-custom');
-      if (applyCustomBtn) {
-        applyCustomBtn.addEventListener('click', () => {
-          gameData.customColors.bg = document.getElementById('bg-color').value;
-          gameData.customColors.text = document.getElementById('text-color').value;
-          gameData.customColors.primary = document.getElementById('primary-color').value;
-          gameData.customColors.secondary = document.getElementById('secondary-color').value;
-          
-          applyCustomTheme();
-          saveGameData();
-          
-          showAchievementNotification({ name: 'Colores personalizados aplicados!', points: 0 });
         });
       }
       
@@ -3212,6 +2593,25 @@ async function showCredits() {
           saveGameData();
         });
       }
+      
+      // Event listeners para cursores
+      document.querySelectorAll('.cursor-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const cursor = e.target.closest('.cursor-item').dataset.cursor;
+          const cost = parseInt(item.dataset.cost) || 0;
+          
+          if (item.classList.contains('locked') && cost > 0) {
+            if (buyCursor(cursor, cost)) {
+              setCursor(cursor);
+            } else {
+              alert(`Necesitas ${cost} puntos para este cursor. Tienes ${gameData.points} puntos.`);
+            }
+          } else if (gameData.unlockedCursors.has(cursor)) {
+            setCursor(cursor);
+            updateCursorShop();
+          }
+        });
+      });
       
       // Editor de temas avanzado
       document.getElementById('toggle-editor').addEventListener('click', () => {

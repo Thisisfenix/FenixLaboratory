@@ -321,6 +321,7 @@ class PlushieSystem {
       if (this.progress.gissel === 20 && this.progress.molly === 20) {
         this.showNotification('¡Colección completa! 🏆');
         if (typeof checkAchievement === 'function') checkAchievement('plushie-collector');
+        this.registerCompletion();
       }
     }
   }
@@ -533,6 +534,53 @@ class PlushieSystem {
       setTimeout(() => notification.classList.remove('show'), 3000);
     }
   }
+
+  async registerCompletion() {
+    const completionData = {
+      name: gameData?.leaderboardName || 'Anónimo',
+      timestamp: Date.now(),
+      date: new Date().toISOString()
+    };
+    
+    try {
+      const response = await fetch('https://obvuetxkfodulfdbjhri.supabase.co/rest/v1/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI5MjU5NzcsImV4cCI6MjA0ODUwMTk3N30.sb_publishable_22tdy3zG8Tazz3Xn_A9rAQ_dRTlwmTc',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(completionData)
+      });
+      
+      if (response.ok) {
+        const firstCompleter = await this.getFirstCompleter();
+        if (firstCompleter) {
+          this.showNotification(`🏆 Primer completador: ${firstCompleter.name}`);
+        }
+      }
+    } catch (error) {
+      console.log('Error registrando completación:', error);
+    }
+  }
+
+  async getFirstCompleter() {
+    try {
+      const response = await fetch('https://obvuetxkfodulfdbjhri.supabase.co/rest/v1/completions?order=timestamp.asc&limit=1', {
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI5MjU5NzcsImV4cCI6MjA0ODUwMTk3N30.sb_publishable_22tdy3zG8Tazz3Xn_A9rAQ_dRTlwmTc'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data[0] || null;
+      }
+    } catch (error) {
+      console.log('Error obteniendo primer completador:', error);
+    }
+    return null;
+  }
 }
 
 // Estilos para animación
@@ -558,6 +606,17 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+// Sistema de alertas de errores para móviles
+if (/Mobi|Android/i.test(navigator.userAgent)) {
+  window.addEventListener('error', (e) => {
+    alert(`❌ Error: ${e.message}\nArchivo: ${e.filename}\nLínea: ${e.lineno}`);
+  });
+  
+  window.addEventListener('unhandledrejection', (e) => {
+    alert(`❌ Promise Error: ${e.reason}`);
+  });
+}
 
 let plushieSystem;
 document.addEventListener('DOMContentLoaded', () => {
