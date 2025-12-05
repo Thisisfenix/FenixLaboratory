@@ -1798,4 +1798,25 @@ export class ProfileManager {
     const authorizedDomains = ['thisisfenix.github.io', 'localhost', '127.0.0.1'];
     return authorizedDomains.includes(currentDomain);
   }
+  
+  // Método público para verificar contraseña del perfil actual
+  async verifyPassword(password) {
+    if (!this.currentProfile.isLoggedIn) {
+      return { success: false, error: 'No hay sesión activa' };
+    }
+    
+    const user = this.users.get(this.currentProfile.username.toLowerCase());
+    if (!user) {
+      return { success: false, error: 'Usuario no encontrado' };
+    }
+    
+    const currentHash = await this.hashPassword(password);
+    const legacyHash = this.legacyHashPassword(password);
+    
+    if (user.passwordHash === currentHash || user.passwordHash === legacyHash) {
+      return { success: true };
+    }
+    
+    return { success: false, error: 'Contraseña incorrecta' };
+  }
 }
