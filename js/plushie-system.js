@@ -111,25 +111,7 @@ class PlushieSystem {
       { section: 'deadly-pursuer', type: 'molly', left: '88%', top: '15%', size: '16px', dialogue: 'Rage activado 🔥' },
       { section: 'deadly-pursuer', type: 'molly', left: '30%', top: '45%', size: '19px', dialogue: 'Ven aquí baboso', sound: 'ahhh.m4a' },
       
-      // Páginas externas - Guestbook (2 Gissel, 2 Molly), Deadly Pursuer (2 Gissel, 2 Molly)
-      { page: 'guessbook/guestbook-new.html', type: 'gissel', selector: 'body', left: '5%', top: '20%', size: '22px', behavior: 'runner' },
-      { page: 'guessbook/guestbook-new.html', type: 'gissel', selector: 'body', left: '92%', top: '60%', size: '18px', behavior: 'invisible' },
-      { page: 'guessbook/guestbook-new.html', type: 'gissel', selector: 'body', left: '45%', top: '85%', size: '20px' },
-      { page: 'guessbook/guestbook-new.html', type: 'gissel', selector: 'body', left: '70%', top: '10%', size: '16px', behavior: 'shy' },
-      { page: 'guessbook/guestbook-new.html', type: 'molly', selector: 'body', left: '15%', top: '75%', size: '24px', behavior: 'runner' },
-      { page: 'guessbook/guestbook-new.html', type: 'molly', selector: 'body', left: '85%', top: '35%', size: '19px' },
-      { page: 'guessbook/guestbook-new.html', type: 'molly', selector: 'body', left: '30%', top: '50%', size: '21px', behavior: 'invisible' },
-      { page: 'guessbook/guestbook-new.html', type: 'molly', selector: 'body', left: '60%', top: '90%', size: '17px', behavior: 'shy' },
-      
-      { page: 'public/index.html', type: 'gissel', selector: 'body', left: '8%', top: '30%', size: '20px', behavior: 'runner' },
-      { page: 'public/index.html', type: 'gissel', selector: 'body', left: '88%', top: '70%', size: '16px', behavior: 'invisible' },
-      { page: 'public/index.html', type: 'molly', selector: 'body', left: '25%', top: '55%', size: '22px', behavior: 'shy' },
-      { page: 'public/index.html', type: 'molly', selector: 'body', left: '75%', top: '25%', size: '18px', behavior: 'runner' },
-      { page: 'public/index.html', type: 'molly', selector: 'body', left: '50%', top: '80%', size: '19px' },
-      { page: 'public/index.html', type: 'molly', selector: 'body', left: '10%', top: '10%', size: '15px', behavior: 'invisible' },
-      
-      { page: 'Projectankaro/index.html', type: 'molly', selector: 'body', left: '95%', top: '50%', size: '14px', behavior: 'runner' },
-      { page: 'Projectankaro/index.html', type: 'molly', selector: 'body', left: '5%', top: '90%', size: '13px', behavior: 'invisible' }
+      // NOTA: Total = 40 plushies (20 Gissel + 20 Molly) todos en index.html
     ];
     
     positions.forEach((pos, index) => {
@@ -264,12 +246,16 @@ class PlushieSystem {
     
     plushie.addEventListener('mouseenter', runnerHover);
     
-    const originalClick = plushie.onclick;
-    plushie.onclick = (e) => {
+    // Override click handler para runners
+    const originalHandler = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
       if (tired) {
-        originalClick?.call(plushie, e);
+        this.collectPlushie(plushie.posData.type, plushie, parseInt(plushie.dataset.index), plushie.posData.sound);
       }
     };
+    plushie.removeEventListener('click', handleInteraction);
+    plushie.addEventListener('click', originalHandler);
   }
   
   makeShy(plushie) {

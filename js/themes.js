@@ -268,7 +268,11 @@ function initThemeListeners() {
       if (gameData.themeChangeCount >= 20) checkAchievement('theme-addict');
       if (theme === 'funkyatlas' || theme === 'funkyatlas-christmas') {
         checkAchievement('funky-fan');
-        showCreditsPanel();
+        const creditsPanel = document.createElement('div');
+        creditsPanel.style.cssText = 'position: fixed; bottom: 20px; left: 20px; background: linear-gradient(135deg, rgba(43,16,85,0.95), rgba(117,151,222,0.95)); padding: 1rem; border-radius: 12px; border: 2px solid #ff4444; z-index: 9999; max-width: 250px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.4);';
+        creditsPanel.innerHTML = '<div style="color: white; font-size: 0.9rem;"><strong style="color: #ff4444;">🎨 Tema FunkyAtlas</strong><br><span style="font-size: 0.8rem;">Creado por <a href="https://funkyatlas.abelitogamer.com/" target="_blank" style="color: #7597de; text-decoration: none;">AbelitoGamer</a></span></div>';
+        document.body.appendChild(creditsPanel);
+        setTimeout(() => creditsPanel.remove(), 5000);
       }
       if (theme === 'legendary') {
         checkAchievement('legendary-hunter');

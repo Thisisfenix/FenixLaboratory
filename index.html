@@ -782,6 +782,10 @@
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     
     window.addEventListener('error', function(e) {
+      // Ignorar errores de imágenes 404
+      if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'LINK')) {
+        return true;
+      }
       if (e.filename && !e.filename.includes('extension')) {
         console.error('Error:', e.error?.message || e.message);
         if (isMobile) {
@@ -789,7 +793,7 @@
         }
       }
       return true;
-    });
+    }, true);
     
     window.addEventListener('unhandledrejection', function(e) {
       if (!e.reason?.message?.includes('extension')) {
