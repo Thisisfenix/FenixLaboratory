@@ -422,6 +422,9 @@ class PlushieSystem {
       alert('🧸 El evento de peluches finalizó el 1 de enero de 2026. ¡Gracias por participar!');
       return;
     }
+    
+    const savedName = localStorage.getItem('plushie-hunter-name') || '';
+    
     const basePath = window.location.pathname.includes('guessbook') || window.location.pathname.includes('public') || window.location.pathname.includes('Projectankaro') ? '../' : '';
     const panel = document.createElement('div');
     panel.className = 'plushie-panel';
@@ -447,6 +450,20 @@ class PlushieSystem {
         <button class="close-panel" onclick="this.parentElement.parentElement.remove()">&times;</button>
         <h3>🧸 Búsqueda de Peluches</h3>
         <p>¡Oh no! Gissel y Molly perdieron sus peluches por toda la página.</p>
+        ${savedName ? `<div style="margin: 1rem 0; padding: 0.75rem; background: rgba(34,197,94,0.2); border: 2px solid #22c55e; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.5rem;">✅</span>
+          <div style="flex: 1;">
+            <div style="font-size: 0.85rem; color: #22c55e; font-weight: bold;">Nombre registrado: ${savedName}</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">🏆 Aparecerás en el ranking global al completar</div>
+          </div>
+        </div>` : `<div style="margin: 1rem 0; padding: 0.75rem; background: rgba(255,107,53,0.2); border: 2px solid var(--primary); border-radius: 8px;">
+          <label style="font-size: 0.85rem; color: var(--primary); display: block; margin-bottom: 0.5rem; font-weight: bold;">⚠️ IMPORTANTE: Tu nombre para el leaderboard</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="plushie-name-input" placeholder="Ingresa tu nombre" maxlength="20" required style="flex: 1; padding: 0.5rem; border: 2px solid var(--primary); border-radius: 6px; background: var(--bg-dark); color: var(--text-primary); font-family: inherit;">
+            <button onclick="const name = document.getElementById('plushie-name-input').value.trim(); if(name) { localStorage.setItem('plushie-hunter-name', name); plushieSystem.showPanel(); }" style="padding: 0.5rem 1rem; background: #22c55e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">✅ OK</button>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">🏆 Si completas los 40 peluches, aparecerás en el ranking global</div>
+        </div>`}
         ${timerHTML}
         <div style="margin: 1rem 0;">
           <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
@@ -539,8 +556,17 @@ class PlushieSystem {
   }
 
   async registerCompletion() {
+    let hunterName = localStorage.getItem('plushie-hunter-name') || gameData?.leaderboardName || '';
+    
+    if (!hunterName.trim()) {
+      hunterName = prompt('🏆 ¡Felicidades! Completaste los 40 peluches.\n\nIngresa tu nombre para el leaderboard global:', '');
+      if (hunterName) {
+        localStorage.setItem('plushie-hunter-name', hunterName);
+      }
+    }
+    
     const completionData = {
-      name: gameData?.leaderboardName || 'Anónimo',
+      name: hunterName?.trim() || 'Anónimo',
       timestamp: Date.now(),
       date: new Date().toISOString()
     };
