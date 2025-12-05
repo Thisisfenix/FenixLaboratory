@@ -423,11 +423,16 @@ class PlushieSystem {
       return;
     }
     
+    // Remover panel existente si hay
+    const existingPanel = document.querySelector('.plushie-panel');
+    if (existingPanel) existingPanel.remove();
+    
     const savedName = localStorage.getItem('plushie-hunter-name') || '';
     
     const basePath = window.location.pathname.includes('guessbook') || window.location.pathname.includes('public') || window.location.pathname.includes('Projectankaro') ? '../' : '';
     const panel = document.createElement('div');
     panel.className = 'plushie-panel';
+    panel.setAttribute('data-timestamp', Date.now());
     
     const timeLeft = this.getTimeRemaining();
     const timerHTML = timeLeft ? `
@@ -460,7 +465,7 @@ class PlushieSystem {
           <label style="font-size: 0.85rem; color: var(--primary); display: block; margin-bottom: 0.5rem; font-weight: bold;">⚠️ IMPORTANTE: Tu nombre para el leaderboard</label>
           <div style="display: flex; gap: 0.5rem;">
             <input type="text" id="plushie-name-input" placeholder="Ingresa tu nombre" maxlength="20" required style="flex: 1; padding: 0.5rem; border: 2px solid var(--primary); border-radius: 6px; background: var(--bg-dark); color: var(--text-primary); font-family: inherit;">
-            <button onclick="const name = document.getElementById('plushie-name-input').value.trim(); if(name) { localStorage.setItem('plushie-hunter-name', name); plushieSystem.showPanel(); }" style="padding: 0.5rem 1rem; background: #22c55e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">✅ OK</button>
+            <button onclick="const name = document.getElementById('plushie-name-input').value.trim(); if(name) { localStorage.setItem('plushie-hunter-name', name); this.closest('.plushie-panel').remove(); plushieSystem.showPanel(); }" style="padding: 0.5rem 1rem; background: #22c55e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">✅ OK</button>
           </div>
           <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">🏆 Si completas los 40 peluches, aparecerás en el ranking global</div>
         </div>`}
@@ -499,7 +504,7 @@ class PlushieSystem {
         </div>
         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
           <button onclick="plushieSystem.showLeaderboard()" style="flex: 1; padding: 0.5rem 1rem; background: var(--secondary); color: white; border: none; border-radius: 6px; cursor: pointer;">🏆 Leaderboard</button>
-          <button onclick="localStorage.removeItem('plushie-progress'); localStorage.removeItem('plushie-collected'); location.reload();" style="flex: 1; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">🔄 Reset</button>
+          <button onclick="localStorage.removeItem('plushie-progress'); localStorage.removeItem('plushie-collected'); localStorage.removeItem('plushie-hunter-name'); location.reload();" style="flex: 1; padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer;">🔄 Reset</button>
         </div>
       </div>
     `;
