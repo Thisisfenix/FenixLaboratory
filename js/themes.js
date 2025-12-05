@@ -2,7 +2,7 @@
 
 function setTheme(theme) {
   const body = document.body;
-  const themes = ['light-theme', 'neon-theme', 'cyberpunk-theme', 'matrix-theme', 'synthwave-theme', 'ocean-theme', 'forest-theme', 'sunset-theme', 'christmas-theme', 'halloween-theme', 'valentine-theme', 'easter-theme', 'summer-theme', 'autumn-theme', 'funkyatlas-theme', 'funkyatlas-christmas-theme', 'galaxy-theme', 'gold-theme', 'rainbow-theme', 'diamond-theme', 'custom-theme', 'vaporwave-theme', 'hacker-theme', 'neon-city-theme', 'space-theme', 'fire-theme', 'ice-theme', 'toxic-theme', 'royal-theme', 'steampunk-theme', 'hologram-theme', 'legendary-theme'];
+  const themes = ['light-theme', 'neon-theme', 'cyberpunk-theme', 'matrix-theme', 'synthwave-theme', 'ocean-theme', 'forest-theme', 'sunset-theme', 'christmas-theme', 'halloween-theme', 'valentine-theme', 'easter-theme', 'summer-theme', 'autumn-theme', 'funkyatlas-theme', 'funkyatlas-christmas-theme', 'galaxy-theme', 'gold-theme', 'rainbow-theme', 'diamond-theme', 'custom-theme', 'vaporwave-theme', 'hacker-theme', 'neon-city-theme', 'space-theme', 'fire-theme', 'ice-theme', 'toxic-theme', 'royal-theme', 'steampunk-theme', 'hologram-theme', 'legendary-theme', 'plushie-rain-theme'];
   
   themes.forEach(t => body.classList.remove(t));
   
@@ -18,6 +18,12 @@ function setTheme(theme) {
     createSnowflakes();
   } else {
     removeSnowflakes();
+  }
+  
+  if (theme === 'plushie-rain') {
+    createPlushieRain();
+  } else {
+    removePlushieRain();
   }
   
   if (theme !== 'matrix') {
@@ -36,7 +42,8 @@ function setTheme(theme) {
 
 function createSnowflakes() {
   removeSnowflakes();
-  const snowflakeCount = 50;
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  const snowflakeCount = isMobile ? 15 : 50;
   const snowflakes = ['❄', '❅', '❆'];
   
   for (let i = 0; i < snowflakeCount; i++) {
@@ -44,7 +51,7 @@ function createSnowflakes() {
     snowflake.className = 'snowflake';
     snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
     snowflake.style.left = Math.random() * 100 + '%';
-    snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    snowflake.style.animation = `snowflakeFall ${Math.random() * 4 + 6}s linear infinite`;
     snowflake.style.animationDelay = Math.random() * 5 + 's';
     snowflake.style.fontSize = (Math.random() * 1 + 0.5) + 'em';
     snowflake.style.opacity = Math.random() * 0.6 + 0.4;
@@ -54,6 +61,28 @@ function createSnowflakes() {
 
 function removeSnowflakes() {
   document.querySelectorAll('.snowflake').forEach(snowflake => snowflake.remove());
+}
+
+function createPlushieRain() {
+  removePlushieRain();
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  const plushieCount = isMobile ? 10 : 30;
+  
+  for (let i = 0; i < plushieCount; i++) {
+    const plushie = document.createElement('img');
+    plushie.className = 'falling-plushie';
+    plushie.src = Math.random() > 0.5 ? 'placeholder/gisselplushie.png' : 'placeholder/molly plushie.png';
+    plushie.style.left = Math.random() * 100 + '%';
+    plushie.style.animation = `plushieFall ${Math.random() * 4 + 6}s linear infinite`;
+    plushie.style.animationDelay = Math.random() * 5 + 's';
+    plushie.style.width = (Math.random() * 20 + 30) + 'px';
+    plushie.style.height = plushie.style.width;
+    document.body.appendChild(plushie);
+  }
+}
+
+function removePlushieRain() {
+  document.querySelectorAll('.falling-plushie').forEach(plushie => plushie.remove());
 }
 
 function removeMatrixRain() {

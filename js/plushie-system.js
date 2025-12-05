@@ -318,6 +318,7 @@ class PlushieSystem {
       if (this.progress.gissel === 20 && this.progress.molly === 20) {
         this.showNotification('¡Colección completa! 🏆');
         if (typeof checkAchievement === 'function') checkAchievement('plushie-collector');
+        this.showCompletionCelebration();
         this.registerCompletion();
       }
     }
@@ -557,6 +558,65 @@ class PlushieSystem {
     }
   }
 
+  showCompletionCelebration() {
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 1s ease;
+      padding: 1rem;
+    `;
+    
+    const content = document.createElement('div');
+    content.style.cssText = `
+      text-align: center;
+      color: white;
+      animation: scaleIn 1s ease 1s both;
+      max-width: 90%;
+    `;
+    
+    const fontSize = isMobile ? '2rem' : '3rem';
+    const titleSize = isMobile ? '1.8rem' : '2.5rem';
+    const textSize = isMobile ? '1.2rem' : '1.5rem';
+    const imgSize = isMobile ? '60px' : '80px';
+    
+    content.innerHTML = `
+      <div style="font-size: ${fontSize}; margin-bottom: 2rem; animation: bounce 1s infinite 2s;">🎉</div>
+      <h1 style="font-size: ${titleSize}; margin-bottom: 1rem; color: #FFD700;">¡FELICIDADES!</h1>
+      <p style="font-size: ${textSize}; margin-bottom: 2rem;">Conseguiste los 40 peluches</p>
+      <div style="display: flex; gap: ${isMobile ? '1rem' : '2rem'}; justify-content: center; margin-bottom: 2rem;">
+        <img src="placeholder/gisselplushie.png" style="width: ${imgSize}; height: ${imgSize}; animation: float 2s ease-in-out infinite;">
+        <img src="placeholder/molly plushie.png" style="width: ${imgSize}; height: ${imgSize}; animation: float 2s ease-in-out infinite 0.5s;">
+      </div>
+      <p style="font-size: ${isMobile ? '1rem' : '1.2rem'}; color: #FFD700; margin-bottom: 1rem;">🎁 ¡Desbloqueaste el tema "Plushie Rain"!</p>
+      <p style="font-size: ${isMobile ? '0.8rem' : '0.9rem'}; color: #aaa;">Encuéntralo en el panel de temas</p>
+    `;
+    
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
+    
+    // Desbloquear tema
+    if (typeof gameData !== 'undefined') {
+      gameData.unlockedThemes.add('plushie-rain');
+      if (typeof saveGameData === 'function') saveGameData();
+    }
+    localStorage.setItem('plushie-theme-unlocked', 'true');
+    
+    setTimeout(() => {
+      overlay.style.animation = 'fadeOut 1s ease';
+      setTimeout(() => overlay.remove(), 1000);
+    }, 5000);
+  }
+
   async registerCompletion() {
     let hunterName = localStorage.getItem('plushie-hunter-name') || gameData?.leaderboardName || '';
     
@@ -689,6 +749,38 @@ style.textContent = `
     50% { transform: scale(1.5) rotate(360deg); }
     100% { transform: scale(0); opacity: 0; }
   }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes scaleIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+  @keyframes plushieFall {
+    0% { transform: translateY(-100px) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(calc(100vh + 100px)) rotate(360deg); opacity: 0; }
+  }
+  @keyframes snowflakeFall {
+    0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(calc(100vh + 10px)) translateX(20px); opacity: 0; }
+  }
   .plushie-panel-content {
     background: var(--bg-dark);
     padding: 2rem;
@@ -701,6 +793,14 @@ style.textContent = `
   }
   .hidden-plushie:hover {
     filter: drop-shadow(0 0 10px var(--primary));
+  }
+  .falling-plushie {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    pointer-events: none;
+    z-index: 1;
+    animation: plushieFall linear infinite;
   }
 `;
 document.head.appendChild(style);

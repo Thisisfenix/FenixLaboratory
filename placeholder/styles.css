@@ -461,6 +461,10 @@
     .preview-hologram { background: linear-gradient(45deg, transparent 0%, #00ffff 25%, transparent 50%, #ff00ff 75%, transparent 100%); }
     .preview-legendary { background: linear-gradient(45deg, #ffd700 0%, #ffff00 12%, #ff8c00 25%, #ff0000 37%, #ff1493 50%, #8a2be2 62%, #0000ff 75%, #00ffff 87%, #ffd700 100%); animation: legendary-glow 3s infinite; }
 
+    .preview-plushie-rain { background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 50%, #6c5b7b 100%); position: relative; overflow: hidden; }
+    .preview-plushie-rain::before { content: '🧸'; position: absolute; top: -10px; left: 50%; animation: plushieFall 2s linear infinite; font-size: 1.2rem; }
+    .preview-plushie-rain::after { content: '🧸'; position: absolute; top: -10px; left: 20%; animation: plushieFall 2.5s linear infinite 0.5s; font-size: 1rem; }
+
     .color-picker-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -711,6 +715,12 @@
     body.christmas-theme .btn-outline-neon:hover { background: #dc2626; color: white; }
     body.christmas-theme .snowflake { position: fixed; top: -10%; color: white; font-size: 1.5em; z-index: 0; pointer-events: none; animation: fall linear infinite; }
     @keyframes fall { to { transform: translateY(110vh); } }
+    @keyframes snowflakeFall {
+      0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(calc(100vh + 10px)) translateX(20px); opacity: 0; }
+    }
     body.christmas-theme::after { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
 
     /* Halloween Theme */
