@@ -246,16 +246,19 @@ class PlushieSystem {
     
     plushie.addEventListener('mouseenter', runnerHover);
     
-    // Override click handler para runners
-    const originalHandler = (e) => {
+    // Override click behavior para runners - solo colectar cuando tired
+    const runnerClickHandler = (e) => {
       e.stopPropagation();
       e.preventDefault();
       if (tired) {
-        this.collectPlushie(plushie.posData.type, plushie, parseInt(plushie.dataset.index), plushie.posData.sound);
+        this.collectPlushie(pos.type, plushie, index, pos.sound);
       }
     };
-    plushie.removeEventListener('click', handleInteraction);
-    plushie.addEventListener('click', originalHandler);
+    
+    // Reemplazar el handler de click original
+    plushie.onclick = null;
+    plushie.addEventListener('click', runnerClickHandler);
+    plushie.addEventListener('touchend', runnerClickHandler);
   }
   
   makeShy(plushie) {
