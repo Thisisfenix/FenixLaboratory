@@ -188,7 +188,7 @@ class PlushieSystem {
     
     // Comportamientos especiales
     if (pos.behavior === 'runner') {
-      this.makeRunner(plushie, container);
+      this.makeRunner(plushie, container, pos, index);
     } else if (pos.behavior === 'shy') {
       this.makeShy(plushie);
     } else if (pos.behavior === 'invisible') {
@@ -199,7 +199,7 @@ class PlushieSystem {
     container.appendChild(plushie);
   }
 
-  makeRunner(plushie, container) {
+  makeRunner(plushie, container, pos, index) {
     let stamina = 5;
     let tired = false;
     
