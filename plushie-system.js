@@ -1,8 +1,9 @@
 // Sistema de Plushies escondidos en la página
 class PlushieSystem {
   constructor() {
-    this.startDate = new Date('2025-12-02T00:00:00');
-    this.endDate = new Date('2026-01-01T00:00:00');
+    // Fechas en UTC para que sean iguales para todos
+    this.startDate = new Date('2025-12-02T06:00:00Z'); // 2 dic 2025 00:00 hora México (UTC-6)
+    this.endDate = new Date('2026-01-01T06:00:00Z'); // 1 ene 2026 00:00 hora México (UTC-6)
     this.progress = this.loadProgress();
     this.init();
   }
