@@ -684,15 +684,15 @@ class PlushieSystem {
 
   async showLeaderboard() {
     const panel = document.createElement('div');
-    panel.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10001;';
+    panel.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 10001; backdrop-filter: blur(10px);';
     
     panel.innerHTML = `
-      <div class="plushie-panel-content">
+      <div class="plushie-panel-content" style="max-width: 700px; width: 95%;">
         <button class="close-panel" onclick="this.parentElement.parentElement.remove()">&times;</button>
-        <h3>🏆 Leaderboard Global</h3>
+        <h3 style="text-align: center; font-size: 2rem; margin-bottom: 2rem; background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 30px rgba(255,215,0,0.5);">🏆 HALL OF FAME 🏆</h3>
         <div id="leaderboard-content" style="text-align: center; padding: 2rem;">
-          <div style="font-size: 2rem;">⏳</div>
-          <div>Cargando...</div>
+          <div class="leaderboard-loader" style="display: inline-block; width: 50px; height: 50px; border: 4px solid rgba(255,215,0,0.3); border-top: 4px solid #FFD700; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          <div style="margin-top: 1rem; color: #FFD700; font-weight: bold;">Cargando leyendas...</div>
         </div>
       </div>
     `;
@@ -714,29 +714,89 @@ class PlushieSystem {
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Leaderboard data:', data);
         
         if (data.length === 0) {
-          content.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary);">👀 Aún no hay completadores.<br>¡Sé el primero!</div>';
+          content.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary);">👀 Aún no hay leyendas.<br>¡Sé el primero!</div>';
         } else {
-          let html = '<div style="text-align: left;">';
-          data.forEach((entry, index) => {
-            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
-            const date = new Date(entry.timestamp).toLocaleString('es-MX');
-            const bgColor = index === 0 ? 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.2))' : 'var(--bg-light)';
-            const borderColor = index === 0 ? '#FFD700' : 'var(--primary)';
-            html += `
-              <div style="padding: 0.75rem; margin-bottom: 0.5rem; background: ${bgColor}; border-radius: 8px; border-left: 3px solid ${borderColor};">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <span style="font-size: 1.2rem; margin-right: 0.5rem;">${medal}</span>
-                    <strong>${entry.name}</strong>
+          let html = '';
+          
+          // Top 3 Podium
+          const top3 = data.slice(0, 3);
+          if (top3.length >= 1) {
+            html += '<div style="display: flex; align-items: flex-end; justify-content: center; gap: 1rem; margin-bottom: 2rem; min-height: 250px;">';
+            
+            // 2do lugar (si existe)
+            if (top3[1]) {
+              html += `
+                <div style="flex: 1; text-align: center; animation: slideUp 0.5s ease 0.2s both;">
+                  <div style="font-size: 4rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 20px #C0C0C0); animation: float 3s ease-in-out infinite 0.5s;">🥈</div>
+                  <div style="background: linear-gradient(135deg, #C0C0C0, #A9A9A9); padding: 1.5rem 1rem; border-radius: 12px; border: 3px solid #C0C0C0; box-shadow: 0 0 30px rgba(192,192,192,0.6), inset 0 2px 10px rgba(255,255,255,0.3); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shine 3s infinite;"></div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin-bottom: 0.5rem;">${top3[1].name}</div>
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.9);">Plata</div>
                   </div>
-                  <div style="font-size: 0.75rem; color: var(--text-secondary);">${date}</div>
+                </div>
+              `;
+            }
+            
+            // 1er lugar
+            html += `
+              <div style="flex: 1; text-align: center; animation: slideUp 0.5s ease both;">
+                <div style="font-size: 5rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 30px #FFD700); animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite;">🥇</div>
+                <div style="background: linear-gradient(135deg, #FFD700, #FFA500); padding: 2rem 1rem; border-radius: 12px; border: 3px solid #FFD700; box-shadow: 0 0 40px rgba(255,215,0,0.8), 0 0 60px rgba(255,165,0,0.4), inset 0 2px 10px rgba(255,255,255,0.5); position: relative; overflow: hidden;">
+                  <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.3), transparent 30%); animation: rotate 4s linear infinite;"></div>
+                  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.4), transparent 70%);"></div>
+                  <div style="font-size: 1.8rem; font-weight: bold; color: white; text-shadow: 0 0 10px rgba(255,100,0,0.8), 0 2px 4px rgba(0,0,0,0.5); margin-bottom: 0.5rem; position: relative; z-index: 1;">${top3[0].name}</div>
+                  <div style="font-size: 0.9rem; color: rgba(255,255,255,0.95); position: relative; z-index: 1;">👑 Campeón</div>
                 </div>
               </div>
             `;
-          });
-          html += '</div>';
+            
+            // 3er lugar (si existe)
+            if (top3[2]) {
+              html += `
+                <div style="flex: 1; text-align: center; animation: slideUp 0.5s ease 0.4s both;">
+                  <div style="font-size: 3.5rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 15px #CD7F32); animation: float 3s ease-in-out infinite 1s;">🥉</div>
+                  <div style="background: linear-gradient(135deg, #CD7F32, #B8732F); padding: 1.25rem 1rem; border-radius: 12px; border: 3px solid #CD7F32; box-shadow: 0 0 25px rgba(205,127,50,0.5), inset 0 2px 10px rgba(255,255,255,0.2); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shine 3s infinite 1s;"></div>
+                    <div style="font-size: 1.3rem; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5); margin-bottom: 0.5rem;">${top3[2].name}</div>
+                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.9);">Bronce</div>
+                  </div>
+                </div>
+              `;
+            }
+            
+            html += '</div>';
+          } else if (top3.length === 1) {
+            // Solo 1 completador
+            html += `
+              <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 0 30px #FFD700); animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite;">🥇</div>
+                <div style="background: linear-gradient(135deg, #FFD700, #FFA500); padding: 2rem; border-radius: 12px; border: 3px solid #FFD700; box-shadow: 0 0 40px rgba(255,215,0,0.8); position: relative; overflow: hidden; max-width: 400px; margin: 0 auto;">
+                  <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.3), transparent 30%); animation: rotate 4s linear infinite;"></div>
+                  <div style="font-size: 2rem; font-weight: bold; color: white; text-shadow: 0 0 10px rgba(255,100,0,0.8); margin-bottom: 0.5rem; position: relative; z-index: 1;">${top3[0].name}</div>
+                  <div style="font-size: 1rem; color: rgba(255,255,255,0.95); position: relative; z-index: 1;">👑 Primer Campeón</div>
+                </div>
+              </div>
+            `;
+          }
+          
+          // Resto del ranking con scroll
+          if (data.length > 3) {
+            html += '<div style="margin-top: 2rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">';
+            data.slice(3).forEach((entry, i) => {
+              const index = i + 4;
+              html += `
+                <div style="padding: 0.75rem 1rem; margin-bottom: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid var(--accent-color); display: flex; align-items: center; gap: 1rem; animation: fadeIn 0.3s ease ${i * 0.05}s both;">
+                  <span style="font-weight: bold; color: var(--accent-color); min-width: 40px; font-size: 1.2rem;">#${index}</span>
+                  <span style="flex: 1; font-size: 1rem;">${entry.name}</span>
+                </div>
+              `;
+            });
+            html += '</div>';
+          }
+          
           content.innerHTML = html;
         }
       } else {
