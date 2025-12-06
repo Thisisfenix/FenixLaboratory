@@ -57,7 +57,13 @@ class PlushieSystem {
 
   spawnPlushies() {
     if (!this.isEventActive()) return;
-    const collected = JSON.parse(localStorage.getItem('plushie-collected') || '[]');
+    let collected = JSON.parse(localStorage.getItem('plushie-collected') || '[]');
+    
+    // Fix: Regenerar peluches faltantes según tipo
+    if (this.progress.gissel < 20 || this.progress.molly < 20) {
+      collected = collected.filter(idx => idx < 40);
+      localStorage.setItem('plushie-collected', JSON.stringify(collected));
+    }
     
     // 40 Plushies: 20 Gissel + 20 Molly con diálogos
     const positions = [
@@ -110,6 +116,11 @@ class PlushieSystem {
       { section: 'deadly-pursuer', type: 'molly', left: '18%', top: '70%', size: '15px', behavior: 'shy', dialogue: 'Killer mode' },
       { section: 'deadly-pursuer', type: 'molly', left: '88%', top: '15%', size: '16px', dialogue: 'Rage activado 🔥' },
       { section: 'deadly-pursuer', type: 'molly', left: '30%', top: '45%', size: '19px', dialogue: 'Ven aquí baboso', sound: 'ahhh.m4a' },
+      
+      // Footer - 2 Gissel, 1 Molly (para completar 20 de cada uno)
+      { section: 'main-content', type: 'gissel', left: '10%', top: '98%', size: '20px', dialogue: '¡Casi terminas!' },
+      { section: 'main-content', type: 'gissel', left: '90%', top: '98%', size: '20px', behavior: 'shy', dialogue: '¡Último!' },
+      { section: 'main-content', type: 'molly', left: '50%', top: '98%', size: '22px', dialogue: 'Te encontré baboso', sound: 'ahhh.m4a' },
       
       // NOTA: Total = 40 plushies (20 Gissel + 20 Molly) todos en index.html
     ];
@@ -319,7 +330,7 @@ class PlushieSystem {
         this.showNotification('¡Colección completa! 🏆');
         if (typeof checkAchievement === 'function') checkAchievement('plushie-collector');
         this.showCompletionCelebration();
-        this.registerCompletion();
+        setTimeout(() => this.registerCompletion(), 1000);
       }
     }
   }
@@ -618,17 +629,16 @@ class PlushieSystem {
   }
 
   async registerCompletion() {
-    let hunterName = localStorage.getItem('plushie-hunter-name') || gameData?.leaderboardName || '';
+    if (this.progress.gissel !== 20 || this.progress.molly !== 20) return;
     
+    let hunterName = localStorage.getItem('plushie-hunter-name') || gameData?.leaderboardName || '';
     if (!hunterName.trim()) {
       hunterName = prompt('🏆 ¡Felicidades! Completaste los 40 peluches.\n\nIngresa tu nombre para el leaderboard global:', '');
-      if (hunterName) {
-        localStorage.setItem('plushie-hunter-name', hunterName);
-      }
+      if (hunterName) localStorage.setItem('plushie-hunter-name', hunterName);
     }
     
     const completionData = {
-      name: hunterName?.trim() || 'Anónimo',
+      name: (hunterName?.trim() || 'Anónimo').substring(0, 50),
       timestamp: Date.now(),
       date: new Date().toISOString()
     };
@@ -646,13 +656,10 @@ class PlushieSystem {
       });
       
       if (response.ok) {
-        const firstCompleter = await this.getFirstCompleter();
-        if (firstCompleter) {
-          this.showNotification(`🏆 Primer completador: ${firstCompleter.name}`);
-        }
+        alert('✅ ¡Registrado en el leaderboard!\n\nNombre: ' + completionData.name);
       }
     } catch (error) {
-      console.log('Error registrando completación:', error);
+      console.log('Error registrando:', error);
     }
   }
 
