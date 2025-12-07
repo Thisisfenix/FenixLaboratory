@@ -461,8 +461,8 @@
     .preview-hologram { background: linear-gradient(45deg, transparent 0%, #00ffff 25%, transparent 50%, #ff00ff 75%, transparent 100%); }
     .preview-legendary { background: linear-gradient(45deg, #ffd700 0%, #ffff00 12%, #ff8c00 25%, #ff0000 37%, #ff1493 50%, #8a2be2 62%, #0000ff 75%, #00ffff 87%, #ffd700 100%); animation: legendary-glow 3s infinite; }
 
-    body.plushie-rain-theme { --bg-dark: #1a0a0a; --bg-light: #2d1a1a; --text-primary: #ffb3c1; --text-secondary: #ff8fa3; --primary: #ff0000; --secondary: #ff4444; }
-    .preview-plushie-rain { background: linear-gradient(135deg, #ff0000 0%, #cc0000 50%, #990000 100%); position: relative; overflow: hidden; }
+    body.plushie-rain-theme { --bg-dark: #1a0a0a; --bg-light: #2d1a1a; --text-primary: #ffb3c1; --text-secondary: #ff8fa3; --primary: #ff0000; --secondary: #ffff00; }
+    .preview-plushie-rain { background: linear-gradient(135deg, #ff0000 0%, #ff8800 50%, #ffff00 100%); position: relative; overflow: hidden; }
     .preview-plushie-rain::before { content: '🧸'; position: absolute; top: -10px; left: 50%; animation: plushieFall 2s linear infinite; font-size: 1.2rem; }
     .preview-plushie-rain::after { content: '🧸'; position: absolute; top: -10px; left: 20%; animation: plushieFall 2.5s linear infinite 0.5s; font-size: 1rem; }
 

@@ -543,8 +543,22 @@ class PlushieSystem {
           timerElement.textContent = `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`;
         } else {
           clearInterval(timerInterval);
-          panel.remove();
-          alert('🧸 El evento de peluches ha finalizado. ¡Gracias por participar!');
+          const dogImg = document.getElementById('meditating-dog');
+          if (dogImg) {
+            dogImg.style.transition = 'all 1s ease';
+            dogImg.style.transform = 'scale(5)';
+            dogImg.style.zIndex = '10002';
+            setTimeout(() => {
+              panel.style.animation = 'fadeOut 0.5s ease';
+              setTimeout(() => {
+                panel.remove();
+                alert('🐕 ¡Gracias por participar en el evento de peluches!\n\nEl perro meditando se comió el panel 🧘');
+              }, 500);
+            }, 1000);
+          } else {
+            panel.remove();
+            alert('🧸 El evento de peluches ha finalizado. ¡Gracias por participar!');
+          }
         }
       };
       const timerInterval = setInterval(updateTimer, 1000);
