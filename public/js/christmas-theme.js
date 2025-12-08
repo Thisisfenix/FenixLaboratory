@@ -1800,58 +1800,6 @@ class ChristmasTheme {
         bossMusic.currentTime = 0;
         const won = boss.health <= 0;
         
-        if (!won) {
-          const loseSound = new Audio('assets/deathsound.mp3');
-          loseSound.volume = 0.5;
-          loseSound.play().catch(() => {});
-          
-          setTimeout(() => {
-            const restartBtn = document.createElement('button');
-            restartBtn.textContent = 'REINTENTAR';
-            restartBtn.style.cssText = `
-              position: fixed;
-              top: 60%;
-              left: 50%;
-              transform: translateX(-50%);
-              background: #ffd700;
-              color: #000;
-              font-weight: bold;
-              padding: 15px 40px;
-              border: none;
-              border-radius: 10px;
-              cursor: pointer;
-              font-size: 1.5rem;
-              z-index: 10002;
-            `;
-            restartBtn.addEventListener('click', () => {
-              restartBtn.remove();
-              video.remove();
-              this.showCharacterSelect();
-            });
-            document.body.appendChild(restartBtn);
-            
-            const video = document.createElement('video');
-            video.src = 'abelitogordopanzon/estamal.mp4';
-            video.autoplay = true;
-            video.style.cssText = `
-              position: fixed;
-              top: 70%;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 300px;
-              border: 3px solid #f00;
-              border-radius: 10px;
-              z-index: 10002;
-            `;
-            document.body.appendChild(video);
-          }, 1000);
-        }
-        
-        ctx.fillStyle = won ? '#0f0' : '#f00';
-        ctx.font = '60px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(won ? '¡GANASTE!' : '¡PERDISTE!', canvas.width/2, canvas.height/2);
-        
         if (won) {
           if (!window.bossSystem.damageTaken) {
             window.bossSystem.damageTaken = player.maxHealth - player.health;
@@ -1913,6 +1861,7 @@ class ChristmasTheme {
               player.speedBoostTimer = 0;
               player.combo = 0;
               
+              bossMusic.play().catch(() => {});
               requestAnimationFrame(gameLoop);
             }, 2000);
             return;
@@ -1981,15 +1930,71 @@ class ChristmasTheme {
                 player.speedBoostTimer = 0;
                 player.combo = 0;
                 
+                bossMusic.play().catch(() => {});
                 requestAnimationFrame(gameLoop);
               }, 2000);
               return;
             }
           }
           
+          ctx.fillStyle = '#0f0';
+          ctx.font = '60px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('¡GANASTE!', canvas.width/2, canvas.height/2);
+          
           localStorage.setItem('bossDefeated', 'true');
           if (this.leaderboardBtn) this.leaderboardBtn.style.display = 'inline-block';
           setTimeout(() => this.showVictoryScreen(character), 2000);
+        } else {
+          const loseSound = new Audio('assets/deathsound.mp3');
+          loseSound.volume = 0.5;
+          loseSound.play().catch(() => {});
+          
+          ctx.fillStyle = '#f00';
+          ctx.font = '60px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('¡PERDISTE!', canvas.width/2, canvas.height/2);
+          
+          setTimeout(() => {
+            const restartBtn = document.createElement('button');
+            restartBtn.textContent = 'REINTENTAR';
+            restartBtn.style.cssText = `
+              position: fixed;
+              top: 60%;
+              left: 50%;
+              transform: translateX(-50%);
+              background: #ffd700;
+              color: #000;
+              font-weight: bold;
+              padding: 15px 40px;
+              border: none;
+              border-radius: 10px;
+              cursor: pointer;
+              font-size: 1.5rem;
+              z-index: 10002;
+            `;
+            restartBtn.addEventListener('click', () => {
+              restartBtn.remove();
+              video.remove();
+              this.showCharacterSelect();
+            });
+            document.body.appendChild(restartBtn);
+            
+            const video = document.createElement('video');
+            video.src = 'abelitogordopanzon/estamal.mp4';
+            video.autoplay = true;
+            video.style.cssText = `
+              position: fixed;
+              top: 70%;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 300px;
+              border: 3px solid #f00;
+              border-radius: 10px;
+              z-index: 10002;
+            `;
+            document.body.appendChild(video);
+          }, 1000);
         }
       }
     };
