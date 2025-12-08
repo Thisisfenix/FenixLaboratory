@@ -49,7 +49,10 @@ class BossFightSystem {
   }
 
   recordFrame(player, boss, bullets, bossBullets, powerups) {
-    if (this.maxHealthRecorded && player.health < this.maxHealthRecorded) {
+    if (!this.maxHealthRecorded) {
+      this.maxHealthRecorded = player.maxHealth;
+    }
+    if (player.health < this.maxHealthRecorded) {
       this.damageTaken = this.maxHealthRecorded - player.health;
     }
     this.recording.push({

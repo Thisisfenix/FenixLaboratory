@@ -405,15 +405,16 @@ class ChristmasTheme {
     `;
     
     const overlay = document.createElement('div');
+    const bossDefeated = localStorage.getItem('bossDefeated');
     overlay.style.cssText = `
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #000;
+      background: ${bossDefeated ? 'transparent' : '#000'};
       cursor: pointer;
-      display: flex;
+      display: ${bossDefeated ? 'none' : 'flex'};
       align-items: center;
       justify-content: center;
       color: #FFD700;
@@ -421,6 +422,10 @@ class ChristmasTheme {
       animation: bossFloat 3s ease-in-out infinite;
     `;
     overlay.textContent = '?';
+    
+    bossImg.addEventListener('click', () => {
+      this.showBossIntro();
+    });
     
     overlay.addEventListener('click', () => {
       overlay.remove();
@@ -863,6 +868,8 @@ class ChristmasTheme {
     document.getElementById('game').classList.add('active');
     
     const enhancements = new BossFightEnhancements();
+    enhancements.score = 0;
+    enhancements.scoreMultiplier = 1;
     const charStats = enhancements.getCharacterStats(character);
     window.bossSystem.setEnhancements(enhancements);
     
@@ -1119,6 +1126,7 @@ class ChristmasTheme {
     
     const abilityCooldowns = { spread: 0, dash: 0, fear: 0, aimed: 0, teleport: 0, triple: 0, circle: 0, wave: 0, cross: 0, homing: 0, heal: 0, summon: 0, laser: 0, rain: 0, spiral: 0 };
     let bossMinions = [];
+    let isTransitioning = false;
     
     const bossAttack = () => {
       const available = [];
@@ -1790,42 +1798,99 @@ class ChristmasTheme {
       
       }
       
-      const isAlive = boss.health > 0 && player.health > 0;
-      
-      if (isAlive) {
-        window.bossSystem.recordFrame(player, boss, bullets, bossBullets, powerups);
-        requestAnimationFrame(gameLoop);
-      } else {
-        bossMusic.pause();
-        bossMusic.currentTime = 0;
-        const won = boss.health <= 0;
+      if (boss.health <= 0) {
+        if (!window.bossSystem.damageTaken) {
+          window.bossSystem.damageTaken = player.maxHealth - player.health;
+        }
         
-        if (won) {
-          if (!window.bossSystem.damageTaken) {
-            window.bossSystem.damageTaken = player.maxHealth - player.health;
-          }
+        if (window.bossSystem.infiniteMode) {
+          isTransitioning = true;
+          const roundOverlay = document.createElement('div');
+          roundOverlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.9); z-index: 10002;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+          `;
+          roundOverlay.innerHTML = `
+            <div style="color: #0f0; font-size: 4rem; font-weight: bold;">¡RONDA ${enhancements.infiniteRound} COMPLETADA!</div>
+            <div style="color: #fff; font-size: 2rem; margin-top: 20px;">Preparando Ronda ${enhancements.infiniteRound + 1}...</div>
+            <div style="color: #0ff; font-size: 1.5rem; margin-top: 10px;">+50 HP</div>
+          `;
+          document.body.appendChild(roundOverlay);
           
-          if (window.bossSystem.infiniteMode) {
-            const roundOverlay = document.createElement('div');
-            roundOverlay.style.cssText = `
+          setTimeout(() => {
+            roundOverlay.remove();
+            enhancements.infiniteRound++;
+            
+            boss.maxHealth = Math.floor(500 * (1 + enhancements.infiniteRound * 0.3));
+            boss.health = boss.maxHealth;
+            boss.dy = 2 * Math.pow(1.1, enhancements.infiniteRound);
+            boss.phase = 1;
+            boss.intro = true;
+            boss.x = canvas.width + 100;
+            boss.y = -100;
+            boss.targetX = canvas.width - 150;
+            boss.targetY = 50;
+            boss.attackTimer = 0;
+            boss.shield = 0;
+            boss.shieldTimer = 0;
+            boss.telegraphTimer = 0;
+            boss.telegraphActive = false;
+            
+            introTimer = 0;
+            bossBullets.length = 0;
+            bossMinions.length = 0;
+            powerups.length = 0;
+            bullets.length = 0;
+            
+            Object.keys(abilityCooldowns).forEach(key => abilityCooldowns[key] = 0);
+            
+            player.health = Math.min(player.maxHealth, player.health + 50);
+            player.shield = false;
+            player.shieldTimer = 0;
+            player.tripleShot = false;
+            player.tripleShotTimer = 0;
+            player.slowTime = false;
+            player.slowTimeTimer = 0;
+            player.rapidFire = false;
+            player.rapidFireTimer = 0;
+            player.invincible = false;
+            player.invincibleTimer = 0;
+            player.speedBoost = false;
+            player.speedBoostTimer = 0;
+            player.combo = 0;
+            
+            isTransitioning = false;
+            bossMusic.play().catch(() => {});
+            requestAnimationFrame(gameLoop);
+          }, 2000);
+          return;
+        } else if (window.bossSystem.bossRushMode && enhancements.bossRush) {
+          const continueRush = enhancements.nextBossRush(enhancements.bossRush, boss);
+          if (continueRush) {
+            isTransitioning = true;
+            const bossNames = ['Abelito Gordo Panzón', 'Santa Molly', 'Krampus', 'El Devorador'];
+            const currentBossNum = enhancements.bossRush.currentBoss;
+            
+            const rushOverlay = document.createElement('div');
+            rushOverlay.style.cssText = `
               position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
               background: rgba(0,0,0,0.9); z-index: 10002;
               display: flex; flex-direction: column; justify-content: center; align-items: center;
             `;
-            roundOverlay.innerHTML = `
-              <div style="color: #0f0; font-size: 4rem; font-weight: bold;">¡RONDA ${enhancements.infiniteRound} COMPLETADA!</div>
-              <div style="color: #fff; font-size: 2rem; margin-top: 20px;">Preparando Ronda ${enhancements.infiniteRound + 1}...</div>
-              <div style="color: #0ff; font-size: 1.5rem; margin-top: 10px;">+50 HP</div>
+            rushOverlay.innerHTML = `
+              <div style="color: #0f0; font-size: 4rem; font-weight: bold;">¡BOSS ${currentBossNum} DERROTADO!</div>
+              <div style="color: #fff; font-size: 2rem; margin-top: 20px;">Siguiente: ${bossNames[currentBossNum]} (${currentBossNum + 1}/4)</div>
+              <div style="color: #f0f; font-size: 1.5rem; margin-top: 10px;">🔥 BOSS RUSH 🔥</div>
             `;
-            document.body.appendChild(roundOverlay);
+            document.body.appendChild(rushOverlay);
             
             setTimeout(() => {
-              roundOverlay.remove();
-              enhancements.infiniteRound++;
+              rushOverlay.remove();
               
-              boss.maxHealth = Math.floor(500 * (1 + enhancements.infiniteRound * 0.3));
+              boss.maxHealth = enhancements.bossRush.bosses[currentBossNum].health;
               boss.health = boss.maxHealth;
-              boss.dy = 2 * Math.pow(1.1, enhancements.infiniteRound);
+              boss.dy = 2;
               boss.phase = 1;
               boss.intro = true;
               boss.x = canvas.width + 100;
@@ -1837,6 +1902,12 @@ class ChristmasTheme {
               boss.shieldTimer = 0;
               boss.telegraphTimer = 0;
               boss.telegraphActive = false;
+              boss.isDevourerBoss = false;
+              
+              if (currentBossNum === 3) {
+                boss.img.src = 'assets/GIF_20251206_082647_448.gif';
+                boss.isDevourerBoss = true;
+              }
               
               introTimer = 0;
               bossBullets.length = 0;
@@ -1846,7 +1917,6 @@ class ChristmasTheme {
               
               Object.keys(abilityCooldowns).forEach(key => abilityCooldowns[key] = 0);
               
-              player.health = Math.min(player.maxHealth, player.health + 50);
               player.shield = false;
               player.shieldTimer = 0;
               player.tripleShot = false;
@@ -1861,80 +1931,31 @@ class ChristmasTheme {
               player.speedBoostTimer = 0;
               player.combo = 0;
               
+              isTransitioning = false;
               bossMusic.play().catch(() => {});
               requestAnimationFrame(gameLoop);
             }, 2000);
             return;
-          } else if (window.bossSystem.bossRushMode && enhancements.bossRush) {
-            const continueRush = enhancements.nextBossRush(enhancements.bossRush, boss);
-            if (continueRush) {
-              const bossNames = ['Abelito Gordo Panzón', 'Santa Molly', 'Krampus', 'El Devorador'];
-              const currentBossNum = enhancements.bossRush.currentBoss;
-              
-              const rushOverlay = document.createElement('div');
-              rushOverlay.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-                background: rgba(0,0,0,0.9); z-index: 10002;
-                display: flex; flex-direction: column; justify-content: center; align-items: center;
-              `;
-              rushOverlay.innerHTML = `
-                <div style="color: #0f0; font-size: 4rem; font-weight: bold;">¡BOSS ${currentBossNum} DERROTADO!</div>
-                <div style="color: #fff; font-size: 2rem; margin-top: 20px;">Siguiente: ${bossNames[currentBossNum]} (${currentBossNum + 1}/4)</div>
-                <div style="color: #f0f; font-size: 1.5rem; margin-top: 10px;">🔥 BOSS RUSH 🔥</div>
-              `;
-              document.body.appendChild(rushOverlay);
-              
-              setTimeout(() => {
-                rushOverlay.remove();
-                
-                boss.maxHealth = enhancements.bossRush.bosses[currentBossNum].health;
-                boss.health = boss.maxHealth;
-                boss.dy = 2;
-                boss.phase = 1;
-                boss.intro = true;
-                boss.x = canvas.width + 100;
-                boss.y = -100;
-                boss.targetX = canvas.width - 150;
-                boss.targetY = 50;
-                boss.attackTimer = 0;
-                boss.shield = 0;
-                boss.shieldTimer = 0;
-                boss.telegraphTimer = 0;
-                boss.telegraphActive = false;
-                boss.isDevourerBoss = false;
-                
-                if (currentBossNum === 3) {
-                  boss.img.src = 'assets/GIF_20251206_082647_448.gif';
-                  boss.isDevourerBoss = true;
-                }
-                
-                introTimer = 0;
-                bossBullets.length = 0;
-                bossMinions.length = 0;
-                powerups.length = 0;
-                bullets.length = 0;
-                
-                Object.keys(abilityCooldowns).forEach(key => abilityCooldowns[key] = 0);
-                
-                player.shield = false;
-                player.shieldTimer = 0;
-                player.tripleShot = false;
-                player.tripleShotTimer = 0;
-                player.slowTime = false;
-                player.slowTimeTimer = 0;
-                player.rapidFire = false;
-                player.rapidFireTimer = 0;
-                player.invincible = false;
-                player.invincibleTimer = 0;
-                player.speedBoost = false;
-                player.speedBoostTimer = 0;
-                player.combo = 0;
-                
-                bossMusic.play().catch(() => {});
-                requestAnimationFrame(gameLoop);
-              }, 2000);
-              return;
-            }
+          }
+        }
+      }
+      
+      if (isTransitioning) {
+        requestAnimationFrame(gameLoop);
+        return;
+      }
+      
+      if (boss.health > 0 && player.health > 0) {
+        window.bossSystem.recordFrame(player, boss, bullets, bossBullets, powerups);
+        requestAnimationFrame(gameLoop);
+      } else {
+        bossMusic.pause();
+        bossMusic.currentTime = 0;
+        const won = boss.health <= 0;
+        
+        if (won) {
+          if (!window.bossSystem.damageTaken) {
+            window.bossSystem.damageTaken = player.maxHealth - player.health;
           }
           
           ctx.fillStyle = '#0f0';
@@ -2048,10 +2069,11 @@ class ChristmasTheme {
     `;
     
     const saveBtn = document.createElement('button');
-    saveBtn.textContent = character === 'ankush' ? 'SALIR (NO LEADERBOARD)' : 'GUARDAR EN LEADERBOARD';
+    const isAnkush = character === 'ankush' || character.includes('ankush');
+    saveBtn.textContent = isAnkush ? 'SALIR (NO LEADERBOARD)' : 'GUARDAR EN LEADERBOARD';
     saveBtn.style.cssText = `
-      background: ${character === 'ankush' ? '#888' : '#ffd700'};
-      color: ${character === 'ankush' ? '#fff' : '#000'};
+      background: ${isAnkush ? '#888' : '#ffd700'};
+      color: ${isAnkush ? '#fff' : '#000'};
       font-weight: bold;
       padding: 15px 40px;
       border: none;
@@ -2060,7 +2082,7 @@ class ChristmasTheme {
       font-size: 1.5rem;
     `;
     saveBtn.addEventListener('click', async () => {
-      if (character === 'ankush') {
+      if (isAnkush) {
         overlay.remove();
         document.getElementById('game').classList.remove('active');
         document.getElementById('lobby').classList.add('active');
