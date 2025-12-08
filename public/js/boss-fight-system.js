@@ -64,13 +64,31 @@ class BossFightSystem {
   }
 
   async saveReplay(playerName, character, won) {
-    if (!won) return;
+    if (!won || this.isSaving) return;
+    this.isSaving = true;
+    
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.9); z-index: 20000;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    `;
+    loadingOverlay.innerHTML = `
+      <div style="font-size: 3rem; animation: spin 1s linear infinite;">⏳</div>
+      <div style="color: #fff; font-size: 2rem; margin-top: 20px;">Guardando...</div>
+    `;
+    const style = document.createElement('style');
+    style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+    document.body.appendChild(loadingOverlay);
+    
     const time = (Date.now() - this.startTime) / 1000;
     const noDamage = this.damageTaken === 0;
+    const cleanChar = character.replace('NormalIcon', '').replace('InactiveIcon', '');
     
     const replay = {
       player_name: playerName,
-      character: character,
+      character: cleanChar,
       difficulty: this.difficulty,
       time: time,
       damage_taken: this.damageTaken,
@@ -80,12 +98,17 @@ class BossFightSystem {
       created_at: new Date().toISOString()
     };
 
-    if (this.supabase) {
-      await this.supabase.from('boss_leaderboard').insert([replay]);
-    } else {
-      const local = JSON.parse(localStorage.getItem('boss_replays') || '[]');
-      local.push(replay);
-      localStorage.setItem('boss_replays', JSON.stringify(local.slice(-10)));
+    try {
+      if (this.supabase) {
+        await this.supabase.from('boss_leaderboard').insert([replay]);
+      } else {
+        const local = JSON.parse(localStorage.getItem('boss_replays') || '[]');
+        local.push(replay);
+        localStorage.setItem('boss_replays', JSON.stringify(local.slice(-10)));
+      }
+    } finally {
+      loadingOverlay.remove();
+      this.isSaving = false;
     }
 
     if (noDamage) {

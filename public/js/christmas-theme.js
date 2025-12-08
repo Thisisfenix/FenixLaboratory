@@ -1864,10 +1864,13 @@ class ChristmasTheme {
             boss.intro = true;
             boss.x = canvas.width + 100;
             boss.y = -100;
+            boss.attackTimer = 0;
             introTimer = 0;
             bossBullets.length = 0;
             bossMinions.length = 0;
+            powerups.length = 0;
             player.health = Math.min(player.maxHealth, player.health + 50);
+            if (player.health <= 0) player.health = player.maxHealth;
             requestAnimationFrame(gameLoop);
             return;
           } else if (window.bossSystem.bossRushMode && enhancements.bossRush) {
