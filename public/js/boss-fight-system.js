@@ -328,10 +328,11 @@ class BossFightSystem {
           border-bottom: 1px solid #333;
           cursor: pointer;
         `;
+        const cleanChar = row.character.replace('NormalIcon', '').replace('InactiveIcon', '');
         rowDiv.innerHTML = `
           <div>${i + 1}</div>
           <div>${row.player_name}</div>
-          <div>${row.character}</div>
+          <div>${cleanChar}</div>
           <div>${row.time.toFixed(2)}s ${row.no_damage ? '🏆' : ''}</div>
           <div>${row.damage_taken}</div>
           <div>${row.score || 0}</div>
