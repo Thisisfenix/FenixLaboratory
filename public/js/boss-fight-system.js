@@ -376,23 +376,21 @@ class BossFightSystem {
     boss.health = Math.floor(boss.maxHealth * mult);
     boss.maxHealth = boss.health;
     
+    const baseHP = player.maxHealth;
+    
     if (this.difficulty === 'easy') {
       boss.dy *= 0.7;
       boss.attackTimer = 300;
-      if (!player.maxHealth || player.maxHealth < 110) {
-        player.maxHealth = 130;
-        player.health = 130;
-      }
+      player.maxHealth = Math.floor(baseHP * 1.2);
+      player.health = player.maxHealth;
     } else if (this.difficulty === 'hard') {
       boss.dy *= 1.3;
       boss.attackTimer = 120;
     } else if (this.difficulty === 'impossible') {
       boss.dy *= 1.6;
       boss.attackTimer = 80;
-      if (!player.maxHealth || player.maxHealth > 90) {
-        player.maxHealth = 70;
-        player.health = 70;
-      }
+      player.maxHealth = Math.floor(baseHP * 0.7);
+      player.health = player.maxHealth;
     }
   }
   

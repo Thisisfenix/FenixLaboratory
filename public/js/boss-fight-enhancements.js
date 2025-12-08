@@ -112,6 +112,49 @@ class BossFightEnhancements {
     }
   }
 
+  waveAttack(boss, bossBullets, canvas) {
+    for (let i = 0; i < 10; i++) {
+      bossBullets.push({
+        x: boss.x,
+        y: boss.y + boss.size / 2,
+        dx: -6,
+        dy: Math.sin(i * 0.5) * 3,
+        size: 12,
+        type: 'wave'
+      });
+    }
+  }
+
+  crossAttack(boss, bossBullets) {
+    const directions = [{x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}, {x: 1, y: 1}, {x: -1, y: 1}, {x: 1, y: -1}, {x: -1, y: -1}];
+    directions.forEach(dir => {
+      bossBullets.push({
+        x: boss.x + boss.size / 2,
+        y: boss.y + boss.size / 2,
+        dx: dir.x * 7,
+        dy: dir.y * 7,
+        size: 14,
+        type: 'cross'
+      });
+    });
+  }
+
+  homingAttack(boss, bossBullets, player) {
+    for (let i = 0; i < 5; i++) {
+      const angle = Math.atan2(player.y - boss.y, player.x - boss.x) + (Math.random() - 0.5) * 0.5;
+      bossBullets.push({
+        x: boss.x + boss.size / 2,
+        y: boss.y + boss.size / 2,
+        dx: Math.cos(angle) * 6,
+        dy: Math.sin(angle) * 6,
+        size: 10,
+        type: 'homing',
+        targetX: player.x,
+        targetY: player.y
+      });
+    }
+  }
+
   // Nuevos power-ups
   createInvincibilityPowerup(x, y) {
     return {
@@ -259,14 +302,15 @@ class BossFightEnhancements {
   // Stats de personajes
   getCharacterStats(character) {
     const stats = {
-      'AngelNormalIcon': { speed: 1.1, hp: 110, damage: 0.9, ability: 'angel', abilityName: 'Escudo Divino', abilityDesc: 'Bloquea 1 golpe cada 15s' },
-      'GisselInactiveIcon': { speed: 1.2, hp: 90, damage: 1.0, ability: 'gissel', abilityName: 'Evasión', abilityDesc: 'Dash más rápido (8s CD)' },
-      'IA777NormalIcon': { speed: 0.9, hp: 120, damage: 1.1, ability: 'ia777', abilityName: 'Tanque', abilityDesc: 'Reduce daño 30%' },
-      'IrisNormalIcon': { speed: 1.0, hp: 100, damage: 1.0, ability: 'iris', abilityName: 'Equilibrio', abilityDesc: 'Regenera 1 HP/2s' },
-      'LunaNormalIcon': { speed: 1.3, hp: 80, damage: 0.8, ability: 'luna', abilityName: 'Velocista', abilityDesc: 'Disparo más rápido' },
-      'MollyNormalIcon': { speed: 1.0, hp: 105, damage: 1.2, ability: 'molly', abilityName: 'Furia', abilityDesc: '+50% daño bajo 50% HP' }
+      'AngelNormalIcon': { speed: 1.1, hp: 110, damage: 0.9, ability: 'angel', abilityName: 'Escudo Divino', abilityDesc: '110 HP | Bloquea 1 golpe cada 15s', bulletColor: '#00f' },
+      'GisselInactiveIcon': { speed: 1.2, hp: 90, damage: 1.0, ability: 'gissel', abilityName: 'Evasión', abilityDesc: '90 HP | Dash más rápido (8s CD)', bulletColor: '#ff0' },
+      'IA777NormalIcon': { speed: 0.9, hp: 120, damage: 1.1, ability: 'ia777', abilityName: 'Tanque', abilityDesc: '120 HP | Reduce daño 30%', bulletColor: '#a0f' },
+      'IrisNormalIcon': { speed: 1.0, hp: 100, damage: 1.0, ability: 'iris', abilityName: 'Equilibrio', abilityDesc: '100 HP | Regenera 1 HP/2s', bulletColor: '#a0f' },
+      'LunaNormalIcon': { speed: 1.3, hp: 80, damage: 0.8, ability: 'luna', abilityName: 'Velocista', abilityDesc: '80 HP | Disparo más rápido', bulletColor: '#ff0' },
+      'MollyNormalIcon': { speed: 1.0, hp: 105, damage: 1.2, ability: 'molly', abilityName: 'Furia', abilityDesc: '105 HP | +50% daño bajo 50% HP', bulletColor: '#f00' },
+      'ankush': { speed: 2.0, hp: 999, damage: 5.0, ability: 'ankush', abilityName: 'Ankush', abilityDesc: '999 HP | ROTO (Sin leaderboard)', bulletColor: '#ff0' }
     };
-    return stats[character] || { speed: 1.0, hp: 100, damage: 1.0, ability: 'none', abilityName: 'Ninguna', abilityDesc: '' };
+    return stats[character] || { speed: 1.0, hp: 100, damage: 1.0, ability: 'none', abilityName: 'Ninguna', abilityDesc: '', bulletColor: '#0f0' };
   }
 
   // Música dinámica

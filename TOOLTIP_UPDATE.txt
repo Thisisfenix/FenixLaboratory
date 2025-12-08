@@ -1,0 +1,12 @@
+Los HP ya están mostrados en abilityDesc (la línea pequeña debajo del nombre).
+
+Ejemplo:
+- Angel: "110 HP | Bloquea 1 golpe cada 15s"
+- Gissel: "90 HP | Dash más rápido (8s CD)"
+- IA777: "120 HP | Reduce daño 30%"
+- Iris: "100 HP | Regenera 1 HP/2s"
+- Luna: "80 HP | Disparo más rápido"
+- Molly: "105 HP | +50% daño bajo 50% HP"
+
+Los tooltips (hover/touch) ya tienen información detallada adicional.
+Los usuarios pueden ver los HP directamente en la tarjeta del personaje sin necesidad de hover.

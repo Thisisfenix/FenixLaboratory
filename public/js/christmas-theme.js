@@ -624,19 +624,27 @@ class ChristmasTheme {
     let selectedCharIndex = 0;
     let helpVisible = false;
     
+    const getAdjustedHP = (baseHP) => {
+      const diff = window.bossSystem.difficulty;
+      if (diff === 'easy') return Math.floor(baseHP * 1.2);
+      if (diff === 'impossible') return Math.floor(baseHP * 0.7);
+      return baseHP;
+    };
+    
     const grid = document.createElement('div');
     grid.style.cssText = 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;';
     
-    const chars = ['AngelNormalIcon', 'GisselInactiveIcon', 'IA777NormalIcon', 'IrisNormalIcon', 'LunaNormalIcon', 'MollyNormalIcon'];
+    const chars = ['AngelNormalIcon', 'GisselInactiveIcon', 'IA777NormalIcon', 'IrisNormalIcon', 'LunaNormalIcon', 'MollyNormalIcon', 'ankush'];
     chars.forEach(char => {
       const tempEnhancements = new BossFightEnhancements();
       const stats = tempEnhancements.getCharacterStats(char);
+      const adjustedHP = getAdjustedHP(stats.hp);
       
       const container = document.createElement('div');
       container.style.cssText = 'text-align: center;';
       
       const img = document.createElement('img');
-      img.src = `assets/icons/${char}.png`;
+      img.src = char === 'ankush' ? 'assets/icons/ankush.png' : `assets/icons/${char}.png`;
       img.style.cssText = 'width: 100px; height: 100px; cursor: pointer; border: 3px solid #fff; border-radius: 10px; transition: transform 0.3s;';
       img.addEventListener('mouseenter', () => img.style.transform = 'scale(1.1)');
       img.addEventListener('mouseleave', () => img.style.transform = 'scale(1)');
@@ -650,7 +658,8 @@ class ChristmasTheme {
       abilityName.style.cssText = 'color: #FFD700; font-size: 0.9rem; font-weight: bold; margin-top: 5px;';
       
       const abilityDesc = document.createElement('div');
-      abilityDesc.textContent = stats.abilityDesc;
+      const descParts = stats.abilityDesc.split(' | ');
+      abilityDesc.textContent = char === 'ankush' ? '999 HP | Imposible perder' : `${adjustedHP} HP | ${descParts[1] || descParts[0]}`;
       abilityDesc.style.cssText = 'color: #aaa; font-size: 0.75rem;';
       
       const tooltip = document.createElement('div');
@@ -669,12 +678,13 @@ class ChristmasTheme {
       `;
       
       const tooltipContent = {
-        'AngelNormalIcon': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
-        'GisselInactiveIcon': `<b style="color: #FFD700;">💨 Evasión</b><br><br>Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
-        'IA777NormalIcon': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>IA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base (120)<br>• Ideal para aguantar`,
-        'IrisNormalIcon': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
-        'LunaNormalIcon': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
-        'MollyNormalIcon': `<b style="color: #FFD700;">🔥 Furia</b><br><br>Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`
+        'AngelNormalIcon': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>${adjustedHP} HP | Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
+        'GisselInactiveIcon': `<b style="color: #FFD700;">💨 Evasión</b><br><br>${adjustedHP} HP | Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
+        'IA777NormalIcon': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>${adjustedHP} HP | IA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base<br>• Ideal para aguantar`,
+        'IrisNormalIcon': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>${adjustedHP} HP | Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
+        'LunaNormalIcon': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>${adjustedHP} HP | Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
+        'MollyNormalIcon': `<b style="color: #FFD700;">🔥 Furia</b><br><br>${adjustedHP} HP | Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`,
+        'ankush': `<b style="color: #FFD700;">😂 Ankush</b><br><br>999 HP | El personaje más roto del juego. Literalmente imposible perder.<br><br>• 999 HP (inmortal básicamente)<br>• Velocidad x2 (zoom zoom)<br>• Daño x5 (one shot everything)<br>• Balas amarillas<br>• No leaderboard (obvio)`
       };
       
       tooltip.innerHTML = tooltipContent[char];
@@ -738,13 +748,15 @@ class ChristmasTheme {
       const char = chars[charIndex];
       const tempEnhancements = new BossFightEnhancements();
       const stats = tempEnhancements.getCharacterStats(char);
+      const adjustedHP = getAdjustedHP(stats.hp);
       const tooltipContent = {
-        'AngelNormalIcon': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
-        'GisselInactiveIcon': `<b style="color: #FFD700;">💨 Evasión</b><br><br>Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
-        'IA777NormalIcon': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>IA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base (120)<br>• Ideal para aguantar`,
-        'IrisNormalIcon': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
-        'LunaNormalIcon': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
-        'MollyNormalIcon': `<b style="color: #FFD700;">🔥 Furia</b><br><br>Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`
+        'AngelNormalIcon': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>${adjustedHP} HP | Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
+        'GisselInactiveIcon': `<b style="color: #FFD700;">💨 Evasión</b><br><br>${adjustedHP} HP | Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
+        'IA777NormalIcon': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>${adjustedHP} HP | IA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base<br>• Ideal para aguantar`,
+        'IrisNormalIcon': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>${adjustedHP} HP | Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
+        'LunaNormalIcon': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>${adjustedHP} HP | Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
+        'MollyNormalIcon': `<b style="color: #FFD700;">🔥 Furia</b><br><br>${adjustedHP} HP | Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`,
+        'ankush': `<b style="color: #FFD700;">😂 Ankush</b><br><br>999 HP | El personaje más roto del juego. Literalmente imposible perder.<br><br>• 999 HP (inmortal básicamente)<br>• Velocidad x2 (zoom zoom)<br>• Daño x5 (one shot everything)<br>• Balas amarillas<br>• No leaderboard (obvio)`
       };
       helpOverlay.innerHTML = `
         <div style="color: #fff; font-size: 1.1rem; line-height: 1.6;">
@@ -1395,7 +1407,7 @@ class ChristmasTheme {
       
       ctx.restore();
       
-      ctx.fillStyle = '#0f0';
+      ctx.fillStyle = charStats.bulletColor || '#0f0';
       bullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
       
       ctx.fillStyle = '#f00';
@@ -1645,7 +1657,7 @@ class ChristmasTheme {
         const won = boss.health <= 0;
         
         if (!won) {
-          const loseSound = new Audio('abelitogordopanzon/estamal.mp4');
+          const loseSound = new Audio('assets/deathsound.mp3');
           loseSound.volume = 0.5;
           loseSound.play().catch(() => {});
           
@@ -1669,9 +1681,25 @@ class ChristmasTheme {
             `;
             restartBtn.addEventListener('click', () => {
               restartBtn.remove();
+              video.remove();
               this.showCharacterSelect();
             });
             document.body.appendChild(restartBtn);
+            
+            const video = document.createElement('video');
+            video.src = 'abelitogordopanzon/estamal.mp4';
+            video.autoplay = true;
+            video.style.cssText = `
+              position: fixed;
+              top: 70%;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 300px;
+              border: 3px solid #f00;
+              border-radius: 10px;
+              z-index: 10002;
+            `;
+            document.body.appendChild(video);
           }, 1000);
         }
         
@@ -1737,10 +1765,10 @@ class ChristmasTheme {
     `;
     
     const saveBtn = document.createElement('button');
-    saveBtn.textContent = 'GUARDAR EN LEADERBOARD';
+    saveBtn.textContent = character === 'ankush' ? 'SALIR (NO LEADERBOARD)' : 'GUARDAR EN LEADERBOARD';
     saveBtn.style.cssText = `
-      background: #ffd700;
-      color: #000;
+      background: ${character === 'ankush' ? '#888' : '#ffd700'};
+      color: ${character === 'ankush' ? '#fff' : '#000'};
       font-weight: bold;
       padding: 15px 40px;
       border: none;
@@ -1749,7 +1777,11 @@ class ChristmasTheme {
       font-size: 1.5rem;
     `;
     saveBtn.addEventListener('click', async () => {
-      if (nameInput.value.trim()) {
+      if (character === 'ankush') {
+        overlay.remove();
+        document.getElementById('game').classList.remove('active');
+        document.getElementById('lobby').classList.add('active');
+      } else if (nameInput.value.trim()) {
         await window.bossSystem.saveReplay(nameInput.value.trim(), character, true);
         overlay.remove();
         window.bossSystem.showLeaderboard();
