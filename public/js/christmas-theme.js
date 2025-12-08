@@ -1272,11 +1272,14 @@ class ChristmasTheme {
       
       if (!fearEffect && !boss.intro) {
         const moveSpeed = 4 * player.speed * (player.speedBoost ? 1.5 : 1);
-        if (keys['w'] && player.y > 0) player.y -= moveSpeed;
-        if (keys['s'] && player.y < canvas.height - player.size) player.y += moveSpeed;
-        if (keys['a'] && player.x > 0) player.x -= moveSpeed;
-        if (keys['d'] && player.x < canvas.width - player.size) player.x += moveSpeed;
+        if (keys['w']) player.y -= moveSpeed;
+        if (keys['s']) player.y += moveSpeed;
+        if (keys['a']) player.x -= moveSpeed;
+        if (keys['d']) player.x += moveSpeed;
         getGamepad();
+        
+        player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+        player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
       }
       
       if (!boss.intro) {
@@ -1835,6 +1838,34 @@ class ChristmasTheme {
           if (!window.bossSystem.damageTaken) {
             window.bossSystem.damageTaken = player.maxHealth - player.health;
           }
+          
+          if (window.bossSystem.infiniteMode) {
+            enhancements.infiniteRound++;
+            boss.maxHealth = Math.floor(500 * (1 + enhancements.infiniteRound * 0.3));
+            boss.health = boss.maxHealth;
+            boss.dy *= 1.1;
+            boss.phase = 1;
+            boss.intro = true;
+            boss.x = canvas.width + 100;
+            boss.y = -100;
+            introTimer = 0;
+            player.health = Math.min(player.maxHealth, player.health + 50);
+            requestAnimationFrame(gameLoop);
+            return;
+          } else if (window.bossSystem.bossRushMode && enhancements.bossRush) {
+            const continueRush = enhancements.nextBossRush(enhancements.bossRush, boss);
+            if (continueRush) {
+              boss.health = boss.maxHealth;
+              boss.phase = 1;
+              boss.intro = true;
+              boss.x = canvas.width + 100;
+              boss.y = -100;
+              introTimer = 0;
+              requestAnimationFrame(gameLoop);
+              return;
+            }
+          }
+          
           localStorage.setItem('bossDefeated', 'true');
           if (this.leaderboardBtn) this.leaderboardBtn.style.display = 'inline-block';
           setTimeout(() => this.showVictoryScreen(character), 2000);
@@ -1869,10 +1900,11 @@ class ChristmasTheme {
     const time = ((Date.now() - window.bossSystem.startTime) / 1000).toFixed(2);
     const stats = document.createElement('div');
     stats.style.cssText = 'color: #fff; font-size: 1.5rem; text-align: center;';
+    const diffDisplay = window.bossSystem.infiniteMode ? `INFINITO ♾️ (Ronda ${enhancements.infiniteRound})` : window.bossSystem.bossRushMode ? 'BOSS RUSH 🔥' : window.bossSystem.difficulty.toUpperCase();
     stats.innerHTML = `
       <div>Tiempo: ${time}s</div>
       <div>Daño recibido: ${window.bossSystem.damageTaken}</div>
-      <div>Dificultad: ${window.bossSystem.difficulty.toUpperCase()}</div>
+      <div>Dificultad: ${diffDisplay}</div>
       ${window.bossSystem.damageTaken === 0 ? '<div style="color: #ffd700; font-weight: bold; margin-top: 10px;">🏆 ¡SIN DAÑO! 🏆</div>' : ''}
     `;
     
@@ -1907,7 +1939,11 @@ class ChristmasTheme {
         document.getElementById('game').classList.remove('active');
         document.getElementById('lobby').classList.add('active');
       } else if (nameInput.value.trim()) {
+        const actualDiff = window.bossSystem.infiniteMode ? 'infinite' : window.bossSystem.bossRushMode ? 'bossrush' : window.bossSystem.difficulty;
+        const originalDiff = window.bossSystem.difficulty;
+        window.bossSystem.difficulty = actualDiff;
         await window.bossSystem.saveReplay(nameInput.value.trim(), character, true);
+        window.bossSystem.difficulty = originalDiff;
         overlay.remove();
         window.bossSystem.showLeaderboard();
       }

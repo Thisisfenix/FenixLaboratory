@@ -241,6 +241,31 @@ class BossFightSystem {
       callback();
     });
     overlay.appendChild(bossRushBtn);
+    
+    const infiniteBtn = document.createElement('button');
+    infiniteBtn.textContent = '♾️ MODO INFINITO ♾️';
+    infiniteBtn.style.cssText = `
+      background: linear-gradient(45deg, #00f, #0ff);
+      color: #fff;
+      font-size: 2rem;
+      font-weight: bold;
+      padding: 20px 60px;
+      border: 3px solid #ffd700;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+      animation: bossRushPulse 1s ease-in-out infinite;
+    `;
+    infiniteBtn.addEventListener('click', () => {
+      this.infiniteMode = true;
+      this.difficulty = 'hard';
+      overlay.remove();
+      if (this.enhancements) {
+        this.enhancements.infiniteRound = 1;
+      }
+      callback();
+    });
+    overlay.appendChild(infiniteBtn);
 
     const style = document.createElement('style');
     style.textContent = `
@@ -282,14 +307,14 @@ class BossFightSystem {
     const tabs = document.createElement('div');
     tabs.style.cssText = 'display: flex; gap: 10px; margin: 20px;';
 
-    ['easy', 'normal', 'hard', 'impossible', 'bossrush'].forEach(diff => {
+    ['easy', 'normal', 'hard', 'impossible', 'bossrush', 'infinite'].forEach(diff => {
       const tab = document.createElement('button');
-      tab.textContent = diff === 'bossrush' ? '🔥 BOSS RUSH' : diff.toUpperCase();
+      tab.textContent = diff === 'bossrush' ? '🔥 BOSS RUSH' : diff === 'infinite' ? '♾️ INFINITO' : diff.toUpperCase();
       tab.style.cssText = `
-        background: ${diff === 'normal' ? '#ff0' : diff === 'bossrush' ? 'linear-gradient(45deg, #f00, #f0f)' : '#333'};
+        background: ${diff === 'normal' ? '#ff0' : diff === 'bossrush' ? 'linear-gradient(45deg, #f00, #f0f)' : diff === 'infinite' ? 'linear-gradient(45deg, #00f, #0ff)' : '#333'};
         color: ${diff === 'normal' ? '#000' : '#fff'};
         padding: 10px 20px;
-        border: ${diff === 'bossrush' ? '2px solid #ffd700' : 'none'};
+        border: ${diff === 'bossrush' || diff === 'infinite' ? '2px solid #ffd700' : 'none'};
         border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
@@ -303,10 +328,13 @@ class BossFightSystem {
         if (diff === 'bossrush') {
           tab.style.background = 'linear-gradient(45deg, #f00, #f0f)';
           tab.style.border = '2px solid #ffd700';
+        } else if (diff === 'infinite') {
+          tab.style.background = 'linear-gradient(45deg, #00f, #0ff)';
+          tab.style.border = '2px solid #ffd700';
         } else {
           tab.style.background = '#ff0';
         }
-        tab.style.color = diff === 'bossrush' ? '#fff' : '#000';
+        tab.style.color = diff === 'bossrush' || diff === 'infinite' ? '#fff' : '#000';
         const data = await this.getLeaderboard(diff);
         updateTable(data, diff === 'bossrush');
       });
