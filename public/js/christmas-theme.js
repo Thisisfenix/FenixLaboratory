@@ -1292,7 +1292,11 @@ class ChristmasTheme {
       const baseSpeed = window.bossSystem.difficulty === 'easy' ? 300 : window.bossSystem.difficulty === 'hard' ? 120 : window.bossSystem.difficulty === 'impossible' ? 100 : 180;
       const attackSpeed = boss.phase === 3 ? (window.bossSystem.difficulty === 'easy' ? baseSpeed * 0.7 : window.bossSystem.difficulty === 'impossible' ? baseSpeed * 0.7 : baseSpeed / 2) : baseSpeed;
       if (boss.attackTimer > attackSpeed) {
-        bossAttack();
+        if (boss.isDevourerBoss) {
+          enhancements.devourerAttack(boss, bossBullets, player, canvas);
+        } else {
+          bossAttack();
+        }
         boss.attackTimer = 0;
       }
       
@@ -1384,7 +1388,12 @@ class ChristmasTheme {
         });
       });
       
+      if (boss.isDevourerBoss) {
+        enhancements.updateDevourerBullets(bossBullets, player, canvas);
+      }
+      
       bossBullets.forEach((b, i) => {
+        if (b.type === 'blackhole') return;
         const speed = player.slowTime ? 0.5 : 1;
         b.x += b.dx * speed;
         b.y += b.dy * speed;
@@ -1410,7 +1419,7 @@ class ChristmasTheme {
       powerups.forEach((p, i) => {
         p.x += p.dx;
         p.y += p.dy;
-        if (p.x < 0 || p.y > canvas.height) powerups.splice(i, 1);
+        if (p.x < -50 || p.x > canvas.width + 50 || p.y < -50 || p.y > canvas.height + 50) powerups.splice(i, 1);
         if (p.x < player.x + player.size && p.x + p.size > player.x && 
             p.y < player.y + player.size && p.y + p.size > player.y) {
           if (p.type === 'health') player.health = Math.min(player.maxHealth, player.health + 30);
@@ -1536,8 +1545,15 @@ class ChristmasTheme {
         ctx.restore();
       });
       
+      if (boss.isDevourerBoss) {
+        enhancements.drawDevourerEffects(ctx, boss, bossBullets);
+      }
+      
       ctx.fillStyle = '#f00';
-      bossBullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
+      bossBullets.forEach(b => {
+        if (b.type === 'blackhole') return;
+        ctx.fillRect(b.x, b.y, b.size, b.size);
+      });
       
       enhancements.drawWarnings(ctx, bossBullets);
       
@@ -1843,12 +1859,14 @@ class ChristmasTheme {
             enhancements.infiniteRound++;
             boss.maxHealth = Math.floor(500 * (1 + enhancements.infiniteRound * 0.3));
             boss.health = boss.maxHealth;
-            boss.dy *= 1.1;
+            boss.dy = 2 * Math.pow(1.1, enhancements.infiniteRound);
             boss.phase = 1;
             boss.intro = true;
             boss.x = canvas.width + 100;
             boss.y = -100;
             introTimer = 0;
+            bossBullets.length = 0;
+            bossMinions.length = 0;
             player.health = Math.min(player.maxHealth, player.health + 50);
             requestAnimationFrame(gameLoop);
             return;
@@ -1861,6 +1879,14 @@ class ChristmasTheme {
               boss.x = canvas.width + 100;
               boss.y = -100;
               introTimer = 0;
+              bossBullets.length = 0;
+              bossMinions.length = 0;
+              
+              if (enhancements.bossRush.currentBoss === 3) {
+                boss.img.src = 'assets/GIF_20251206_082647_448.gif';
+                boss.isDevourerBoss = true;
+              }
+              
               requestAnimationFrame(gameLoop);
               return;
             }

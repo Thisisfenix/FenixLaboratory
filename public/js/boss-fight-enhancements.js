@@ -400,7 +400,7 @@ class BossFightEnhancements {
   initBossRush() {
     return {
       currentBoss: 0,
-      totalBosses: 3,
+      totalBosses: 4,
       bossesDefeated: 0,
       totalScore: 0
     };
@@ -417,6 +417,305 @@ class BossFightEnhancements {
       return true;
     }
     return false;
+  }
+
+  // Boss 4: El Devorador
+  devourerAttack(boss, bossBullets, player, canvas) {
+    const attacks = ['vortex', 'blackhole', 'meteor', 'laser_grid', 'void_rift', 'gravity_well', 'cosmic_burst', 'dimension_tear', 'star_shower', 'singularity'];
+    const attack = attacks[Math.floor(Math.random() * attacks.length)];
+    
+    if (attack === 'vortex') {
+      for (let i = 0; i < 20; i++) {
+        const angle = (Math.PI * 2 / 20) * i;
+        const speed = 4 + Math.random() * 2;
+        bossBullets.push({
+          x: boss.x + boss.size/2,
+          y: boss.y + boss.size/2,
+          dx: Math.cos(angle) * speed,
+          dy: Math.sin(angle) * speed,
+          size: 8,
+          type: 'vortex'
+        });
+      }
+    } else if (attack === 'blackhole') {
+      bossBullets.push({
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        dx: 0,
+        dy: 0,
+        size: 40,
+        type: 'blackhole',
+        lifetime: 180,
+        pullRadius: 300
+      });
+    } else if (attack === 'meteor') {
+      for (let i = 0; i < 8; i++) {
+        bossBullets.push({
+          x: Math.random() * canvas.width,
+          y: -50,
+          dx: (Math.random() - 0.5) * 4,
+          dy: 10 + Math.random() * 5,
+          size: 20,
+          type: 'meteor',
+          warning: 30
+        });
+      }
+    } else if (attack === 'laser_grid') {
+      for (let i = 0; i < 5; i++) {
+        bossBullets.push({
+          x: 0,
+          y: i * (canvas.height / 5),
+          dx: 12,
+          dy: 0,
+          size: 6,
+          width: canvas.width,
+          height: 6,
+          type: 'laser_beam'
+        });
+      }
+    } else if (attack === 'void_rift') {
+      for (let i = 0; i < 3; i++) {
+        bossBullets.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          dx: 0,
+          dy: 0,
+          size: 60,
+          type: 'void_rift',
+          lifetime: 120,
+          spawnTimer: 0
+        });
+      }
+    } else if (attack === 'gravity_well') {
+      const wells = 4;
+      for (let i = 0; i < wells; i++) {
+        bossBullets.push({
+          x: (canvas.width / wells) * i + canvas.width / (wells * 2),
+          y: canvas.height / 2,
+          dx: 0,
+          dy: 0,
+          size: 30,
+          type: 'gravity_well',
+          lifetime: 150,
+          pullRadius: 150,
+          rotation: 0
+        });
+      }
+    } else if (attack === 'cosmic_burst') {
+      for (let wave = 0; wave < 3; wave++) {
+        setTimeout(() => {
+          for (let i = 0; i < 12; i++) {
+            const angle = (Math.PI * 2 / 12) * i + wave * 0.3;
+            bossBullets.push({
+              x: boss.x + boss.size/2,
+              y: boss.y + boss.size/2,
+              dx: Math.cos(angle) * (6 + wave * 2),
+              dy: Math.sin(angle) * (6 + wave * 2),
+              size: 10,
+              type: 'cosmic'
+            });
+          }
+        }, wave * 200);
+      }
+    } else if (attack === 'dimension_tear') {
+      bossBullets.push({
+        x: player.x,
+        y: player.y,
+        dx: 0,
+        dy: 0,
+        size: 80,
+        type: 'dimension_tear',
+        lifetime: 90,
+        warning: 60
+      });
+    } else if (attack === 'star_shower') {
+      for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+          bossBullets.push({
+            x: Math.random() * canvas.width,
+            y: -20,
+            dx: 0,
+            dy: 12,
+            size: 15,
+            type: 'star',
+            trail: []
+          });
+        }, i * 100);
+      }
+    } else if (attack === 'singularity') {
+      bossBullets.push({
+        x: boss.x + boss.size/2,
+        y: boss.y + boss.size/2,
+        dx: (player.x - boss.x) / 50,
+        dy: (player.y - boss.y) / 50,
+        size: 50,
+        type: 'singularity',
+        lifetime: 240,
+        absorbed: []
+      });
+    }
+  }
+
+  updateDevourerBullets(bossBullets, player, canvas) {
+    bossBullets.forEach((b, i) => {
+      if (b.type === 'blackhole') {
+        b.lifetime--;
+        if (b.lifetime <= 0) {
+          bossBullets.splice(i, 1);
+          return;
+        }
+        const dx = b.x - player.x;
+        const dy = b.y - player.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < b.pullRadius) {
+          const pull = (1 - dist / b.pullRadius) * 2;
+          player.x += (dx / dist) * pull;
+          player.y += (dy / dist) * pull;
+        }
+      } else if (b.type === 'void_rift') {
+        b.lifetime--;
+        b.spawnTimer++;
+        if (b.lifetime <= 0) {
+          bossBullets.splice(i, 1);
+          return;
+        }
+        if (b.spawnTimer > 30) {
+          const angle = Math.random() * Math.PI * 2;
+          bossBullets.push({
+            x: b.x,
+            y: b.y,
+            dx: Math.cos(angle) * 5,
+            dy: Math.sin(angle) * 5,
+            size: 8,
+            type: 'void_spawn'
+          });
+          b.spawnTimer = 0;
+        }
+      } else if (b.type === 'gravity_well') {
+        b.lifetime--;
+        b.rotation += 0.1;
+        if (b.lifetime <= 0) {
+          bossBullets.splice(i, 1);
+          return;
+        }
+        const dx = b.x - player.x;
+        const dy = b.y - player.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < b.pullRadius) {
+          const pull = (1 - dist / b.pullRadius) * 1.5;
+          player.x += (dx / dist) * pull;
+          player.y += (dy / dist) * pull;
+        }
+      } else if (b.type === 'dimension_tear') {
+        b.lifetime--;
+        if (b.warning > 0) b.warning--;
+        if (b.lifetime <= 0) bossBullets.splice(i, 1);
+      } else if (b.type === 'star' && b.trail) {
+        b.trail.push({x: b.x, y: b.y});
+        if (b.trail.length > 5) b.trail.shift();
+      } else if (b.type === 'singularity') {
+        b.lifetime--;
+        if (b.lifetime <= 0) {
+          for (let j = 0; j < 20; j++) {
+            const angle = (Math.PI * 2 / 20) * j;
+            bossBullets.push({
+              x: b.x,
+              y: b.y,
+              dx: Math.cos(angle) * 8,
+              dy: Math.sin(angle) * 8,
+              size: 10,
+              type: 'singularity_burst'
+            });
+          }
+          bossBullets.splice(i, 1);
+        }
+      }
+    });
+  }
+
+  drawDevourerEffects(ctx, boss, bossBullets) {
+    bossBullets.forEach(b => {
+      if (b.type === 'blackhole') {
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#a0f';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.pullRadius * (b.lifetime / 180), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      } else if (b.type === 'meteor' && b.warning > 0) {
+        ctx.save();
+        ctx.globalAlpha = b.warning / 30;
+        ctx.fillStyle = '#f80';
+        ctx.beginPath();
+        ctx.arc(b.x, ctx.canvas.height / 2, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        b.warning--;
+      } else if (b.type === 'void_rift') {
+        ctx.save();
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = '#800080';
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.size * (1 + Math.sin(b.spawnTimer * 0.1) * 0.2), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ff00ff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      } else if (b.type === 'gravity_well') {
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rotation);
+        ctx.strokeStyle = '#0ff';
+        ctx.lineWidth = 3;
+        for (let i = 0; i < 4; i++) {
+          ctx.beginPath();
+          ctx.arc(0, 0, b.size + i * 10, 0, Math.PI * 2);
+          ctx.globalAlpha = 0.3 - i * 0.05;
+          ctx.stroke();
+        }
+        ctx.restore();
+      } else if (b.type === 'dimension_tear' && b.warning > 0) {
+        ctx.save();
+        ctx.globalAlpha = b.warning / 60;
+        ctx.strokeStyle = '#ff0';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      } else if (b.type === 'star' && b.trail) {
+        ctx.save();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        b.trail.forEach((p, i) => {
+          if (i === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+        ctx.restore();
+      } else if (b.type === 'singularity') {
+        ctx.save();
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.size * (1 + Math.sin(Date.now() * 0.01) * 0.3), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#f0f';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+      }
+    });
   }
 
   drawBossRushUI(ctx, bossRush, x, y) {
