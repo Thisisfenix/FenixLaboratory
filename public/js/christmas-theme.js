@@ -549,8 +549,20 @@ class ChristmasTheme {
 
   showCharacterSelect() {
     if (!window.bossSystem) window.bossSystem = new BossFightSystem();
-    window.bossSystem.showDifficultySelect(() => {
-      this.showCharacterSelectInternal();
+    window.bossSystem.showDifficultySelect((mode) => {
+      if (mode === 'bossrush') {
+        if (window.BossRushMode) {
+          const bossRush = new BossRushMode(this);
+          bossRush.showCharacterSelect();
+        }
+      } else if (mode === 'infinite') {
+        if (window.InfiniteMode) {
+          const infinite = new InfiniteMode(this);
+          infinite.showCharacterSelect();
+        }
+      } else {
+        this.showCharacterSelectInternal();
+      }
     });
   }
 
@@ -639,7 +651,7 @@ class ChristmasTheme {
     const grid = document.createElement('div');
     grid.style.cssText = 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;';
     
-    const chars = ['AngelNormalIcon', 'GisselInactiveIcon', 'IA777NormalIcon', 'IrisNormalIcon', 'LunaNormalIcon', 'MollyNormalIcon', 'ankush'];
+    const chars = ['Angel', 'Gissel', 'iA777', 'Iris', 'Luna', 'Molly', 'ankush'];
     chars.forEach(char => {
       const tempEnhancements = new BossFightEnhancements();
       const stats = tempEnhancements.getCharacterStats(char);
@@ -649,7 +661,16 @@ class ChristmasTheme {
       container.style.cssText = 'text-align: center;';
       
       const img = document.createElement('img');
-      img.src = char === 'ankush' ? 'assets/icons/ankush.png' : `assets/icons/${char}.png`;
+      const iconMap = {
+        'Angel': 'AngelNormalIcon',
+        'Gissel': 'GisselInactiveIcon',
+        'iA777': 'IA777NormalIcon',
+        'Iris': 'IrisNormalIcon',
+        'Luna': 'LunaNormalIcon',
+        'Molly': 'MollyNormalIcon',
+        'ankush': 'ankush'
+      };
+      img.src = char === 'ankush' ? 'assets/icons/ankush.png' : `assets/icons/${iconMap[char]}.png`;
       img.style.cssText = 'width: 100px; height: 100px; cursor: pointer; border: 3px solid #fff; border-radius: 10px; transition: transform 0.3s;';
       img.addEventListener('mouseenter', () => img.style.transform = 'scale(1.1)');
       img.addEventListener('mouseleave', () => img.style.transform = 'scale(1)');
@@ -683,12 +704,12 @@ class ChristmasTheme {
       `;
       
       const tooltipContent = {
-        'AngelNormalIcon': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>${adjustedHP} HP | Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
-        'GisselInactiveIcon': `<b style="color: #FFD700;">💨 Evasión</b><br><br>${adjustedHP} HP | Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
-        'IA777NormalIcon': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>${adjustedHP} HP | IA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base<br>• Ideal para aguantar`,
-        'IrisNormalIcon': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>${adjustedHP} HP | Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
-        'LunaNormalIcon': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>${adjustedHP} HP | Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
-        'MollyNormalIcon': `<b style="color: #FFD700;">🔥 Furia</b><br><br>${adjustedHP} HP | Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`,
+        'Angel': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>${adjustedHP} HP | Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
+        'Gissel': `<b style="color: #FFD700;">💨 Evasión</b><br><br>${adjustedHP} HP | Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
+        'iA777': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>${adjustedHP} HP | iA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base<br>• Ideal para aguantar`,
+        'Iris': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>${adjustedHP} HP | Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
+        'Luna': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>${adjustedHP} HP | Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
+        'Molly': `<b style="color: #FFD700;">🔥 Furia</b><br><br>${adjustedHP} HP | Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`,
         'ankush': `<b style="color: #FFD700;">😂 Ankush</b><br><br>999 HP | El personaje más roto del juego. Literalmente imposible perder.<br><br>• 999 HP (inmortal básicamente)<br>• Velocidad x2 (zoom zoom)<br>• Daño x5 (one shot everything)<br>• Balas amarillas<br>• No leaderboard (obvio)`
       };
       
@@ -755,12 +776,12 @@ class ChristmasTheme {
       const stats = tempEnhancements.getCharacterStats(char);
       const adjustedHP = getAdjustedHP(stats.hp);
       const tooltipContent = {
-        'AngelNormalIcon': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>${adjustedHP} HP | Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
-        'GisselInactiveIcon': `<b style="color: #FFD700;">💨 Evasión</b><br><br>${adjustedHP} HP | Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
-        'IA777NormalIcon': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>${adjustedHP} HP | IA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base<br>• Ideal para aguantar`,
-        'IrisNormalIcon': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>${adjustedHP} HP | Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
-        'LunaNormalIcon': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>${adjustedHP} HP | Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
-        'MollyNormalIcon': `<b style="color: #FFD700;">🔥 Furia</b><br><br>${adjustedHP} HP | Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`,
+        'Angel': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>${adjustedHP} HP | Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
+        'Gissel': `<b style="color: #FFD700;">💨 Evasión</b><br><br>${adjustedHP} HP | Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
+        'iA777': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>${adjustedHP} HP | iA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base<br>• Ideal para aguantar`,
+        'Iris': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>${adjustedHP} HP | Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
+        'Luna': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>${adjustedHP} HP | Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
+        'Molly': `<b style="color: #FFD700;">🔥 Furia</b><br><br>${adjustedHP} HP | Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`,
         'ankush': `<b style="color: #FFD700;">😂 Ankush</b><br><br>999 HP | El personaje más roto del juego. Literalmente imposible perder.<br><br>• 999 HP (inmortal básicamente)<br>• Velocidad x2 (zoom zoom)<br>• Daño x5 (one shot everything)<br>• Balas amarillas<br>• No leaderboard (obvio)`
       };
       helpOverlay.innerHTML = `
@@ -867,11 +888,13 @@ class ChristmasTheme {
     document.getElementById('lobby').classList.remove('active');
     document.getElementById('game').classList.add('active');
     
-    const enhancements = new BossFightEnhancements();
-    enhancements.score = 0;
-    enhancements.scoreMultiplier = 1;
-    const charStats = enhancements.getCharacterStats(character);
+    const enhancements = window.bossSystem.enhancements || new BossFightEnhancements();
+    if (!window.bossSystem.enhancements) {
+      enhancements.score = 0;
+      enhancements.scoreMultiplier = 1;
+    }
     window.bossSystem.setEnhancements(enhancements);
+    const charStats = enhancements.getCharacterStats(character);
     
     const bossMusic = new Audio('abelitogordopanzon/AbelitoGordoPanzon bossfight.mp3');
     bossMusic.volume = 0.5;
@@ -894,8 +917,17 @@ class ChristmasTheme {
       canvas.height = window.innerHeight;
     }
     
-    const player = { x: 100, y: canvas.height / 2, size: 40, health: charStats.hp, maxHealth: charStats.hp, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0, slowTime: false, slowTimeTimer: 0, slowTimeCooldown: 0, healCooldown: 0, rapidFire: false, rapidFireTimer: 0, rapidFireCooldown: 0, shootCooldown: 0, invincible: false, invincibleTimer: 0, speedBoost: false, speedBoostTimer: 0, dashUsed: false, speed: charStats.speed, damageMultiplier: charStats.damage, ability: charStats.ability, angelShield: true, angelShieldCooldown: 0, regenTimer: 0 };
-    player.icon.src = `assets/icons/${character}.png`;
+    const player = { x: 100, y: canvas.height / 2, size: 40, health: charStats.hp, maxHealth: charStats.hp, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0, slowTime: false, slowTimeTimer: 0, slowTimeCooldown: 0, healCooldown: 0, rapidFire: false, rapidFireTimer: 0, rapidFireCooldown: 0, shootCooldown: 0, invincible: false, invincibleTimer: 0, speedBoost: false, speedBoostTimer: 0, doubleDamage: false, doubleDamageTimer: 0, slowMotion: false, slowMotionTimer: 0, dashUsed: false, speed: charStats.speed, damageMultiplier: charStats.damage, ability: charStats.ability, angelShield: true, angelShieldCooldown: 0, regenTimer: 0 };
+    const iconMap = {
+      'Angel': 'AngelNormalIcon',
+      'Gissel': 'GisselInactiveIcon',
+      'iA777': 'IA777NormalIcon',
+      'Iris': 'IrisNormalIcon',
+      'Luna': 'LunaNormalIcon',
+      'Molly': 'MollyNormalIcon',
+      'ankush': 'ankush'
+    };
+    player.icon.src = `assets/icons/${iconMap[character] || character}.png`;
     
     const boss = { 
       x: canvas.width + 100, 
@@ -916,11 +948,34 @@ class ChristmasTheme {
       telegraphTimer: 0,
       telegraphActive: false,
       telegraphType: null,
-      droppedPowerups: []
+      droppedPowerups: [],
+      isAnnaBoss: false,
+      isDevourerBoss: false
     };
-    boss.img.src = 'abelitogordopanzon/image.png';
     
-    window.bossSystem.applyDifficulty(boss, player);
+    if (window.bossSystem.bossRushMode && window.bossSystem.enhancements?.bossRush) {
+      const currentBoss = window.bossSystem.enhancements.bossRush.currentBoss;
+      if (currentBoss === 1) {
+        boss.img.src = 'abelitogordopanzon/Anna.png';
+        boss.isAnnaBoss = true;
+      } else if (currentBoss === 3) {
+        boss.img.src = 'assets/GIF_20251206_082647_448.gif';
+        boss.isDevourerBoss = true;
+      } else {
+        boss.img.src = 'abelitogordopanzon/image.png';
+      }
+    } else {
+      boss.img.src = 'abelitogordopanzon/image.png';
+    }
+    
+    if (window.bossSystem.infiniteMode && window.bossSystem.enhancements?.infiniteRound) {
+      const round = window.bossSystem.enhancements.infiniteRound;
+      boss.health = Math.floor(boss.maxHealth * (1 + round * 0.3));
+      boss.maxHealth = boss.health;
+      boss.dy *= (1 + round * 0.1);
+    } else {
+      window.bossSystem.applyDifficulty(boss, player);
+    }
     window.bossSystem.startRecording();
     
     const bullets = [];
@@ -933,6 +988,8 @@ class ChristmasTheme {
     let introTimer = 0;
     let lastTap = 0;
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    let isPaused = false;
+    let pauseOverlay = null;
     
     canvas.addEventListener('touchstart', e => {
       e.preventDefault();
@@ -1071,6 +1128,31 @@ class ChristmasTheme {
     };
     
     document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        isPaused = !isPaused;
+        if (isPaused) {
+          if (!pauseOverlay) {
+            pauseOverlay = document.createElement('div');
+            pauseOverlay.style.cssText = `
+              position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+              background: rgba(0,0,0,0.8); z-index: 10001;
+              display: flex; flex-direction: column; justify-content: center; align-items: center;
+            `;
+            pauseOverlay.innerHTML = `
+              <div style="color: #FFD700; font-size: 4rem; font-weight: bold;">PAUSA</div>
+              <div style="color: #fff; font-size: 1.5rem; margin-top: 20px;">Presiona ESC para continuar</div>
+            `;
+            document.body.appendChild(pauseOverlay);
+          }
+        } else {
+          if (pauseOverlay) {
+            pauseOverlay.remove();
+            pauseOverlay = null;
+          }
+        }
+        return;
+      }
+      
       if (e.key.startsWith('Arrow')) {
         e.preventDefault();
         if (e.key === 'ArrowUp') shootDir = { x: 0, y: -1 };
@@ -1253,7 +1335,7 @@ class ChristmasTheme {
       } else if (attack === 13) {
         abilityCooldowns.rain = 400;
         for (let i = 0; i < 15; i++) {
-          bossBullets.push({ x: Math.random() * canvas.width, y: -20, dx: 0, dy: 8, size: 10, warning: 60 });
+          bossBullets.push({ x: Math.random() * canvas.width, y: -50, dx: 0, dy: 8, size: 10, warning: 60 });
         }
       } else if (attack === 14) {
         abilityCooldowns.spiral = 380;
@@ -1268,6 +1350,11 @@ class ChristmasTheme {
     };
     
     const gameLoop = () => {
+      if (isPaused) {
+        requestAnimationFrame(gameLoop);
+        return;
+      }
+      
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
@@ -1297,10 +1384,12 @@ class ChristmasTheme {
       
       if (!boss.intro) {
         boss.attackTimer++;
-      const baseSpeed = window.bossSystem.difficulty === 'easy' ? 300 : window.bossSystem.difficulty === 'hard' ? 120 : window.bossSystem.difficulty === 'impossible' ? 100 : 180;
+      const baseSpeed = window.bossSystem.difficulty === 'easy' ? 400 : window.bossSystem.difficulty === 'hard' ? 150 : window.bossSystem.difficulty === 'impossible' ? 120 : 220;
       const attackSpeed = boss.phase === 3 ? (window.bossSystem.difficulty === 'easy' ? baseSpeed * 0.7 : window.bossSystem.difficulty === 'impossible' ? baseSpeed * 0.7 : baseSpeed / 2) : baseSpeed;
       if (boss.attackTimer > attackSpeed) {
-        if (boss.isDevourerBoss) {
+        if (boss.isAnnaBoss) {
+          enhancements.annaAttack(boss, bossBullets, player, canvas);
+        } else if (boss.isDevourerBoss) {
           enhancements.devourerAttack(boss, bossBullets, player, canvas);
         } else {
           bossAttack();
@@ -1312,7 +1401,11 @@ class ChristmasTheme {
         boss.phase = 2;
         boss.dy *= 1.5;
         triggerFear();
-        powerups.push({ x: player.x, y: player.y - 100, type: 'health', size: 20, dx: 0, dy: 3 });
+        isTransitioning = true;
+        enhancements.triggerScreenShake(25);
+        enhancements.createParticles(boss.x + boss.size/2, boss.y + boss.size/2, 50, '#ff0000');
+        setTimeout(() => isTransitioning = false, 1500);
+        powerups.push({ x: Math.random() * canvas.width, y: -50, type: 'health', size: 20, dx: 0, dy: 3 });
       }
       
       if (boss.health < 100 && boss.phase === 2) {
@@ -1321,17 +1414,28 @@ class ChristmasTheme {
         boss.dy *= phase3Mult;
         boss.attackTimer = window.bossSystem.difficulty === 'easy' ? 150 : window.bossSystem.difficulty === 'hard' ? 60 : window.bossSystem.difficulty === 'impossible' ? 50 : 90;
         triggerFear();
-        powerups.push({ x: player.x, y: player.y - 100, type: 'shield', size: 20, dx: 0, dy: 3 });
+        isTransitioning = true;
+        enhancements.triggerScreenShake(35);
+        enhancements.createParticles(boss.x + boss.size/2, boss.y + boss.size/2, 80, '#ff00ff');
+        setTimeout(() => isTransitioning = false, 2000);
+        powerups.push({ x: Math.random() * canvas.width, y: -50, type: 'shield', size: 20, dx: 0, dy: 3 });
       }
       
       if (Math.random() < 0.005 && boss.health < 400) {
-        powerups.push({ x: player.x, y: player.y - 100, type: 'triple', size: 20, dx: 0, dy: 3 });
+        powerups.push({ x: Math.random() * canvas.width, y: -50, type: 'triple', size: 20, dx: 0, dy: 3 });
       }
       
       if (Math.random() < 0.003 && boss.phase >= 2) {
-        const types = ['invincibility', 'bomb', 'speed'];
+        const types = ['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion'];
         const type = types[Math.floor(Math.random() * types.length)];
-        powerups.push(enhancements[type === 'invincibility' ? 'createInvincibilityPowerup' : type === 'bomb' ? 'createBombPowerup' : 'createSpeedPowerup'](player.x, player.y - 100));
+        const powerupFuncs = {
+          'invincibility': 'createInvincibilityPowerup',
+          'bomb': 'createBombPowerup',
+          'speed': 'createSpeedPowerup',
+          'double_damage': 'createDoubleDamagePowerup',
+          'slow_motion': 'createSlowMotionPowerup'
+        };
+        powerups.push(enhancements[powerupFuncs[type]](Math.random() * canvas.width, -50));
       }
       
       boss.shieldTimer++;
@@ -1359,6 +1463,7 @@ class ChristmasTheme {
           } else {
             const baseDmg = player.combo >= 15 ? 15 : 10;
             let dmgMult = player.damageMultiplier;
+            if (player.doubleDamage) dmgMult *= 2;
             if (player.ability === 'molly' && player.health < player.maxHealth * 0.5) dmgMult *= 1.5;
             const dmg = Math.floor(baseDmg * dmgMult);
             boss.health -= dmg;
@@ -1402,19 +1507,22 @@ class ChristmasTheme {
       
       bossBullets.forEach((b, i) => {
         if (b.type === 'blackhole') return;
-        const speed = player.slowTime ? 0.5 : 1;
+        const speed = player.slowMotion ? 0.3 : (player.slowTime ? 0.5 : 1);
         b.x += b.dx * speed;
         b.y += b.dy * speed;
         if (b.x < 0 || b.y < 0 || b.y > canvas.height) bossBullets.splice(i, 1);
-        if (b.x < player.x + player.size && b.x + b.size > player.x && 
-            b.y < player.y + player.size && b.y + b.size > player.y) {
+        const hitboxReduction = 5;
+        if (b.x + hitboxReduction < player.x + player.size - hitboxReduction && 
+            b.x + b.size - hitboxReduction > player.x + hitboxReduction && 
+            b.y + hitboxReduction < player.y + player.size - hitboxReduction && 
+            b.y + b.size - hitboxReduction > player.y + hitboxReduction) {
           if (!player.shield && !player.invincible) {
             if (player.ability === 'angel' && player.angelShield) {
               player.angelShield = false;
               player.angelShieldCooldown = 900;
               enhancements.createParticles(player.x, player.y, 20, '#FFD700');
             } else {
-              let dmg = window.bossSystem.difficulty === 'impossible' ? 25 : window.bossSystem.difficulty === 'hard' ? 25 : 20;
+              let dmg = window.bossSystem.difficulty === 'impossible' ? 20 : window.bossSystem.difficulty === 'hard' ? 18 : 15;
               if (player.ability === 'ia777') dmg = Math.floor(dmg * 0.7);
               player.health -= dmg;
               player.combo = 0;
@@ -1433,7 +1541,7 @@ class ChristmasTheme {
           if (p.type === 'health') player.health = Math.min(player.maxHealth, player.health + 30);
           if (p.type === 'shield') { player.shield = true; player.shieldTimer = 300; }
           if (p.type === 'triple') { player.tripleShot = true; player.tripleShotTimer = 300; }
-          if (['invincibility', 'bomb', 'speed'].includes(p.type)) {
+          if (['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion'].includes(p.type)) {
             enhancements.applyPowerupEffect(player, p, bossBullets);
           }
           powerups.splice(i, 1);
@@ -1451,6 +1559,8 @@ class ChristmasTheme {
       if (player.shootCooldown > 0) player.shootCooldown--;
       if (player.invincibleTimer > 0) { player.invincibleTimer--; if (player.invincibleTimer === 0) player.invincible = false; }
       if (player.speedBoostTimer > 0) { player.speedBoostTimer--; if (player.speedBoostTimer === 0) player.speedBoost = false; }
+      if (player.doubleDamageTimer > 0) { player.doubleDamageTimer--; if (player.doubleDamageTimer === 0) player.doubleDamage = false; }
+      if (player.slowMotionTimer > 0) { player.slowMotionTimer--; if (player.slowMotionTimer === 0) player.slowMotion = false; }
       if (player.angelShieldCooldown > 0) player.angelShieldCooldown--;
       if (player.ability === 'angel' && player.angelShieldCooldown === 0 && !player.angelShield) player.angelShield = true;
       if (player.ability === 'iris' && player.health < player.maxHealth) {
@@ -1566,7 +1676,7 @@ class ChristmasTheme {
       enhancements.drawWarnings(ctx, bossBullets);
       
       powerups.forEach(p => {
-        if (['invincibility', 'bomb', 'speed'].includes(p.type)) {
+        if (['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion'].includes(p.type)) {
           enhancements.drawPowerup(ctx, p);
         } else {
           ctx.fillStyle = p.type === 'health' ? '#0f0' : p.type === 'shield' ? '#0ff' : '#ff0';
@@ -1655,28 +1765,61 @@ class ChristmasTheme {
         ctx.fillText(`RAPID FIRE: ${Math.ceil(player.rapidFireTimer / 60)}s`, 20, 150);
       }
       
+      if (player.doubleDamage) {
+        ctx.fillStyle = '#f00';
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText(`DOUBLE DAMAGE: ${Math.ceil(player.doubleDamageTimer / 60)}s`, 20, 170);
+      }
+      
+      if (player.slowMotion) {
+        ctx.fillStyle = '#00f';
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText(`SLOW MOTION: ${Math.ceil(player.slowMotionTimer / 60)}s`, 20, 190);
+      }
+      
       ctx.fillStyle = '#fff';
       ctx.font = '12px Arial';
       let yPos = canvas.height - 60;
+      
+      // Barra Q
       if (player.slowTimeCooldown > 0) {
+        ctx.fillStyle = '#888';
+        ctx.fillRect(20, yPos - 10, 100, 8);
+        ctx.fillStyle = '#00f';
+        ctx.fillRect(20, yPos - 10, (1 - player.slowTimeCooldown / 900) * 100, 8);
+        ctx.fillStyle = '#fff';
         ctx.fillText(`Q: ${Math.ceil(player.slowTimeCooldown / 60)}s`, 20, yPos);
-        yPos -= 15;
+        yPos -= 20;
       } else {
         ctx.fillStyle = '#0ff';
         ctx.fillText('Q: SLOW TIME', 20, yPos);
         ctx.fillStyle = '#fff';
         yPos -= 15;
       }
+      
+      // Barra E
       if (player.healCooldown > 0) {
+        ctx.fillStyle = '#888';
+        ctx.fillRect(20, yPos - 10, 100, 8);
+        ctx.fillStyle = '#0f0';
+        ctx.fillRect(20, yPos - 10, (1 - player.healCooldown / 720) * 100, 8);
+        ctx.fillStyle = '#fff';
         ctx.fillText(`E: ${Math.ceil(player.healCooldown / 60)}s`, 20, yPos);
-        yPos -= 15;
+        yPos -= 20;
       } else {
         ctx.fillStyle = '#0f0';
         ctx.fillText('E: HEAL', 20, yPos);
         ctx.fillStyle = '#fff';
         yPos -= 15;
       }
+      
+      // Barra R
       if (player.rapidFireCooldown > 0) {
+        ctx.fillStyle = '#888';
+        ctx.fillRect(20, yPos - 10, 100, 8);
+        ctx.fillStyle = '#f0f';
+        ctx.fillRect(20, yPos - 10, (1 - player.rapidFireCooldown / 720) * 100, 8);
+        ctx.fillStyle = '#fff';
         ctx.fillText(`R: ${Math.ceil(player.rapidFireCooldown / 60)}s`, 20, yPos);
       } else {
         ctx.fillStyle = '#f0f';
@@ -1802,142 +1945,6 @@ class ChristmasTheme {
         if (!window.bossSystem.damageTaken) {
           window.bossSystem.damageTaken = player.maxHealth - player.health;
         }
-        
-        if (window.bossSystem.infiniteMode) {
-          isTransitioning = true;
-          const roundOverlay = document.createElement('div');
-          roundOverlay.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.9); z-index: 10002;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-          `;
-          roundOverlay.innerHTML = `
-            <div style="color: #0f0; font-size: 4rem; font-weight: bold;">¡RONDA ${enhancements.infiniteRound} COMPLETADA!</div>
-            <div style="color: #fff; font-size: 2rem; margin-top: 20px;">Preparando Ronda ${enhancements.infiniteRound + 1}...</div>
-            <div style="color: #0ff; font-size: 1.5rem; margin-top: 10px;">+50 HP</div>
-          `;
-          document.body.appendChild(roundOverlay);
-          
-          setTimeout(() => {
-            roundOverlay.remove();
-            enhancements.infiniteRound++;
-            
-            boss.maxHealth = Math.floor(500 * (1 + enhancements.infiniteRound * 0.3));
-            boss.health = boss.maxHealth;
-            boss.dy = 2 * Math.pow(1.1, enhancements.infiniteRound);
-            boss.phase = 1;
-            boss.intro = true;
-            boss.x = canvas.width + 100;
-            boss.y = -100;
-            boss.targetX = canvas.width - 150;
-            boss.targetY = 50;
-            boss.attackTimer = 0;
-            boss.shield = 0;
-            boss.shieldTimer = 0;
-            boss.telegraphTimer = 0;
-            boss.telegraphActive = false;
-            
-            introTimer = 0;
-            bossBullets.length = 0;
-            bossMinions.length = 0;
-            powerups.length = 0;
-            bullets.length = 0;
-            
-            Object.keys(abilityCooldowns).forEach(key => abilityCooldowns[key] = 0);
-            
-            player.health = Math.min(player.maxHealth, player.health + 50);
-            player.shield = false;
-            player.shieldTimer = 0;
-            player.tripleShot = false;
-            player.tripleShotTimer = 0;
-            player.slowTime = false;
-            player.slowTimeTimer = 0;
-            player.rapidFire = false;
-            player.rapidFireTimer = 0;
-            player.invincible = false;
-            player.invincibleTimer = 0;
-            player.speedBoost = false;
-            player.speedBoostTimer = 0;
-            player.combo = 0;
-            
-            isTransitioning = false;
-            bossMusic.play().catch(() => {});
-            requestAnimationFrame(gameLoop);
-          }, 2000);
-          return;
-        } else if (window.bossSystem.bossRushMode && enhancements.bossRush) {
-          const continueRush = enhancements.nextBossRush(enhancements.bossRush, boss);
-          if (continueRush) {
-            isTransitioning = true;
-            const bossNames = ['Abelito Gordo Panzón', 'Santa Molly', 'Krampus', 'El Devorador'];
-            const currentBossNum = enhancements.bossRush.currentBoss;
-            
-            const rushOverlay = document.createElement('div');
-            rushOverlay.style.cssText = `
-              position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-              background: rgba(0,0,0,0.9); z-index: 10002;
-              display: flex; flex-direction: column; justify-content: center; align-items: center;
-            `;
-            rushOverlay.innerHTML = `
-              <div style="color: #0f0; font-size: 4rem; font-weight: bold;">¡BOSS ${currentBossNum} DERROTADO!</div>
-              <div style="color: #fff; font-size: 2rem; margin-top: 20px;">Siguiente: ${bossNames[currentBossNum]} (${currentBossNum + 1}/4)</div>
-              <div style="color: #f0f; font-size: 1.5rem; margin-top: 10px;">🔥 BOSS RUSH 🔥</div>
-            `;
-            document.body.appendChild(rushOverlay);
-            
-            setTimeout(() => {
-              rushOverlay.remove();
-              
-              boss.maxHealth = enhancements.bossRush.bosses[currentBossNum].health;
-              boss.health = boss.maxHealth;
-              boss.dy = 2;
-              boss.phase = 1;
-              boss.intro = true;
-              boss.x = canvas.width + 100;
-              boss.y = -100;
-              boss.targetX = canvas.width - 150;
-              boss.targetY = 50;
-              boss.attackTimer = 0;
-              boss.shield = 0;
-              boss.shieldTimer = 0;
-              boss.telegraphTimer = 0;
-              boss.telegraphActive = false;
-              boss.isDevourerBoss = false;
-              
-              if (currentBossNum === 3) {
-                boss.img.src = 'assets/GIF_20251206_082647_448.gif';
-                boss.isDevourerBoss = true;
-              }
-              
-              introTimer = 0;
-              bossBullets.length = 0;
-              bossMinions.length = 0;
-              powerups.length = 0;
-              bullets.length = 0;
-              
-              Object.keys(abilityCooldowns).forEach(key => abilityCooldowns[key] = 0);
-              
-              player.shield = false;
-              player.shieldTimer = 0;
-              player.tripleShot = false;
-              player.tripleShotTimer = 0;
-              player.slowTime = false;
-              player.slowTimeTimer = 0;
-              player.rapidFire = false;
-              player.rapidFireTimer = 0;
-              player.invincible = false;
-              player.invincibleTimer = 0;
-              player.speedBoost = false;
-              player.speedBoostTimer = 0;
-              player.combo = 0;
-              
-              isTransitioning = false;
-              bossMusic.play().catch(() => {});
-              requestAnimationFrame(gameLoop);
-            }, 2000);
-            return;
-          }
-        }
       }
       
       if (isTransitioning) {
@@ -1953,6 +1960,58 @@ class ChristmasTheme {
         bossMusic.currentTime = 0;
         const won = boss.health <= 0;
         
+        if (won && boss.isAnnaBoss) {
+          for (let i = 0; i < 30; i++) {
+            const angle = (Math.PI * 2 / 30) * i;
+            bossBullets.push({ x: boss.x + boss.size/2, y: boss.y + boss.size/2, dx: Math.cos(angle) * 8, dy: Math.sin(angle) * 8, size: 15 });
+          }
+          enhancements.triggerScreenShake(30);
+          enhancements.createParticles(boss.x, boss.y, 100, '#ff0000');
+          
+          let explosionFrames = 0;
+          const explosionLoop = () => {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.drawImage(player.icon, player.x, player.y, player.size, player.size);
+            ctx.drawImage(boss.img, boss.x, boss.y, boss.size, boss.size);
+            
+            bossBullets.forEach((b, i) => {
+              b.x += b.dx;
+              b.y += b.dy;
+              if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+                bossBullets.splice(i, 1);
+              }
+            });
+            
+            ctx.fillStyle = '#f00';
+            bossBullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
+            
+            enhancements.updateParticles();
+            enhancements.updateScreenShake();
+            ctx.save();
+            enhancements.applyScreenShake(ctx);
+            enhancements.drawParticles(ctx);
+            ctx.restore();
+            
+            explosionFrames++;
+            if (explosionFrames < 60) {
+              requestAnimationFrame(explosionLoop);
+            } else {
+              ctx.fillStyle = '#0f0';
+              ctx.font = '60px Arial';
+              ctx.textAlign = 'center';
+              ctx.fillText('¡GANASTE!', canvas.width/2, canvas.height/2);
+              
+              localStorage.setItem('bossDefeated', 'true');
+              if (this.leaderboardBtn) this.leaderboardBtn.style.display = 'inline-block';
+              setTimeout(() => this.showVictoryScreen(character, boss), 2000);
+            }
+          };
+          explosionLoop();
+          return;
+        }
+        
         if (won) {
           if (!window.bossSystem.damageTaken) {
             window.bossSystem.damageTaken = player.maxHealth - player.health;
@@ -1965,11 +2024,33 @@ class ChristmasTheme {
           
           localStorage.setItem('bossDefeated', 'true');
           if (this.leaderboardBtn) this.leaderboardBtn.style.display = 'inline-block';
-          setTimeout(() => this.showVictoryScreen(character), 2000);
+          setTimeout(() => this.showVictoryScreen(character, boss), 2000);
         } else {
           const loseSound = new Audio('assets/deathsound.mp3');
           loseSound.volume = 0.5;
           loseSound.play().catch(() => {});
+          
+          if (window.bossSystem.infiniteMode) {
+            const enhancements = window.bossSystem.enhancements;
+            const survivalTime = ((Date.now() - enhancements.infiniteStartTime) / 1000).toFixed(2);
+            
+            ctx.fillStyle = '#f00';
+            ctx.font = '60px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('¡GAME OVER!', canvas.width/2, canvas.height/2 - 100);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = '30px Arial';
+            ctx.fillText(`Ronda: ${enhancements.infiniteRound}`, canvas.width/2, canvas.height/2);
+            ctx.fillText(`Tiempo: ${survivalTime}s`, canvas.width/2, canvas.height/2 + 50);
+            ctx.fillText(`Score: ${enhancements.score}`, canvas.width/2, canvas.height/2 + 100);
+            
+            setTimeout(() => {
+              document.getElementById('game').classList.remove('active');
+              document.getElementById('lobby').classList.add('active');
+            }, 5000);
+            return;
+          }
           
           ctx.fillStyle = '#f00';
           ctx.font = '60px Arial';
@@ -1977,13 +2058,38 @@ class ChristmasTheme {
           ctx.fillText('¡PERDISTE!', canvas.width/2, canvas.height/2);
           
           setTimeout(() => {
-            const restartBtn = document.createElement('button');
-            restartBtn.textContent = 'REINTENTAR';
-            restartBtn.style.cssText = `
+            const btnContainer = document.createElement('div');
+            btnContainer.style.cssText = `
               position: fixed;
               top: 60%;
               left: 50%;
               transform: translateX(-50%);
+              display: flex;
+              gap: 20px;
+              z-index: 10002;
+            `;
+            
+            const retryBtn = document.createElement('button');
+            retryBtn.textContent = 'REINTENTAR';
+            retryBtn.style.cssText = `
+              background: #0f0;
+              color: #000;
+              font-weight: bold;
+              padding: 15px 40px;
+              border: none;
+              border-radius: 10px;
+              cursor: pointer;
+              font-size: 1.5rem;
+            `;
+            retryBtn.addEventListener('click', () => {
+              btnContainer.remove();
+              video.remove();
+              this.startBossFight(character);
+            });
+            
+            const restartBtn = document.createElement('button');
+            restartBtn.textContent = 'LOBBY';
+            restartBtn.style.cssText = `
               background: #ffd700;
               color: #000;
               font-weight: bold;
@@ -1992,17 +2098,20 @@ class ChristmasTheme {
               border-radius: 10px;
               cursor: pointer;
               font-size: 1.5rem;
-              z-index: 10002;
             `;
             restartBtn.addEventListener('click', () => {
-              restartBtn.remove();
+              btnContainer.remove();
               video.remove();
               this.showCharacterSelect();
             });
-            document.body.appendChild(restartBtn);
+            
+            btnContainer.appendChild(retryBtn);
+            btnContainer.appendChild(restartBtn);
+            document.body.appendChild(btnContainer);
             
             const video = document.createElement('video');
-            video.src = 'abelitogordopanzon/estamal.mp4';
+            const videos = ['abelitogordopanzon/estamal.mp4', 'abelitogordopanzon/lv_0_20251125062445.mp4', 'abelitogordopanzon/eyes.mp4'];
+            video.src = videos[Math.floor(Math.random() * videos.length)];
             video.autoplay = true;
             video.style.cssText = `
               position: fixed;
@@ -2023,7 +2132,24 @@ class ChristmasTheme {
     gameLoop();
   }
 
-  showVictoryScreen(character) {
+  showVictoryScreen(character, bossRef) {
+    if (window.bossSystem.infiniteMode) {
+      const enhancements = window.bossSystem.enhancements;
+      enhancements.infiniteRound++;
+      setTimeout(() => this.startBossFight(character), 2000);
+      return;
+    }
+    
+    if (window.bossSystem.bossRushMode && window.bossSystem.enhancements?.bossRush) {
+      const enhancements = window.bossSystem.enhancements;
+      const hasNext = enhancements.nextBossRush(enhancements.bossRush, bossRef || { health: 500, maxHealth: 500, dy: 2, img: new Image() });
+      
+      if (hasNext) {
+        setTimeout(() => this.startBossFight(character), 2000);
+        return;
+      }
+    }
+    
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
@@ -2047,11 +2173,10 @@ class ChristmasTheme {
     const time = ((Date.now() - window.bossSystem.startTime) / 1000).toFixed(2);
     const stats = document.createElement('div');
     stats.style.cssText = 'color: #fff; font-size: 1.5rem; text-align: center;';
-    const diffDisplay = window.bossSystem.infiniteMode ? `INFINITO ♾️ (Ronda ${enhancements.infiniteRound})` : window.bossSystem.bossRushMode ? 'BOSS RUSH 🔥' : window.bossSystem.difficulty.toUpperCase();
     stats.innerHTML = `
       <div>Tiempo: ${time}s</div>
       <div>Daño recibido: ${window.bossSystem.damageTaken}</div>
-      <div>Dificultad: ${diffDisplay}</div>
+      <div>Dificultad: ${window.bossSystem.difficulty.toUpperCase()}</div>
       ${window.bossSystem.damageTaken === 0 ? '<div style="color: #ffd700; font-weight: bold; margin-top: 10px;">🏆 ¡SIN DAÑO! 🏆</div>' : ''}
     `;
     
@@ -2087,11 +2212,7 @@ class ChristmasTheme {
         document.getElementById('game').classList.remove('active');
         document.getElementById('lobby').classList.add('active');
       } else if (nameInput.value.trim()) {
-        const actualDiff = window.bossSystem.infiniteMode ? 'infinite' : window.bossSystem.bossRushMode ? 'bossrush' : window.bossSystem.difficulty;
-        const originalDiff = window.bossSystem.difficulty;
-        window.bossSystem.difficulty = actualDiff;
         await window.bossSystem.saveReplay(nameInput.value.trim(), character, true);
-        window.bossSystem.difficulty = originalDiff;
         overlay.remove();
         window.bossSystem.showLeaderboard();
       }

@@ -46,15 +46,18 @@ class BossFightSystem {
     this.startTime = Date.now();
     this.damageTaken = 0;
     this.maxHealthRecorded = 0;
+    this.peakHealth = 0;
   }
 
   recordFrame(player, boss, bullets, bossBullets, powerups) {
     if (!this.maxHealthRecorded) {
       this.maxHealthRecorded = player.maxHealth;
+      this.peakHealth = player.health;
     }
-    if (player.health < this.maxHealthRecorded) {
-      this.damageTaken = this.maxHealthRecorded - player.health;
+    if (player.health > this.peakHealth) {
+      this.peakHealth = player.health;
     }
+    this.damageTaken = this.peakHealth - player.health;
     this.recording.push({
       t: Date.now() - this.startTime,
       p: { x: player.x, y: player.y, h: player.health },
@@ -228,6 +231,8 @@ class BossFightSystem {
       btn.addEventListener('mouseleave', () => btn.style.transform = 'scale(1)');
       btn.addEventListener('click', () => {
         this.difficulty = diff.name;
+        this.bossRushMode = false;
+        this.infiniteMode = false;
         overlay.remove();
         callback();
       });
@@ -259,12 +264,9 @@ class BossFightSystem {
     `;
     bossRushBtn.addEventListener('click', () => {
       this.bossRushMode = true;
-      this.difficulty = 'hard';
+      this.difficulty = 'bossrush';
       overlay.remove();
-      if (this.enhancements) {
-        this.enhancements.bossRush = this.enhancements.initBossRush();
-      }
-      callback();
+      callback('bossrush');
     });
     overlay.appendChild(bossRushBtn);
     
@@ -284,12 +286,9 @@ class BossFightSystem {
     `;
     infiniteBtn.addEventListener('click', () => {
       this.infiniteMode = true;
-      this.difficulty = 'hard';
+      this.difficulty = 'infinite';
       overlay.remove();
-      if (this.enhancements) {
-        this.enhancements.infiniteRound = 1;
-      }
-      callback();
+      callback('infinite');
     });
     overlay.appendChild(infiniteBtn);
 
@@ -331,16 +330,16 @@ class BossFightSystem {
     title.style.cssText = 'color: #FFD700; font-size: 3rem; font-weight: bold; margin: 20px;';
 
     const tabs = document.createElement('div');
-    tabs.style.cssText = 'display: flex; gap: 10px; margin: 20px;';
+    tabs.style.cssText = 'display: flex; gap: 10px; margin: 20px; flex-wrap: wrap; justify-content: center;';
 
     ['easy', 'normal', 'hard', 'impossible', 'bossrush', 'infinite'].forEach(diff => {
       const tab = document.createElement('button');
-      tab.textContent = diff === 'bossrush' ? '🔥 BOSS RUSH' : diff === 'infinite' ? '♾️ INFINITO' : diff.toUpperCase();
+      tab.textContent = diff.toUpperCase();
       tab.style.cssText = `
-        background: ${diff === 'normal' ? '#ff0' : diff === 'bossrush' ? 'linear-gradient(45deg, #f00, #f0f)' : diff === 'infinite' ? 'linear-gradient(45deg, #00f, #0ff)' : '#333'};
+        background: ${diff === 'normal' ? '#ff0' : '#333'};
         color: ${diff === 'normal' ? '#000' : '#fff'};
         padding: 10px 20px;
-        border: ${diff === 'bossrush' || diff === 'infinite' ? '2px solid #ffd700' : 'none'};
+        border: none;
         border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
@@ -349,20 +348,11 @@ class BossFightSystem {
         tabs.querySelectorAll('button').forEach(b => {
           b.style.background = '#333';
           b.style.color = '#fff';
-          b.style.border = 'none';
         });
-        if (diff === 'bossrush') {
-          tab.style.background = 'linear-gradient(45deg, #f00, #f0f)';
-          tab.style.border = '2px solid #ffd700';
-        } else if (diff === 'infinite') {
-          tab.style.background = 'linear-gradient(45deg, #00f, #0ff)';
-          tab.style.border = '2px solid #ffd700';
-        } else {
-          tab.style.background = '#ff0';
-        }
-        tab.style.color = diff === 'bossrush' || diff === 'infinite' ? '#fff' : '#000';
+        tab.style.background = '#ff0';
+        tab.style.color = '#000';
         const data = await this.getLeaderboard(diff);
-        updateTable(data, diff === 'bossrush');
+        updateTable(data, diff);
       });
       tabs.appendChild(tab);
     });
@@ -370,8 +360,11 @@ class BossFightSystem {
     const table = document.createElement('div');
     table.style.cssText = 'background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; min-width: 600px;';
 
-    const updateTable = (data, isBossRush = false) => {
-      if (isBossRush) {
+    const updateTable = (data, mode = 'normal') => {
+      const isBossRush = mode === 'bossrush';
+      const isInfinite = mode === 'infinite';
+      
+      if (isBossRush || isInfinite) {
         table.innerHTML = `
           <div style="display: grid; grid-template-columns: 50px 200px 150px 150px 100px; gap: 10px; color: #fff; font-weight: bold; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
             <div>#</div>
@@ -470,6 +463,11 @@ class BossFightSystem {
   }
 
   applyDifficulty(boss, player) {
+    if (this.bossRushMode || this.difficulty === 'bossrush') {
+      this.maxHealthRecorded = player.maxHealth;
+      return;
+    }
+    
     const mult = this.getDifficultyMultiplier();
     boss.health = Math.floor(boss.maxHealth * mult);
     boss.maxHealth = boss.health;
