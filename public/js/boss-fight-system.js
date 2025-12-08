@@ -45,9 +45,13 @@ class BossFightSystem {
     this.recording = [];
     this.startTime = Date.now();
     this.damageTaken = 0;
+    this.maxHealthRecorded = 0;
   }
 
   recordFrame(player, boss, bullets, bossBullets, powerups) {
+    if (this.maxHealthRecorded && player.health < this.maxHealthRecorded) {
+      this.damageTaken = this.maxHealthRecorded - player.health;
+    }
     this.recording.push({
       t: Date.now() - this.startTime,
       p: { x: player.x, y: player.y, h: player.health },
@@ -278,14 +282,14 @@ class BossFightSystem {
     const tabs = document.createElement('div');
     tabs.style.cssText = 'display: flex; gap: 10px; margin: 20px;';
 
-    ['easy', 'normal', 'hard', 'impossible'].forEach(diff => {
+    ['easy', 'normal', 'hard', 'impossible', 'bossrush'].forEach(diff => {
       const tab = document.createElement('button');
-      tab.textContent = diff.toUpperCase();
+      tab.textContent = diff === 'bossrush' ? '🔥 BOSS RUSH' : diff.toUpperCase();
       tab.style.cssText = `
-        background: ${diff === 'normal' ? '#ff0' : '#333'};
+        background: ${diff === 'normal' ? '#ff0' : diff === 'bossrush' ? 'linear-gradient(45deg, #f00, #f0f)' : '#333'};
         color: ${diff === 'normal' ? '#000' : '#fff'};
         padding: 10px 20px;
-        border: none;
+        border: ${diff === 'bossrush' ? '2px solid #ffd700' : 'none'};
         border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
@@ -294,11 +298,17 @@ class BossFightSystem {
         tabs.querySelectorAll('button').forEach(b => {
           b.style.background = '#333';
           b.style.color = '#fff';
+          b.style.border = 'none';
         });
-        tab.style.background = '#ff0';
-        tab.style.color = '#000';
+        if (diff === 'bossrush') {
+          tab.style.background = 'linear-gradient(45deg, #f00, #f0f)';
+          tab.style.border = '2px solid #ffd700';
+        } else {
+          tab.style.background = '#ff0';
+        }
+        tab.style.color = diff === 'bossrush' ? '#fff' : '#000';
         const data = await this.getLeaderboard(diff);
-        updateTable(data);
+        updateTable(data, diff === 'bossrush');
       });
       tabs.appendChild(tab);
     });
@@ -306,37 +316,70 @@ class BossFightSystem {
     const table = document.createElement('div');
     table.style.cssText = 'background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; min-width: 600px;';
 
-    const updateTable = (data) => {
-      table.innerHTML = `
-        <div style="display: grid; grid-template-columns: 50px 200px 150px 100px 100px 100px; gap: 10px; color: #fff; font-weight: bold; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
-          <div>#</div>
-          <div>JUGADOR</div>
-          <div>PERSONAJE</div>
-          <div>TIEMPO</div>
-          <div>DAÑO</div>
-          <div>SCORE</div>
-        </div>
-      `;
+    const updateTable = (data, isBossRush = false) => {
+      if (isBossRush) {
+        table.innerHTML = `
+          <div style="display: grid; grid-template-columns: 50px 200px 150px 150px 100px; gap: 10px; color: #fff; font-weight: bold; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
+            <div>#</div>
+            <div>JUGADOR</div>
+            <div>PERSONAJE</div>
+            <div>TIEMPO</div>
+            <div>SCORE</div>
+          </div>
+        `;
+      } else {
+        table.innerHTML = `
+          <div style="display: grid; grid-template-columns: 50px 200px 150px 100px 100px 100px; gap: 10px; color: #fff; font-weight: bold; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
+            <div>#</div>
+            <div>JUGADOR</div>
+            <div>PERSONAJE</div>
+            <div>TIEMPO</div>
+            <div>DAÑO</div>
+            <div>SCORE</div>
+          </div>
+        `;
+      }
       data.forEach((row, i) => {
         const rowDiv = document.createElement('div');
-        rowDiv.style.cssText = `
-          display: grid;
-          grid-template-columns: 50px 200px 150px 100px 100px 100px;
-          gap: 10px;
-          color: ${i < 3 ? '#ffd700' : '#fff'};
-          padding: 10px 0;
-          border-bottom: 1px solid #333;
-          cursor: pointer;
-        `;
         const cleanChar = row.character.replace('NormalIcon', '').replace('InactiveIcon', '');
-        rowDiv.innerHTML = `
-          <div>${i + 1}</div>
-          <div>${row.player_name}</div>
-          <div>${cleanChar}</div>
-          <div>${row.time.toFixed(2)}s ${row.no_damage ? '🏆' : ''}</div>
-          <div>${row.damage_taken}</div>
-          <div>${row.score || 0}</div>
-        `;
+        
+        if (isBossRush) {
+          rowDiv.style.cssText = `
+            display: grid;
+            grid-template-columns: 50px 200px 150px 150px 100px;
+            gap: 10px;
+            color: ${i < 3 ? '#ffd700' : '#fff'};
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+          `;
+          rowDiv.innerHTML = `
+            <div>${i + 1}</div>
+            <div>${row.player_name}</div>
+            <div>${cleanChar}</div>
+            <div>${row.time.toFixed(2)}s 🔥</div>
+            <div>${row.score || 0}</div>
+          `;
+        } else {
+          rowDiv.style.cssText = `
+            display: grid;
+            grid-template-columns: 50px 200px 150px 100px 100px 100px;
+            gap: 10px;
+            color: ${i < 3 ? '#ffd700' : '#fff'};
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+          `;
+          rowDiv.innerHTML = `
+            <div>${i + 1}</div>
+            <div>${row.player_name}</div>
+            <div>${cleanChar}</div>
+            <div>${row.time.toFixed(2)}s ${row.no_damage ? '🏆' : ''}</div>
+            <div>${row.damage_taken}</div>
+            <div>${row.score || 0}</div>
+          `;
+        }
+        
         rowDiv.addEventListener('click', () => this.playReplay(row.id || i));
         table.appendChild(rowDiv);
       });
@@ -393,6 +436,8 @@ class BossFightSystem {
       player.maxHealth = Math.floor(baseHP * 0.7);
       player.health = player.maxHealth;
     }
+    
+    this.maxHealthRecorded = player.maxHealth;
   }
   
   setEnhancements(enhancements) {

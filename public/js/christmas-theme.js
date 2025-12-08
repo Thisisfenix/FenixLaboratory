@@ -873,8 +873,19 @@ class ChristmasTheme {
     
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    
+    const maxAspectRatio = 21 / 9;
+    const currentAspectRatio = window.innerWidth / window.innerHeight;
+    
+    if (currentAspectRatio > maxAspectRatio) {
+      canvas.height = window.innerHeight;
+      canvas.width = Math.floor(canvas.height * maxAspectRatio);
+      canvas.style.margin = '0 auto';
+      canvas.style.display = 'block';
+    } else {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
     
     const player = { x: 100, y: canvas.height / 2, size: 40, health: charStats.hp, maxHealth: charStats.hp, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0, slowTime: false, slowTimeTimer: 0, slowTimeCooldown: 0, healCooldown: 0, rapidFire: false, rapidFireTimer: 0, rapidFireCooldown: 0, shootCooldown: 0, invincible: false, invincibleTimer: 0, speedBoost: false, speedBoostTimer: 0, dashUsed: false, speed: charStats.speed, damageMultiplier: charStats.damage, ability: charStats.ability, angelShield: true, angelShieldCooldown: 0, regenTimer: 0 };
     player.icon.src = `assets/icons/${character}.png`;
@@ -1106,7 +1117,8 @@ class ChristmasTheme {
       setTimeout(() => fearEffect = false, 1500);
     };
     
-    const abilityCooldowns = { spread: 0, dash: 0, fear: 0, aimed: 0, teleport: 0, triple: 0, circle: 0 };
+    const abilityCooldowns = { spread: 0, dash: 0, fear: 0, aimed: 0, teleport: 0, triple: 0, circle: 0, wave: 0, cross: 0, homing: 0, heal: 0, summon: 0, laser: 0, rain: 0, spiral: 0 };
+    let bossMinions = [];
     
     const bossAttack = () => {
       const available = [];
@@ -1117,6 +1129,14 @@ class ChristmasTheme {
       if (abilityCooldowns.teleport === 0) available.push(4);
       if (abilityCooldowns.triple === 0) available.push(5);
       if (boss.phase === 3 && abilityCooldowns.circle === 0) available.push(6);
+      if (boss.phase >= 2 && abilityCooldowns.wave === 0) available.push(7);
+      if (boss.phase >= 2 && abilityCooldowns.cross === 0) available.push(8);
+      if (boss.phase === 3 && abilityCooldowns.homing === 0) available.push(9);
+      if (boss.phase >= 2 && boss.health < boss.maxHealth * 0.5 && abilityCooldowns.heal === 0) available.push(10);
+      if (boss.phase === 3 && abilityCooldowns.summon === 0) available.push(11);
+      if (boss.phase >= 2 && abilityCooldowns.laser === 0) available.push(12);
+      if (boss.phase >= 2 && abilityCooldowns.rain === 0) available.push(13);
+      if (boss.phase === 3 && abilityCooldowns.spiral === 0) available.push(14);
       
       if (available.length === 0) return;
       const attack = available[Math.floor(Math.random() * available.length)];
@@ -1178,6 +1198,64 @@ class ChristmasTheme {
           }
           boss.telegraphActive = false;
         }, 1000);
+      } else if (attack === 7) {
+        abilityCooldowns.wave = 250;
+        for (let i = 0; i < 10; i++) {
+          bossBullets.push({ x: boss.x, y: boss.y + boss.size/2, dx: -6, dy: Math.sin(i * 0.5) * 3, size: 12 });
+        }
+      } else if (attack === 8) {
+        abilityCooldowns.cross = 300;
+        const directions = [{x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}, {x: 1, y: 1}, {x: -1, y: 1}, {x: 1, y: -1}, {x: -1, y: -1}];
+        directions.forEach(dir => {
+          bossBullets.push({ x: boss.x + boss.size/2, y: boss.y + boss.size/2, dx: dir.x * 7, dy: dir.y * 7, size: 14 });
+        });
+      } else if (attack === 9) {
+        abilityCooldowns.homing = 320;
+        for (let i = 0; i < 5; i++) {
+          const angle = Math.atan2(player.y - boss.y, player.x - boss.x) + (Math.random() - 0.5) * 0.5;
+          bossBullets.push({ x: boss.x + boss.size/2, y: boss.y + boss.size/2, dx: Math.cos(angle) * 6, dy: Math.sin(angle) * 6, size: 10 });
+        }
+      } else if (attack === 10) {
+        abilityCooldowns.heal = 600;
+        const healAmount = Math.floor(boss.maxHealth * 0.1);
+        boss.health = Math.min(boss.maxHealth, boss.health + healAmount);
+        enhancements.createParticles(boss.x + boss.size/2, boss.y + boss.size/2, 30, '#0f0');
+        enhancements.triggerScreenShake(10);
+      } else if (attack === 11) {
+        abilityCooldowns.summon = 500;
+        for (let i = 0; i < 3; i++) {
+          bossMinions.push({
+            x: boss.x + (i - 1) * 60,
+            y: boss.y + 100,
+            size: 30,
+            health: 30,
+            dx: (Math.random() - 0.5) * 2,
+            dy: Math.random() * 2 + 1,
+            shootTimer: 0
+          });
+        }
+        enhancements.createParticles(boss.x, boss.y, 50, '#f0f');
+      } else if (attack === 12) {
+        abilityCooldowns.laser = 350;
+        enhancements.triggerScreenShake(15);
+        const laserY = boss.y + boss.size / 2;
+        for (let i = 0; i < 20; i++) {
+          bossBullets.push({ x: canvas.width, y: laserY + (Math.random() - 0.5) * 10, dx: -15, dy: 0, size: 8 });
+        }
+      } else if (attack === 13) {
+        abilityCooldowns.rain = 400;
+        for (let i = 0; i < 15; i++) {
+          bossBullets.push({ x: Math.random() * canvas.width, y: -20, dx: 0, dy: 8, size: 10, warning: 60 });
+        }
+      } else if (attack === 14) {
+        abilityCooldowns.spiral = 380;
+        const spirals = 3;
+        for (let s = 0; s < spirals; s++) {
+          for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 / 8) * i + (s * Math.PI / 3);
+            bossBullets.push({ x: boss.x + boss.size/2, y: boss.y + boss.size/2, dx: Math.cos(angle) * 5, dy: Math.sin(angle) * 5, size: 10 });
+          }
+        }
       }
     };
     
@@ -1208,8 +1286,8 @@ class ChristmasTheme {
       
       if (!boss.intro) {
         boss.attackTimer++;
-      const baseSpeed = window.bossSystem.difficulty === 'easy' ? 300 : window.bossSystem.difficulty === 'hard' ? 120 : window.bossSystem.difficulty === 'impossible' ? 80 : 180;
-      const attackSpeed = boss.phase === 3 ? (window.bossSystem.difficulty === 'easy' ? baseSpeed * 0.7 : baseSpeed / 2) : baseSpeed;
+      const baseSpeed = window.bossSystem.difficulty === 'easy' ? 300 : window.bossSystem.difficulty === 'hard' ? 120 : window.bossSystem.difficulty === 'impossible' ? 100 : 180;
+      const attackSpeed = boss.phase === 3 ? (window.bossSystem.difficulty === 'easy' ? baseSpeed * 0.7 : window.bossSystem.difficulty === 'impossible' ? baseSpeed * 0.7 : baseSpeed / 2) : baseSpeed;
       if (boss.attackTimer > attackSpeed) {
         bossAttack();
         boss.attackTimer = 0;
@@ -1219,20 +1297,26 @@ class ChristmasTheme {
         boss.phase = 2;
         boss.dy *= 1.5;
         triggerFear();
-        powerups.push({ x: boss.x, y: boss.y, type: 'health', size: 20, dx: -4, dy: 0 });
+        powerups.push({ x: player.x, y: player.y - 100, type: 'health', size: 20, dx: 0, dy: 3 });
       }
       
       if (boss.health < 100 && boss.phase === 2) {
         boss.phase = 3;
-        const phase3Mult = window.bossSystem.difficulty === 'easy' ? 1.3 : window.bossSystem.difficulty === 'hard' ? 2.2 : window.bossSystem.difficulty === 'impossible' ? 3.5 : 1.8;
+        const phase3Mult = window.bossSystem.difficulty === 'easy' ? 1.3 : window.bossSystem.difficulty === 'hard' ? 2.2 : window.bossSystem.difficulty === 'impossible' ? 2.5 : 1.8;
         boss.dy *= phase3Mult;
-        boss.attackTimer = window.bossSystem.difficulty === 'easy' ? 150 : window.bossSystem.difficulty === 'hard' ? 60 : window.bossSystem.difficulty === 'impossible' ? 30 : 90;
+        boss.attackTimer = window.bossSystem.difficulty === 'easy' ? 150 : window.bossSystem.difficulty === 'hard' ? 60 : window.bossSystem.difficulty === 'impossible' ? 50 : 90;
         triggerFear();
-        powerups.push({ x: boss.x, y: boss.y, type: 'shield', size: 20, dx: -4, dy: 0 });
+        powerups.push({ x: player.x, y: player.y - 100, type: 'shield', size: 20, dx: 0, dy: 3 });
       }
       
       if (Math.random() < 0.005 && boss.health < 400) {
-        powerups.push({ x: boss.x, y: boss.y, type: 'triple', size: 20, dx: -4, dy: 0 });
+        powerups.push({ x: player.x, y: player.y - 100, type: 'triple', size: 20, dx: 0, dy: 3 });
+      }
+      
+      if (Math.random() < 0.003 && boss.phase >= 2) {
+        const types = ['invincibility', 'bomb', 'speed'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        powerups.push(enhancements[type === 'invincibility' ? 'createInvincibilityPowerup' : type === 'bomb' ? 'createBombPowerup' : 'createSpeedPowerup'](player.x, player.y - 100));
       }
       
       boss.shieldTimer++;
@@ -1271,6 +1355,32 @@ class ChristmasTheme {
         }
       });
       
+      bossMinions.forEach((m, i) => {
+        m.x += m.dx;
+        m.y += m.dy;
+        if (m.y <= 0 || m.y >= canvas.height - m.size) m.dy *= -1;
+        if (m.x <= 0 || m.x >= canvas.width - m.size) m.dx *= -1;
+        
+        m.shootTimer++;
+        if (m.shootTimer > 120) {
+          const angle = Math.atan2(player.y - m.y, player.x - m.x);
+          bossBullets.push({ x: m.x + m.size/2, y: m.y + m.size/2, dx: Math.cos(angle) * 4, dy: Math.sin(angle) * 4, size: 8 });
+          m.shootTimer = 0;
+        }
+        
+        bullets.forEach((b, j) => {
+          if (b.x > m.x && b.x < m.x + m.size && b.y > m.y && b.y < m.y + m.size) {
+            m.health -= 10;
+            bullets.splice(j, 1);
+            if (m.health <= 0) {
+              bossMinions.splice(i, 1);
+              enhancements.createParticles(m.x, m.y, 15, '#f0f');
+              enhancements.addScore(50, player.combo);
+            }
+          }
+        });
+      });
+      
       bossBullets.forEach((b, i) => {
         const speed = player.slowTime ? 0.5 : 1;
         b.x += b.dx * speed;
@@ -1284,7 +1394,7 @@ class ChristmasTheme {
               player.angelShieldCooldown = 900;
               enhancements.createParticles(player.x, player.y, 20, '#FFD700');
             } else {
-              let dmg = window.bossSystem.difficulty === 'impossible' ? 35 : window.bossSystem.difficulty === 'hard' ? 25 : 20;
+              let dmg = window.bossSystem.difficulty === 'impossible' ? 25 : window.bossSystem.difficulty === 'hard' ? 25 : 20;
               if (player.ability === 'ia777') dmg = Math.floor(dmg * 0.7);
               player.health -= dmg;
               player.combo = 0;
@@ -1296,12 +1406,16 @@ class ChristmasTheme {
       
       powerups.forEach((p, i) => {
         p.x += p.dx;
-        if (p.x < 0) powerups.splice(i, 1);
+        p.y += p.dy;
+        if (p.x < 0 || p.y > canvas.height) powerups.splice(i, 1);
         if (p.x < player.x + player.size && p.x + p.size > player.x && 
             p.y < player.y + player.size && p.y + p.size > player.y) {
           if (p.type === 'health') player.health = Math.min(player.maxHealth, player.health + 30);
           if (p.type === 'shield') { player.shield = true; player.shieldTimer = 300; }
           if (p.type === 'triple') { player.tripleShot = true; player.tripleShotTimer = 300; }
+          if (['invincibility', 'bomb', 'speed'].includes(p.type)) {
+            enhancements.applyPowerupEffect(player, p, bossBullets);
+          }
           powerups.splice(i, 1);
         }
       });
@@ -1409,6 +1523,15 @@ class ChristmasTheme {
       
       ctx.fillStyle = charStats.bulletColor || '#0f0';
       bullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
+      
+      bossMinions.forEach(m => {
+        ctx.save();
+        ctx.fillStyle = '#f0f';
+        ctx.fillRect(m.x, m.y, m.size, m.size);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(m.x, m.y - 5, m.size * (m.health / 30), 3);
+        ctx.restore();
+      });
       
       ctx.fillStyle = '#f00';
       bossBullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
@@ -1709,7 +1832,9 @@ class ChristmasTheme {
         ctx.fillText(won ? '¡GANASTE!' : '¡PERDISTE!', canvas.width/2, canvas.height/2);
         
         if (won) {
-          window.bossSystem.damageTaken = player.maxHealth - player.health;
+          if (!window.bossSystem.damageTaken) {
+            window.bossSystem.damageTaken = player.maxHealth - player.health;
+          }
           localStorage.setItem('bossDefeated', 'true');
           if (this.leaderboardBtn) this.leaderboardBtn.style.display = 'inline-block';
           setTimeout(() => this.showVictoryScreen(character), 2000);
