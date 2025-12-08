@@ -1,5 +1,29 @@
 [
     {
+        "version": "v1.8",
+        "date": "2025-12-07",
+        "type": "major",
+        "title": "🎄 ACTUALIZACIÓN DE NAVIDAD - Deadly Christmas Pursuit",
+        "changes": [
+            "🎅 Temática navideña completa activada durante diciembre",
+            "❄️ Efectos de nieve cayendo en todo el juego",
+            "🎄 Título cambiado a 'DEADLY CHRISTMAS PURSUIT'",
+            "🎁 Luces navideñas decorativas en todas las secciones",
+            "🎅 Gorros de Santa en todos los avatares de personajes",
+            "🎵 3 canciones navideñas exclusivas en el lobby",
+            "🎶 Panel de playlist musical para cambiar entre OSTs",
+            "🔊 Botón de música con acceso rápido a la playlist",
+            "🎁 GIF navideño animado en el lobby",
+            "🎨 Colores y efectos visuales navideños (rojo, verde, dorado)",
+            "⛄ Decoraciones navideñas flotantes (árboles, regalos, muñecos de nieve)",
+            "🎁 ??? - Una sorpresa navideña especial te espera en el lobby...",
+            "❓ Busca algo diferente y descubre el secreto navideño",
+            "🏆 Sistema de leaderboard para la sorpresa especial",
+            "🎮 Controles completos para la nueva experiencia: PC, Móvil y Gamepad",
+            "✨ Efectos visuales y mecánicas únicas en el contenido secreto"
+        ]
+    },
+    {
         "version": "v1.7.2",
         "date": "2025-11-24",
         "type": "major",

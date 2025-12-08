@@ -23,6 +23,7 @@ class SupabaseGame {
             }
             
             this.supabase = createClient(supabaseUrl, supabaseKey, {
+                auth: { persistSession: false },
                 realtime: {
                     params: {
                         eventsPerSecond: 10
@@ -32,6 +33,7 @@ class SupabaseGame {
                 }
             });
             
+            window.supabaseGameInstance = this;
             this.myPlayerId = 'player_' + Math.random().toString(36).substr(2, 9);
             await this.setupRealtimeChannel();
             this.initialized = true;
