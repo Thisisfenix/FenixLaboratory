@@ -554,31 +554,31 @@ class ChristmasTheme {
     
     if (isMobile) {
       controls.innerHTML = `
-        <div style="color: #fff; font-size: 1.2rem; text-align: center;">
+        <div style="color: #fff; font-size: 1rem; text-align: center;">
           <div style="color: #FFD700; font-weight: bold; margin-bottom: 10px;">📱 CONTROLES MÓVIL</div>
-          <div>👆 Lado izquierdo: Mover</div>
-          <div>👆 Lado derecho: Disparar</div>
+          <div>👆 Izquierda: Mover | Derecha: Disparar</div>
           <div>👆 Doble tap: Dash</div>
+          <div>Botón Q: Slow Time | Botón E: Heal</div>
+          <div>Botón R: Rapid Fire</div>
         </div>
       `;
     } else if (hasGamepad) {
       controls.innerHTML = `
-        <div style="color: #fff; font-size: 1.2rem; text-align: center;">
+        <div style="color: #fff; font-size: 1rem; text-align: center;">
           <div style="color: #FFD700; font-weight: bold; margin-bottom: 10px;">🎮 CONTROLES GAMEPAD</div>
-          <div>🕹️ Stick izquierdo: Mover</div>
-          <div>🕹️ D-Pad: Cambiar dirección de disparo</div>
-          <div>🅰️ Botón A: Disparar</div>
-          <div>🅱️ Botón B: Dash</div>
+          <div>🕹️ Stick: Mover | D-Pad: Dirección</div>
+          <div>🅰️ A: Disparar | 🅱️ B: Dash</div>
+          <div>❌ X: Slow Time | 🔺 Y: Heal</div>
+          <div>LB: Rapid Fire</div>
         </div>
       `;
     } else {
       controls.innerHTML = `
-        <div style="color: #fff; font-size: 1.2rem; text-align: center;">
+        <div style="color: #fff; font-size: 1rem; text-align: center;">
           <div style="color: #FFD700; font-weight: bold; margin-bottom: 10px;">⌨️ CONTROLES PC</div>
-          <div>WASD: Mover</div>
-          <div>Flechas ↑↓←→: Cambiar dirección de disparo</div>
-          <div>Espacio: Disparar</div>
-          <div>Shift: Dash</div>
+          <div>WASD: Mover | Flechas: Dirección</div>
+          <div>Espacio: Disparar | Shift: Dash</div>
+          <div>Q: Slow Time | E: Heal | R: Rapid Fire</div>
         </div>
       `;
     }
@@ -668,7 +668,7 @@ class ChristmasTheme {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    const player = { x: 100, y: canvas.height / 2, size: 40, health: 100, maxHealth: 100, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0 };
+    const player = { x: 100, y: canvas.height / 2, size: 40, health: 100, maxHealth: 100, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0, slowTime: false, slowTimeTimer: 0, slowTimeCooldown: 0, healCooldown: 0, rapidFire: false, rapidFireTimer: 0, rapidFireCooldown: 0, shootCooldown: 0 };
     player.icon.src = `assets/icons/${character}.png`;
     
     const boss = { 
@@ -685,7 +685,7 @@ class ChristmasTheme {
       phase: 1,
       intro: true,
       shield: 0,
-      shieldMax: 50,
+      shieldMax: 30,
       shieldTimer: 0,
       telegraphTimer: 0,
       telegraphActive: false,
@@ -725,15 +725,15 @@ class ChristmasTheme {
       Array.from(e.touches).forEach(t => {
         touches[t.identifier] = { x: t.clientX, y: t.clientY };
         
-        const dpadX = canvas.width - 80;
-        const dpadY = canvas.height - 120;
-        const dpadSize = 35;
+        const dpadX = canvas.width - 100;
+        const dpadY = canvas.height - 100;
+        const dpadSize = 40;
         
-        if (t.clientX > dpadX - dpadSize && t.clientX < dpadX && t.clientY > dpadY - dpadSize * 3 && t.clientY < dpadY - dpadSize * 2) shootDir = { x: 0, y: -1 };
-        else if (t.clientX > dpadX - dpadSize && t.clientX < dpadX && t.clientY > dpadY + dpadSize * 2 && t.clientY < dpadY + dpadSize * 3) shootDir = { x: 0, y: 1 };
-        else if (t.clientX > dpadX - dpadSize * 3 && t.clientX < dpadX - dpadSize * 2 && t.clientY > dpadY && t.clientY < dpadY + dpadSize) shootDir = { x: -1, y: 0 };
+        if (t.clientX > dpadX && t.clientX < dpadX + dpadSize && t.clientY > dpadY - dpadSize && t.clientY < dpadY) shootDir = { x: 0, y: -1 };
+        else if (t.clientX > dpadX && t.clientX < dpadX + dpadSize && t.clientY > dpadY + dpadSize && t.clientY < dpadY + dpadSize * 2) shootDir = { x: 0, y: 1 };
+        else if (t.clientX > dpadX - dpadSize && t.clientX < dpadX && t.clientY > dpadY && t.clientY < dpadY + dpadSize) shootDir = { x: -1, y: 0 };
         else if (t.clientX > dpadX + dpadSize && t.clientX < dpadX + dpadSize * 2 && t.clientY > dpadY && t.clientY < dpadY + dpadSize) shootDir = { x: 1, y: 0 };
-        else if (t.clientX > canvas.width * 0.7 && t.clientY < canvas.height - 200) {
+        else if (t.clientX > canvas.width * 0.7 && t.clientY < canvas.height - 200 && player.shootCooldown === 0) {
           playShootSound();
           if (player.tripleShot) {
             bullets.push({ x: player.x + player.size/2, y: player.y + player.size/2, dx: shootDir.x * 10, dy: shootDir.y * 10, size: 10 });
@@ -742,6 +742,24 @@ class ChristmasTheme {
           } else {
             bullets.push({ x: player.x + player.size/2, y: player.y + player.size/2, dx: shootDir.x * 10, dy: shootDir.y * 10, size: 10 });
           }
+          player.shootCooldown = player.rapidFire ? 5 : 15;
+        }
+        
+        const btnSize = 50;
+        const btnY = canvas.height - 250;
+        if (t.clientX > 20 && t.clientX < 20 + btnSize && t.clientY > btnY && t.clientY < btnY + btnSize && player.slowTimeCooldown === 0) {
+          player.slowTime = true;
+          player.slowTimeTimer = 180;
+          player.slowTimeCooldown = 720;
+        }
+        if (t.clientX > 80 && t.clientX < 80 + btnSize && t.clientY > btnY && t.clientY < btnY + btnSize && player.healCooldown === 0) {
+          player.health = Math.min(player.maxHealth, player.health + 25);
+          player.healCooldown = 600;
+        }
+        if (t.clientX > 140 && t.clientX < 140 + btnSize && t.clientY > btnY && t.clientY < btnY + btnSize && player.rapidFireCooldown === 0) {
+          player.rapidFire = true;
+          player.rapidFireTimer = 180;
+          player.rapidFireCooldown = 720;
         }
       });
     });
@@ -766,15 +784,15 @@ class ChristmasTheme {
     const getGamepad = () => {
       const gp = navigator.getGamepads()[0];
       if (gp) {
-        if (Math.abs(gp.axes[0]) > 0.2) player.x += gp.axes[0] * 5;
-        if (Math.abs(gp.axes[1]) > 0.2) player.y += gp.axes[1] * 5;
+        if (Math.abs(gp.axes[0]) > 0.2) player.x += gp.axes[0] * 4;
+        if (Math.abs(gp.axes[1]) > 0.2) player.y += gp.axes[1] * 4;
         
         if (gp.axes[9] > 0.5) shootDir = { x: 0, y: 1 };
         else if (gp.axes[9] < -0.5) shootDir = { x: 0, y: -1 };
         if (gp.axes[6] > 0.5) shootDir = { x: 1, y: 0 };
         else if (gp.axes[6] < -0.5) shootDir = { x: -1, y: 0 };
         
-        if (gp.buttons[0].pressed && !gp.buttons[0].wasPressed) {
+        if (gp.buttons[0].pressed && player.shootCooldown === 0) {
           playShootSound();
           if (player.tripleShot) {
             bullets.push({ x: player.x + player.size/2, y: player.y + player.size/2, dx: shootDir.x * 10, dy: shootDir.y * 10, size: 10 });
@@ -783,8 +801,8 @@ class ChristmasTheme {
           } else {
             bullets.push({ x: player.x + player.size/2, y: player.y + player.size/2, dx: shootDir.x * 10, dy: shootDir.y * 10, size: 10 });
           }
+          player.shootCooldown = player.rapidFire ? 5 : 15;
         }
-        gp.buttons[0].wasPressed = gp.buttons[0].pressed;
         
         if (gp.buttons[1].pressed && player.dashCooldown === 0) {
           const dashDist = 100;
@@ -794,6 +812,26 @@ class ChristmasTheme {
           player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
           player.dashCooldown = 120;
         }
+        
+        if (gp.buttons[2].pressed && !gp.buttons[2].wasPressed && player.slowTimeCooldown === 0) {
+          player.slowTime = true;
+          player.slowTimeTimer = 180;
+          player.slowTimeCooldown = 720;
+        }
+        gp.buttons[2].wasPressed = gp.buttons[2].pressed;
+        
+        if (gp.buttons[3].pressed && !gp.buttons[3].wasPressed && player.healCooldown === 0) {
+          player.health = Math.min(player.maxHealth, player.health + 25);
+          player.healCooldown = 600;
+        }
+        gp.buttons[3].wasPressed = gp.buttons[3].pressed;
+        
+        if (gp.buttons[4].pressed && !gp.buttons[4].wasPressed && player.rapidFireCooldown === 0) {
+          player.rapidFire = true;
+          player.rapidFireTimer = 180;
+          player.rapidFireCooldown = 720;
+        }
+        gp.buttons[4].wasPressed = gp.buttons[4].pressed;
       }
     };
     
@@ -807,14 +845,18 @@ class ChristmasTheme {
     };
     
     document.addEventListener('keydown', e => {
+      if (e.key.startsWith('Arrow')) {
+        e.preventDefault();
+        if (e.key === 'ArrowUp') shootDir = { x: 0, y: -1 };
+        if (e.key === 'ArrowDown') shootDir = { x: 0, y: 1 };
+        if (e.key === 'ArrowLeft') shootDir = { x: -1, y: 0 };
+        if (e.key === 'ArrowRight') shootDir = { x: 1, y: 0 };
+        return;
+      }
+      
       keys[e.key] = true;
       
-      if (e.key === 'ArrowUp') shootDir = { x: 0, y: -1 };
-      if (e.key === 'ArrowDown') shootDir = { x: 0, y: 1 };
-      if (e.key === 'ArrowLeft') shootDir = { x: -1, y: 0 };
-      if (e.key === 'ArrowRight') shootDir = { x: 1, y: 0 };
-      
-      if (e.key === ' ') {
+      if (e.key === ' ' && player.shootCooldown === 0) {
         playShootSound();
         if (player.tripleShot) {
           bullets.push({ x: player.x + player.size/2, y: player.y + player.size/2, dx: shootDir.x * 10, dy: shootDir.y * 10, size: 10 });
@@ -823,14 +865,29 @@ class ChristmasTheme {
         } else {
           bullets.push({ x: player.x + player.size/2, y: player.y + player.size/2, dx: shootDir.x * 10, dy: shootDir.y * 10, size: 10 });
         }
+        player.shootCooldown = player.rapidFire ? 5 : 15;
       }
-      if (e.key === 'Shift' && player.dashCooldown === 0) {
+      if (e.key === 'Shift' && player.dashCooldown === 0 && !e.repeat) {
         const dashDist = 100;
         if (keys['w']) player.y = Math.max(0, player.y - dashDist);
         else if (keys['s']) player.y = Math.min(canvas.height - player.size, player.y + dashDist);
         else if (keys['a']) player.x = Math.max(0, player.x - dashDist);
         else if (keys['d']) player.x = Math.min(canvas.width - player.size, player.x + dashDist);
         player.dashCooldown = 120;
+      }
+      if (e.key === 'q' && player.slowTimeCooldown === 0 && !e.repeat) {
+        player.slowTime = true;
+        player.slowTimeTimer = 150;
+        player.slowTimeCooldown = 900;
+      }
+      if (e.key === 'e' && player.healCooldown === 0 && !e.repeat) {
+        player.health = Math.min(player.maxHealth, player.health + 20);
+        player.healCooldown = 720;
+      }
+      if (e.key === 'r' && player.rapidFireCooldown === 0 && !e.repeat) {
+        player.rapidFire = true;
+        player.rapidFireTimer = 180;
+        player.rapidFireCooldown = 720;
       }
     });
     document.addEventListener('keyup', e => keys[e.key] = false);
@@ -928,10 +985,10 @@ class ChristmasTheme {
       }
       
       if (!fearEffect && !boss.intro) {
-        if (keys['w'] && player.y > 0) player.y -= 5;
-        if (keys['s'] && player.y < canvas.height - player.size) player.y += 5;
-        if (keys['a'] && player.x > 0) player.x -= 5;
-        if (keys['d'] && player.x < canvas.width - player.size) player.x += 5;
+        if (keys['w'] && player.y > 0) player.y -= 4;
+        if (keys['s'] && player.y < canvas.height - player.size) player.y += 4;
+        if (keys['a'] && player.x > 0) player.x -= 4;
+        if (keys['d'] && player.x < canvas.width - player.size) player.x += 4;
         getGamepad();
       }
       
@@ -965,12 +1022,12 @@ class ChristmasTheme {
         powerups.push({ x: boss.x, y: boss.y, type: 'shield', size: 20, dx: -4, dy: 0 });
       }
       
-      if (Math.random() < 0.003 && boss.health < 400) {
+      if (Math.random() < 0.005 && boss.health < 400) {
         powerups.push({ x: boss.x, y: boss.y, type: 'triple', size: 20, dx: -4, dy: 0 });
       }
       
       boss.shieldTimer++;
-      if (boss.shieldTimer > 480 && boss.shield === 0) {
+      if (boss.shieldTimer > 600 && boss.shield === 0) {
         boss.shield = boss.shieldMax;
         boss.shieldTimer = 0;
       }
@@ -992,7 +1049,7 @@ class ChristmasTheme {
           if (boss.shield > 0) {
             boss.shield -= 10;
           } else {
-            const dmg = player.combo >= 10 ? 20 : 10;
+            const dmg = player.combo >= 15 ? 15 : 10;
             boss.health -= dmg;
             player.combo++;
           }
@@ -1001,13 +1058,14 @@ class ChristmasTheme {
       });
       
       bossBullets.forEach((b, i) => {
-        b.x += b.dx;
-        b.y += b.dy;
+        const speed = player.slowTime ? 0.5 : 1;
+        b.x += b.dx * speed;
+        b.y += b.dy * speed;
         if (b.x < 0 || b.y < 0 || b.y > canvas.height) bossBullets.splice(i, 1);
         if (b.x < player.x + player.size && b.x + b.size > player.x && 
             b.y < player.y + player.size && b.y + b.size > player.y) {
           if (!player.shield) {
-            const dmg = window.bossSystem.difficulty === 'impossible' ? 50 : 20;
+            const dmg = window.bossSystem.difficulty === 'impossible' ? 35 : window.bossSystem.difficulty === 'hard' ? 25 : 20;
             player.health -= dmg;
             player.combo = 0;
           }
@@ -1030,6 +1088,12 @@ class ChristmasTheme {
       if (player.dashCooldown > 0) player.dashCooldown--;
       if (player.shieldTimer > 0) { player.shieldTimer--; if (player.shieldTimer === 0) player.shield = false; }
       if (player.tripleShotTimer > 0) { player.tripleShotTimer--; if (player.tripleShotTimer === 0) player.tripleShot = false; }
+      if (player.slowTimeTimer > 0) { player.slowTimeTimer--; if (player.slowTimeTimer === 0) player.slowTime = false; }
+      if (player.slowTimeCooldown > 0) player.slowTimeCooldown--;
+      if (player.healCooldown > 0) player.healCooldown--;
+      if (player.rapidFireTimer > 0) { player.rapidFireTimer--; if (player.rapidFireTimer === 0) player.rapidFire = false; }
+      if (player.rapidFireCooldown > 0) player.rapidFireCooldown--;
+      if (player.shootCooldown > 0) player.shootCooldown--;
       
       if (fearEffect) {
         ctx.save();
@@ -1175,6 +1239,47 @@ class ChristmasTheme {
         ctx.fillText(`SHIELD: ${Math.ceil(player.shieldTimer / 60)}s`, 20, player.tripleShot ? 110 : 90);
       }
       
+      if (player.slowTime) {
+        ctx.fillStyle = '#00f';
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText(`SLOW TIME: ${Math.ceil(player.slowTimeTimer / 60)}s`, 20, 130);
+      }
+      
+      if (player.rapidFire) {
+        ctx.fillStyle = '#f0f';
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText(`RAPID FIRE: ${Math.ceil(player.rapidFireTimer / 60)}s`, 20, 150);
+      }
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px Arial';
+      let yPos = canvas.height - 60;
+      if (player.slowTimeCooldown > 0) {
+        ctx.fillText(`Q: ${Math.ceil(player.slowTimeCooldown / 60)}s`, 20, yPos);
+        yPos -= 15;
+      } else {
+        ctx.fillStyle = '#0ff';
+        ctx.fillText('Q: SLOW TIME', 20, yPos);
+        ctx.fillStyle = '#fff';
+        yPos -= 15;
+      }
+      if (player.healCooldown > 0) {
+        ctx.fillText(`E: ${Math.ceil(player.healCooldown / 60)}s`, 20, yPos);
+        yPos -= 15;
+      } else {
+        ctx.fillStyle = '#0f0';
+        ctx.fillText('E: HEAL', 20, yPos);
+        ctx.fillStyle = '#fff';
+        yPos -= 15;
+      }
+      if (player.rapidFireCooldown > 0) {
+        ctx.fillText(`R: ${Math.ceil(player.rapidFireCooldown / 60)}s`, 20, yPos);
+      } else {
+        ctx.fillStyle = '#f0f';
+        ctx.fillText('R: RAPID FIRE', 20, yPos);
+        ctx.fillStyle = '#fff';
+      }
+      
       if (boss.phase === 3) {
         ctx.fillStyle = '#f0f';
         ctx.font = 'bold 24px Arial';
@@ -1234,29 +1339,55 @@ class ChristmasTheme {
         ctx.font = 'bold 16px Arial';
         ctx.fillText('FIRE', shootX, shootY + 5);
         
-        const dpadX = canvas.width - 80;
-        const dpadY = canvas.height - 120;
-        const dpadSize = 35;
+        const dpadX = canvas.width - 100;
+        const dpadY = canvas.height - 100;
+        const dpadSize = 40;
         
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(dpadX - dpadSize, dpadY - dpadSize * 3, dpadSize, dpadSize);
-        ctx.fillRect(dpadX - dpadSize, dpadY + dpadSize * 2, dpadSize, dpadSize);
-        ctx.fillRect(dpadX - dpadSize * 3, dpadY, dpadSize, dpadSize);
+        ctx.fillRect(dpadX, dpadY - dpadSize, dpadSize, dpadSize);
+        ctx.fillRect(dpadX, dpadY + dpadSize, dpadSize, dpadSize);
+        ctx.fillRect(dpadX - dpadSize, dpadY, dpadSize, dpadSize);
         ctx.fillRect(dpadX + dpadSize, dpadY, dpadSize, dpadSize);
         
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
-        ctx.strokeRect(dpadX - dpadSize, dpadY - dpadSize * 3, dpadSize, dpadSize);
-        ctx.strokeRect(dpadX - dpadSize, dpadY + dpadSize * 2, dpadSize, dpadSize);
-        ctx.strokeRect(dpadX - dpadSize * 3, dpadY, dpadSize, dpadSize);
+        ctx.strokeRect(dpadX, dpadY - dpadSize, dpadSize, dpadSize);
+        ctx.strokeRect(dpadX, dpadY + dpadSize, dpadSize, dpadSize);
+        ctx.strokeRect(dpadX - dpadSize, dpadY, dpadSize, dpadSize);
         ctx.strokeRect(dpadX + dpadSize, dpadY, dpadSize, dpadSize);
         
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 20px Arial';
-        ctx.fillText('↑', dpadX - dpadSize/2, dpadY - dpadSize * 2.3);
-        ctx.fillText('↓', dpadX - dpadSize/2, dpadY + dpadSize * 2.7);
-        ctx.fillText('←', dpadX - dpadSize * 2.5, dpadY + dpadSize/2 + 5);
-        ctx.fillText('→', dpadX + dpadSize * 1.5, dpadY + dpadSize/2 + 5);
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText('↑', dpadX + dpadSize/2, dpadY - dpadSize/2 + 8);
+        ctx.fillText('↓', dpadX + dpadSize/2, dpadY + dpadSize + dpadSize/2 + 8);
+        ctx.fillText('←', dpadX - dpadSize/2, dpadY + dpadSize/2 + 8);
+        ctx.fillText('→', dpadX + dpadSize + dpadSize/2, dpadY + dpadSize/2 + 8);
+        
+        const btnSize = 50;
+        const btnY = canvas.height - 250;
+        
+        ctx.fillStyle = player.slowTimeCooldown > 0 ? 'rgba(100,100,100,0.5)' : 'rgba(0,0,255,0.5)';
+        ctx.fillRect(20, btnY, btnSize, btnSize);
+        ctx.strokeStyle = '#fff';
+        ctx.strokeRect(20, btnY, btnSize, btnSize);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Q', 45, btnY + 30);
+        
+        ctx.fillStyle = player.healCooldown > 0 ? 'rgba(100,100,100,0.5)' : 'rgba(0,255,0,0.5)';
+        ctx.fillRect(80, btnY, btnSize, btnSize);
+        ctx.strokeStyle = '#fff';
+        ctx.strokeRect(80, btnY, btnSize, btnSize);
+        ctx.fillStyle = '#fff';
+        ctx.fillText('E', 105, btnY + 30);
+        
+        ctx.fillStyle = player.rapidFireCooldown > 0 ? 'rgba(100,100,100,0.5)' : 'rgba(255,0,255,0.5)';
+        ctx.fillRect(140, btnY, btnSize, btnSize);
+        ctx.strokeStyle = '#fff';
+        ctx.strokeRect(140, btnY, btnSize, btnSize);
+        ctx.fillStyle = '#fff';
+        ctx.fillText('R', 165, btnY + 30);
         
         ctx.restore();
       }
@@ -1275,6 +1406,31 @@ class ChristmasTheme {
           const loseSound = new Audio('abelitogordopanzon/estamal.mp4');
           loseSound.volume = 0.5;
           loseSound.play().catch(() => {});
+          
+          setTimeout(() => {
+            const restartBtn = document.createElement('button');
+            restartBtn.textContent = 'REINTENTAR';
+            restartBtn.style.cssText = `
+              position: fixed;
+              top: 60%;
+              left: 50%;
+              transform: translateX(-50%);
+              background: #ffd700;
+              color: #000;
+              font-weight: bold;
+              padding: 15px 40px;
+              border: none;
+              border-radius: 10px;
+              cursor: pointer;
+              font-size: 1.5rem;
+              z-index: 10002;
+            `;
+            restartBtn.addEventListener('click', () => {
+              restartBtn.remove();
+              this.showCharacterSelect();
+            });
+            document.body.appendChild(restartBtn);
+          }, 1000);
         }
         
         ctx.fillStyle = won ? '#0f0' : '#f00';
