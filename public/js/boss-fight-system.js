@@ -38,7 +38,7 @@ class BossFightSystem {
   }
 
   getDifficultyMultiplier() {
-    return { easy: 0.6, normal: 1, hard: 1.8, impossible: 3 }[this.difficulty];
+    return { easy: 0.5, normal: 1, hard: 1.5, impossible: 2.5 }[this.difficulty];
   }
 
   startRecording() {
@@ -377,21 +377,21 @@ class BossFightSystem {
     boss.maxHealth = boss.health;
     
     if (this.difficulty === 'easy') {
-      boss.dy *= 0.6;
-      boss.attackTimer = 270;
-      if (!player.maxHealth || player.maxHealth === 100) {
-        player.maxHealth = 120;
-        player.health = 120;
+      boss.dy *= 0.7;
+      boss.attackTimer = 300;
+      if (!player.maxHealth || player.maxHealth < 110) {
+        player.maxHealth = 130;
+        player.health = 130;
       }
     } else if (this.difficulty === 'hard') {
-      boss.dy *= 1.4;
-      boss.attackTimer = 100;
+      boss.dy *= 1.3;
+      boss.attackTimer = 120;
     } else if (this.difficulty === 'impossible') {
-      boss.dy *= 1.8;
-      boss.attackTimer = 70;
-      if (!player.maxHealth || player.maxHealth === 100) {
-        player.maxHealth = 60;
-        player.health = 60;
+      boss.dy *= 1.6;
+      boss.attackTimer = 80;
+      if (!player.maxHealth || player.maxHealth > 90) {
+        player.maxHealth = 70;
+        player.health = 70;
       }
     }
   }

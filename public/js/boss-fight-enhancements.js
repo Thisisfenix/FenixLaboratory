@@ -259,13 +259,14 @@ class BossFightEnhancements {
   // Stats de personajes
   getCharacterStats(character) {
     const stats = {
-      'AngelNormalIcon': { speed: 1.1, hp: 110, damage: 0.9 },
-      'GisselInactiveIcon': { speed: 1.2, hp: 90, damage: 1.0 },
-      'IA777NormalIcon': { speed: 0.9, hp: 120, damage: 1.1 },
-      'IrisNormalIcon': { speed: 1.0, hp: 100, damage: 1.0 },
-      'LunaNormalIcon': { speed: 1.3, hp: 80, damage: 0.8 }
+      'AngelNormalIcon': { speed: 1.1, hp: 110, damage: 0.9, ability: 'angel', abilityName: 'Escudo Divino', abilityDesc: 'Bloquea 1 golpe cada 15s' },
+      'GisselInactiveIcon': { speed: 1.2, hp: 90, damage: 1.0, ability: 'gissel', abilityName: 'Evasión', abilityDesc: 'Dash más rápido (8s CD)' },
+      'IA777NormalIcon': { speed: 0.9, hp: 120, damage: 1.1, ability: 'ia777', abilityName: 'Tanque', abilityDesc: 'Reduce daño 30%' },
+      'IrisNormalIcon': { speed: 1.0, hp: 100, damage: 1.0, ability: 'iris', abilityName: 'Equilibrio', abilityDesc: 'Regenera 1 HP/2s' },
+      'LunaNormalIcon': { speed: 1.3, hp: 80, damage: 0.8, ability: 'luna', abilityName: 'Velocista', abilityDesc: 'Disparo más rápido' },
+      'MollyNormalIcon': { speed: 1.0, hp: 105, damage: 1.2, ability: 'molly', abilityName: 'Furia', abilityDesc: '+50% daño bajo 50% HP' }
     };
-    return stats[character] || { speed: 1.0, hp: 100, damage: 1.0 };
+    return stats[character] || { speed: 1.0, hp: 100, damage: 1.0, ability: 'none', abilityName: 'Ninguna', abilityDesc: '' };
   }
 
   // Música dinámica

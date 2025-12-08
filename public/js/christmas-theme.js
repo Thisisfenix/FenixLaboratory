@@ -591,7 +591,7 @@ class ChristmasTheme {
       controls.innerHTML = `
         <div style="color: #fff; font-size: 1rem; text-align: center;">
           <div style="color: #FFD700; font-weight: bold; margin-bottom: 10px;">🎮 CONTROLES GAMEPAD</div>
-          <div>🕹️ Stick: Mover | D-Pad: Dirección</div>
+          <div>🕹️ Stick Izq: Mover | Stick Der: Apuntar</div>
           <div>🅰️ A: Disparar | 🅱️ B: Dash</div>
           <div>❌ X: Slow Time | 🔺 Y: Heal</div>
           <div>LB: Rapid Fire</div>
@@ -608,11 +608,33 @@ class ChristmasTheme {
       `;
     }
     
+    const helpBtn = document.createElement('div');
+    helpBtn.style.cssText = `
+      background: rgba(255,215,0,0.2);
+      border: 2px solid #FFD700;
+      border-radius: 10px;
+      padding: 10px 20px;
+      color: #FFD700;
+      font-size: 0.9rem;
+      text-align: center;
+      margin-bottom: 10px;
+    `;
+    helpBtn.innerHTML = hasGamepad ? '🎮 Presiona SELECT/BACK para ver habilidades' : '💡 Toca un personaje para ver su habilidad';
+    
+    let selectedCharIndex = 0;
+    let helpVisible = false;
+    
     const grid = document.createElement('div');
     grid.style.cssText = 'display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;';
     
-    const chars = ['AngelNormalIcon', 'GisselInactiveIcon', 'IA777NormalIcon', 'IrisNormalIcon', 'LunaNormalIcon'];
+    const chars = ['AngelNormalIcon', 'GisselInactiveIcon', 'IA777NormalIcon', 'IrisNormalIcon', 'LunaNormalIcon', 'MollyNormalIcon'];
     chars.forEach(char => {
+      const tempEnhancements = new BossFightEnhancements();
+      const stats = tempEnhancements.getCharacterStats(char);
+      
+      const container = document.createElement('div');
+      container.style.cssText = 'text-align: center;';
+      
       const img = document.createElement('img');
       img.src = `assets/icons/${char}.png`;
       img.style.cssText = 'width: 100px; height: 100px; cursor: pointer; border: 3px solid #fff; border-radius: 10px; transition: transform 0.3s;';
@@ -622,12 +644,157 @@ class ChristmasTheme {
         overlay.remove();
         this.showIntro(char);
       });
-      grid.appendChild(img);
+      
+      const abilityName = document.createElement('div');
+      abilityName.textContent = stats.abilityName;
+      abilityName.style.cssText = 'color: #FFD700; font-size: 0.9rem; font-weight: bold; margin-top: 5px;';
+      
+      const abilityDesc = document.createElement('div');
+      abilityDesc.textContent = stats.abilityDesc;
+      abilityDesc.style.cssText = 'color: #aaa; font-size: 0.75rem;';
+      
+      const tooltip = document.createElement('div');
+      tooltip.style.cssText = `
+        position: absolute;
+        background: rgba(0,0,0,0.95);
+        border: 2px solid #FFD700;
+        border-radius: 10px;
+        padding: 15px;
+        color: #fff;
+        font-size: 0.9rem;
+        width: 250px;
+        z-index: 10001;
+        display: none;
+        pointer-events: none;
+      `;
+      
+      const tooltipContent = {
+        'AngelNormalIcon': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
+        'GisselInactiveIcon': `<b style="color: #FFD700;">💨 Evasión</b><br><br>Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
+        'IA777NormalIcon': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>IA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base (120)<br>• Ideal para aguantar`,
+        'IrisNormalIcon': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
+        'LunaNormalIcon': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
+        'MollyNormalIcon': `<b style="color: #FFD700;">🔥 Furia</b><br><br>Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`
+      };
+      
+      tooltip.innerHTML = tooltipContent[char];
+      
+      container.addEventListener('mouseenter', (e) => {
+        tooltip.style.display = 'block';
+        tooltip.style.left = (e.pageX + 20) + 'px';
+        tooltip.style.top = (e.pageY - 50) + 'px';
+      });
+      
+      container.addEventListener('mousemove', (e) => {
+        tooltip.style.left = (e.pageX + 20) + 'px';
+        tooltip.style.top = (e.pageY - 50) + 'px';
+      });
+      
+      container.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+      });
+      
+      let touchTimeout;
+      container.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        tooltip.style.display = 'block';
+        tooltip.style.left = '50%';
+        tooltip.style.top = '50%';
+        tooltip.style.transform = 'translate(-50%, -50%)';
+        tooltip.style.position = 'fixed';
+        
+        touchTimeout = setTimeout(() => {
+          tooltip.style.display = 'none';
+        }, 3000);
+      });
+      
+      container.addEventListener('touchend', () => {
+        clearTimeout(touchTimeout);
+      });
+      
+      container.appendChild(img);
+      container.appendChild(abilityName);
+      container.appendChild(abilityDesc);
+      container.appendChild(tooltip);
+      grid.appendChild(container);
+    });
+    
+    const helpOverlay = document.createElement('div');
+    helpOverlay.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.98);
+      border: 3px solid #FFD700;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 600px;
+      z-index: 10002;
+      display: none;
+    `;
+    
+    const updateHelpContent = (charIndex) => {
+      const char = chars[charIndex];
+      const tempEnhancements = new BossFightEnhancements();
+      const stats = tempEnhancements.getCharacterStats(char);
+      const tooltipContent = {
+        'AngelNormalIcon': `<b style="color: #FFD700;">⚔️ Escudo Divino</b><br><br>Angel tiene un escudo dorado que bloquea automáticamente el primer golpe que reciba.<br><br>• Cooldown: 15 segundos<br>• Pasiva automática<br>• Ideal para principiantes`,
+        'GisselInactiveIcon': `<b style="color: #FFD700;">💨 Evasión</b><br><br>Gissel puede usar Dash con mayor frecuencia que otros personajes.<br><br>• Cooldown: 8 segundos (vs 2s normal)<br>• Perfecta para esquivar<br>• Alta movilidad`,
+        'IA777NormalIcon': `<b style="color: #FFD700;">🛡️ Tanque</b><br><br>IA777 reduce todo el daño recibido en un 30%.<br><br>• Pasiva permanente<br>• Más HP base (120)<br>• Ideal para aguantar`,
+        'IrisNormalIcon': `<b style="color: #FFD700;">💚 Equilibrio</b><br><br>Iris regenera vida constantemente durante la batalla.<br><br>• +1 HP cada 2 segundos<br>• Pasiva automática<br>• Recuperación sostenida`,
+        'LunaNormalIcon': `<b style="color: #FFD700;">⚡ Velocista</b><br><br>Luna dispara más rápido que otros personajes.<br><br>• Cooldown de disparo reducido<br>• Más velocidad de movimiento<br>• Alto DPS`,
+        'MollyNormalIcon': `<b style="color: #FFD700;">🔥 Furia</b><br><br>Molly hace +50% de daño cuando tiene menos del 50% de vida.<br><br>• Se activa bajo 50% HP<br>• Partículas rojas al disparar<br>• Riesgo/Recompensa`
+      };
+      helpOverlay.innerHTML = `
+        <div style="color: #fff; font-size: 1.1rem; line-height: 1.6;">
+          ${tooltipContent[char]}
+        </div>
+        <div style="color: #888; font-size: 0.9rem; margin-top: 20px; text-align: center;">
+          ${hasGamepad ? '🎮 D-Pad: Cambiar | SELECT: Cerrar' : '👆 Toca fuera para cerrar'}
+        </div>
+      `;
+    };
+    
+    if (hasGamepad) {
+      const gamepadInterval = setInterval(() => {
+        const gp = navigator.getGamepads()[0];
+        if (!gp) return;
+        
+        if (gp.buttons[8] && gp.buttons[8].pressed && !gp.buttons[8].wasPressed) {
+          helpVisible = !helpVisible;
+          helpOverlay.style.display = helpVisible ? 'block' : 'none';
+          if (helpVisible) updateHelpContent(selectedCharIndex);
+        }
+        gp.buttons[8].wasPressed = gp.buttons[8].pressed;
+        
+        if (helpVisible) {
+          if (gp.buttons[14] && gp.buttons[14].pressed && !gp.buttons[14].wasPressed) {
+            selectedCharIndex = (selectedCharIndex - 1 + chars.length) % chars.length;
+            updateHelpContent(selectedCharIndex);
+          }
+          if (gp.buttons[15] && gp.buttons[15].pressed && !gp.buttons[15].wasPressed) {
+            selectedCharIndex = (selectedCharIndex + 1) % chars.length;
+            updateHelpContent(selectedCharIndex);
+          }
+          gp.buttons[14].wasPressed = gp.buttons[14].pressed;
+          gp.buttons[15].wasPressed = gp.buttons[15].pressed;
+        }
+      }, 100);
+      
+      overlay.addEventListener('remove', () => clearInterval(gamepadInterval));
+    }
+    
+    helpOverlay.addEventListener('click', () => {
+      helpOverlay.style.display = 'none';
+      helpVisible = false;
     });
     
     overlay.appendChild(title);
+    overlay.appendChild(helpBtn);
     overlay.appendChild(controls);
     overlay.appendChild(grid);
+    overlay.appendChild(helpOverlay);
     document.body.appendChild(overlay);
   }
 
@@ -697,7 +864,7 @@ class ChristmasTheme {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    const player = { x: 100, y: canvas.height / 2, size: 40, health: charStats.hp, maxHealth: charStats.hp, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0, slowTime: false, slowTimeTimer: 0, slowTimeCooldown: 0, healCooldown: 0, rapidFire: false, rapidFireTimer: 0, rapidFireCooldown: 0, shootCooldown: 0, invincible: false, invincibleTimer: 0, speedBoost: false, speedBoostTimer: 0, dashUsed: false, speed: charStats.speed, damageMultiplier: charStats.damage };
+    const player = { x: 100, y: canvas.height / 2, size: 40, health: charStats.hp, maxHealth: charStats.hp, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0, slowTime: false, slowTimeTimer: 0, slowTimeCooldown: 0, healCooldown: 0, rapidFire: false, rapidFireTimer: 0, rapidFireCooldown: 0, shootCooldown: 0, invincible: false, invincibleTimer: 0, speedBoost: false, speedBoostTimer: 0, dashUsed: false, speed: charStats.speed, damageMultiplier: charStats.damage, ability: charStats.ability, angelShield: true, angelShieldCooldown: 0, regenTimer: 0 };
     player.icon.src = `assets/icons/${character}.png`;
     
     const boss = { 
@@ -816,10 +983,10 @@ class ChristmasTheme {
         if (Math.abs(gp.axes[0]) > 0.2) player.x += gp.axes[0] * 4;
         if (Math.abs(gp.axes[1]) > 0.2) player.y += gp.axes[1] * 4;
         
-        if (gp.axes[9] > 0.5) shootDir = { x: 0, y: 1 };
-        else if (gp.axes[9] < -0.5) shootDir = { x: 0, y: -1 };
-        if (gp.axes[6] > 0.5) shootDir = { x: 1, y: 0 };
-        else if (gp.axes[6] < -0.5) shootDir = { x: -1, y: 0 };
+        if (Math.abs(gp.axes[2]) > 0.3 || Math.abs(gp.axes[3]) > 0.3) {
+          const angle = Math.atan2(gp.axes[3], gp.axes[2]);
+          shootDir = { x: Math.cos(angle), y: Math.sin(angle) };
+        }
         
         if (gp.buttons[0].pressed && player.shootCooldown === 0) {
           playShootSound();
@@ -1029,8 +1196,8 @@ class ChristmasTheme {
       
       if (!boss.intro) {
         boss.attackTimer++;
-      const baseSpeed = window.bossSystem.difficulty === 'easy' ? 240 : window.bossSystem.difficulty === 'hard' ? 120 : window.bossSystem.difficulty === 'impossible' ? 90 : 180;
-      const attackSpeed = boss.phase === 3 ? baseSpeed / 2 : baseSpeed;
+      const baseSpeed = window.bossSystem.difficulty === 'easy' ? 300 : window.bossSystem.difficulty === 'hard' ? 120 : window.bossSystem.difficulty === 'impossible' ? 80 : 180;
+      const attackSpeed = boss.phase === 3 ? (window.bossSystem.difficulty === 'easy' ? baseSpeed * 0.7 : baseSpeed / 2) : baseSpeed;
       if (boss.attackTimer > attackSpeed) {
         bossAttack();
         boss.attackTimer = 0;
@@ -1045,9 +1212,9 @@ class ChristmasTheme {
       
       if (boss.health < 100 && boss.phase === 2) {
         boss.phase = 3;
-        const phase3Mult = window.bossSystem.difficulty === 'easy' ? 1.5 : window.bossSystem.difficulty === 'hard' ? 2.5 : window.bossSystem.difficulty === 'impossible' ? 3 : 2;
+        const phase3Mult = window.bossSystem.difficulty === 'easy' ? 1.3 : window.bossSystem.difficulty === 'hard' ? 2.2 : window.bossSystem.difficulty === 'impossible' ? 3.5 : 1.8;
         boss.dy *= phase3Mult;
-        boss.attackTimer = window.bossSystem.difficulty === 'easy' ? 120 : window.bossSystem.difficulty === 'hard' ? 50 : window.bossSystem.difficulty === 'impossible' ? 35 : 90;
+        boss.attackTimer = window.bossSystem.difficulty === 'easy' ? 150 : window.bossSystem.difficulty === 'hard' ? 60 : window.bossSystem.difficulty === 'impossible' ? 30 : 90;
         triggerFear();
         powerups.push({ x: boss.x, y: boss.y, type: 'shield', size: 20, dx: -4, dy: 0 });
       }
@@ -1080,11 +1247,13 @@ class ChristmasTheme {
             boss.shield -= 10;
           } else {
             const baseDmg = player.combo >= 15 ? 15 : 10;
-            const dmg = Math.floor(baseDmg * player.damageMultiplier);
+            let dmgMult = player.damageMultiplier;
+            if (player.ability === 'molly' && player.health < player.maxHealth * 0.5) dmgMult *= 1.5;
+            const dmg = Math.floor(baseDmg * dmgMult);
             boss.health -= dmg;
             player.combo++;
             enhancements.addScore(dmg, player.combo);
-            enhancements.createParticles(b.x, b.y, 5, '#0f0');
+            enhancements.createParticles(b.x, b.y, 5, player.ability === 'molly' && player.health < player.maxHealth * 0.5 ? '#ff0000' : '#0f0');
           }
           bullets.splice(i, 1);
         }
@@ -1097,10 +1266,17 @@ class ChristmasTheme {
         if (b.x < 0 || b.y < 0 || b.y > canvas.height) bossBullets.splice(i, 1);
         if (b.x < player.x + player.size && b.x + b.size > player.x && 
             b.y < player.y + player.size && b.y + b.size > player.y) {
-          if (!player.shield) {
-            const dmg = window.bossSystem.difficulty === 'impossible' ? 35 : window.bossSystem.difficulty === 'hard' ? 25 : 20;
-            player.health -= dmg;
-            player.combo = 0;
+          if (!player.shield && !player.invincible) {
+            if (player.ability === 'angel' && player.angelShield) {
+              player.angelShield = false;
+              player.angelShieldCooldown = 900;
+              enhancements.createParticles(player.x, player.y, 20, '#FFD700');
+            } else {
+              let dmg = window.bossSystem.difficulty === 'impossible' ? 35 : window.bossSystem.difficulty === 'hard' ? 25 : 20;
+              if (player.ability === 'ia777') dmg = Math.floor(dmg * 0.7);
+              player.health -= dmg;
+              player.combo = 0;
+            }
           }
           bossBullets.splice(i, 1);
         }
@@ -1129,6 +1305,12 @@ class ChristmasTheme {
       if (player.shootCooldown > 0) player.shootCooldown--;
       if (player.invincibleTimer > 0) { player.invincibleTimer--; if (player.invincibleTimer === 0) player.invincible = false; }
       if (player.speedBoostTimer > 0) { player.speedBoostTimer--; if (player.speedBoostTimer === 0) player.speedBoost = false; }
+      if (player.angelShieldCooldown > 0) player.angelShieldCooldown--;
+      if (player.ability === 'angel' && player.angelShieldCooldown === 0 && !player.angelShield) player.angelShield = true;
+      if (player.ability === 'iris' && player.health < player.maxHealth) {
+        player.regenTimer++;
+        if (player.regenTimer >= 120) { player.health++; player.regenTimer = 0; }
+      }
       
       enhancements.updateParticles();
       enhancements.updateScreenShake();
@@ -1151,6 +1333,13 @@ class ChristmasTheme {
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(player.x + player.size/2, player.y + player.size/2, player.size/2 + 5, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      if (player.angelShield) {
+        ctx.strokeStyle = '#FFD700';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x + player.size/2, player.y + player.size/2, player.size/2 + 8, 0, Math.PI * 2);
         ctx.stroke();
       }
       
