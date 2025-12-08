@@ -9,6 +9,7 @@ class BossFightSystem {
     this.bossRushMode = false;
     this.currentBossIndex = 0;
     this.bosses = ['Abelito Gordo Panzón', 'Santa Molly', 'Krampus'];
+    this.enhancements = null;
     this.initSupabase();
   }
 
@@ -29,7 +30,11 @@ class BossFightSystem {
   }
 
   async createTableIfNotExists() {
-    // Tabla: boss_leaderboard (id, player_name, character, difficulty, time, damage_taken, no_damage, created_at)
+    // SQL para agregar columna score a tabla existente:
+    /*
+    ALTER TABLE boss_leaderboard ADD COLUMN IF NOT EXISTS score INTEGER DEFAULT 0;
+    CREATE INDEX IF NOT EXISTS idx_score ON boss_leaderboard(score);
+    */
   }
 
   getDifficultyMultiplier() {
@@ -49,7 +54,8 @@ class BossFightSystem {
       b: { x: boss.x, y: boss.y, h: boss.health },
       bl: bullets.map(b => ({ x: b.x, y: b.y })),
       bb: bossBullets.map(b => ({ x: b.x, y: b.y })),
-      pw: powerups.map(p => ({ x: p.x, y: p.y, t: p.type }))
+      pw: powerups.map(p => ({ x: p.x, y: p.y, t: p.type })),
+      score: this.enhancements?.score || 0
     });
   }
 
@@ -65,6 +71,7 @@ class BossFightSystem {
       time: time,
       damage_taken: this.damageTaken,
       no_damage: noDamage,
+      score: this.enhancements?.score || 0,
       replay_data: JSON.stringify(this.recording),
       created_at: new Date().toISOString()
     };
@@ -224,6 +231,9 @@ class BossFightSystem {
       this.bossRushMode = true;
       this.difficulty = 'hard';
       overlay.remove();
+      if (this.enhancements) {
+        this.enhancements.bossRush = this.enhancements.initBossRush();
+      }
       callback();
     });
     overlay.appendChild(bossRushBtn);
@@ -298,19 +308,20 @@ class BossFightSystem {
 
     const updateTable = (data) => {
       table.innerHTML = `
-        <div style="display: grid; grid-template-columns: 50px 200px 150px 100px 100px; gap: 10px; color: #fff; font-weight: bold; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
+        <div style="display: grid; grid-template-columns: 50px 200px 150px 100px 100px 100px; gap: 10px; color: #fff; font-weight: bold; border-bottom: 2px solid #ffd700; padding-bottom: 10px;">
           <div>#</div>
           <div>JUGADOR</div>
           <div>PERSONAJE</div>
           <div>TIEMPO</div>
           <div>DAÑO</div>
+          <div>SCORE</div>
         </div>
       `;
       data.forEach((row, i) => {
         const rowDiv = document.createElement('div');
         rowDiv.style.cssText = `
           display: grid;
-          grid-template-columns: 50px 200px 150px 100px 100px;
+          grid-template-columns: 50px 200px 150px 100px 100px 100px;
           gap: 10px;
           color: ${i < 3 ? '#ffd700' : '#fff'};
           padding: 10px 0;
@@ -323,6 +334,7 @@ class BossFightSystem {
           <div>${row.character}</div>
           <div>${row.time.toFixed(2)}s ${row.no_damage ? '🏆' : ''}</div>
           <div>${row.damage_taken}</div>
+          <div>${row.score || 0}</div>
         `;
         rowDiv.addEventListener('click', () => this.playReplay(row.id || i));
         table.appendChild(rowDiv);
@@ -367,17 +379,25 @@ class BossFightSystem {
     if (this.difficulty === 'easy') {
       boss.dy *= 0.6;
       boss.attackTimer = 270;
-      player.maxHealth = 120;
-      player.health = 120;
+      if (!player.maxHealth || player.maxHealth === 100) {
+        player.maxHealth = 120;
+        player.health = 120;
+      }
     } else if (this.difficulty === 'hard') {
       boss.dy *= 1.4;
       boss.attackTimer = 100;
     } else if (this.difficulty === 'impossible') {
       boss.dy *= 1.8;
       boss.attackTimer = 70;
-      player.maxHealth = 60;
-      player.health = 60;
+      if (!player.maxHealth || player.maxHealth === 100) {
+        player.maxHealth = 60;
+        player.health = 60;
+      }
     }
+  }
+  
+  setEnhancements(enhancements) {
+    this.enhancements = enhancements;
   }
 }
 
