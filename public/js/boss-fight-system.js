@@ -47,6 +47,7 @@ class BossFightSystem {
     this.damageTaken = 0;
     this.maxHealthRecorded = 0;
     this.peakHealth = 0;
+    this.usedHeal = false;
   }
 
   recordFrame(player, boss, bullets, bossBullets, powerups) {
@@ -58,6 +59,7 @@ class BossFightSystem {
       this.peakHealth = player.health;
     }
     this.damageTaken = this.peakHealth - player.health;
+    if (player.usedHeal) this.usedHeal = true;
     this.recording.push({
       t: Date.now() - this.startTime,
       p: { x: player.x, y: player.y, h: player.health },
@@ -89,7 +91,7 @@ class BossFightSystem {
     document.body.appendChild(loadingOverlay);
     
     const time = (Date.now() - this.startTime) / 1000;
-    const noDamage = this.damageTaken === 0;
+    const noDamage = this.damageTaken === 0 && !this.usedHeal;
     const cleanChar = character.replace('NormalIcon', '').replace('InactiveIcon', '');
     
     const replay = {
@@ -332,9 +334,15 @@ class BossFightSystem {
     const tabs = document.createElement('div');
     tabs.style.cssText = 'display: flex; gap: 10px; margin: 20px; flex-wrap: wrap; justify-content: center;';
 
-    ['easy', 'normal', 'hard', 'impossible', 'bossrush', 'infinite'].forEach(diff => {
+    ['easy', 'normal', 'hard', 'impossible', 'bossrush_easy', 'bossrush_normal', 'bossrush_hard', 'bossrush_impossible', 'infinite'].forEach(diff => {
       const tab = document.createElement('button');
-      tab.textContent = diff.toUpperCase();
+      const labels = {
+        'bossrush_easy': 'BR EASY',
+        'bossrush_normal': 'BR NORMAL',
+        'bossrush_hard': 'BR HARD',
+        'bossrush_impossible': 'BR IMPOSSIBLE'
+      };
+      tab.textContent = labels[diff] || diff.toUpperCase();
       tab.style.cssText = `
         background: ${diff === 'normal' ? '#ff0' : '#333'};
         color: ${diff === 'normal' ? '#000' : '#fff'};
@@ -361,7 +369,7 @@ class BossFightSystem {
     table.style.cssText = 'background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; min-width: 600px;';
 
     const updateTable = (data, mode = 'normal') => {
-      const isBossRush = mode === 'bossrush';
+      const isBossRush = mode.startsWith('bossrush');
       const isInfinite = mode === 'infinite';
       
       if (isBossRush || isInfinite) {
@@ -463,8 +471,22 @@ class BossFightSystem {
   }
 
   applyDifficulty(boss, player) {
-    if (this.bossRushMode || this.difficulty === 'bossrush') {
+    if (this.bossRushMode || this.difficulty.startsWith('bossrush')) {
       this.maxHealthRecorded = player.maxHealth;
+      
+      if (this.difficulty === 'bossrush_easy') {
+        boss.health = Math.floor(boss.maxHealth * 0.7);
+        boss.maxHealth = boss.health;
+        boss.dy *= 0.8;
+      } else if (this.difficulty === 'bossrush_hard') {
+        boss.health = Math.floor(boss.maxHealth * 1.3);
+        boss.maxHealth = boss.health;
+        boss.dy *= 1.2;
+      } else if (this.difficulty === 'bossrush_impossible') {
+        boss.health = Math.floor(boss.maxHealth * 1.8);
+        boss.maxHealth = boss.health;
+        boss.dy *= 1.4;
+      }
       return;
     }
     

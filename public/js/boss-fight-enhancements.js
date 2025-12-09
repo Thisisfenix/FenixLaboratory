@@ -8,9 +8,12 @@ class BossFightEnhancements {
     this.lastHitTime = 0;
   }
 
-  // Sistema de partículas
+  // Sistema de partículas optimizado
   createParticles(x, y, count, color) {
-    for (let i = 0; i < count; i++) {
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const particleCount = isMobile ? Math.min(count, 15) : count;
+    
+    for (let i = 0; i < particleCount; i++) {
       this.particles.push({
         x, y,
         vx: (Math.random() - 0.5) * 8,
@@ -167,6 +170,28 @@ class BossFightEnhancements {
     };
   }
 
+  createPenetratingBulletPowerup(x, y) {
+    return {
+      x, y,
+      type: 'penetrating',
+      size: 20,
+      dx: 0,
+      dy: 3,
+      timer: 0
+    };
+  }
+
+  createTimeFreezePowerup(x, y) {
+    return {
+      x, y,
+      type: 'time_freeze',
+      size: 20,
+      dx: 0,
+      dy: 3,
+      timer: 0
+    };
+  }
+
   createBombPowerup(x, y) {
     return {
       x, y,
@@ -301,6 +326,22 @@ class BossFightEnhancements {
       ctx.font = 'bold 16px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('🕐', powerup.x + powerup.size / 2, powerup.y + powerup.size / 2 + 6);
+    } else if (powerup.type === 'penetrating') {
+      ctx.shadowColor = '#00FF00';
+      ctx.fillStyle = '#00FF00';
+      ctx.fillRect(powerup.x - pulse, powerup.y - pulse, powerup.size + pulse * 2, powerup.size + pulse * 2);
+      ctx.fillStyle = '#FFF';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('🎯', powerup.x + powerup.size / 2, powerup.y + powerup.size / 2 + 6);
+    } else if (powerup.type === 'time_freeze') {
+      ctx.shadowColor = '#FFFFFF';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(powerup.x - pulse, powerup.y - pulse, powerup.size + pulse * 2, powerup.size + pulse * 2);
+      ctx.fillStyle = '#000';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('❄️', powerup.x + powerup.size / 2, powerup.y + powerup.size / 2 + 6);
     }
     
     ctx.restore();
@@ -328,6 +369,15 @@ class BossFightEnhancements {
       player.slowMotion = true;
       player.slowMotionTimer = 300;
       this.createParticles(powerup.x, powerup.y, 20, '#0000FF');
+    } else if (powerup.type === 'penetrating') {
+      player.penetratingBullets = true;
+      player.penetratingTimer = 240;
+      this.createParticles(powerup.x, powerup.y, 20, '#00FF00');
+    } else if (powerup.type === 'time_freeze') {
+      player.timeFreeze = true;
+      player.timeFreezeTimer = 120;
+      this.createParticles(powerup.x, powerup.y, 30, '#FFFFFF');
+      this.triggerScreenShake(10);
     }
   }
 
@@ -348,12 +398,12 @@ class BossFightEnhancements {
   // Stats de personajes
   getCharacterStats(character) {
     const stats = {
-      'Angel': { speed: 1.1, hp: 110, damage: 0.9, ability: 'angel', abilityName: 'Escudo Divino', abilityDesc: '110 HP | Bloquea 1 golpe cada 15s', bulletColor: '#00f' },
-      'Gissel': { speed: 1.2, hp: 90, damage: 1.0, ability: 'gissel', abilityName: 'Evasión', abilityDesc: '90 HP | Dash más rápido (8s CD)', bulletColor: '#ff0' },
-      'iA777': { speed: 0.9, hp: 120, damage: 1.1, ability: 'ia777', abilityName: 'Tanque', abilityDesc: '120 HP | Reduce daño 30%', bulletColor: '#a0f' },
-      'Iris': { speed: 1.0, hp: 100, damage: 1.0, ability: 'iris', abilityName: 'Equilibrio', abilityDesc: '100 HP | Regenera 1 HP/2s', bulletColor: '#a0f' },
-      'Luna': { speed: 1.3, hp: 80, damage: 0.8, ability: 'luna', abilityName: 'Velocista', abilityDesc: '80 HP | Disparo más rápido', bulletColor: '#ff0' },
-      'Molly': { speed: 1.0, hp: 105, damage: 1.2, ability: 'molly', abilityName: 'Furia', abilityDesc: '105 HP | +50% daño bajo 50% HP', bulletColor: '#f00' },
+      'Angel': { speed: 1.15, hp: 110, damage: 0.95, ability: 'angel', abilityName: 'Escudo Divino', abilityDesc: '110 HP | Bloquea 1 golpe cada 15s', bulletColor: '#00f' },
+      'Gissel': { speed: 1.35, hp: 85, damage: 1.0, ability: 'gissel', abilityName: 'Evasión', abilityDesc: '85 HP | Dash más rápido (8s CD)', bulletColor: '#ff0' },
+      'iA777': { speed: 0.85, hp: 130, damage: 1.15, ability: 'ia777', abilityName: 'Tanque', abilityDesc: '130 HP | Reduce daño 30%', bulletColor: '#a0f' },
+      'Iris': { speed: 1.05, hp: 100, damage: 1.05, ability: 'iris', abilityName: 'Equilibrio', abilityDesc: '100 HP | Regenera 1 HP/2s', bulletColor: '#a0f' },
+      'Luna': { speed: 1.45, hp: 75, damage: 0.85, ability: 'luna', abilityName: 'Velocista', abilityDesc: '75 HP | Disparo más rápido', bulletColor: '#ff0' },
+      'Molly': { speed: 1.0, hp: 105, damage: 1.25, ability: 'molly', abilityName: 'Furia', abilityDesc: '105 HP | +50% daño bajo 50% HP', bulletColor: '#f00' },
       'ankush': { speed: 2.0, hp: 999, damage: 5.0, ability: 'ankush', abilityName: 'Ankush', abilityDesc: '999 HP | ROTO (Sin leaderboard)', bulletColor: '#ff0' }
     };
     return stats[character] || { speed: 1.0, hp: 100, damage: 1.0, ability: 'none', abilityName: 'Ninguna', abilityDesc: '', bulletColor: '#0f0' };
@@ -464,242 +514,230 @@ class BossFightEnhancements {
 
   // Boss 2: Anna
   annaAttack(boss, bossBullets, player, canvas) {
-    const attacks = ['heart_burst', 'love_spiral', 'rage_wave', 'toxic_rain', 'charm_circle'];
+    const attacks = ['heart_burst', 'love_spiral', 'rage_wave', 'toxic_rain', 'charm_circle', 'love_beam', 'heart_shield'];
     const attack = attacks[Math.floor(Math.random() * attacks.length)];
     
     if (attack === 'heart_burst') {
-      for (let i = 0; i < 16; i++) {
-        const angle = (Math.PI * 2 / 16) * i;
+      for (let i = 0; i < 20; i++) {
+        const angle = (Math.PI * 2 / 20) * i;
         bossBullets.push({
           x: boss.x + boss.size/2,
           y: boss.y + boss.size/2,
-          dx: Math.cos(angle) * 9,
-          dy: Math.sin(angle) * 9,
-          size: 18,
+          dx: Math.cos(angle) * 10,
+          dy: Math.sin(angle) * 10,
+          size: 20,
           type: 'heart'
         });
       }
     } else if (attack === 'love_spiral') {
-      for (let wave = 0; wave < 4; wave++) {
+      for (let wave = 0; wave < 6; wave++) {
         setTimeout(() => {
-          for (let i = 0; i < 8; i++) {
-            const angle = (Math.PI * 2 / 8) * i + wave * 0.4;
+          for (let i = 0; i < 12; i++) {
+            const angle = (Math.PI * 2 / 12) * i + wave * 0.5;
             bossBullets.push({
               x: boss.x + boss.size/2,
               y: boss.y + boss.size/2,
-              dx: Math.cos(angle) * (5 + wave),
-              dy: Math.sin(angle) * (5 + wave),
-              size: 12,
+              dx: Math.cos(angle) * (6 + wave),
+              dy: Math.sin(angle) * (6 + wave),
+              size: 14,
               type: 'love'
             });
           }
-        }, wave * 150);
+        }, wave * 100);
       }
     } else if (attack === 'rage_wave') {
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 30; i++) {
         bossBullets.push({
           x: boss.x,
-          y: boss.y + i * 10,
-          dx: -10,
-          dy: Math.sin(i * 0.3) * 4,
-          size: 16,
+          y: boss.y + i * 8,
+          dx: -12,
+          dy: Math.sin(i * 0.4) * 5,
+          size: 18,
           type: 'rage'
         });
       }
     } else if (attack === 'toxic_rain') {
-      for (let i = 0; i < 25; i++) {
+      for (let i = 0; i < 35; i++) {
         bossBullets.push({
           x: Math.random() * canvas.width,
           y: -50,
           dx: 0,
-          dy: 12,
-          size: 14,
+          dy: 15,
+          size: 16,
           type: 'toxic',
-          warning: 40
+          warning: 30
         });
       }
     } else if (attack === 'charm_circle') {
-      const circles = 3;
+      const circles = 4;
       for (let c = 0; c < circles; c++) {
-        for (let i = 0; i < 12; i++) {
-          const angle = (Math.PI * 2 / 12) * i;
-          const radius = 50 + c * 40;
+        for (let i = 0; i < 16; i++) {
+          const angle = (Math.PI * 2 / 16) * i;
+          const radius = 60 + c * 50;
           bossBullets.push({
             x: boss.x + boss.size/2 + Math.cos(angle) * radius,
             y: boss.y + boss.size/2 + Math.sin(angle) * radius,
-            dx: Math.cos(angle) * 6,
-            dy: Math.sin(angle) * 6,
-            size: 10,
+            dx: Math.cos(angle) * 7,
+            dy: Math.sin(angle) * 7,
+            size: 12,
             type: 'charm'
           });
         }
       }
+    } else if (attack === 'love_beam') {
+      const angle = Math.atan2(player.y - boss.y, player.x - boss.x);
+      for (let i = 0; i < 15; i++) {
+        bossBullets.push({
+          x: boss.x + boss.size/2,
+          y: boss.y + boss.size/2,
+          dx: Math.cos(angle) * 15,
+          dy: Math.sin(angle) * 15,
+          size: 25,
+          type: 'love_beam'
+        });
+      }
+    } else if (attack === 'heart_shield') {
+      boss.shield = Math.min(boss.shieldMax, boss.shield + 50);
+      for (let i = 0; i < 8; i++) {
+        const angle = (Math.PI * 2 / 8) * i;
+        bossBullets.push({
+          x: boss.x + boss.size/2 + Math.cos(angle) * 80,
+          y: boss.y + boss.size/2 + Math.sin(angle) * 80,
+          dx: Math.cos(angle) * 4,
+          dy: Math.sin(angle) * 4,
+          size: 15,
+          type: 'heart_shield'
+        });
+      }
     }
   }
 
-  // Boss 4: El Devorador
+  // Boss 4: Gissel (Devorador)
   devourerAttack(boss, bossBullets, player, canvas) {
-    const attacks = ['vortex', 'blackhole', 'meteor', 'laser_grid', 'void_rift', 'gravity_well', 'cosmic_burst', 'dimension_tear', 'star_shower', 'singularity', 'chaos_wave', 'death_spiral'];
+    const attacks = ['dash_burst', 'evasion_clones', 'speed_barrage', 'teleport_strike', 'wind_spiral', 'phantom_dash', 'velocity_storm'];
     const attack = attacks[Math.floor(Math.random() * attacks.length)];
     
-    if (attack === 'vortex') {
-      for (let i = 0; i < 30; i++) {
-        const angle = (Math.PI * 2 / 30) * i;
-        const speed = 6 + Math.random() * 3;
+    if (attack === 'dash_burst') {
+      const angle = Math.atan2(player.y - boss.y, player.x - boss.x);
+      boss.x += Math.cos(angle) * 150;
+      boss.y += Math.sin(angle) * 150;
+      for (let i = 0; i < 12; i++) {
+        const a = (Math.PI * 2 / 12) * i;
+        bossBullets.push({
+          x: boss.x + boss.size/2,
+          y: boss.y + boss.size/2,
+          dx: Math.cos(a) * 12,
+          dy: Math.sin(a) * 12,
+          size: 15,
+          type: 'dash'
+        });
+      }
+    } else if (attack === 'evasion_clones') {
+      for (let i = 0; i < 4; i++) {
+        const cloneX = Math.random() * canvas.width;
+        const cloneY = Math.random() * canvas.height;
+        for (let j = 0; j < 8; j++) {
+          const angle = (Math.PI * 2 / 8) * j;
+          bossBullets.push({
+            x: cloneX,
+            y: cloneY,
+            dx: Math.cos(angle) * 8,
+            dy: Math.sin(angle) * 8,
+            size: 12,
+            type: 'clone'
+          });
+        }
+      }
+    } else if (attack === 'speed_barrage') {
+      for (let i = 0; i < 25; i++) {
+        setTimeout(() => {
+          const angle = Math.atan2(player.y - boss.y, player.x - boss.x) + (Math.random() - 0.5) * 0.8;
+          bossBullets.push({
+            x: boss.x + boss.size/2,
+            y: boss.y + boss.size/2,
+            dx: Math.cos(angle) * 18,
+            dy: Math.sin(angle) * 18,
+            size: 10,
+            type: 'speed'
+          });
+        }, i * 30);
+      }
+    } else if (attack === 'teleport_strike') {
+      const positions = [
+        {x: player.x + 100, y: player.y},
+        {x: player.x - 100, y: player.y},
+        {x: player.x, y: player.y + 100},
+        {x: player.x, y: player.y - 100}
+      ];
+      positions.forEach((pos, i) => {
+        setTimeout(() => {
+          boss.x = Math.max(0, Math.min(canvas.width - boss.size, pos.x));
+          boss.y = Math.max(0, Math.min(canvas.height - boss.size, pos.y));
+          for (let j = 0; j < 6; j++) {
+            const angle = (Math.PI * 2 / 6) * j;
+            bossBullets.push({
+              x: boss.x + boss.size/2,
+              y: boss.y + boss.size/2,
+              dx: Math.cos(angle) * 10,
+              dy: Math.sin(angle) * 10,
+              size: 14,
+              type: 'teleport'
+            });
+          }
+        }, i * 200);
+      });
+    } else if (attack === 'wind_spiral') {
+      for (let wave = 0; wave < 8; wave++) {
+        setTimeout(() => {
+          for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI * 2 / 6) * i + wave * 0.3;
+            bossBullets.push({
+              x: boss.x + boss.size/2,
+              y: boss.y + boss.size/2,
+              dx: Math.cos(angle) * (5 + wave * 0.5),
+              dy: Math.sin(angle) * (5 + wave * 0.5),
+              size: 8,
+              type: 'wind'
+            });
+          }
+        }, wave * 80);
+      }
+    } else if (attack === 'phantom_dash') {
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const oldX = boss.x, oldY = boss.y;
+          boss.x = Math.random() * (canvas.width - boss.size);
+          boss.y = Math.random() * (canvas.height - boss.size);
+          
+          // Crear trail de balas
+          const steps = 10;
+          for (let s = 0; s < steps; s++) {
+            const trailX = oldX + (boss.x - oldX) * (s / steps);
+            const trailY = oldY + (boss.y - oldY) * (s / steps);
+            bossBullets.push({
+              x: trailX,
+              y: trailY,
+              dx: 0,
+              dy: 0,
+              size: 8,
+              type: 'phantom',
+              lifetime: 60
+            });
+          }
+        }, i * 300);
+      }
+    } else if (attack === 'velocity_storm') {
+      for (let i = 0; i < 50; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 8 + Math.random() * 10;
         bossBullets.push({
           x: boss.x + boss.size/2,
           y: boss.y + boss.size/2,
           dx: Math.cos(angle) * speed,
           dy: Math.sin(angle) * speed,
-          size: 12,
-          type: 'vortex'
+          size: 6 + Math.random() * 8,
+          type: 'velocity'
         });
-      }
-    } else if (attack === 'blackhole') {
-      for (let i = 0; i < 2; i++) {
-        bossBullets.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          dx: 0,
-          dy: 0,
-          size: 50,
-          type: 'blackhole',
-          lifetime: 240,
-          pullRadius: 400
-        });
-      }
-    } else if (attack === 'meteor') {
-      for (let i = 0; i < 20; i++) {
-        bossBullets.push({
-          x: Math.random() * canvas.width,
-          y: -80,
-          dx: 0,
-          dy: 15,
-          size: 25,
-          type: 'meteor',
-          warning: 20
-        });
-      }
-    } else if (attack === 'laser_grid') {
-      for (let i = 0; i < 8; i++) {
-        bossBullets.push({
-          x: 0,
-          y: i * (canvas.height / 8),
-          dx: 15,
-          dy: 0,
-          size: 8,
-          width: canvas.width,
-          height: 8,
-          type: 'laser_beam'
-        });
-      }
-    } else if (attack === 'void_rift') {
-      for (let i = 0; i < 5; i++) {
-        bossBullets.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          dx: 0,
-          dy: 0,
-          size: 80,
-          type: 'void_rift',
-          lifetime: 180,
-          spawnTimer: 0
-        });
-      }
-    } else if (attack === 'gravity_well') {
-      const wells = 6;
-      for (let i = 0; i < wells; i++) {
-        bossBullets.push({
-          x: (canvas.width / wells) * i + canvas.width / (wells * 2),
-          y: canvas.height / 2,
-          dx: 0,
-          dy: 0,
-          size: 40,
-          type: 'gravity_well',
-          lifetime: 200,
-          pullRadius: 200,
-          rotation: 0
-        });
-      }
-    } else if (attack === 'cosmic_burst') {
-      for (let wave = 0; wave < 5; wave++) {
-        setTimeout(() => {
-          for (let i = 0; i < 16; i++) {
-            const angle = (Math.PI * 2 / 16) * i + wave * 0.4;
-            bossBullets.push({
-              x: boss.x + boss.size/2,
-              y: boss.y + boss.size/2,
-              dx: Math.cos(angle) * (8 + wave * 2),
-              dy: Math.sin(angle) * (8 + wave * 2),
-              size: 14,
-              type: 'cosmic'
-            });
-          }
-        }, wave * 150);
-      }
-    } else if (attack === 'dimension_tear') {
-      for (let i = 0; i < 3; i++) {
-        bossBullets.push({
-          x: Math.random() * canvas.width,
-          y: -100,
-          dx: 0,
-          dy: 8,
-          size: 100,
-          type: 'dimension_tear',
-          lifetime: 120,
-          warning: 50
-        });
-      }
-    } else if (attack === 'star_shower') {
-      for (let i = 0; i < 30; i++) {
-        setTimeout(() => {
-          bossBullets.push({
-            x: Math.random() * canvas.width,
-            y: -40,
-            dx: 0,
-            dy: 15,
-            size: 18,
-            type: 'star',
-            trail: []
-          });
-        }, i * 50);
-      }
-    } else if (attack === 'singularity') {
-      bossBullets.push({
-        x: boss.x + boss.size/2,
-        y: boss.y + boss.size/2,
-        dx: (player.x - boss.x) / 40,
-        dy: (player.y - boss.y) / 40,
-        size: 60,
-        type: 'singularity',
-        lifetime: 300,
-        absorbed: []
-      });
-    } else if (attack === 'chaos_wave') {
-      for (let i = 0; i < 40; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        bossBullets.push({
-          x: boss.x + boss.size/2,
-          y: boss.y + boss.size/2,
-          dx: Math.cos(angle) * (4 + Math.random() * 6),
-          dy: Math.sin(angle) * (4 + Math.random() * 6),
-          size: 10 + Math.random() * 8,
-          type: 'chaos'
-        });
-      }
-    } else if (attack === 'death_spiral') {
-      for (let s = 0; s < 6; s++) {
-        for (let i = 0; i < 12; i++) {
-          const angle = (Math.PI * 2 / 12) * i + s * 0.5;
-          bossBullets.push({
-            x: boss.x + boss.size/2,
-            y: boss.y + boss.size/2,
-            dx: Math.cos(angle) * (3 + s),
-            dy: Math.sin(angle) * (3 + s),
-            size: 12,
-            type: 'death'
-          });
-        }
       }
     }
   }
@@ -871,6 +909,28 @@ class BossFightEnhancements {
     ctx.font = 'bold 18px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(`BOSS RUSH: ${bossRush.bossesDefeated}/${bossRush.totalBosses}`, x, y);
+    
+    if (bossRush.totalScore > 0) {
+      ctx.fillStyle = '#FF0';
+      ctx.font = 'bold 16px Arial';
+      ctx.fillText(`TOTAL: ${bossRush.totalScore}`, x, y + 25);
+    }
+  }
+
+  // Optimización de memoria
+  cleanupBullets(bullets, canvas) {
+    return bullets.filter(b => {
+      return b.x > -50 && b.x < canvas.width + 50 && 
+             b.y > -50 && b.y < canvas.height + 50;
+    });
+  }
+
+  // Mejorar detección de colisiones
+  checkCollision(rect1, rect2, hitboxReduction = 3) {
+    return rect1.x + hitboxReduction < rect2.x + rect2.size - hitboxReduction &&
+           rect1.x + rect1.size - hitboxReduction > rect2.x + hitboxReduction &&
+           rect1.y + hitboxReduction < rect2.y + rect2.size - hitboxReduction &&
+           rect1.y + rect1.size - hitboxReduction > rect2.y + hitboxReduction;
   }
 }
 

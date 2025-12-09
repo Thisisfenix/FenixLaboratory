@@ -553,7 +553,7 @@ class ChristmasTheme {
       if (mode === 'bossrush') {
         if (window.BossRushMode) {
           const bossRush = new BossRushMode(this);
-          bossRush.showCharacterSelect();
+          bossRush.showDifficultySelect();
         }
       } else if (mode === 'infinite') {
         if (window.InfiniteMode) {
@@ -917,7 +917,7 @@ class ChristmasTheme {
       canvas.height = window.innerHeight;
     }
     
-    const player = { x: 100, y: canvas.height / 2, size: 40, health: charStats.hp, maxHealth: charStats.hp, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0, slowTime: false, slowTimeTimer: 0, slowTimeCooldown: 0, healCooldown: 0, rapidFire: false, rapidFireTimer: 0, rapidFireCooldown: 0, shootCooldown: 0, invincible: false, invincibleTimer: 0, speedBoost: false, speedBoostTimer: 0, doubleDamage: false, doubleDamageTimer: 0, slowMotion: false, slowMotionTimer: 0, dashUsed: false, speed: charStats.speed, damageMultiplier: charStats.damage, ability: charStats.ability, angelShield: true, angelShieldCooldown: 0, regenTimer: 0 };
+    const player = { x: 100, y: canvas.height / 2, size: 40, health: charStats.hp, maxHealth: charStats.hp, icon: new Image(), combo: 0, dashCooldown: 0, tripleShot: false, tripleShotTimer: 0, shield: false, shieldTimer: 0, slowTime: false, slowTimeTimer: 0, slowTimeCooldown: 0, healCooldown: 0, rapidFire: false, rapidFireTimer: 0, rapidFireCooldown: 0, shootCooldown: 0, invincible: false, invincibleTimer: 0, speedBoost: false, speedBoostTimer: 0, doubleDamage: false, doubleDamageTimer: 0, slowMotion: false, slowMotionTimer: 0, penetratingBullets: false, penetratingTimer: 0, timeFreeze: false, timeFreezeTimer: 0, dashUsed: false, usedHeal: false, speed: charStats.speed, damageMultiplier: charStats.damage, ability: charStats.ability, angelShield: true, angelShieldCooldown: 0, regenTimer: 0 };
     const iconMap = {
       'Angel': 'AngelNormalIcon',
       'Gissel': 'GisselInactiveIcon',
@@ -973,6 +973,20 @@ class ChristmasTheme {
       boss.health = Math.floor(boss.maxHealth * (1 + round * 0.3));
       boss.maxHealth = boss.health;
       boss.dy *= (1 + round * 0.1);
+    } else if (window.bossSystem.bossRushMode || window.bossSystem.difficulty.startsWith('bossrush')) {
+      if (window.bossSystem.difficulty === 'bossrush_easy') {
+        boss.health = Math.floor(boss.maxHealth * 0.7);
+        boss.maxHealth = boss.health;
+        boss.dy *= 0.8;
+      } else if (window.bossSystem.difficulty === 'bossrush_hard') {
+        boss.health = Math.floor(boss.maxHealth * 1.3);
+        boss.maxHealth = boss.health;
+        boss.dy *= 1.2;
+      } else if (window.bossSystem.difficulty === 'bossrush_impossible') {
+        boss.health = Math.floor(boss.maxHealth * 1.8);
+        boss.maxHealth = boss.health;
+        boss.dy *= 1.4;
+      }
     } else {
       window.bossSystem.applyDifficulty(boss, player);
     }
@@ -1001,7 +1015,7 @@ class ChristmasTheme {
         if (dist > 0) {
           player.x = Math.max(0, Math.min(canvas.width - player.size, player.x + (dx/dist) * 100));
           player.y = Math.max(0, Math.min(canvas.height - player.size, player.y + (dy/dist) * 100));
-          player.dashCooldown = 120;
+          player.dashCooldown = player.ability === 'gissel' ? 60 : 120;
         }
       }
       lastTap = now;
@@ -1036,7 +1050,9 @@ class ChristmasTheme {
           player.slowTimeCooldown = 720;
         }
         if (t.clientX > 80 && t.clientX < 80 + btnSize && t.clientY > btnY && t.clientY < btnY + btnSize && player.healCooldown === 0) {
+          const oldHealth = player.health;
           player.health = Math.min(player.maxHealth, player.health + 25);
+          if (player.health > oldHealth) player.usedHeal = true;
           player.healCooldown = 600;
         }
         if (t.clientX > 140 && t.clientX < 140 + btnSize && t.clientY > btnY && t.clientY < btnY + btnSize && player.rapidFireCooldown === 0) {
@@ -1093,7 +1109,7 @@ class ChristmasTheme {
           player.y += shootDir.y * dashDist;
           player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
           player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
-          player.dashCooldown = 120;
+          player.dashCooldown = player.ability === 'gissel' ? 60 : 120;
         }
         
         if (gp.buttons[2].pressed && !gp.buttons[2].wasPressed && player.slowTimeCooldown === 0) {
@@ -1104,7 +1120,9 @@ class ChristmasTheme {
         gp.buttons[2].wasPressed = gp.buttons[2].pressed;
         
         if (gp.buttons[3].pressed && !gp.buttons[3].wasPressed && player.healCooldown === 0) {
+          const oldHealth = player.health;
           player.health = Math.min(player.maxHealth, player.health + 25);
+          if (player.health > oldHealth) player.usedHeal = true;
           player.healCooldown = 600;
         }
         gp.buttons[3].wasPressed = gp.buttons[3].pressed;
@@ -1173,7 +1191,8 @@ class ChristmasTheme {
         } else {
           bullets.push({ x: player.x + player.size/2, y: player.y + player.size/2, dx: shootDir.x * 10, dy: shootDir.y * 10, size: 10 });
         }
-        player.shootCooldown = player.rapidFire ? 5 : 15;
+        const baseShootCD = player.ability === 'luna' ? 10 : 15;
+        player.shootCooldown = player.rapidFire ? 5 : baseShootCD;
       }
       if (e.key === 'Shift' && player.dashCooldown === 0 && !e.repeat) {
         const dashDist = 100;
@@ -1181,7 +1200,7 @@ class ChristmasTheme {
         else if (keys['s']) player.y = Math.min(canvas.height - player.size, player.y + dashDist);
         else if (keys['a']) player.x = Math.max(0, player.x - dashDist);
         else if (keys['d']) player.x = Math.min(canvas.width - player.size, player.x + dashDist);
-        player.dashCooldown = 120;
+        player.dashCooldown = player.ability === 'gissel' ? 60 : 120;
       }
       if (e.key === 'q' && player.slowTimeCooldown === 0 && !e.repeat) {
         player.slowTime = true;
@@ -1189,7 +1208,9 @@ class ChristmasTheme {
         player.slowTimeCooldown = 900;
       }
       if (e.key === 'e' && player.healCooldown === 0 && !e.repeat) {
+        const oldHealth = player.health;
         player.health = Math.min(player.maxHealth, player.health + 20);
+        if (player.health > oldHealth) player.usedHeal = true;
         player.healCooldown = 720;
       }
       if (e.key === 'r' && player.rapidFireCooldown === 0 && !e.repeat) {
@@ -1426,14 +1447,16 @@ class ChristmasTheme {
       }
       
       if (Math.random() < 0.003 && boss.phase >= 2) {
-        const types = ['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion'];
+        const types = ['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion', 'penetrating', 'time_freeze'];
         const type = types[Math.floor(Math.random() * types.length)];
         const powerupFuncs = {
           'invincibility': 'createInvincibilityPowerup',
           'bomb': 'createBombPowerup',
           'speed': 'createSpeedPowerup',
           'double_damage': 'createDoubleDamagePowerup',
-          'slow_motion': 'createSlowMotionPowerup'
+          'slow_motion': 'createSlowMotionPowerup',
+          'penetrating': 'createPenetratingBulletPowerup',
+          'time_freeze': 'createTimeFreezePowerup'
         };
         powerups.push(enhancements[powerupFuncs[type]](Math.random() * canvas.width, -50));
       }
@@ -1538,10 +1561,14 @@ class ChristmasTheme {
         if (p.x < -50 || p.x > canvas.width + 50 || p.y < -50 || p.y > canvas.height + 50) powerups.splice(i, 1);
         if (p.x < player.x + player.size && p.x + p.size > player.x && 
             p.y < player.y + player.size && p.y + p.size > player.y) {
-          if (p.type === 'health') player.health = Math.min(player.maxHealth, player.health + 30);
+          if (p.type === 'health') {
+            const oldHealth = player.health;
+            player.health = Math.min(player.maxHealth, player.health + 30);
+            if (player.health > oldHealth) player.usedHeal = true;
+          }
           if (p.type === 'shield') { player.shield = true; player.shieldTimer = 300; }
           if (p.type === 'triple') { player.tripleShot = true; player.tripleShotTimer = 300; }
-          if (['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion'].includes(p.type)) {
+          if (['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion', 'penetrating', 'time_freeze'].includes(p.type)) {
             enhancements.applyPowerupEffect(player, p, bossBullets);
           }
           powerups.splice(i, 1);
@@ -1561,6 +1588,8 @@ class ChristmasTheme {
       if (player.speedBoostTimer > 0) { player.speedBoostTimer--; if (player.speedBoostTimer === 0) player.speedBoost = false; }
       if (player.doubleDamageTimer > 0) { player.doubleDamageTimer--; if (player.doubleDamageTimer === 0) player.doubleDamage = false; }
       if (player.slowMotionTimer > 0) { player.slowMotionTimer--; if (player.slowMotionTimer === 0) player.slowMotion = false; }
+      if (player.penetratingTimer > 0) { player.penetratingTimer--; if (player.penetratingTimer === 0) player.penetratingBullets = false; }
+      if (player.timeFreezeTimer > 0) { player.timeFreezeTimer--; if (player.timeFreezeTimer === 0) player.timeFreeze = false; }
       if (player.angelShieldCooldown > 0) player.angelShieldCooldown--;
       if (player.ability === 'angel' && player.angelShieldCooldown === 0 && !player.angelShield) player.angelShield = true;
       if (player.ability === 'iris' && player.health < player.maxHealth) {
@@ -1652,7 +1681,18 @@ class ChristmasTheme {
       ctx.restore();
       
       ctx.fillStyle = charStats.bulletColor || '#0f0';
-      bullets.forEach(b => ctx.fillRect(b.x, b.y, b.size, b.size));
+      bullets.forEach(b => {
+        if (player.penetratingBullets) {
+          ctx.save();
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = charStats.bulletColor || '#0f0';
+          ctx.fillStyle = charStats.bulletColor || '#0f0';
+          ctx.fillRect(b.x, b.y, b.size, b.size);
+          ctx.restore();
+        } else {
+          ctx.fillRect(b.x, b.y, b.size, b.size);
+        }
+      });
       
       bossMinions.forEach(m => {
         ctx.save();
@@ -1676,7 +1716,7 @@ class ChristmasTheme {
       enhancements.drawWarnings(ctx, bossBullets);
       
       powerups.forEach(p => {
-        if (['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion'].includes(p.type)) {
+        if (['invincibility', 'bomb', 'speed', 'double_damage', 'slow_motion', 'penetrating', 'time_freeze'].includes(p.type)) {
           enhancements.drawPowerup(ctx, p);
         } else {
           ctx.fillStyle = p.type === 'health' ? '#0f0' : p.type === 'shield' ? '#0ff' : '#ff0';
@@ -1710,7 +1750,8 @@ class ChristmasTheme {
       ctx.font = '14px Arial';
       ctx.fillText('PLAYER', 20, 50);
       ctx.textAlign = 'right';
-      ctx.fillText('ABELITO', canvas.width - 20, 50);
+      const bossName = boss.isAnnaBoss ? 'ANNA' : boss.isDevourerBoss ? 'GISSEL' : 'ABELITO';
+      ctx.fillText(bossName, canvas.width - 20, 50);
       ctx.textAlign = 'left';
       
       enhancements.drawScore(ctx, 20, 100);
@@ -1775,6 +1816,18 @@ class ChristmasTheme {
         ctx.fillStyle = '#00f';
         ctx.font = 'bold 16px Arial';
         ctx.fillText(`SLOW MOTION: ${Math.ceil(player.slowMotionTimer / 60)}s`, 20, 190);
+      }
+      
+      if (player.penetratingBullets) {
+        ctx.fillStyle = '#0f0';
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText(`PENETRATING: ${Math.ceil(player.penetratingTimer / 60)}s`, 20, 210);
+      }
+      
+      if (player.timeFreeze) {
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText(`TIME FREEZE: ${Math.ceil(player.timeFreezeTimer / 60)}s`, 20, 230);
       }
       
       ctx.fillStyle = '#fff';
@@ -2052,6 +2105,12 @@ class ChristmasTheme {
             return;
           }
           
+          if (window.bossSystem.bossRushMode) {
+            document.getElementById('game').classList.remove('active');
+            document.getElementById('lobby').classList.add('active');
+            return;
+          }
+          
           ctx.fillStyle = '#f00';
           ctx.font = '60px Arial';
           ctx.textAlign = 'center';
@@ -2142,9 +2201,15 @@ class ChristmasTheme {
     
     if (window.bossSystem.bossRushMode && window.bossSystem.enhancements?.bossRush) {
       const enhancements = window.bossSystem.enhancements;
-      const hasNext = enhancements.nextBossRush(enhancements.bossRush, bossRef || { health: 500, maxHealth: 500, dy: 2, img: new Image() });
+      const bossTime = (Date.now() - enhancements.bossRush.bossStartTime) / 1000;
+      enhancements.bossRush.bossTimes.push(bossTime);
+      enhancements.bossRush.totalScore += enhancements.score;
+      enhancements.bossRush.bossesDefeated++;
+      enhancements.bossRush.currentBoss++;
+      enhancements.bossRush.totalTime = (Date.now() - enhancements.bossRush.startTime) / 1000;
       
-      if (hasNext) {
+      if (enhancements.bossRush.currentBoss < enhancements.bossRush.totalBosses) {
+        enhancements.bossRush.bossStartTime = Date.now();
         setTimeout(() => this.startBossFight(character), 2000);
         return;
       }
