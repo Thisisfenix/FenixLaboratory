@@ -1,29 +1,46 @@
 {
   "proyecto": "Guestbook de Dibujos",
-  "version": "3.3.0",
-  "lastUpdate": "2024-11-14",
+  "version": "3.3.1",
+  "lastUpdate": "2025-12-10",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory/tree/main/guessbook",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/guessbook/",
   
   "info_version_actual": {
-    "numero": "3.3.0",
-    "fecha": "2024-11-14",
-    "tipo": "major",
+    "numero": "3.3.1",
+    "fecha": "2025-12-10",
+    "tipo": "fix",
     "estado": "estable",
     "cambios_principales": [
-      "32 temas disponibles en VIP Store (11 gratis, 14 premium, 7 VIP)",
-      "Todos los temas de styles.css integrados al sistema",
-      "Interfaz compacta con dropdowns en lugar de cards",
-      "Sistema de puntos completamente funcional",
-      "Temas estacionales y especiales disponibles"
+      "Corrección de descarga de imágenes con fondo blanco",
+      "Preservación de GIFs animados al descargar",
+      "Detección automática de formato de imagen"
     ]
   },
   
   "updates": [
     {
+      "version": "3.3.1",
+      "date": "2025-12-10",
+      "title": "🖼️ Fix: Descarga con Fondo Blanco",
+      "type": "fix",
+      "features": [
+        "🖼️ Imágenes descargadas ahora incluyen fondo blanco automático",
+        "🎬 GIFs animados se preservan sin modificar al descargar",
+        "🔍 Detección automática de formato (GIF vs PNG/JPG)",
+        "💾 Función exportImage() mejorada en canvas.js",
+        "📥 Función downloadImage() mejorada en gallery.js"
+      ],
+      "fixes": [
+        "✅ Imágenes con transparencia ya no se descargan sin fondo",
+        "🎬 GIFs mantienen su animación al descargar",
+        "🔧 Canvas temporal con fondo blanco para PNG/JPG",
+        "⚡ Detección de backgroundGif para usar versión correcta"
+      ]
+    },
+    {
       "version": "3.3.0",
-      "date": "2024-11-14",
+      "date": "2025-11-14",
       "title": "🎨 32 Temas + VIP Store Completo",
       "type": "major",
       "features": [
@@ -47,7 +64,7 @@
     },
     {
       "version": "3.2.1",
-      "date": "2024-11-13",
+      "date": "2025-11-13",
       "title": "👥 Sistema de Amistades Completo",
       "type": "major",
       "features": [
@@ -83,7 +100,7 @@
     },
     {
       "version": "3.2.0",
-      "date": "2024-11-12",
+      "date": "2025-11-12",
       "title": "🔧 Corrección de Errores JavaScript",
       "type": "fix",
       "features": [
@@ -103,7 +120,7 @@
     },
     {
       "version": "3.1.8",
-      "date": "2024-11-10",
+      "date": "2025-11-10",
       "title": "🎨 Guestbook Completo + Reorganización",
       "type": "major",
       "features": [
@@ -143,7 +160,7 @@
     },
     {
       "version": "3.0.0",
-      "date": "2024-11-02",
+      "date": "2025-11-02",
       "title": "🚀 Lanzamiento del Guestbook",
       "type": "release",
       "features": [
@@ -184,9 +201,9 @@
   ],
   
   "estadisticas_proyecto": {
-    "total_versiones": 4,
+    "total_versiones": 5,
     "versiones_major": 2,
-    "versiones_fix": 1,
+    "versiones_fix": 2,
     "versiones_release": 1,
     "tiempo_desarrollo": "2 meses",
     "lineas_codigo_aprox": "2500+",

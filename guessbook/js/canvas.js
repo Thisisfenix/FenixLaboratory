@@ -1180,9 +1180,23 @@ export class CanvasManager {
   }
   
   exportImage() {
+    // Crear canvas temporal con fondo blanco
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = this.canvas.width;
+    tempCanvas.height = this.canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Dibujar fondo blanco
+    tempCtx.fillStyle = '#FFFFFF';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // Dibujar el contenido del canvas encima
+    tempCtx.drawImage(this.canvas, 0, 0);
+    
+    // Descargar con fondo blanco
     const link = document.createElement('a');
     link.download = `dibujo-${Date.now()}.png`;
-    link.href = this.canvas.toDataURL();
+    link.href = tempCanvas.toDataURL();
     link.click();
   }
   }

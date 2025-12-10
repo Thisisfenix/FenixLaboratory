@@ -731,11 +731,35 @@ function generateAvatarSync(author, profilePicture, profileAvatar = null) {
   return `<span style="font-size: 1.2em;">${avatarEmojis[emojiIndex]}</span>`;
 }
 
-window.downloadImage = function(imageData, author) {
-  const link = document.createElement('a');
-  link.download = `dibujo-${author}-${Date.now()}.png`;
-  link.href = imageData;
-  link.click();
+window.downloadImage = function(imageData, author, backgroundGif = null) {
+  const dataToDownload = backgroundGif || imageData;
+  const isGif = dataToDownload.startsWith('data:image/gif');
+  
+  if (isGif) {
+    const link = document.createElement('a');
+    link.download = `dibujo-${author}-${Date.now()}.gif`;
+    link.href = dataToDownload;
+    link.click();
+    return;
+  }
+  
+  const img = new Image();
+  img.onload = function() {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = img.width;
+    tempCanvas.height = img.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    tempCtx.fillStyle = '#FFFFFF';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    tempCtx.drawImage(img, 0, 0);
+    
+    const link = document.createElement('a');
+    link.download = `dibujo-${author}-${Date.now()}.png`;
+    link.href = tempCanvas.toDataURL('image/png');
+    link.click();
+  };
+  img.src = dataToDownload;
 };
 
 window.viewImage = async function(imageData, drawingId, isAnimated = false, backgroundGif = null, gifStickers = null) {
@@ -870,7 +894,7 @@ window.viewImage = async function(imageData, drawingId, isAnimated = false, back
       <button onclick="this.closest('.image-modal').remove()" class="btn btn-secondary btn-sm" style="${isMobile ? 'min-height: 36px; font-size: 14px; padding: 0.4rem 0.8rem;' : ''}">
         ${isMobile ? '✖️' : '✖️ Cerrar'}
       </button>
-      <button onclick="downloadImage('${imageData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', 'dibujo')" class="btn btn-primary btn-sm" style="${isMobile ? 'min-height: 36px; font-size: 14px; padding: 0.4rem 0.8rem;' : ''}">
+      <button onclick="downloadImage('${imageData.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', 'dibujo', ${hasBackgroundGif ? `'${backgroundGif.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null'})" class="btn btn-primary btn-sm" style="${isMobile ? 'min-height: 36px; font-size: 14px; padding: 0.4rem 0.8rem;' : ''}">
         ${isMobile ? '💾' : '💾 Descargar'}
       </button>
     </div>
