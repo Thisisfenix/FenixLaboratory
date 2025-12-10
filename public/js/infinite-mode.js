@@ -175,6 +175,10 @@ class InfiniteMode {
     const bullets = [];
     const keys = {};
     let gameRunning = true;
+    let invulnerableFrames = 0;
+    let abilityCooldown = 0;
+    let powerUps = { slot1: null, slot2: null, slot3: null };
+    let lastDirection = { x: 1, y: 0 };
     
     document.addEventListener('keydown', e => keys[e.key] = true);
     document.addEventListener('keyup', e => keys[e.key] = false);
@@ -186,7 +190,7 @@ class InfiniteMode {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Movimiento del jugador
-      const moveSpeed = 4 * player.speed;
+      const moveSpeed = 4 * player.speed * speedBonus;
       if (keys['w']) player.y -= moveSpeed;
       if (keys['s']) player.y += moveSpeed;
       if (keys['a']) player.x -= moveSpeed;
@@ -195,21 +199,78 @@ class InfiniteMode {
       player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
       player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
       
+      // Actualizar dirección
+      if (keys['w'] || keys['s'] || keys['a'] || keys['d']) {
+        lastDirection = { x: 0, y: 0 };
+        if (keys['d']) lastDirection.x = 1;
+        if (keys['a']) lastDirection.x = -1;
+        if (keys['s']) lastDirection.y = 1;
+        if (keys['w']) lastDirection.y = -1;
+        const mag = Math.sqrt(lastDirection.x**2 + lastDirection.y**2);
+        if (mag > 0) {
+          lastDirection.x /= mag;
+          lastDirection.y /= mag;
+        }
+      }
+      
       // Disparo
       if (keys[' '] && player.shootCooldown === 0) {
+        const extraBullets = enhancements.upgrades.extraBullets || 0;
+        const baseSpeed = 10 * bulletSpeedBonus;
+        
+        // Bala principal
         bullets.push({
           x: player.x + player.size/2,
           y: player.y + player.size/2,
-          dx: 10, dy: 0, size: 8
+          dx: lastDirection.x * baseSpeed,
+          dy: lastDirection.y * baseSpeed,
+          size: 8,
+          damage: 10 * damageBonus
         });
-        player.shootCooldown = 15;
+        
+        // Balas extras
+        for (let i = 1; i <= extraBullets; i++) {
+          const angle = (i % 2 === 0 ? 1 : -1) * (Math.PI / 8) * Math.ceil(i / 2);
+          const cos = Math.cos(angle);
+          const sin = Math.sin(angle);
+          const rotX = lastDirection.x * cos - lastDirection.y * sin;
+          const rotY = lastDirection.x * sin + lastDirection.y * cos;
+          
+          bullets.push({
+            x: player.x + player.size/2,
+            y: player.y + player.size/2,
+            dx: rotX * baseSpeed,
+            dy: rotY * baseSpeed,
+            size: 8,
+            damage: 10 * damageBonus
+          });
+        }
+        
+        player.shootCooldown = Math.max(5, 15 * cooldownReduction);
       }
       if (player.shootCooldown > 0) player.shootCooldown--;
+      
+      // Habilidad (tecla E)
+      if (keys['e'] && abilityCooldown === 0) {
+        this.useAbility(character, player, bullets, enhancements);
+        abilityCooldown = 300; // 5 segundos
+      }
+      if (abilityCooldown > 0) abilityCooldown--;
+      
+      // Aplicar upgrades permanentes
+      if (!enhancements.upgrades) enhancements.upgrades = {};
+      const speedBonus = 1 + (enhancements.upgrades.speed || 0) * 0.1;
+      const cooldownReduction = 1 - (enhancements.upgrades.cooldown || 0) * 0.1;
+      const bulletSpeedBonus = 1 + (enhancements.upgrades.bulletSpeed || 0) * 0.15;
+      const damageBonus = 1 + (enhancements.upgrades.damage || 0) * 0.2;
       
       // Actualizar balas
       bullets.forEach((b, i) => {
         b.x += b.dx;
-        if (b.x > canvas.width) bullets.splice(i, 1);
+        b.y += b.dy;
+        if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+          bullets.splice(i, 1);
+        }
       });
       
       // Actualizar enemigos
@@ -227,7 +288,7 @@ class InfiniteMode {
         bullets.forEach((b, j) => {
           if (b.x > enemy.x && b.x < enemy.x + enemy.size &&
               b.y > enemy.y && b.y < enemy.y + enemy.size) {
-            enemy.health -= 10;
+            enemy.health -= (b.damage || 10);
             bullets.splice(j, 1);
             if (enemy.health <= 0) {
               enhancements.waveEnemies.splice(i, 1);
@@ -238,9 +299,11 @@ class InfiniteMode {
         });
         
         // Colisión con jugador
-        if (enemy.x < player.x + player.size && enemy.x + enemy.size > player.x &&
+        if (invulnerableFrames === 0 && !player.shield &&
+            enemy.x < player.x + player.size && enemy.x + enemy.size > player.x &&
             enemy.y < player.y + player.size && enemy.y + enemy.size > player.y) {
-          player.health -= 10;
+          player.health -= 1;
+          invulnerableFrames = 30; // 0.5 segundos de invulnerabilidad
           if (player.health <= 0) {
             gameRunning = false;
             this.showGameOver(enhancements);
@@ -249,13 +312,30 @@ class InfiniteMode {
         }
       });
       
+      // Reducir frames de invulnerabilidad y escudo
+      if (invulnerableFrames > 0) invulnerableFrames--;
+      if (player.shield > 0) {
+        player.shield--;
+        // Dibujar escudo
+        ctx.strokeStyle = '#00ffff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x + player.size/2, player.y + player.size/2, player.size, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      
       // Verificar si la oleada terminó
-      if (enhancements.waveEnemies.length === 0) {
+      if (enhancements.waveEnemies.length === 0 && enhancements.totalEnemies > 0) {
         enhancements.infiniteRound++;
+        enhancements.totalEnemies = 0; // Prevenir múltiples triggers
+        gameRunning = false;
         this.showWaveComplete(enhancements, () => {
+          gameRunning = true;
           this.spawnWave(canvas, enhancements.infiniteRound, 
             this.waveTypes[Math.floor(Math.random() * this.waveTypes.length)], enhancements);
+          requestAnimationFrame(gameLoop);
         });
+        return;
       }
       
       // Dibujar todo
@@ -283,7 +363,26 @@ class InfiniteMode {
       ctx.fillText(`Tipo: ${enhancements.waveType.toUpperCase()}`, 20, 60);
       ctx.fillText(`Enemigos: ${enhancements.waveEnemies.length}/${enhancements.totalEnemies}`, 20, 90);
       ctx.fillText(`Score: ${enhancements.score}`, 20, 120);
-      ctx.fillText(`HP: ${player.health}/${player.maxHealth}`, 20, 150);
+      const maxHp = charStats.hp + (enhancements.upgrades.maxHp || 0) * 20;
+      player.maxHealth = maxHp;
+      ctx.fillText(`HP: ${player.health}/${maxHp}`, 20, 150);
+      ctx.fillText(`Habilidad [E]: ${abilityCooldown > 0 ? Math.ceil(abilityCooldown/60) + 's' : 'LISTO'}`, 20, 180);
+      
+      // Upgrades UI
+      ctx.fillText('Upgrades:', canvas.width - 220, 30);
+      const upgradeList = [
+        { name: 'HP Máx', value: enhancements.upgrades.maxHp || 0 },
+        { name: 'Balas', value: enhancements.upgrades.extraBullets || 0 },
+        { name: 'Velocidad', value: enhancements.upgrades.speed || 0 },
+        { name: 'Daño', value: enhancements.upgrades.damage || 0 },
+        { name: 'Cooldown', value: enhancements.upgrades.cooldown || 0 },
+        { name: 'Vel.Balas', value: enhancements.upgrades.bulletSpeed || 0 }
+      ];
+      upgradeList.forEach((up, i) => {
+        ctx.fillStyle = '#fff';
+        ctx.font = '16px Arial';
+        ctx.fillText(`${up.name}: Lv${up.value}`, canvas.width - 215, 55 + i*25);
+      });
       
       requestAnimationFrame(gameLoop);
     };
@@ -292,48 +391,158 @@ class InfiniteMode {
   }
 
   showWaveComplete(enhancements, callback) {
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(0,255,255,0.9); padding: 30px; border-radius: 15px;
-      color: #000; font-weight: bold; text-align: center; z-index: 10001;
-    `;
-    overlay.innerHTML = `
-      <div style="font-size: 2rem;">¡OLEADA ${enhancements.infiniteRound - 1} COMPLETADA!</div>
-      <div style="font-size: 1.2rem; margin: 10px 0;">Preparándose para la siguiente...</div>
-    `;
-    document.body.appendChild(overlay);
+    const upgrades = [
+      { name: '+20 HP Máx', key: 'maxHp' },
+      { name: '+1 Bala Extra', key: 'extraBullets' },
+      { name: '+10% Velocidad', key: 'speed' },
+      { name: '+20% Daño', key: 'damage' },
+      { name: '-10% Cooldown', key: 'cooldown' },
+      { name: '+15% Vel. Balas', key: 'bulletSpeed' }
+    ];
     
-    setTimeout(() => {
-      overlay.remove();
-      callback();
-    }, 2000);
-  }
-
-  showGameOver(enhancements) {
-    const survivalTime = ((Date.now() - enhancements.infiniteStartTime) / 1000).toFixed(2);
+    const choices = [];
+    for (let i = 0; i < 3; i++) {
+      choices.push(upgrades[Math.floor(Math.random() * upgrades.length)]);
+    }
     
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.95); z-index: 10001;
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;
+    `;
+    
+    if (!enhancements.upgrades) enhancements.upgrades = {};
+    
+    overlay.innerHTML = `
+      <div style="color: #0ff; font-size: 3rem; font-weight: bold;">¡OLEADA ${enhancements.infiniteRound - 1} COMPLETADA!</div>
+      <div style="color: #fff; font-size: 1.5rem;">Elige UN upgrade permanente:</div>
+      <div style="display: flex; gap: 20px;">
+        ${choices.map((up, i) => {
+          const level = enhancements.upgrades[up.key] || 0;
+          return `
+            <button class="upgrade-choice" data-key="${up.key}" data-name="${up.name}"
+              style="background: #0f0; color: #000; padding: 20px 30px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.3rem; font-weight: bold;">
+              ${up.name}<br><span style="font-size: 0.9rem;">Nivel ${level}</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    overlay.querySelectorAll('.upgrade-choice').forEach(btn => {
+      btn.onclick = () => {
+        const key = btn.dataset.key;
+        enhancements.upgrades[key] = (enhancements.upgrades[key] || 0) + 1;
+        overlay.remove();
+        callback();
+      };
+    });
+  }
+  
+  useAbility(character, player, bullets, enhancements) {
+    const lastDir = { x: 1, y: 0 }; // Default direction
+    switch(character) {
+      case 'Angel':
+        player.speed *= 3;
+        setTimeout(() => player.speed /= 3, 1000);
+        break;
+      case 'Gissel':
+        player.health = Math.min(player.maxHealth, player.health + 30);
+        break;
+      case 'iA777':
+        for (let i = -2; i <= 2; i++) {
+          bullets.push({ x: player.x + player.size/2, y: player.y + player.size/2, dx: 10, dy: i*2, size: 8, damage: 10 });
+        }
+        break;
+      case 'Iris':
+        player.shield = 60;
+        break;
+      case 'Luna':
+        enhancements.waveEnemies.forEach(e => e.speed *= 0.3);
+        setTimeout(() => enhancements.waveEnemies.forEach(e => e.speed /= 0.3), 3000);
+        break;
+      case 'Molly':
+        enhancements.waveEnemies.forEach(e => {
+          const dist = Math.sqrt((e.x - player.x)**2 + (e.y - player.y)**2);
+          if (dist < 200) e.health -= 50;
+        });
+        break;
+    }
+  }
+
+  showGameOver(enhancements) {
+    const survivalTime = ((Date.now() - enhancements.infiniteStartTime) / 1000).toFixed(2);
+    const waves = enhancements.infiniteRound - 1;
+    const score = enhancements.score;
+    
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.95); z-index: 10001;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;
     `;
     
     overlay.innerHTML = `
       <div style="color: #f00; font-size: 4rem; font-weight: bold;">¡GAME OVER!</div>
-      <div style="color: #fff; font-size: 1.5rem; margin: 20px; text-align: center;">
-        <div>Oleadas Sobrevividas: ${enhancements.infiniteRound - 1}</div>
+      <div style="color: #fff; font-size: 1.5rem; text-align: center;">
+        <div>Oleadas Sobrevividas: ${waves}</div>
         <div>Tiempo: ${survivalTime}s</div>
-        <div>Score Final: ${enhancements.score}</div>
+        <div>Score Final: ${score}</div>
       </div>
-      <button onclick="document.getElementById('game').classList.remove('active'); document.getElementById('lobby').classList.add('active'); this.parentElement.remove();"
-        style="background: #0ff; color: #000; padding: 15px 40px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.5rem; font-weight: bold;">
-        VOLVER AL LOBBY
-      </button>
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <input id="playerName" type="text" placeholder="Tu nombre" maxlength="20"
+          style="padding: 10px 20px; font-size: 1.2rem; border: 2px solid #0ff; background: #000; color: #fff; border-radius: 5px; text-align: center;">
+        <button id="submitScore"
+          style="background: #0f0; color: #000; padding: 15px 40px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.5rem; font-weight: bold;">
+          GUARDAR SCORE
+        </button>
+        <button id="backToLobby"
+          style="background: #0ff; color: #000; padding: 15px 40px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.5rem; font-weight: bold;">
+          VOLVER AL LOBBY
+        </button>
+      </div>
     `;
     
     document.body.appendChild(overlay);
+    
+    const backToLobby = () => {
+      document.getElementById('game').classList.remove('active');
+      document.getElementById('lobby').classList.add('active');
+      overlay.remove();
+    };
+    
+    overlay.querySelector('#backToLobby').onclick = backToLobby;
+    
+    overlay.querySelector('#submitScore').onclick = async () => {
+      const name = overlay.querySelector('#playerName').value.trim();
+      if (!name) {
+        alert('¡Ingresa tu nombre!');
+        return;
+      }
+      
+      try {
+        const { data, error } = await window.supabase
+          .from('infinite_leaderboard')
+          .insert([{
+            player_name: name,
+            waves_survived: waves,
+            survival_time: parseFloat(survivalTime),
+            final_score: score,
+            created_at: new Date().toISOString()
+          }]);
+        
+        if (error) throw error;
+        
+        alert('¡Score guardado! 🎉');
+        backToLobby();
+      } catch (err) {
+        console.error('Error guardando score:', err);
+        alert('Error guardando el score. Intenta de nuevo.');
+      }
+    };
   }
 }
 

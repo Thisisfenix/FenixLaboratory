@@ -15,3 +15,6 @@ server.py
 run-server.bat
 __pycache__/
 *.pyc
+
+# Chatbot (Cloudflare Workers - externo)
+chatbot/
