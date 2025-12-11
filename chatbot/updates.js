@@ -24,7 +24,9 @@ const UPDATES = [
       'Responsive para móviles con menú hamburguesa',
       'Sistema de archivado de personajes (long press 0.8s)',
       'Click derecho para desarchivar',
-      'Filtrado automático de archivados'
+      'Filtrado automático de archivados',
+      'Alertas automáticas de errores en móviles',
+      'Sistema de reporte de bugs para Discord (@thisisankush)'
     ]
   }
 ];

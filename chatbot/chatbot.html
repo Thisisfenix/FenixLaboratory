@@ -1835,6 +1835,21 @@
       showArchived();
       alert(`📤 ${charName} desarchivado`);
     };
+
+    // Capturar errores en móviles
+    const isMobile = window.innerWidth <= 768;
+    
+    window.addEventListener('error', (e) => {
+      if (isMobile) {
+        alert(`⚠️ ERROR DETECTADO\n\n${e.message}\n\nArchivo: ${e.filename}\nLínea: ${e.lineno}\n\nReporta esto en Discord a @thisisankush`);
+      }
+    });
+
+    window.addEventListener('unhandledrejection', (e) => {
+      if (isMobile) {
+        alert(`⚠️ ERROR DE CONEXIÓN\n\n${e.reason}\n\nReporta esto en Discord a @thisisankush`);
+      }
+    });
   </script>
 </body>
 </html>
