@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deadly Pursuer - Chat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0d1418;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .app-container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+
+    .mini-sidebar {
+      width: 60px;
+      background: #202c33;
+      border-right: 1px solid #2a3942;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+      gap: 5px;
+    }
+
+    .mini-sidebar-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #8696a0;
+      font-size: 1.3rem;
+      position: relative;
+    }
+
+    .mini-sidebar-btn:hover {
+      background: #2a3942;
+      color: #e9edef;
+    }
+
+    .mini-sidebar-btn.active {
+      background: #2a3942;
+      color: #00a884;
+    }
+
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid #2a3942;
+      transition: all 0.2s;
+    }
+
+    .profile-pic:hover {
+      border-color: #00a884;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .coming-soon {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #00a884;
+      color: white;
+      font-size: 0.6rem;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+
+    .sidebar {
+      width: 350px;
+      background: #111b21;
+      border-right: 1px solid #2a3942;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      background: #202c33;
+      padding: 15px;
+      color: #e9edef;
+      font-weight: 500;
+      border-bottom: 1px solid #2a3942;
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .chat-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-list::-webkit-scrollbar-thumb {
+      background: #2a3942;
+      border-radius: 10px;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #2a3942;
+      transition: background 0.2s;
+    }
+
+    .chat-item:hover {
+      background: #202c33;
+    }
+
+    .chat-item.active {
+      background: #2a3942;
+    }
+
+    .chat-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 12px;
+      object-fit: cover;
+    }
+
+    .chat-info {
+      flex: 1;
+    }
+
+    .chat-name {
+      color: #e9edef;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .chat-preview {
+      color: #8696a0;
+      font-size: 0.85rem;
+      margin-top: 2px;
+    }
+
+    .chat-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+
+    .chat-time {
+      color: #8696a0;
+      font-size: 0.75rem;
+    }
+
+    .chat-status {
+      color: #53bdeb;
+      font-size: 1rem;
+    }
+
+    .chat-status.seen {
+      color: #53bdeb;
+    }
+
+    .chat-status.unseen {
+      color: #8696a0;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #0b141a;
+    }
+
+    .chat-header {
+      background: #202c33;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 1px solid #2a3942;
+    }
+
+    .header-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .header-info {
+      flex: 1;
+    }
+
+    .header-name {
+      color: #e9edef;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .header-status {
+      color: #8696a0;
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #0b141a;
+      background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.02) 10px, rgba(255,255,255,.02) 20px),
+        repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,.02) 10px, rgba(255,255,255,.02) 20px);
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #2a3942;
+      border-radius: 10px;
+    }
+
+    .message {
+      max-width: 65%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      word-wrap: break-word;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      position: relative;
+      animation: fadeIn 0.2s ease-out;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      color: #8696a0;
+      margin-top: 4px;
+      align-self: flex-end;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .message-check {
+      color: #53bdeb;
+      font-size: 0.9rem;
+    }
+
+    .message-check.unseen {
+      color: #8696a0;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .message.user {
+      background: #005c4b;
+      color: #e9edef;
+      align-self: flex-end;
+      border-radius: 8px 8px 0 8px;
+    }
+
+    .message.bot {
+      background: #1f2c34;
+      color: #e9edef;
+      align-self: flex-start;
+      border-radius: 8px 8px 8px 0;
+    }
+
+    .message.typing {
+      background: #1f2c34;
+      align-self: flex-start;
+      border-radius: 8px 8px 8px 0;
+      padding: 12px;
+    }
+
+    .chat-input {
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      background: #1f2c34;
+      border-top: 1px solid #2a3942;
+      gap: 8px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .image-preview {
+      max-width: 150px;
+      max-height: 100px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .image-upload-btn {
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: #8696a0;
+      cursor: pointer;
+      font-size: 1.3rem;
+      transition: all 0.2s;
+    }
+
+    .image-upload-btn:hover {
+      color: #00a884;
+    }
+
+    .remove-image {
+      background: #f15c6d;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      margin-left: 8px;
+    }
+
+    .message img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+
+    .chat-input input[type="text"] {
+      flex: 1;
+      padding: 10px 15px;
+      background: #2a3942;
+      border: none;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      color: #e9edef;
+      outline: none;
+    }
+
+    .chat-input input[type="file"] {
+      display: none;
+    }
+
+    .chat-input input[type="text"]::placeholder {
+      color: #8696a0;
+    }
+
+    .chat-input button {
+      padding: 10px;
+      background: #00a884;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-input button:hover {
+      background: #06cf9c;
+    }
+
+    .chat-input button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 10px;
+    }
+
+    .typing-indicator span {
+      width: 10px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+      30% { transform: translateY(-12px); opacity: 1; }
+    }
+
+    .retro-link {
+      position: fixed;
+      bottom: 15px;
+      left: 15px;
+      z-index: 10;
+    }
+
+    .retro-link a {
+      background: #202c33;
+      border: 1px solid #2a3942;
+      color: #00a884;
+      padding: 8px 15px;
+      text-decoration: none;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+    }
+
+    .retro-link a:hover {
+      background: #2a3942;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #202c33;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      color: #e9edef;
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #2a3942;
+    }
+
+    .setting-item {
+      padding: 15px 0;
+      border-bottom: 1px solid #2a3942;
+    }
+
+    .setting-label {
+      color: #e9edef;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .setting-input {
+      width: 100%;
+      padding: 10px;
+      background: #2a3942;
+      border: none;
+      border-radius: 5px;
+      color: #e9edef;
+      font-size: 0.9rem;
+    }
+
+    .setting-select {
+      width: 100%;
+      padding: 10px;
+      background: #2a3942;
+      border: none;
+      border-radius: 5px;
+      color: #e9edef;
+      font-size: 0.9rem;
+    }
+
+    .setting-btn {
+      width: 100%;
+      padding: 12px;
+      background: #00a884;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .setting-btn:hover {
+      background: #06cf9c;
+    }
+
+    .setting-btn.danger {
+      background: #f15c6d;
+    }
+
+    .setting-btn.danger:hover {
+      background: #ff6b7a;
+    }
+
+    .close-modal {
+      float: right;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #8696a0;
+    }
+
+    .close-modal:hover {
+      color: #e9edef;
+    }
+
+    .custom-char-item {
+      background: #2a3942;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .custom-char-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .custom-char-info {
+      flex: 1;
+      color: #e9edef;
+    }
+
+    .custom-char-name {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .custom-char-desc {
+      font-size: 0.85rem;
+      color: #8696a0;
+    }
+
+    .delete-char-btn {
+      background: #f15c6d;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .delete-char-btn:hover {
+      background: #ff6b7a;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 100;
+      background: #202c33;
+      border: none;
+      color: #e9edef;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+
+    .mobile-overlay.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mini-sidebar {
+        position: fixed;
+        left: -60px;
+        top: 0;
+        height: 100vh;
+        z-index: 100;
+        transition: left 0.3s;
+      }
+
+      .mini-sidebar.mobile-open {
+        left: 0;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: -350px;
+        top: 0;
+        height: 100vh;
+        z-index: 100;
+        transition: left 0.3s;
+      }
+
+      .sidebar.mobile-open {
+        left: 60px;
+      }
+
+      .chat-container {
+        width: 100%;
+      }
+
+      .chat-header {
+        padding-left: 70px;
+      }
+
+      .message {
+        max-width: 85%;
+      }
+
+      .retro-link {
+        bottom: 80px;
+        left: 10px;
+      }
+
+      .retro-link a {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+  <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+  <div class="app-container">
+    <div class="mini-sidebar" id="miniSidebar">
+      <div class="mini-sidebar-btn" title="Estados">
+        🟢
+        <span class="coming-soon">Soon</span>
+      </div>
+      <div class="mini-sidebar-btn" title="Canales">
+        📢
+      </div>
+      <div class="mini-sidebar-btn active" title="Chats">
+        💬
+      </div>
+      <div class="mini-sidebar-btn" title="Archivados">
+        🗄️
+      </div>
+      <div class="spacer"></div>
+      <a href="chatbot-3d.html" class="mini-sidebar-btn" title="Modo Retro">
+        🎮
+      </a>
+      <div class="mini-sidebar-btn" title="Configuración">
+        ⚙️
+      </div>
+      <input type="file" id="profilePicInput" accept="image/*" style="display: none;" />
+      <label for="profilePicInput" title="Cambiar foto de perfil">
+        <img src="https://via.placeholder.com/40/2a3942/8696a0?text=U" class="profile-pic" id="profilePic" />
+      </label>
+    </div>
+
+    <div class="sidebar" id="mainSidebar" class="sidebar">
+      <div class="sidebar-header" id="sidebarTitle">Deadly Pursuer Chats</div>
+      <div class="chat-list" id="chatList">
+        <div class="chat-item active" data-char="Angel">
+          <img src="../public/assets/icons/AngelNormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Angel</div>
+            <div class="chat-preview">Protector valiente</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">Ahora</div>
+            <div class="chat-status seen">✓✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="Gissel">
+          <img src="../public/assets/icons/GisselInactiveIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Gissel</div>
+            <div class="chat-preview">Sociable y servicial</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">12:30</div>
+            <div class="chat-status unseen">✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="iA777">
+          <img src="../public/assets/icons/IA777NormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">iA777</div>
+            <div class="chat-preview">Tranquilo y gracioso</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">Ayer</div>
+            <div class="chat-status seen">✓✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="Iris">
+          <img src="../public/assets/icons/IrisNormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Iris</div>
+            <div class="chat-preview">Calmada pero hiperactiva</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">Ayer</div>
+            <div class="chat-status seen">✓✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="Luna">
+          <img src="../public/assets/icons/LunaNormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Luna</div>
+            <div class="chat-preview">Tímida y curiosa</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">15:45</div>
+            <div class="chat-status unseen">✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="Molly">
+          <img src="../public/assets/icons/MollyNormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Molly</div>
+            <div class="chat-preview">Asertiva y leal</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">10:20</div>
+            <div class="chat-status seen">✓✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-header">
+        <img src="../public/assets/icons/AngelNormalIcon.png" class="header-avatar" id="headerAvatar">
+        <div class="header-info">
+          <div class="header-name" id="headerName">Angel</div>
+          <div class="header-status">En línea</div>
+        </div>
+      </div>
+    
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot">
+        Hola. Soy Angel. Confía en mí, te protegeré. ¿En qué necesitas ayuda?
+      </div>
+    </div>
+    
+    <div class="chat-input">
+      <div id="imagePreviewContainer"></div>
+      <div class="input-row">
+        <input type="file" id="imageInput" accept="image/*" />
+        <label for="imageInput" class="image-upload-btn">📷</label>
+        <input type="text" id="messageInput" placeholder="Escribe un mensaje" />
+        <button id="sendButton">➤</button>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        Configuración
+        <span class="close-modal" onclick="closeSettings()">&times;</span>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-label">👤 Tu nombre</div>
+        <input type="text" class="setting-input" id="userName" placeholder="¿Cómo te llamas?" />
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">🔔 Sonido de notificación</div>
+        <select class="setting-select" id="soundSelect">
+          <option value="on">Activado</option>
+          <option value="off">Desactivado</option>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">💬 Tamaño de fuente</div>
+        <select class="setting-select" id="fontSizeSelect">
+          <option value="small">Pequeño</option>
+          <option value="medium">Mediano</option>
+          <option value="large">Grande</option>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <button class="setting-btn" onclick="saveSettings()">💾 Guardar cambios</button>
+        <button class="setting-btn" onclick="openCustomPanel()">✨ Gestionar personajes personalizados</button>
+        <button class="setting-btn danger" onclick="clearHistory()">🗑️ Borrar historial</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="customPanel">
+    <div class="modal-content">
+      <div class="modal-header">
+        Personajes Personalizados
+        <span class="close-modal" onclick="closeCustomPanel()">&times;</span>
+      </div>
+      
+      <div class="setting-item">
+        <button class="setting-btn" onclick="openCreateCharModal()">➕ Crear nuevo personaje</button>
+      </div>
+
+      <div id="customCharactersList"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="createCharModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        ✨ Crear Personaje
+        <span class="close-modal" onclick="closeCreateCharModal()">&times;</span>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-label">👤 Nombre del personaje</div>
+        <input type="text" class="setting-input" id="charName" placeholder="Ej: Sakura" />
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">💬 Personalidad</div>
+        <input type="text" class="setting-input" id="charPersonality" placeholder="Ej: Amigable, sarcástico, tímido" />
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">👋 Mensaje de saludo</div>
+        <input type="text" class="setting-input" id="charGreeting" placeholder="Ej: ¡Hola! ¿Cómo estás?" />
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">🖼️ Imagen del personaje (opcional)</div>
+        <input type="file" id="charImageFile" accept="image/*" style="display: none;" />
+        <label for="charImageFile" class="setting-btn" style="margin-top: 0;">📷 Subir imagen</label>
+        <div id="charImagePreview"></div>
+      </div>
+
+      <div class="setting-item">
+        <button class="setting-btn" onclick="saveNewCharacter()">✅ Crear personaje</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="updates.js"></script>
+  <script>
+    const WORKER_URL = 'https://fenix-chatbot.aleverafenix12345.workers.dev';
+    
+    // Generar userId único
+    let userId = localStorage.getItem('userId');
+    if (!userId) {
+      userId = 'user_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+      localStorage.setItem('userId', userId);
+    }
+    
+    const characterGreetings = {
+      Angel: 'Hola. Soy Angel. Confía en mí, te protegeré. ¿En qué necesitas ayuda?',
+      Gissel: '¡Hola! Soy Gissel~ ¿Cómo estás? ¿Hay algo en lo que pueda ayudarte? Me gusta ayudar a las personas.',
+      iA777: 'Hey... soy iA777. ¿Qué pasa? Espero que no sea nada complicado, ya tengo suficiente estrés.',
+      Iris: 'Hola, soy Iris. ¿Cómo estás? Espero que estés bien. ¿En qué puedo ayudarte?',
+      Luna: 'H-hola... soy Luna. Um... ¿en qué puedo ayudarte?',
+      Molly: 'Hola. Soy Molly. ¿Qué necesitas? Si es importante, te ayudaré.'
+    };
+
+    // Chat Logic
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const headerAvatar = document.getElementById('headerAvatar');
+    const headerName = document.getElementById('headerName');
+    
+    let conversationId = null;
+    let currentCharacter = 'Angel';
+    let currentImage = null;
+
+    const characterIcons = {
+      Angel: '../public/assets/icons/AngelNormalIcon.png',
+      Gissel: '../public/assets/icons/GisselInactiveIcon.png',
+      iA777: '../public/assets/icons/IA777NormalIcon.png',
+      Iris: '../public/assets/icons/IrisNormalIcon.png',
+      Luna: '../public/assets/icons/LunaNormalIcon.png',
+      Molly: '../public/assets/icons/MollyNormalIcon.png'
+    };
+
+    // Profile pic upload
+    const profilePicInput = document.getElementById('profilePicInput');
+    const profilePic = document.getElementById('profilePic');
+    
+    profilePicInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        profilePic.src = event.target.result;
+        localStorage.setItem('profilePic', event.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Load saved profile pic
+    const savedPic = localStorage.getItem('profilePic');
+    if (savedPic) {
+      profilePic.src = savedPic;
+    }
+
+    // Mini sidebar navigation
+    document.querySelectorAll('.mini-sidebar-btn').forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        if (btn.querySelector('.coming-soon')) {
+          alert('🚀 Próximamente!');
+          return;
+        }
+        
+        // Índice 1 = Canales
+        if (index === 1) {
+          showChannels();
+          return;
+        }
+        // Índice 2 = Chats
+        if (index === 2) {
+          showChats();
+          return;
+        }
+        // Índice 4 = Configuración
+        if (index === 4) {
+          openSettings();
+          return;
+        }
+        
+        document.querySelectorAll('.mini-sidebar-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    function showChannels() {
+      document.querySelectorAll('.mini-sidebar-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.mini-sidebar-btn')[1].classList.add('active');
+      
+      document.getElementById('sidebarTitle').textContent = 'Canales';
+      const chatList = document.getElementById('chatList');
+      chatList.innerHTML = `
+        <div class="chat-item active" onclick="openUpdatesChannel()">
+          <img src="https://via.placeholder.com/50/00a884/ffffff?text=U" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">📢 Updates</div>
+            <div class="chat-preview">Actualizaciones del chatbot</div>
+          </div>
+        </div>
+      `;
+      
+      openUpdatesChannel();
+    }
+
+    function showChats() {
+      document.querySelectorAll('.mini-sidebar-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.mini-sidebar-btn')[2].classList.add('active');
+      
+      document.getElementById('sidebarTitle').textContent = 'Deadly Pursuer Chats';
+      location.reload();
+    }
+
+    function openUpdatesChannel() {
+      headerAvatar.src = 'https://via.placeholder.com/40/00a884/ffffff?text=U';
+      headerName.textContent = '📢 Updates';
+      document.querySelector('.header-status').textContent = 'Canal oficial';
+      
+      messagesContainer.innerHTML = getUpdatesHTML();
+      
+      // Deshabilitar input en canal
+      messageInput.disabled = true;
+      sendButton.disabled = true;
+      imageInput.disabled = true;
+      messageInput.placeholder = 'Los canales son solo lectura';
+    }
+
+    document.querySelectorAll('.chat-item').forEach(item => {
+      item.addEventListener('click', async () => {
+        document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        currentCharacter = item.dataset.char;
+        conversationId = null;
+        
+        headerAvatar.src = characterIcons[currentCharacter];
+        headerName.textContent = currentCharacter;
+        document.querySelector('.header-status').textContent = 'En línea';
+        
+        // Habilitar inputs
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        imageInput.disabled = false;
+        messageInput.placeholder = 'Escribe un mensaje';
+        
+        // Cargar historial
+        await loadHistory(currentCharacter);
+      });
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        currentImage = event.target.result;
+        imagePreviewContainer.innerHTML = `
+          <img src="${currentImage}" class="image-preview" />
+          <button class="remove-image" onclick="removeImage()">❌ Quitar</button>
+        `;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    window.removeImage = () => {
+      currentImage = null;
+      imagePreviewContainer.innerHTML = '';
+      imageInput.value = '';
+    };
+
+    async function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message && !currentImage) return;
+
+      addMessage(message || '(imagen)', 'user', currentImage);
+      messageInput.value = '';
+      sendButton.disabled = true;
+
+      const typingDiv = addTypingIndicator();
+
+      try {
+        const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
+        let customPersonality = null;
+        
+        const customChar = chars.find(c => c.name === currentCharacter);
+        if (customChar) {
+          customPersonality = customChar.personality;
+          console.log('Enviando personalidad personalizada:', customPersonality);
+        } else {
+          console.log('Usando personaje predefinido:', currentCharacter);
+        }
+
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            message: message || '¿Qué ves en esta imagen?', 
+            conversationId, 
+            character: currentCharacter,
+            image: currentImage,
+            customPersonality,
+            userId
+          })
+        });
+
+        const data = await response.json();
+        typingDiv.remove();
+        addMessage(data.response, 'bot', data.easterEggImage);
+        conversationId = data.conversationId;
+      } catch (error) {
+        typingDiv.remove();
+        addMessage('Error: No pude conectar con el servidor.', 'bot');
+        console.error(error);
+      }
+
+      removeImage();
+      sendButton.disabled = false;
+      messageInput.focus();
+    }
+
+    function addMessage(text, type, image = null) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`;
+      
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      
+      if (image) {
+        messageDiv.innerHTML = `<span>${text}<br><img src="${image}" /></span><div class="message-time">${timeStr}${type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
+      } else {
+        messageDiv.innerHTML = `<span>${text}</span><div class="message-time">${timeStr}${type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
+      }
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      // Actualizar hora en sidebar
+      if (type === 'user' || type === 'bot') {
+        updateChatTime(currentCharacter, timeStr);
+      }
+      
+      return messageDiv;
+    }
+
+    function updateChatTime(character, time) {
+      const chatItem = document.querySelector(`.chat-item[data-char="${character}"]`);
+      if (chatItem) {
+        const timeEl = chatItem.querySelector('.chat-time');
+        if (timeEl) timeEl.textContent = time;
+      }
+    }
+
+    function addTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message typing';
+      typingDiv.innerHTML = `
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      `;
+      messagesContainer.appendChild(typingDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      return typingDiv;
+    }
+
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Settings functions
+    function openSettings() {
+      document.getElementById('settingsModal').classList.add('active');
+      loadSettings();
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').classList.remove('active');
+    }
+
+    function loadSettings() {
+      document.getElementById('userName').value = localStorage.getItem('userName') || '';
+      document.getElementById('soundSelect').value = localStorage.getItem('sound') || 'on';
+      document.getElementById('fontSizeSelect').value = localStorage.getItem('fontSize') || 'medium';
+    }
+
+    function saveSettings() {
+      const userName = document.getElementById('userName').value;
+      const sound = document.getElementById('soundSelect').value;
+      const fontSize = document.getElementById('fontSizeSelect').value;
+
+      localStorage.setItem('userName', userName);
+      localStorage.setItem('sound', sound);
+      localStorage.setItem('fontSize', fontSize);
+
+      applySettings();
+      alert('✅ Configuración guardada');
+      closeSettings();
+    }
+
+    function applySettings() {
+      const fontSize = localStorage.getItem('fontSize') || 'medium';
+
+      // Aplicar tamaño de fuente
+      const sizes = { small: '0.85rem', medium: '0.95rem', large: '1.1rem' };
+      document.querySelectorAll('.message').forEach(msg => {
+        msg.style.fontSize = sizes[fontSize];
+      });
+    }
+
+    async function clearHistory() {
+      if (!confirm('¿Seguro que quieres borrar todo el historial?')) return;
+      
+      try {
+        await fetch(`${WORKER_URL}/history`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, character: currentCharacter })
+        });
+        
+        messagesContainer.innerHTML = `
+          <div class="message bot">${characterGreetings[currentCharacter]}</div>
+        `;
+        conversationId = null;
+        alert('🗑️ Historial borrado');
+      } catch (error) {
+        alert('❌ Error al borrar historial');
+      }
+    }
+
+    async function loadHistory(character) {
+      try {
+        const response = await fetch(`${WORKER_URL}/history?userId=${userId}&character=${character}`);
+        const { history } = await response.json();
+        
+        messagesContainer.innerHTML = '';
+        
+        if (history.length === 0) {
+          messagesContainer.innerHTML = `
+            <div class="message bot">${characterGreetings[character]}</div>
+          `;
+          return;
+        }
+        
+        history.forEach(msg => {
+          const time = new Date(msg.timestamp).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+          const messageDiv = document.createElement('div');
+          messageDiv.className = `message ${msg.type}`;
+          
+          if (msg.image) {
+            messageDiv.innerHTML = `<span>${msg.text}<br><img src="${msg.image}" /></span><div class="message-time">${time}${msg.type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
+          } else {
+            messageDiv.innerHTML = `<span>${msg.text}</span><div class="message-time">${time}${msg.type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
+          }
+          
+          messagesContainer.appendChild(messageDiv);
+        });
+        
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      } catch (error) {
+        console.error('Error cargando historial:', error);
+        messagesContainer.innerHTML = `
+          <div class="message bot">${characterGreetings[character]}</div>
+        `;
+      }
+    }
+
+    // Aplicar configuración al cargar
+    applySettings();
+
+    // Custom characters system
+    function openCustomPanel() {
+      document.getElementById('customPanel').classList.add('active');
+      loadCustomCharacters();
+    }
+
+    function closeCustomPanel() {
+      document.getElementById('customPanel').classList.remove('active');
+    }
+
+    function loadCustomCharacters() {
+      const list = document.getElementById('customCharactersList');
+      const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
+      
+      list.innerHTML = '';
+      chars.forEach((char, index) => {
+        const item = document.createElement('div');
+        item.className = 'custom-char-item';
+        item.innerHTML = `
+          <img src="${char.avatar}" class="custom-char-avatar" />
+          <div class="custom-char-info">
+            <div class="custom-char-name">${char.name}</div>
+            <div class="custom-char-desc">${char.personality.substring(0, 50)}...</div>
+          </div>
+          <button class="delete-char-btn" onclick="deleteCharacter(${index})">🗑️ Eliminar</button>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    let charImageData = null;
+
+    document.getElementById('charImageFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        charImageData = event.target.result;
+        document.getElementById('charImagePreview').innerHTML = `
+          <img src="${charImageData}" style="max-width: 100px; border-radius: 50%; margin-top: 10px;" />
+        `;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function openCreateCharModal() {
+      document.getElementById('createCharModal').classList.add('active');
+      document.getElementById('charName').value = '';
+      document.getElementById('charPersonality').value = '';
+      document.getElementById('charGreeting').value = '';
+      document.getElementById('charImageFile').value = '';
+      document.getElementById('charImagePreview').innerHTML = '';
+      charImageData = null;
+    }
+
+    function closeCreateCharModal() {
+      document.getElementById('createCharModal').classList.remove('active');
+    }
+
+    function saveNewCharacter() {
+      const name = document.getElementById('charName').value.trim();
+      const personality = document.getElementById('charPersonality').value.trim();
+      const greeting = document.getElementById('charGreeting').value.trim();
+
+      if (!name || !personality || !greeting) {
+        alert('⚠️ Por favor completa todos los campos obligatorios');
+        return;
+      }
+
+      const avatar = charImageData || 'https://via.placeholder.com/50/00a884/ffffff?text=' + name[0];
+
+      const customChar = {
+        name,
+        personality: `Eres ${name}. Personalidad: ${personality}. Responde en español de forma breve y natural.`,
+        greeting,
+        avatar
+      };
+
+      // Guardar en array
+      const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
+      chars.push(customChar);
+      localStorage.setItem('customCharacters', JSON.stringify(chars));
+      
+      // Añadir a la lista
+      characterGreetings[name] = greeting;
+      characterIcons[name] = avatar;
+
+      // Crear elemento en la lista
+      const chatList = document.getElementById('chatList');
+      const newItem = document.createElement('div');
+      newItem.className = 'chat-item';
+      newItem.dataset.char = name;
+      newItem.innerHTML = `
+        <img src="${avatar}" class="chat-avatar">
+        <div class="chat-info">
+          <div class="chat-name">${name}</div>
+          <div class="chat-preview">Personalizado</div>
+        </div>
+      `;
+      
+      newItem.addEventListener('click', () => {
+        document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
+        newItem.classList.add('active');
+        currentCharacter = name;
+        conversationId = null;
+        
+        headerAvatar.src = avatar;
+        headerName.textContent = name;
+        
+        messagesContainer.innerHTML = `
+          <div class="message bot">${greeting}</div>
+        `;
+      });
+
+      chatList.appendChild(newItem);
+      
+      closeCreateCharModal();
+      alert('✅ Personaje "' + name + '" creado!');
+      loadCustomCharacters();
+    }
+
+    function deleteCharacter(index) {
+      if (!confirm('¿Eliminar este personaje?')) return;
+      
+      const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
+      const deleted = chars.splice(index, 1)[0];
+      localStorage.setItem('customCharacters', JSON.stringify(chars));
+      
+      // Remover de la lista de chats
+      document.querySelectorAll('.chat-item').forEach(item => {
+        if (item.dataset.char === deleted.name) {
+          item.remove();
+        }
+      });
+      
+      loadCustomCharacters();
+      alert('🗑️ Personaje eliminado');
+    }
+
+    // Cargar personajes personalizados al inicio
+    function loadAllCustomCharacters() {
+      const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
+      const chatList = document.getElementById('chatList');
+      
+      chars.forEach(custom => {
+        characterGreetings[custom.name] = custom.greeting;
+        characterIcons[custom.name] = custom.avatar;
+        
+        const newItem = document.createElement('div');
+        newItem.className = 'chat-item';
+        newItem.dataset.char = custom.name;
+        newItem.innerHTML = `
+          <img src="${custom.avatar}" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">${custom.name}</div>
+            <div class="chat-preview">Personalizado</div>
+          </div>
+        `;
+        
+        newItem.addEventListener('click', async () => {
+          document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
+          newItem.classList.add('active');
+          currentCharacter = custom.name;
+          conversationId = null;
+          
+          headerAvatar.src = custom.avatar;
+          headerName.textContent = custom.name;
+          document.querySelector('.header-status').textContent = 'En línea';
+          
+          // Habilitar inputs
+          messageInput.disabled = false;
+          sendButton.disabled = false;
+          imageInput.disabled = false;
+          messageInput.placeholder = 'Escribe un mensaje';
+          
+          await loadHistory(custom.name);
+        });
+
+        chatList.appendChild(newItem);
+      });
+    }
+
+    loadAllCustomCharacters();
+
+    // Mobile menu functions
+    function toggleMobileMenu() {
+      const miniSidebar = document.getElementById('miniSidebar');
+      const mainSidebar = document.getElementById('mainSidebar');
+      const overlay = document.querySelector('.mobile-overlay');
+      
+      miniSidebar.classList.toggle('mobile-open');
+      mainSidebar.classList.toggle('mobile-open');
+      overlay.classList.toggle('active');
+    }
+
+    function closeMobileMenu() {
+      const miniSidebar = document.getElementById('miniSidebar');
+      const mainSidebar = document.getElementById('mainSidebar');
+      const overlay = document.querySelector('.mobile-overlay');
+      
+      miniSidebar.classList.remove('mobile-open');
+      mainSidebar.classList.remove('mobile-open');
+      overlay.classList.remove('active');
+    }
+
+    // Cerrar menú al seleccionar chat en móvil
+    document.querySelectorAll('.chat-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          closeMobileMenu();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

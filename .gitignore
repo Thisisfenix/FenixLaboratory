@@ -16,5 +16,8 @@ run-server.bat
 __pycache__/
 *.pyc
 
-# Chatbot (Cloudflare Workers - externo)
-chatbot/
+# Chatbot - Solo excluir archivos sensibles
+chatbot/worker/.wrangler/
+chatbot/worker/.dev.vars
+chatbot/worker/node_modules/
+chatbot/worker/wrangler.toml
