@@ -1,6 +1,25 @@
 // Updates del chatbot
 const UPDATES = [
   {
+    version: 'v1.1',
+    title: 'Protección Legal y Reportes',
+    emoji: '⚖️',
+    features: [
+      'Canal Legal con Términos y Condiciones',
+      'Política de Privacidad completa',
+      'Modal de aceptación de términos (primera visita)',
+      'Confirmación de edad (+13 años)',
+      'Botón de reporte en mensajes del bot (🚩)',
+      'Sistema de reportes enviados a Discord',
+      'Rate limiting (10 mensajes por minuto)',
+      'Analytics anónimo de uso',
+      'Estadísticas de mensajes en configuración',
+      'Webhook seguro con Cloudflare Secrets',
+      'Descargo de responsabilidad por contenido IA',
+      'Créditos a creadores de assets'
+    ]
+  },
+  {
     version: 'v1.0',
     title: 'Lanzamiento Inicial',
     emoji: '🚀',

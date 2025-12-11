@@ -53,6 +53,44 @@ export default {
       });
     }
 
+    // POST /report - Recibir reportes y enviar a Discord
+    if (request.method === 'POST' && url.pathname === '/report') {
+      try {
+        const report = await request.json();
+        
+        // Enviar a Discord (usando secret)
+        const DISCORD_WEBHOOK = env.DISCORD_WEBHOOK;
+        
+        await fetch(DISCORD_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            embeds: [{
+              title: '🚩 Nuevo Reporte',
+              color: 15548997,
+              fields: [
+                { name: '👤 Personaje', value: report.character, inline: true },
+                { name: '📅 Fecha', value: new Date(report.timestamp).toLocaleString('es'), inline: true },
+                { name: '💬 Mensaje reportado', value: report.message.substring(0, 1000) },
+                { name: '❓ Razón', value: report.reason },
+                { name: '🆔 User ID', value: report.userId }
+              ],
+              timestamp: report.timestamp
+            }]
+          })
+        });
+        
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
     }
