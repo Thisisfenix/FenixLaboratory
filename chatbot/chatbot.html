@@ -6,6 +6,57 @@
   <title>Deadly Pursuer - Chat</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: #111b21;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loading-logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 30px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid #2a3942;
+      border-top-color: #00a884;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      color: #8696a0;
+      font-size: 0.9rem;
+      margin-top: 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -683,6 +734,17 @@
   </style>
 </head>
 <body>
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" stroke="#00a884" stroke-width="3" fill="#202c33"/>
+        <path d="M30 50 L45 65 L70 35" stroke="#00a884" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Deadly Pursuer Chat</div>
+  </div>
+
   <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
   <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
   <div class="app-container">
@@ -982,8 +1044,13 @@
           showChats();
           return;
         }
-        // Índice 4 = Configuración
-        if (index === 4) {
+        // Índice 3 = Archivados
+        if (index === 3) {
+          showArchived();
+          return;
+        }
+        // Índice 5 = Configuración
+        if (index === 5) {
           openSettings();
           return;
         }
@@ -1012,12 +1079,143 @@
       openUpdatesChannel();
     }
 
+    function showArchived() {
+      document.querySelectorAll('.mini-sidebar-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.mini-sidebar-btn')[3].classList.add('active');
+      
+      document.getElementById('sidebarTitle').textContent = 'Archivados';
+      const chatList = document.getElementById('chatList');
+      
+      const archived = JSON.parse(localStorage.getItem('archivedChars') || '[]');
+      
+      if (archived.length === 0) {
+        chatList.innerHTML = `
+          <div style="padding: 40px 20px; text-align: center; color: #8696a0;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">📦</div>
+            <div>No hay personajes archivados</div>
+            <div style="font-size: 0.85rem; margin-top: 10px;">Mantén presionado un chat para archivarlo</div>
+          </div>
+        `;
+        return;
+      }
+      
+      chatList.innerHTML = archived.map(char => `
+        <div class="chat-item" data-char="${char.name}" oncontextmenu="unarchiveChar('${char.name}'); return false;">
+          <img src="${char.avatar}" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">${char.name}</div>
+            <div class="chat-preview">Archivado</div>
+          </div>
+          <div style="color: #8696a0; font-size: 0.85rem;">📦</div>
+        </div>
+      `).join('');
+      
+      initChatItems();
+    }
+
     function showChats() {
       document.querySelectorAll('.mini-sidebar-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.mini-sidebar-btn')[2].classList.add('active');
       
       document.getElementById('sidebarTitle').textContent = 'Deadly Pursuer Chats';
-      location.reload();
+      
+      // Restaurar lista de chats sin recargar
+      const chatList = document.getElementById('chatList');
+      chatList.innerHTML = `
+        <div class="chat-item active" data-char="Angel">
+          <img src="../public/assets/icons/AngelNormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Angel</div>
+            <div class="chat-preview">Protector valiente</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">Ahora</div>
+            <div class="chat-status seen">✓✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="Gissel">
+          <img src="../public/assets/icons/GisselInactiveIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Gissel</div>
+            <div class="chat-preview">Sociable y servicial</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">12:30</div>
+            <div class="chat-status unseen">✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="iA777">
+          <img src="../public/assets/icons/IA777NormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">iA777</div>
+            <div class="chat-preview">Tranquilo y gracioso</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">Ayer</div>
+            <div class="chat-status seen">✓✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="Iris">
+          <img src="../public/assets/icons/IrisNormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Iris</div>
+            <div class="chat-preview">Calmada pero hiperactiva</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">Ayer</div>
+            <div class="chat-status seen">✓✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="Luna">
+          <img src="../public/assets/icons/LunaNormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Luna</div>
+            <div class="chat-preview">Tímida y curiosa</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">15:45</div>
+            <div class="chat-status unseen">✓</div>
+          </div>
+        </div>
+        <div class="chat-item" data-char="Molly">
+          <img src="../public/assets/icons/MollyNormalIcon.png" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">Molly</div>
+            <div class="chat-preview">Asertiva y leal</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">10:20</div>
+            <div class="chat-status seen">✓✓</div>
+          </div>
+        </div>
+      `;
+      
+      // Filtrar archivados
+      const archived = JSON.parse(localStorage.getItem('archivedChars') || '[]');
+      const archivedNames = archived.map(c => c.name);
+      
+      document.querySelectorAll('.chat-item').forEach(item => {
+        if (archivedNames.includes(item.dataset.char)) {
+          item.remove();
+        }
+      });
+      
+      // Re-agregar event listeners
+      initChatItems();
+      loadAllCustomCharacters();
+      
+      // Habilitar inputs
+      messageInput.disabled = false;
+      sendButton.disabled = false;
+      imageInput.disabled = false;
+      messageInput.placeholder = 'Escribe un mensaje';
+      
+      // Cargar Angel por defecto
+      currentCharacter = 'Angel';
+      headerAvatar.src = characterIcons.Angel;
+      headerName.textContent = 'Angel';
+      document.querySelector('.header-status').textContent = 'En línea';
+      loadHistory('Angel');
     }
 
     function openUpdatesChannel() {
@@ -1034,27 +1232,80 @@
       messageInput.placeholder = 'Los canales son solo lectura';
     }
 
-    document.querySelectorAll('.chat-item').forEach(item => {
-      item.addEventListener('click', async () => {
-        document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        currentCharacter = item.dataset.char;
-        conversationId = null;
+    function initChatItems() {
+      document.querySelectorAll('.chat-item').forEach(item => {
+        let pressTimer;
+        let longPressTriggered = false;
         
-        headerAvatar.src = characterIcons[currentCharacter];
-        headerName.textContent = currentCharacter;
-        document.querySelector('.header-status').textContent = 'En línea';
+        // Desktop
+        item.addEventListener('mousedown', () => {
+          longPressTriggered = false;
+          pressTimer = setTimeout(() => {
+            longPressTriggered = true;
+            const char = item.dataset.char;
+            if (char && confirm(`¿Archivar ${char}?`)) {
+              archiveChar(char);
+            }
+          }, 800);
+        });
         
-        // Habilitar inputs
-        messageInput.disabled = false;
-        sendButton.disabled = false;
-        imageInput.disabled = false;
-        messageInput.placeholder = 'Escribe un mensaje';
+        item.addEventListener('mouseup', () => clearTimeout(pressTimer));
+        item.addEventListener('mouseleave', () => clearTimeout(pressTimer));
         
-        // Cargar historial
-        await loadHistory(currentCharacter);
+        // Móvil
+        item.addEventListener('touchstart', (e) => {
+          longPressTriggered = false;
+          pressTimer = setTimeout(() => {
+            longPressTriggered = true;
+            const char = item.dataset.char;
+            if (char && confirm(`¿Archivar ${char}?`)) {
+              archiveChar(char);
+            }
+          }, 800);
+        });
+        
+        item.addEventListener('touchend', () => clearTimeout(pressTimer));
+        item.addEventListener('touchmove', () => clearTimeout(pressTimer));
+        
+        item.addEventListener('click', async (e) => {
+          if (longPressTriggered) {
+            e.preventDefault();
+            return;
+          }
+          document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          currentCharacter = item.dataset.char;
+          conversationId = null;
+          
+          headerAvatar.src = characterIcons[currentCharacter];
+          headerName.textContent = currentCharacter;
+          document.querySelector('.header-status').textContent = 'En línea';
+          
+          // Habilitar inputs
+          messageInput.disabled = false;
+          sendButton.disabled = false;
+          imageInput.disabled = false;
+          messageInput.placeholder = 'Escribe un mensaje';
+          
+          // Cargar historial
+          await loadHistory(currentCharacter);
+        });
       });
-    });
+    }
+    
+    // Filtrar archivados al cargar
+    (function filterArchivedOnLoad() {
+      const archived = JSON.parse(localStorage.getItem('archivedChars') || '[]');
+      const archivedNames = archived.map(c => c.name);
+      
+      document.querySelectorAll('.chat-item').forEach(item => {
+        if (archivedNames.includes(item.dataset.char)) {
+          item.remove();
+        }
+      });
+    })();
+    
+    initChatItems();
 
     imageInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -1420,11 +1671,18 @@
     // Cargar personajes personalizados al inicio
     function loadAllCustomCharacters() {
       const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
+      const archived = JSON.parse(localStorage.getItem('archivedChars') || '[]');
+      const archivedNames = archived.map(c => c.name);
       const chatList = document.getElementById('chatList');
       
       chars.forEach(custom => {
         characterGreetings[custom.name] = custom.greeting;
         characterIcons[custom.name] = custom.avatar;
+        
+        // Saltar si está archivado
+        if (archivedNames.includes(custom.name)) {
+          return;
+        }
         
         const newItem = document.createElement('div');
         newItem.className = 'chat-item';
@@ -1462,6 +1720,13 @@
 
     loadAllCustomCharacters();
 
+    // Loading screen
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loadingScreen').classList.add('hidden');
+      }, 1500);
+    });
+
     // Mobile menu functions
     function toggleMobileMenu() {
       const miniSidebar = document.getElementById('miniSidebar');
@@ -1491,6 +1756,32 @@
         }
       });
     });
+
+    function archiveChar(charName) {
+      const archived = JSON.parse(localStorage.getItem('archivedChars') || '[]');
+      
+      const charInfo = {
+        name: charName,
+        avatar: characterIcons[charName] || 'https://via.placeholder.com/50/2a3942/8696a0?text=' + charName[0]
+      };
+      
+      if (!archived.find(c => c.name === charName)) {
+        archived.push(charInfo);
+        localStorage.setItem('archivedChars', JSON.stringify(archived));
+      }
+      
+      showChats();
+      alert(`📦 ${charName} archivado`);
+    }
+
+    window.unarchiveChar = function(charName) {
+      const archived = JSON.parse(localStorage.getItem('archivedChars') || '[]');
+      const filtered = archived.filter(c => c.name !== charName);
+      localStorage.setItem('archivedChars', JSON.stringify(filtered));
+      
+      showArchived();
+      alert(`📤 ${charName} desarchivado`);
+    };
   </script>
 </body>
 </html>

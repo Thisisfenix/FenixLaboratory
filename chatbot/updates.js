@@ -16,7 +16,15 @@ const UPDATES = [
       'Panel de gestión de personajes (crear/eliminar)',
       'Canal oficial de Updates',
       'Modo Retro 3D con terminal',
-      'Cloudflare Workers para protección de API keys'
+      'Cloudflare Workers para protección de API keys',
+      'Pantalla de carga estilo WhatsApp',
+      'Guardado de conversaciones en Cloudflare KV (500 mensajes)',
+      'Historial persistente por personaje',
+      'Hora y checks de visto en mensajes',
+      'Responsive para móviles con menú hamburguesa',
+      'Sistema de archivado de personajes (long press 0.8s)',
+      'Click derecho para desarchivar',
+      'Filtrado automático de archivados'
     ]
   }
 ];
