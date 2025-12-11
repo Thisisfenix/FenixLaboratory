@@ -2,8 +2,31 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deadly Pursuer - Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#111b21">
+  
+  <title>Deadly Pursuer Chat - IA con Visión</title>
+  <meta name="description" content="Chat con personajes de Deadly Pursuer usando IA. Soporte para imágenes, personajes personalizados y conversaciones guardadas.">
+  <meta name="keywords" content="Deadly Pursuer, chatbot, IA, Llama, Groq, WhatsApp, chat">
+  <meta name="author" content="ThisIsFenix">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Deadly Pursuer Chat">
+  <meta property="og:description" content="Chat con personajes de Deadly Pursuer usando IA con visión">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://thisisfenix.github.io/FenixLaboratory/public/assets/icons/AngelNormalIcon.png">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Deadly Pursuer Chat">
+  <meta name="twitter:description" content="Chat con personajes de Deadly Pursuer usando IA">
+  <meta name="twitter:creator" content="@AntiAnkush">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="../public/assets/icons/AngelNormalIcon.png">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -62,14 +85,20 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #0d1418;
       height: 100vh;
+      height: 100dvh;
       display: flex;
       overflow: hidden;
+      position: fixed;
+      width: 100%;
+      touch-action: pan-y;
     }
 
     .app-container {
       display: flex;
       width: 100%;
       height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
     }
 
     .mini-sidebar {
@@ -677,6 +706,14 @@
     }
 
     @media (max-width: 768px) {
+      body {
+        height: 100dvh;
+      }
+
+      .app-container {
+        height: 100dvh;
+      }
+
       .mobile-menu-btn {
         display: flex;
         align-items: center;
@@ -688,6 +725,7 @@
         left: -60px;
         top: 0;
         height: 100vh;
+        height: 100dvh;
         z-index: 100;
         transition: left 0.3s;
       }
@@ -701,8 +739,10 @@
         left: -350px;
         top: 0;
         height: 100vh;
+        height: 100dvh;
         z-index: 100;
         transition: left 0.3s;
+        width: 280px;
       }
 
       .sidebar.mobile-open {
@@ -715,20 +755,33 @@
 
       .chat-header {
         padding-left: 70px;
+        padding: 10px 15px 10px 70px;
+      }
+
+      .chat-messages {
+        padding: 15px 10px;
       }
 
       .message {
         max-width: 85%;
+        font-size: 0.9rem;
+      }
+
+      .chat-input {
+        padding: 8px;
+      }
+
+      .input-row {
+        gap: 8px;
       }
 
       .retro-link {
-        bottom: 80px;
-        left: 10px;
+        display: none;
       }
 
-      .retro-link a {
-        font-size: 0.75rem;
-        padding: 6px 10px;
+      .modal-content {
+        width: 95%;
+        max-height: 90vh;
       }
     }
   </style>
