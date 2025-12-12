@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔧 FenixLaboratory - Mantenimiento</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3rem;
+      border-radius: 20px;
+      border: 2px solid rgba(255, 107, 53, 0.3);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+    .icon {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #ff6b35;
+      text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+    }
+    p {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+      color: #b0b0b0;
+    }
+    .thanks {
+      font-size: 1.5rem;
+      color: #00ff88;
+      margin-top: 2rem;
+      font-weight: bold;
+      text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+    }
+    .signature {
+      margin-top: 2rem;
+      font-style: italic;
+      color: #8696a0;
+    }
+    .countdown {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .time-unit {
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid #ff6b35;
+      border-radius: 8px;
+      padding: 1rem;
+      min-width: 60px;
+    }
+    .time-unit span {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ff6b35;
+    }
+    .time-unit label {
+      font-size: 0.8rem;
+      color: #b0b0b0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🔧</div>
+    <h1>MANTENIMIENTO</h1>
+    <p>
+      Mantenimiento programado:<br>
+      <strong>12 de diciembre - 13 de diciembre 10:00 PM</strong>
+    </p>
+    <div class="countdown">
+      <div class="time-unit">
+        <span id="days">0</span>
+        <label>Días</label>
+      </div>
+      <div class="time-unit">
+        <span id="hours">0</span>
+        <label>Horas</label>
+      </div>
+      <div class="time-unit">
+        <span id="minutes">0</span>
+        <label>Minutos</label>
+      </div>
+      <div class="time-unit">
+        <span id="seconds">0</span>
+        <label>Segundos</label>
+      </div>
+    </div>
+    <div class="thanks">
+      ¡Volveremos el 13 a las 10 PM! ⏰
+    </div>
+    <div class="signature">
+      - ThisIsFenix
+    </div>
+  </div>
+  <script>
+    const endTime = new Date('2025-12-13T22:00:00').getTime();
+    
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const timeLeft = endTime - now;
+      
+      if (timeLeft > 0) {
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        document.getElementById('days').textContent = days;
+        document.getElementById('hours').textContent = hours;
+        document.getElementById('minutes').textContent = minutes;
+        document.getElementById('seconds').textContent = seconds;
+      } else {
+        document.getElementById('days').textContent = '0';
+        document.getElementById('hours').textContent = '0';
+        document.getElementById('minutes').textContent = '0';
+        document.getElementById('seconds').textContent = '0';
+        window.location.href = 'index.html';
+      }
+    }
+    
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+</body>
+</html>
