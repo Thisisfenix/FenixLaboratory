@@ -466,6 +466,37 @@
       max-width: 100%;
       border-radius: 8px;
       margin-top: 6px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .message img:hover {
+      transform: scale(1.02);
+    }
+
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .image-modal.active {
+      display: flex;
+    }
+
+    .image-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
     }
 
     .chat-input input[type="text"] {
@@ -1036,6 +1067,17 @@
             <div class="chat-status seen">✓✓</div>
           </div>
         </div>
+        <div class="chat-item" data-char="RoasterBot">
+          <img src="../placeholder/images.jpg" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">🔥 RoasterBot</div>
+            <div class="chat-preview">Experto en roasts</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">16:30</div>
+            <div class="chat-status unseen">✓</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1129,6 +1171,8 @@
         <button class="setting-btn" onclick="saveSettings()">💾 Guardar cambios</button>
         <button class="setting-btn" onclick="openCustomPanel()">✨ Gestionar personajes personalizados</button>
         <button class="setting-btn" onclick="viewStats()">📊 Ver estadísticas</button>
+        <button class="setting-btn" onclick="openEasterEggs()">🥚 Easter Eggs</button>
+        <button class="setting-btn" onclick="openTechInfo()">🤖 Info Técnica IA</button>
         <button class="setting-btn danger" onclick="clearHistory()">🗑️ Borrar historial</button>
       </div>
     </div>
@@ -1184,6 +1228,124 @@
     </div>
   </div>
 
+  <!-- Modal para ver imágenes -->
+  <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+    <img id="modalImage" />
+  </div>
+
+  <!-- Modal para Easter Eggs -->
+  <div class="modal" id="easterEggsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        🥚 Easter Eggs Disponibles
+        <span class="close-modal" onclick="closeEasterEggs()">&times;</span>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-label">Escribe estas palabras EXACTAS para activar imágenes especiales:</div>
+      </div>
+      
+      <div class="custom-char-item">
+        <div style="font-size: 2rem;">🌾</div>
+        <div class="custom-char-info">
+          <div class="custom-char-name">"molly anderson"</div>
+          <div class="custom-char-desc">Molly Anderson en el campo</div>
+        </div>
+      </div>
+      
+      <div class="custom-char-item">
+        <div style="font-size: 2rem;">👀</div>
+        <div class="custom-char-info">
+          <div class="custom-char-name">"bfmp4"</div>
+          <div class="custom-char-desc">Bfmp4 ha aparecido</div>
+        </div>
+      </div>
+      
+      <div class="custom-char-item">
+        <div style="font-size: 2rem;">🎮</div>
+        <div class="custom-char-info">
+          <div class="custom-char-name">"abelitogamer"</div>
+          <div class="custom-char-desc">Abelitogamer en acción</div>
+        </div>
+      </div>
+      
+      <div class="setting-item">
+        <div style="color: #8696a0; font-size: 0.9rem; text-align: center;">
+          💡 Escríbelas exactamente como aparecen aquí<br>
+          🖼️ Las imágenes aparecerán automáticamente con el mensaje
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Info Técnica -->
+  <div class="modal" id="techInfoModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        🤖 Configuración Técnica de IA
+        <span class="close-modal" onclick="closeTechInfo()">&times;</span>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-label">🌡️ Temperatura = Creatividad | 📝 Tokens = Longitud | 🤝 Velocidad = Ganancia de confianza</div>
+      </div>
+      
+      <div class="custom-char-item">
+        <img src="../public/assets/icons/AngelNormalIcon.png" class="custom-char-avatar">
+        <div class="custom-char-info">
+          <div class="custom-char-name">Angel</div>
+          <div class="custom-char-desc">Creatividad: 0.9/1.0 • Tokens: 400 • Confianza: +10%</div>
+        </div>
+      </div>
+      
+      <div class="custom-char-item">
+        <img src="../public/assets/icons/GisselInactiveIcon.png" class="custom-char-avatar">
+        <div class="custom-char-info">
+          <div class="custom-char-name">Gissel</div>
+          <div class="custom-char-desc">Creatividad: 0.95/1.0 • Tokens: 450 • Confianza: +20%</div>
+        </div>
+      </div>
+      
+      <div class="custom-char-item">
+        <img src="../public/assets/icons/IA777NormalIcon.png" class="custom-char-avatar">
+        <div class="custom-char-info">
+          <div class="custom-char-name">iA777</div>
+          <div class="custom-char-desc">Creatividad: 0.85/1.0 • Tokens: 380 • Confianza: -10%</div>
+        </div>
+      </div>
+      
+      <div class="custom-char-item">
+        <img src="../public/assets/icons/IrisNormalIcon.png" class="custom-char-avatar">
+        <div class="custom-char-info">
+          <div class="custom-char-name">Iris</div>
+          <div class="custom-char-desc">Creatividad: 0.9/1.0 • Tokens: 400 • Confianza: Normal</div>
+        </div>
+      </div>
+      
+      <div class="custom-char-item">
+        <img src="../public/assets/icons/LunaNormalIcon.png" class="custom-char-avatar">
+        <div class="custom-char-info">
+          <div class="custom-char-name">Luna</div>
+          <div class="custom-char-desc">Creatividad: 0.95/1.0 • Tokens: 420 • Confianza: -20%</div>
+        </div>
+      </div>
+      
+      <div class="custom-char-item">
+        <img src="../public/assets/icons/MollyNormalIcon.png" class="custom-char-avatar">
+        <div class="custom-char-info">
+          <div class="custom-char-name">Molly</div>
+          <div class="custom-char-desc">Creatividad: 0.85/1.0 • Tokens: 380 • Confianza: -30%</div>
+        </div>
+      </div>
+      
+      <div class="setting-item">
+        <div style="color: #8696a0; font-size: 0.9rem; text-align: center;">
+          Powered by Groq + Llama 3.3 70B + Stable Diffusion XL
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="updates.js"></script>
   <script src="legal.js"></script>
   <script>
@@ -1202,7 +1364,31 @@
       iA777: 'Hey... soy iA777. ¿Qué pasa? Espero que no sea nada complicado, ya tengo suficiente estrés.',
       Iris: 'Hola, soy Iris. ¿Cómo estás? Espero que estés bien. ¿En qué puedo ayudarte?',
       Luna: 'H-hola... soy Luna. Um... ¿en qué puedo ayudarte?',
-      Molly: 'Hola. Soy Molly. ¿Qué necesitas? Si es importante, te ayudaré.'
+      Molly: 'Hola. Soy Molly. ¿Qué necesitas? Si es importante, te ayudaré.',
+      RoasterBot: async function() {
+        // Obtener historial del usuario para roasts personalizados
+        let userHistory = '';
+        try {
+          const historyResponse = await fetch(`${WORKER_URL}/history?userId=${userId}&character=Angel`);
+          const historyData = await historyResponse.json();
+          if (historyData.history && historyData.history.length > 0) {
+            const recentMessages = historyData.history.slice(-5).filter(msg => msg.sender === 'user').map(msg => msg.message).join(', ');
+            userHistory = recentMessages ? ` Historial del usuario: "${recentMessages}"` : '';
+          }
+        } catch (e) {}
+        
+        const response = await fetch(`${WORKER_URL}/roast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            message: `usuario entrando al chat.${userHistory}`,
+            reason: 'entrada al roaster',
+            userId: userId
+          })
+        });
+        const data = await response.json();
+        return `⚠️ ADVERTENCIA: Este bot genera roasts brutales y ofensivos. No me hago responsable del daño emocional causado. Usar bajo tu propio riesgo.\n\n${data.roast}\n\n🔥 Si quieres que te rostee o me quieres ganar, adelante. Dame más mensajes para roastear. ¿A quién vamos a trollear?`;
+      }
     };
 
     // Chat Logic
@@ -1224,7 +1410,8 @@
       iA777: '../public/assets/icons/IA777NormalIcon.png',
       Iris: '../public/assets/icons/IrisNormalIcon.png',
       Luna: '../public/assets/icons/LunaNormalIcon.png',
-      Molly: '../public/assets/icons/MollyNormalIcon.png'
+      Molly: '../public/assets/icons/MollyNormalIcon.png',
+      RoasterBot: '../placeholder/images.jpg'
     };
 
     // Profile pic upload
@@ -1418,6 +1605,17 @@
             <div class="chat-status seen">✓✓</div>
           </div>
         </div>
+        <div class="chat-item" data-char="RoasterBot">
+          <img src="../placeholder/images.jpg" class="chat-avatar">
+          <div class="chat-info">
+            <div class="chat-name">🔥 RoasterBot</div>
+            <div class="chat-preview">Experto en roasts</div>
+          </div>
+          <div class="chat-meta">
+            <div class="chat-time">16:30</div>
+            <div class="chat-status unseen">✓</div>
+          </div>
+        </div>
       `;
       
       // Filtrar archivados
@@ -1444,7 +1642,7 @@
       currentCharacter = 'Angel';
       headerAvatar.src = characterIcons.Angel;
       headerName.textContent = 'Angel';
-      document.querySelector('.header-status').textContent = 'En línea';
+      showTrustLevel('Angel');
       loadHistory('Angel');
     }
 
@@ -1461,6 +1659,8 @@
       imageInput.disabled = true;
       messageInput.placeholder = 'Los canales son solo lectura';
     }
+
+
 
     function initChatItems() {
       document.querySelectorAll('.chat-item').forEach(item => {
@@ -1509,7 +1709,9 @@
           
           headerAvatar.src = characterIcons[currentCharacter];
           headerName.textContent = currentCharacter;
-          document.querySelector('.header-status').textContent = 'En línea';
+          
+          // Mostrar nivel de confianza
+          showTrustLevel(currentCharacter);
           
           // Habilitar inputs
           messageInput.disabled = false;
@@ -1518,7 +1720,14 @@
           messageInput.placeholder = 'Escribe un mensaje';
           
           // Cargar historial
-          await loadHistory(currentCharacter);
+          if (currentCharacter === 'RoasterBot') {
+            // Generar roast de bienvenida
+            messagesContainer.innerHTML = '';
+            const welcomeRoast = await characterGreetings.RoasterBot();
+            messagesContainer.innerHTML = `<div class="message bot">${welcomeRoast}</div>`;
+          } else {
+            await loadHistory(currentCharacter);
+          }
         });
       });
     }
@@ -1575,34 +1784,72 @@
       const typingDiv = addTypingIndicator();
 
       try {
-        const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
-        let customPersonality = null;
-        
-        const customChar = chars.find(c => c.name === currentCharacter);
-        if (customChar) {
-          customPersonality = customChar.personality;
-          console.log('Enviando personalidad personalizada:', customPersonality);
+        // RoasterBot usa endpoint especial
+        if (currentCharacter === 'RoasterBot') {
+          // Obtener historial del usuario para roasts personalizados
+          let userHistory = '';
+          try {
+            const historyResponse = await fetch(`${WORKER_URL}/history?userId=${userId}&character=RoasterBot`);
+            const historyData = await historyResponse.json();
+            if (historyData.history && historyData.history.length > 0) {
+              const recentMessages = historyData.history.slice(-10).filter(msg => msg.sender === 'user').map(msg => msg.message).join(', ');
+              userHistory = recentMessages ? ` Historial del usuario: "${recentMessages}"` : '';
+            }
+          } catch (e) {}
+          
+          const response = await fetch(`${WORKER_URL}/roast`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              message: `${message}.${userHistory}`,
+              reason: 'Solicitud de roast',
+              userId: userId
+            })
+          });
+          
+          const data = await response.json();
+          typingDiv.remove();
+          addMessage(data.roast, 'bot');
         } else {
-          console.log('Usando personaje predefinido:', currentCharacter);
+          // Personajes normales
+          const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
+          let customPersonality = null;
+          
+          const customChar = chars.find(c => c.name === currentCharacter);
+          if (customChar) {
+            customPersonality = customChar.personality;
+            console.log('Enviando personalidad personalizada:', customPersonality);
+          } else {
+            console.log('Usando personaje predefinido:', currentCharacter);
+          }
+
+          const response = await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              message: message || '¿Qué ves en esta imagen?', 
+              conversationId, 
+              character: currentCharacter,
+              image: currentImage,
+              customPersonality,
+              userId
+            })
+          });
+
+          const data = await response.json();
+          typingDiv.remove();
+          
+          // Manejar easter eggs e imágenes generadas
+          let imageToShow = null;
+          if (data.easterEggImage) {
+            imageToShow = data.easterEggImage;
+          } else if (data.generatedImage) {
+            imageToShow = data.generatedImage;
+          }
+          
+          addMessage(data.response, 'bot', imageToShow);
+          conversationId = data.conversationId;
         }
-
-        const response = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            message: message || '¿Qué ves en esta imagen?', 
-            conversationId, 
-            character: currentCharacter,
-            image: currentImage,
-            customPersonality,
-            userId
-          })
-        });
-
-        const data = await response.json();
-        typingDiv.remove();
-        addMessage(data.response, 'bot', data.easterEggImage);
-        conversationId = data.conversationId;
       } catch (error) {
         typingDiv.remove();
         addMessage('Error: No pude conectar con el servidor.', 'bot');
@@ -1622,7 +1869,7 @@
       const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
       
       if (image) {
-        messageDiv.innerHTML = `<span>${text}<br><img src="${image}" /></span><div class="message-time">${timeStr}${type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
+        messageDiv.innerHTML = `<span>${text}<br><img src="${image}" onclick="openImageModal('${image}')" /></span><div class="message-time">${timeStr}${type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
       } else {
         messageDiv.innerHTML = `<span>${text}</span><div class="message-time">${timeStr}${type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
       }
@@ -1643,6 +1890,11 @@
       // Actualizar hora en sidebar
       if (type === 'user' || type === 'bot') {
         updateChatTime(currentCharacter, timeStr);
+      }
+      
+      // Actualizar nivel de confianza después de enviar mensaje
+      if (type === 'user') {
+        setTimeout(() => showTrustLevel(currentCharacter), 500);
       }
       
       // Analytics
@@ -1708,17 +1960,41 @@
       closeSettings();
     }
 
-    function viewStats() {
-      const stats = JSON.parse(localStorage.getItem('chatStats') || '{}');
-      const reports = JSON.parse(localStorage.getItem('reports') || '[]');
-      
-      alert(`📊 Estadísticas de uso\n\n` +
-        `📅 Primera visita: ${new Date(stats.firstVisit).toLocaleDateString()}\n` +
-        `💬 Total mensajes: ${stats.totalMessages || 0}\n` +
-        `👤 Tus mensajes: ${stats.userMessages || 0}\n` +
-        `🤖 Respuestas del bot: ${stats.botMessages || 0}\n` +
-        `🚩 Reportes enviados: ${reports.length}\n` +
-        `⏰ Última actividad: ${new Date(stats.lastActive).toLocaleString()}`);
+    async function viewStats() {
+      try {
+        const response = await fetch(`${WORKER_URL}/stats?userId=${userId}`);
+        const { stats } = await response.json();
+        
+        let statsText = `📊 Estadísticas Avanzadas\n\n`;
+        statsText += `💬 Total mensajes: ${stats.totalMessages}\n`;
+        statsText += `🖼️ Total imágenes: ${stats.totalImages}\n`;
+        statsText += `🏆 Personaje favorito: ${stats.mostActiveCharacter}\n`;
+        statsText += `🤝 Confianza promedio: ${stats.averageTrustLevel}%\n\n`;
+        
+        statsText += `👥 Por personaje:\n`;
+        Object.entries(stats.characterStats).forEach(([char, data]) => {
+          if (data.totalMessages > 0) {
+            statsText += `• ${char}: ${data.totalMessages} mensajes, ${data.trustText}\n`;
+          }
+        });
+        
+        const reports = JSON.parse(localStorage.getItem('reports') || '[]');
+        statsText += `\n🚩 Reportes enviados: ${reports.length}`;
+        
+        alert(statsText);
+      } catch (error) {
+        // Fallback a estadísticas locales
+        const stats = JSON.parse(localStorage.getItem('chatStats') || '{}');
+        const reports = JSON.parse(localStorage.getItem('reports') || '[]');
+        
+        alert(`📊 Estadísticas de uso\n\n` +
+          `📅 Primera visita: ${new Date(stats.firstVisit).toLocaleDateString()}\n` +
+          `💬 Total mensajes: ${stats.totalMessages || 0}\n` +
+          `👤 Tus mensajes: ${stats.userMessages || 0}\n` +
+          `🤖 Respuestas del bot: ${stats.botMessages || 0}\n` +
+          `🚩 Reportes enviados: ${reports.length}\n` +
+          `⏰ Última actividad: ${new Date(stats.lastActive).toLocaleString()}`);
+      }
     }
 
     function applySettings() {
@@ -1768,21 +2044,21 @@
         history.forEach(msg => {
           const time = new Date(msg.timestamp).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
           const messageDiv = document.createElement('div');
-          messageDiv.className = `message ${msg.type}`;
+          messageDiv.className = `message ${msg.sender || msg.type}`;
           
           if (msg.image) {
-            messageDiv.innerHTML = `<span>${msg.text}<br><img src="${msg.image}" /></span><div class="message-time">${time}${msg.type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
+            messageDiv.innerHTML = `<span>${msg.message || msg.text}<br><img src="${msg.image}" onclick="openImageModal('${msg.image}')" /></span><div class="message-time">${time}${(msg.sender === 'user' || msg.type === 'user') ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
           } else {
-            messageDiv.innerHTML = `<span>${msg.text}</span><div class="message-time">${time}${msg.type === 'user' ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
+            messageDiv.innerHTML = `<span>${msg.message || msg.text}</span><div class="message-time">${time}${(msg.sender === 'user' || msg.type === 'user') ? ' <span class="message-check seen">✓✓</span>' : ''}</div>`;
           }
           
           // Agregar botón de reporte a mensajes del bot
-          if (msg.type === 'bot') {
+          if (msg.sender === 'bot' || msg.type === 'bot') {
             const reportBtn = document.createElement('button');
             reportBtn.className = 'report-btn';
             reportBtn.innerHTML = '🚩';
             reportBtn.title = 'Reportar contenido inapropiado';
-            reportBtn.onclick = () => reportMessage(msg.text);
+            reportBtn.onclick = () => reportMessage(msg.message || msg.text);
             messageDiv.appendChild(reportBtn);
           }
           
@@ -1976,7 +2252,7 @@
           
           headerAvatar.src = custom.avatar;
           headerName.textContent = custom.name;
-          document.querySelector('.header-status').textContent = 'En línea';
+          showTrustLevel(custom.name);
           
           // Habilitar inputs
           messageInput.disabled = false;
@@ -2163,6 +2439,92 @@
         }, 500);
       }
     });
+
+    // Sistema de confianza
+    function showTrustLevel(character) {
+      try {
+        const response = fetch(`${WORKER_URL}/history?userId=${userId}&character=${character}`);
+        response.then(res => res.json()).then(data => {
+          const history = data.history || [];
+          const trustLevel = calculateTrustLevel(history, character);
+          const trustText = getTrustText(trustLevel, character);
+          
+          const statusEl = document.querySelector('.header-status');
+          statusEl.textContent = `En línea • ${trustText}`;
+        }).catch(() => {
+          document.querySelector('.header-status').textContent = 'En línea';
+        });
+      } catch (error) {
+        document.querySelector('.header-status').textContent = 'En línea';
+      }
+    }
+
+    function calculateTrustLevel(history, character) {
+      if (!history.length) return 0;
+      
+      const userMessages = history.filter(msg => msg.sender === 'user' || msg.type === 'user').length;
+      let trust = Math.min(userMessages * 2, 100);
+      
+      if (history.length > 20) trust += 10;
+      if (history.length > 50) trust += 15;
+      
+      const multipliers = {
+        Angel: 1.1, Gissel: 1.2, iA777: 0.9,
+        Iris: 1.0, Luna: 0.8, Molly: 0.7
+      };
+      
+      trust *= (multipliers[character] || 1.0);
+      return Math.min(Math.floor(trust), 100);
+    }
+
+    function getTrustText(trustLevel, character) {
+      const level = Math.floor(trustLevel / 20);
+      const levels = {
+        Angel: ['Desconocido', 'Conocido', 'Amigable', 'Compañero', 'Amigo cercano', 'Hermano'],
+        Gissel: ['Nueva persona', 'Conocida', 'Amiga', 'Buena amiga', 'Mejor amiga', 'Hermana del alma'],
+        iA777: ['Desconocido', 'Conocido', 'Amigable', 'Amigo', 'Amigo cercano', 'Hermano'],
+        Luna: ['Extraño', 'Conocido', 'Amigable', 'Amiga', 'Amiga íntima', 'Hermana'],
+        Molly: ['Desconocido', 'Conocido', 'Respetable', 'Amiga', 'Amiga cercana', 'Hermana'],
+        Iris: ['Desconocida', 'Conocida', 'Amigable', 'Amiga', 'Amiga cercana', 'Hermana']
+      };
+      
+      const defaultLevels = ['Desconocido', 'Conocido', 'Amigable', 'Amigo', 'Amigo cercano', 'Hermano/a'];
+      const charLevels = levels[character] || defaultLevels;
+      return charLevels[Math.min(level, 5)];
+    }
+
+    // Funciones para modal de imágenes
+    window.openImageModal = function(imageSrc) {
+      document.getElementById('modalImage').src = imageSrc;
+      document.getElementById('imageModal').classList.add('active');
+    }
+
+    window.closeImageModal = function() {
+      document.getElementById('imageModal').classList.remove('active');
+    }
+
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
+
+    function openEasterEggs() {
+      document.getElementById('easterEggsModal').classList.add('active');
+    }
+
+    function closeEasterEggs() {
+      document.getElementById('easterEggsModal').classList.remove('active');
+    }
+
+    function openTechInfo() {
+      document.getElementById('techInfoModal').classList.add('active');
+    }
+
+    function closeTechInfo() {
+      document.getElementById('techInfoModal').classList.remove('active');
+    }
 
     // Capturar errores en móviles
     const isMobile = window.innerWidth <= 768;

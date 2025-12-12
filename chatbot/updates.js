@@ -1,6 +1,25 @@
 // Updates del chatbot
 const UPDATES = [
   {
+    version: 'v1.1.1',
+    title: 'IA Artística y Relaciones Evolutivas',
+    emoji: '🎨',
+    features: [
+      'Generación de imágenes por personajes con Stable Diffusion XL',
+      'Estilos artísticos únicos por personaje (heroico, anime, cyberpunk, etc.)',
+      'Triggers: "dibuja", "crea imagen", "genera", "muestra"',
+      'Modal de pantalla completa para ver imágenes (click + ESC)',
+      'Sistema de confianza de 6 niveles (Desconocido → Hermano/a)',
+      'Velocidades de confianza personalizadas por personaje',
+      'Contexto de conversación (últimos 8 mensajes)',
+      'Personalidades expandidas con libertad creativa',
+      'Temperatura y tokens aumentados para más espontaneidad',
+      'Imágenes adaptadas al nivel de confianza',
+      'Historial compatible con imágenes generadas',
+      'Integración completa con sistema existente'
+    ]
+  },
+  {
     version: 'v1.1',
     title: 'Protección Legal y Reportes',
     emoji: '⚖️',
@@ -54,7 +73,10 @@ function getUpdatesHTML() {
   let html = `
     <div class="message bot">
       🎉 <strong>Bienvenido al canal de Updates</strong><br><br>
-      Aquí encontrarás todas las actualizaciones del chatbot.
+      Aquí encontrarás todas las actualizaciones del chatbot.<br><br>
+      💡 <strong>Prueba la nueva función:</strong><br>
+      "Angel, dibuja una batalla épica"<br>
+      "Gissel, crea una imagen de ti cantando"
     </div>
   `;
 
