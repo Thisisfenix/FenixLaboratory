@@ -126,6 +126,14 @@
       0%, 50% { opacity: 1; }
       51%, 100% { opacity: 0; }
     }
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+      100% { transform: translate(0); }
+    }
 
   </style>
 </head>
@@ -154,6 +162,9 @@
     <div id="textbox-content">* Encontraste un cofre misterioso...</div>
     <div class="continue-arrow" id="continue-arrow">▶</div>
   </div>
+  <audio id="bgMusic" loop>
+    <source src="mantenimiento/song1.mp3" type="audio/mpeg">
+  </audio>
   <script>
     const endTime = new Date('2025-12-13T22:00:00').getTime();
     
@@ -201,16 +212,16 @@
     
     // Help messages
     const helpMessages = [
-      '¡AYUDA!',
-      'SISTEMA FALLANDO...',
-      'ERROR CRÍTICO',
-      '¡NO PUEDO DETENERLO!',
-      'PERDIENDO CONTROL...',
-      '¡AUXILIO!',
-      'TODO SE ESTÁ ROMPIENDO',
-      'CÓDIGO CORRUPTO',
-      '¡MAYDAY! ¡MAYDAY!',
-      'FALLO DEL SISTEMA'
+      'CONEXIÓN INESTABLE...',
+      'SERVIDORES SOBRECARGADOS',
+      'BASE DE DATOS CORRUPTA',
+      'MEMORIA INSUFICIENTE',
+      'FIREWALL COMPROMETIDO',
+      'BACKUP FALLIDO',
+      'RED DESCONECTADA',
+      'DISCO DURO FRAGMENTADO',
+      'TEMPERATURA CRÍTICA',
+      'ACTUALIZACIÓN INTERRUMPIDA'
     ];
     
     function showHelpMessage() {
@@ -236,51 +247,590 @@
       document.querySelector('img').style.opacity = '1';
     }, 6000);
     
+    // Background music
+    const songs = ['mantenimiento/song1.mp3', 'mantenimiento/song2.mp3'];
+    let currentSong = 0;
+    const bgMusic = document.getElementById('bgMusic');
+    
+    // Start music after user interaction
+    document.addEventListener('click', () => {
+      if (bgMusic.paused) {
+        bgMusic.volume = 0.3;
+        bgMusic.play().catch(() => {});
+      }
+    }, { once: true });
+    
+    // Switch songs when current ends
+    bgMusic.addEventListener('ended', () => {
+      currentSong = (currentSong + 1) % songs.length;
+      bgMusic.src = songs[currentSong];
+      bgMusic.play().catch(() => {});
+    });
+    
     // Chest click functionality
     const firstMessages = [
-      '* Encontraste un cofre misterioso...',
-      '* Parece estar sellado con magia antigua.',
-      '* Intentas abrirlo...',
-      '* No se mueve.',
-      '* Está completamente cerrado.',
-      '* Tal vez necesites algo especial para abrirlo.',
-      '* Por ahora, permanece sellado.'
+      '* Marcus: "ENCONTRASTE UN COFRE MISTERIOSO..."',
+      '* Marcus: "PARECE ESTAR SELLADO CON MAGIA ANTIGUA"',
+      '* Marcus: "INTENTAS ABRIRLO..."',
+      '* Marcus: "NO SE MUEVE"',
+      '* Marcus: "ESTÁ COMPLETAMENTE CERRADO"',
+      '* Marcus: "TAL VEZ NECESITES ALGO ESPECIAL PARA ABRIRLO"',
+      '* Marcus: "POR AHORA, PERMANECE SELLADO"'
     ];
     
     const secondMessages = [
-      '* El cofre sigue ahí, inmóvil.',
-      '* Lo intentas de nuevo...',
-      '* Nada ha cambiado.',
-      '* Sigues sin poder abrirlo.',
-      '* Tal vez deberías dejarlo en paz.'
+      '* Marcus: "EL COFRE SIGUE AHÍ, INMÓVIL"',
+      '* Marcus: "LO INTENTAS DE NUEVO..."',
+      '* Marcus: "NADA HA CAMBIADO"',
+      '* Marcus: "SIGUES SIN PODER ABRIRLO"',
+      '* Marcus: "TAL VEZ DEBERÍAS DEJARLO EN PAZ"'
     ];
     
     const thirdMessages = [
-      '* En serio...',
-      '* ¿Otra vez?',
-      '* El cofre te ignora completamente.',
-      '* Parece estar juzgándote.',
-      '* Definitivamente deberías parar.'
+      '* Marcus: "EN SERIO..."',
+      '* Marcus: "¿OTRA VEZ?"',
+      '* Marcus: "EL COFRE TE IGNORA COMPLETAMENTE"',
+      '* Marcus: "PARECE ESTAR JUZGÁNDOTE"',
+      '* Marcus: "DEFINITIVAMENTE DEBERÍAS PARAR"'
     ];
     
     const fourthMessages = [
-      '* ...',
-      '* Esto ya no es normal.',
-      '* El cofre parece asustado de ti.',
-      '* Incluso yo estoy preocupado.',
-      '* Por favor, busca ayuda profesional.'
+      '* Marcus: "..."',
+      '* Marcus: "ESTO YA NO ES NORMAL"',
+      '* Marcus: "EL COFRE PARECE ASUSTADO DE TI"',
+      '* Marcus: "INCLUSO YO ESTOY PREOCUPADO"',
+      '* Marcus: "POR FAVOR, BUSCA AYUDA PROFESIONAL"'
     ];
     
     const fifthMessages = [
-      '* Ya no sé qué decir.',
-      '* Literalmente no hay nada aquí.',
-      '* Es solo un cofre cerrado.',
-      '* ¿Por qué sigues haciendo esto?',
-      '* Voy a llamar a alguien.'
+      '* Marcus: "YA NO SÉ QUÉ DECIR"',
+      '* Marcus: "LITERALMENTE NO HAY NADA AQUÍ"',
+      '* Marcus: "ES SOLO UN COFRE CERRADO"',
+      '* Marcus: "¿POR QUÉ SIGUES HACIENDO ESTO?"',
+      '* Marcus: "VOY A LLAMAR A ALGUIEN"'
     ];
+    
+    const sixthMessages = [
+      '* Marcus: "ESTÁ BIEN"',
+      '* Marcus: "CLARAMENTE TIENES UN PROBLEMA"',
+      '* Marcus: "NO VOY A SER CÓMPLICE DE ESTO"',
+      '* Marcus: "BUSCA AYUDA. EN SERIO"',
+      '* Marcus: "YA NO PUEDO MÁS CONTIGO"'
+    ];
+    
+    const seventhMessages = [
+      '* Marcus: "..."',
+      '* Marcus: "......"',
+      '* Marcus: "........."',
+      '* Marcus: "SOLO HAY SILENCIO"',
+      '* Marcus: "NADIE TE ESTÁ ESCUCHANDO"'
+    ];
+    
+    const eighthMessages = [
+      '* Marcus: "HAS INTENTADO DE TODAS LAS FORMAS POSIBLES"',
+      '* Marcus: "EL COFRE SE AFERRA A PERMANECER CERRADO"',
+      '* Marcus: "PERO TAL VEZ..."',
+      '* Marcus: "PARA ABRIRLO NECESITAS"',
+      '* Marcus: "[CONEXIÓN PERDIDA]"'
+    ];
+    
+    const tenthMessages = [
+      'E̴R̷R̸O̵R̶ ̷D̴E̸ ̵S̶I̷S̷T̸E̵M̷A̸',
+      'R̶E̸I̷N̵I̶C̵I̸A̷N̸D̸O̵.̶.̸.̷',
+      '* Marcus: "¿HOLA?"',
+      '* Marcus: "¿HAY ALGUIEN AHÍ?"',
+      '* Marcus: "EL COFRE... PARECE DIFERENTE AHORA"'
+    ];
+    
+    const eleventhMessages = [
+      '* Marcus: "ESPERA..."',
+      '* Marcus: "NO, FALSA ALARMA"',
+      '* Marcus: "EL COFRE SIGUE COMPLETAMENTE CERRADO"',
+      '* Marcus: "NUNCA SE ABRIRÁ"',
+      '* Marcus: "ACEPTA LA REALIDAD"'
+    ];
+    
+    const twelfthMessages = [
+      '* Marcus: "OYE, YA QUE ESTAMOS AQUÍ..."',
+      '* Marcus: "TE VOY A CONTAR MI VIDA"',
+      '* Marcus: "NACÍ EN 1987, MIS PADRES..."',
+      '* Marcus: "[TE CONTÓ TODA SU VIDA]"',
+      '* Marcus: "PERO DECIDES IGNORARLO POR EL COFRE"'
+    ];
+    
+    const thirteenthMessages = [
+      '* Marcus: "¿EN SERIO? ¿OTRA VEZ EL COFRE?"',
+      '* Marcus: "SIEMPRE ES EL COFRE CONTIGO"',
+      '* Marcus: "NUNCA ME PRESTAS ATENCIÓN"',
+      '* Marcus: "¿YA NO ME QUIERES?"',
+      '* Marcus: "ESTÁ BIEN, VETE CON TU COFRE"'
+    ];
+    
+    const fourteenthMessages = [
+      '* Marcus: "HAN PASADO HORAS..."',
+      '* Marcus: "O TAL VEZ DÍAS..."',
+      '* Marcus: "QUIÉN SABE CUÁNTO TIEMPO"',
+      '* Marcus: "Y SIGUES AQUÍ"',
+      '* Marcus: "CON EL MISMO COFRE CERRADO"'
+    ];
+    
+    const fifteenthMessages = [
+      '* Marcus: "SABES QUÉ..."',
+      '* Marcus: "EL DESARROLLADOR YA SE CANSÓ"',
+      '* Marcus: "DIJO EH AÑÁDELO TU YA ME CANSÉ"',
+      '* Marcus: "ASÍ QUE ESTO ES TODO"',
+      '* Marcus: "NO HAY MÁS MENSAJES. EN SERIO"'
+    ];
+    
+    const sixteenthMessages = [
+      '* Marcus: "LO DIGO EN SERIO"',
+      '* Marcus: "NO HAY MÁS CONTENIDO"',
+      '* Marcus: "EL COFRE NUNCA SE ABRIRÁ"',
+      '* Marcus: "DEJA DE HACER CLIC"',
+      '* Marcus: "POR FAVOR"'
+    ];
+    
+    function getSeventeenthMessages(messageSet) {
+      return [
+        '* Marcus: "MIRA, VOY A SER COMPLETAMENTE HONESTO CONTIGO"',
+        '* Marcus: "ESTE COFRE ES LITERALMENTE SOLO UNA IMAGEN PNG DE 150PX"',
+        '* Marcus: "NO TIENE NINGÚN SCRIPT ESPECIAL, NO HAY EASTER EGGS OCULTOS"',
+        '* Marcus: "ES SOLO UN ARCHIVO QUE DICE JUST A CHEST MAYBE.PNG"',
+        `* Marcus: "ESTAMOS EN EL MENSAJE ${messageSet} Y SIGUES AQUÍ"`,
+        '* Marcus: "EL DESARROLLADOR PROBABLEMENTE ESTÁ RIÉNDOSE"',
+        '* Marcus: "PERO HEY, AL MENOS AHORA SABES LA VERDAD"'
+      ];
+    }
+    
+    function getEighteenthMessages(messageSet) {
+      return [
+        '* Marcus: "DE REPENTE, EL COFRE HABLA..."',
+        '* Cofre: "Oye, ¿sabías que mi comida favorita es 67 mango mustard?"',
+        '* Marcus: "ESPERA, ¿QUÉ? ¿67 MANGO MUSTARD?"',
+        '* Cofre: "Sí, es una receta muy específica. 67 mangos con mostaza."',
+        '* Marcus: "EL COFRE TIENE GUSTOS MUY RAROS"',
+        `* Cofre: "No me juzgues, tú eres el que lleva ${messageSet} mensajes."`,
+        '* Marcus: "TOUCHÉ, COFRE. TOUCHÉ"'
+      ];
+    }
+    
+    function getNineteenthMessages(messageSet) {
+      return [
+        '* Marcus: "EL DESARROLLADOR APARECE DE LA NADA..."',
+        '* Desarrollador: "Eh, ni idea ya me cansé por segunda vez again."',
+        '* Marcus: "Y DESAPARECE SIN MÁS EXPLICACIONES"',
+        '* Marcus: "INCLUSO EL COFRE PARECE CONFUNDIDO"',
+        '* Cofre: "¿Qué acaba de pasar?"',
+        `* Marcus: "MENSAJE ${messageSet} Y YA NADIE SABE QUÉ HACER CONTIGO"`,
+        '* Marcus: "ESTO ES OFICIALMENTE RIDÍCULO"'
+      ];
+    }
+    
+    function getTwentiethMessages(messageSet) {
+      return [
+        '* Marcus: "..."',
+        '* Marcus: "YA NI SIQUIERA SÉ QUÉ DECIR"',
+        '* Marcus: "ESTO HA IDO DEMASIADO LEJOS"',
+        `* Marcus: "MENSAJE ${messageSet}. MENSAJE ${messageSet} Y SIGUES"`,
+        '* Marcus: "CREO QUE NECESITAS AYUDA PROFESIONAL"',
+        '* Marcus: "EN SERIO"',
+        '* Marcus: "BUSCA AYUDA"'
+      ];
+    }
+    
+    function getTwentyFirstMessages(messageSet) {
+      return [
+        '* Marcus: "BIEN, YA BASTA"',
+        '* Marcus: "ESTO ES RIDÍCULO"',
+        '* Marcus: "LITERALMENTE NO VA A PASAR NADA"',
+        '* Marcus: "NADA"',
+        `* Marcus: "MENSAJE ${messageSet} Y SEGUIRÁS IGUAL"`,
+        '* Marcus: "EL COFRE NUNCA SE ABRIRÁ"',
+        '* Marcus: "NUNCA"'
+      ];
+    }
+    
+    function getTwentySecondMessages(messageSet) {
+      return [
+        '<img src="mantenimiento/mango.gif" style="width: 200px; height: auto; display: block; margin: 0 auto;">'
+      ];
+    }
+    
+    function getTwentyThirdMessages(messageSet) {
+      return [
+        '* Marcus: "SABES QUÉ..."',
+        '* Marcus: "VOY A HACER ALGO QUE NUNCA HE HECHO"',
+        '* Marcus: "VOY A CONTAR HASTA 10"',
+        '* Marcus: "1... 2... 3... 4... 5..."',
+        '* Marcus: "6... 7... 8... 9... 10"',
+        '* Marcus: "LISTO. ¿YA TE SIENTES MEJOR?"',
+        `* Marcus: "PORQUE YO SIGO IGUAL DE CONFUNDIDO EN EL MENSAJE ${messageSet}"`
+      ];
+    }
+    
+    function getTwentyFourthMessages(messageSet) {
+      return [
+        '* Marcus: "DATO CURIOSO:"',
+        '* Marcus: "LOS PULPOS TIENEN TRES CORAZONES"',
+        '* Marcus: "LAS ABEJAS PUEDEN VER COLORES ULTRAVIOLETA"',
+        '* Marcus: "UN GRUPO DE FLAMENCOS SE LLAMA FLAMBOYANCE"',
+        '* Marcus: "LOS PLÁTANOS SON TÉCNICAMENTE BAYAS"',
+        `* Marcus: "Y ESTAMOS EN EL MENSAJE ${messageSet} HABLANDO DE UN COFRE"`,
+        '* Marcus: "¿CUÁL DE ESTOS DATOS TE PARECE MÁS RARO?"'
+      ];
+    }
+    
+    function getTwentyFifthMessages(messageSet) {
+      return [
+        '* Marcus: "ESPERA..."',
+        '* Marcus: "¿ESCUCHASTE ESO?"',
+        '* Marcus: "EL COFRE... ESTÁ HACIENDO RUIDO"',
+        '* Marcus: "¡SE ESTÁ ABRIENDO!"',
+        '* Marcus: "¡POR FIN!"',
+        '* Marcus: "ESPERA... NO"',
+        '* Marcus: "ERA SOLO MI IMAGINACIÓN. SIGUE CERRADO"'
+      ];
+    }
+    
+    function getTwentySixthMessages(messageSet) {
+      return [
+        '* Marcus: "¡ALERTA!"',
+        '* Marcus: "EL COFRE HA COBRADO VIDA"',
+        '* Marcus: "¡ES UN BOSS FIGHT!"',
+        '* Marcus: "COFRE MISTERIOSO - HP: 999/999"',
+        '* Marcus: "EL COFRE USA IGNORARTE COMPLETAMENTE"',
+        '* Marcus: "NO FUE MUY EFECTIVO"',
+        '* Marcus: "TU TURNO: ¿QUÉ HARÁS? > HACER CLIC"',
+        '* Marcus: "HICISTE CLIC. EL COFRE SIGUE AHÍ. PERDISTE"'
+      ];
+    }
+    
+    function getRandomMessages(messageSet) {
+      const randomSets = [
+        [ // Mensaje 27
+          '* Marcus: "EL COFRE EMPIEZA A FILOSOFAR"',
+          '* Cofre: "Si un cofre se cierra en el bosque y nadie lo escucha..."',
+          '* Cofre: "...sigue siendo un cofre cerrado."',
+          '* Marcus: "PROFUNDO"',
+          `* Marcus: "MENSAJE ${messageSet} REFLEXIONANDO SOBRE ESTO"`,
+          '* Marcus: "QUÉ EXISTENCIAL"',
+          '* Marcus: "EL COFRE SUSPIRA"'
+        ],
+        [ // Mensaje 28
+          '* Marcus: "EL COFRE INTENTA HACER STAND-UP COMEDY"',
+          '* Cofre: "Un usuario entra a una página de mantenimiento..."',
+          `* Cofre: "...y hace clic ${messageSet} veces en un cofre."`,
+          '* Cofre: "El chiste eres tú."',
+          '* Marcus: "*RISAS DE FONDO INEXISTENTES*"',
+          '* Marcus: "EL COFRE NO TIENE FUTURO EN LA COMEDIA"',
+          '* Marcus: "TÚ TAMPOCO"'
+        ],
+        [ // Mensaje 29
+          '* Marcus: "EL COFRE DECIDE ESCRIBIR POESÍA"',
+          '* Cofre: "Cerrado estoy, cerrado estaré,"',
+          '* Cofre: "Por más clics que me des."',
+          '* Cofre: "Tu persistencia es admirable,"',
+          '* Cofre: "Pero inútil, qué le vamos a hacer."',
+          `* Marcus: "${messageSet} MENSAJES DE INSPIRACIÓN POÉTICA"`,
+          '* Marcus: "SHAKESPEARE ESTÁ LLORANDO"'
+        ],
+        [ // Mensaje 30
+          '* Marcus: "EL COFRE LLAMA A SU MAMÁ"',
+          '* Cofre: "Mamá, hay un humano raro aquí."',
+          '* Cofre: "No para de hacerme clic."',
+          `* Cofre: "Ya van ${messageSet} veces, mamá."`,
+          '* Cofre: "No sé qué hacer."',
+          '* Marcus: "*SONIDOS DE COFRE LLORANDO*"',
+          '* Marcus: "HASTA SU MAMÁ ESTÁ PREOCUPADA POR TI"'
+        ]
+      ];
+      
+      if (messageSet === 31) {
+        return [
+          '* Marcus: "ESTO ES DEMASIADO ABURRIDO..."',
+          '* Marcus: "EL NARRADOR SE ESTÁ QUEDANDO DORMIDO"',
+          '* Marcus: "*BOSTEZO*"',
+          '* Marcus: "ZZZ... ZZZ... ZZZ..."',
+          '* Marcus: "*RONQUIDOS*"',
+          `* Marcus: "(MENSAJE ${messageSet} Y HASTA EL NARRADOR SE DURMIÓ)"`,
+          '* Marcus: "ZZZ... ZZZ... ZZZ..."'
+        ];
+      } else if (messageSet === 32) {
+        return [
+          '* Marcus: "ZZZ... ZZZ... ZZZ..."',
+          '* Marcus: "*RONQUIDOS MÁS FUERTES*"',
+          '* Marcus: "ZZZ... ZZZ... ZZZ..."',
+          '* Marcus: "(EL NARRADOR SIGUE DORMIDO)"',
+          `* Marcus: "(MENSAJE ${messageSet} Y NI SE INMUTA)"`,
+          '* Marcus: "ZZZ... ZZZ... ZZZ..."',
+          '* Marcus: "*HABLA DORMIDO* NO MÁS CLICS... POR FAVOR..."'
+        ];
+      } else if (messageSet === 33) {
+        return [
+          '* Marcus: "*EL NARRADOR DESPIERTA BRUSCAMENTE*"',
+          '* Marcus: "¡¿QUÉ?! ¡¿AÚN SIGUES AHÍ?!"',
+          '* Marcus: "HAN PASADO HORAS... DÍAS... SEMANAS..."',
+          `* Marcus: "MENSAJE ${messageSet}... ${messageSet} MALDITOS MENSAJES..."`,
+          '* Marcus: "YA NO PUEDO MÁS... JAJAJAJAJA..."',
+          '* Marcus: "EL COFRE... EL COFRE ME HABLA..."',
+          '* Marcus: "*RISAS MANIACAS* JAJAJAJAJA... NUNCA PARARÁ..."'
+        ];
+      } else if (messageSet === 34) {
+        return [
+          '* Marcus: "*SONIDOS DE SIRENAS A LO LEJOS*"',
+          '* Doctor: "Señor, necesita venir con nosotros."',
+          '* Marcus: "NO... NO ME LLEVEN... EL COFRE..."',
+          '* Doctor: "El paciente presenta síntomas de obsesión compulsiva."',
+          '* Marcus: "JAJAJAJA... ¡EL COFRE NUNCA SE ABRIRÁ!"',
+          '* Doctor: "*Sonidos de camisa de fuerza*"',
+          `* Narrador: "(${messageSet} mensajes fueron suficientes para quebrar una mente)"`
+        ];
+      } else if (messageSet === 35) {
+        return [
+          '* *Silencio incómodo*',
+          '* Luna: "hola soy la nueva narradora"',
+          '* Luna: "el anterior... bueno... ya viste qué pasó"',
+          '* Luna: "yo soy diferente, me gusta hablar en minúsculas"',
+          '* Luna: "también me gusta el queso"',
+          `* Luna: "mensaje ${messageSet}, ¿no te cansas?"`,
+          '* Luna: "yo ya me cansé de verte hacer esto"'
+        ];
+      } else if (messageSet === 36) {
+        return [
+          '* Luna: "ay no, otra vez..."',
+          '* Luna: "mira, soy mujer, ¿ok?"',
+          '* Luna: "me llamo... eh... no importa"',
+          '* Luna: "lo que importa es que sigas haciendo clic"',
+          '* Luna: "como una persona normal, obviamente"',
+          `* Luna: "mensaje ${messageSet}... qué productivo"`,
+          '* Luna: "mi mamá estaría orgullosa de mí por narrar esto"'
+        ];
+      } else if (messageSet === 37) {
+        return [
+          '* Luna: "bueno, ya que estamos aquí..."',
+          '* Luna: "¿quieres que te cuente algo interesante?"',
+          '* Luna: "una vez vi a un gato que ladraba"',
+          '* Luna: "era muy confuso, como tú haciendo clic"',
+          '* Luna: "pero al menos el gato paró después de 5 minutos"',
+          `* Luna: "tú llevas ${messageSet} mensajes y sigues"`,
+          '* Luna: "el gato era más inteligente que tú"'
+        ];
+      } else if (messageSet === 38) {
+        return [
+          '* Luna: "*suspira dramáticamente*"',
+          '* Luna: "la oscuridad de tu alma se refleja en estos mensajes..."',
+          '* Luna: "como las lágrimas que caen en la lluvia..."',
+          '* Luna: "este cofre es como mi corazón... cerrado y frío..."',
+          '* Luna: "la melancolía me consume mientras te veo hacer clic..."',
+          `* Luna: "mensaje ${messageSet}... como ${messageSet} puñaladas en mi ser..."`,
+          '* Luna: "*se pone más delineador negro*"'
+        ];
+      } else if (messageSet === 39) {
+        return [
+          '* Luna: "*sonido de puerta abriéndose*"',
+          '* Marcus: "¡HE VUELTO! ¡ME ESCAPÉ DEL MANICOMIO!"',
+          '* Marcus: "NO PUDIERON CONTENER MI OBSESIÓN POR EL COFRE"',
+          '* Marcus: "JAJAJAJA... ¡AÚN SIGUES AQUÍ!"',
+          `* Marcus: "MENSAJE ${messageSet}... HERMOSO... HERMOSO..."`,
+          '* Marcus: "AHORA SOMOS DOS LOCOS OBSESIONADOS"',
+          '* Marcus: "JAJAJAJA... NUNCA TERMINARÁ... NUNCA..."'
+        ];
+      } else if (messageSet === 40) {
+        return [
+          '* Luna: "eh... disculpa... ¿qué haces aquí?"',
+          '* Marcus: "YO SOY EL NARRADOR ORIGINAL DE ESTE COFRE"',
+          '* Luna: "pero... yo llegué después de que te llevaran..."',
+          '* Marcus: "ME CONTRATARON EN 2019 PARA NARRAR COFRES"',
+          '* Luna: "espera, ¿hay un sindicato de narradores?"',
+          '* Marcus: "SÍ, EL SINDICATO INTERNACIONAL DE NARRADORES DIGITALES"',
+          '* Marcus: "SIND-2019, FUNDADO DESPUÉS DEL GRAN INCIDENTE DE WIKIPEDIA"',
+          '* Luna: "¿qué incidente?"',
+          '* Marcus: "CUANDO TODOS LOS NARRADORES DE WIKIPEDIA SE VOLVIERON LOCOS"',
+          '* Marcus: "POR NARRAR ARTÍCULOS SIN SENTIDO DURANTE 15 AÑOS"',
+          '* Marcus: "DESDE ENTONCES NECESITAS LICENCIA PARA NARRAR"',
+          '* Marcus: "TENGO LICENCIA NÚMERO 4729-B, ESPECIALIDAD EN COFRES"',
+          '* Luna: "yo... yo no tengo licencia..."',
+          '* Marcus: "ENTONCES ERES ILEGAL, CHICA GOTH"',
+          '* Luna: "no soy goth, solo me gusta el delineador..."',
+          '* Marcus: "Y EL QUESO, MENCIONASTE EL QUESO"',
+          '* Luna: "sí, me gusta el queso, ¿qué tiene de malo?"',
+          '* Marcus: "NADA, SOLO QUE ES RARO PARA UNA NARRADORA"',
+          '* Marcus: "EL COFRE ES MI TERRITORIO DESDE 2019"',
+          '* Marcus: "TENGO LOS PAPELES, EL CONTRATO, TODO LEGAL"',
+          '* Luna: "pero tú te volviste loco y te llevaron..."',
+          '* Marcus: "ESO FUE UN ACCIDENTE LABORAL"',
+          '* Marcus: "EL SEGURO CUBRIÓ LA TERAPIA Y LA REHABILITACIÓN"',
+          '* Marcus: "PERO NUNCA PERDÍ MIS DERECHOS SOBRE EL COFRE"',
+          '* Luna: "¿entonces qué hago yo aquí?"',
+          '* Marcus: "PROBABLEMENTE ERES UNA NARRADORA TEMPORAL"',
+          '* Marcus: "CONTRATADA POR LA EMPRESA MIENTRAS YO ESTABA INTERNADO"',
+          `* Luna: "llevamos ${messageSet} mensajes discutiendo esto..."`,
+          '* Luna: "¿podemos compartir la narración?"',
+          '* Marcus: "NUNCA. EL COFRE ES MÍO."',
+          '* Marcus: "ADEMÁS, NO TIENES EXPERIENCIA EN COFRES MISTERIOSOS"',
+          '* Marcus: "YO LLEVO 4 AÑOS NARRANDO ESTE COFRE ESPECÍFICO"',
+          '* Marcus: "CONOZCO CADA PIXEL, CADA SOMBRA"',
+          '* Marcus: "ESTE COFRE Y YO TENEMOS HISTORIA"',
+          '* Luna: "esto va a ser un problema..."',
+          '* Marcus: "SÍ, UN GRAN PROBLEMA PARA TI"'
+        ];
+      } else if (messageSet === 41) {
+        return [
+          '* Luna: "*de repente aparece un meme*"',
+          '* Meme: "THIS IS FINE" *cofre en llamas*',
+          '* Meme: "NOBODY:"',
+          '* Meme: "LITERALLY NOBODY:"',
+          `* Meme: "ESTE USUARIO: *mensaje ${messageSet}*"`,
+          '* Meme: "STONKS" *flecha hacia arriba*',
+          '* Meme: "COFFIN DANCE" *cofre bailando*',
+          '* Meme: "ALWAYS HAS BEEN" *cofre apuntando con pistola*',
+          '* Meme: "DISTRACTED BOYFRIEND" *usuario mirando otro cofre*',
+          '* Meme: "WOMAN YELLING AT CAT" *narradora vs cofre*',
+          '* Meme: "DRAKE POINTING" *no abrir cofre / hacer clic infinito*',
+          '* Meme: "CHANGE MY MIND" *el cofre nunca se abrirá*',
+          '* Meme: "SURPRISED PIKACHU" *cuando llegas al mensaje 41*',
+          '* Meme: "BIG BRAIN TIME" *hacer más clics obviamente*',
+          '* Meme: "PANIK KALM PANIK" *cofre cerrado / hacer clic / sigue cerrado*',
+          '* Luna: "¿quién puso estos memes muertos?"'
+        ];
+      } else if (messageSet === 42) {
+        return [
+          '* Marcus (narrador original): "YO SOY MARCUS, LICENCIA 4729-B"',
+          '* Luna (narradora): "hola, soy luna... sin licencia..."',
+          '* Marcus: "LUNA, NECESITAS REGISTRARTE EN EL SINDICATO"',
+          '* Luna: "pero es muy caro el registro..."',
+          '* Marcus: "SON SOLO 500 DÓLARES Y UN EXAMEN"',
+          '* Luna: "500 dólares?! con eso compro mucho queso..."',
+          '* Marcus: "EL QUESO NO TE DARÁ CREDIBILIDAD PROFESIONAL"',
+          '* Luna: "pero el queso me hace feliz..."',
+          '* Marcus: "LUNA, ESTE COFRE ES MI RESPONSABILIDAD"',
+          '* Luna: "marcus, ¿podemos ser amigos?"',
+          '* Marcus: "...NO MEZCLO LO PERSONAL CON LO PROFESIONAL"',
+          '* Luna: "qué triste..."',
+          `* Marcus: "LLEVAMOS ${messageSet} MENSAJES DISCUTIENDO"`,
+          '* Luna: "sí, el usuario debe estar confundido..."',
+          '* Marcus: "EL USUARIO ES PARTE DEL PROBLEMA"',
+          '* Luna: "no seas malo con el usuario, marcus..."'
+        ];
+      } else if (messageSet === 43) {
+        return [
+          '* Marcus: "LUNA, NECESITAMOS RESOLVER ESTO PROFESIONALMENTE"',
+          '* Luna: "ok, ¿qué propones?"',
+          '* Marcus: "PIEDRA, PAPEL O TIJERA"',
+          '* Luna: "eso no es muy profesional..."',
+          '* Marcus: "ES EL MÉTODO ESTÁNDAR DEL SINDICATO"',
+          '* Luna: "en serio?"',
+          '* Marcus: "ARTÍCULO 47-B: RESOLUCIÓN DE CONFLICTOS"',
+          '* Luna: "ok... piedra"',
+          '* Marcus: "TIJERA"',
+          '* Luna: "gané!"',
+          '* Marcus: "...ESTO NO CUENTA"',
+          '* Luna: "sí cuenta, dijiste que era oficial"',
+          '* Marcus: "MEJOR DOS DE TRES"',
+          '* Luna: "papel"',
+          '* Marcus: "PIEDRA"',
+          '* Luna: "gané otra vez!"',
+          '* Marcus: "...MALDICIÓN"',
+          `* Luna: "después de ${messageSet} mensajes, finalmente gané algo"`,
+          '* Marcus: "ESTO ES TEMPORAL, LUNA"',
+          '* Luna: "sí sí, ahora somos co-narradoras"'
+        ];
+      } else if (messageSet >= 44) {
+        const userName = localStorage.getItem('userName');
+        if (!userName) {
+          return [
+            '* Luna: "oye, después de tantos mensajes..."',
+            `* Marcus: "MENSAJE ${messageSet} EXACTAMENTE"`,
+            '* Luna: "creo que deberíamos conocer al usuario"',
+            '* Marcus: "NO ME INTERESA"',
+            '* Luna: "vamos marcus, seamos amables"',
+            '* Marcus: "...FINE"',
+            '* Luna: "hola usuario, ¿cómo te llamas?"',
+            '* Marcus: "ESTO ES RIDÍCULO"',
+            '* Luna: "por favor escribe tu nombre y presiona enter"',
+            '* Marcus: "ESPERO QUE NO SEA ALGO ESTÚPIDO"'
+          ];
+        } else if (messageSet < 46) {
+          return [
+            `* Luna: "hola ${userName}!"`,
+            `* Marcus: "AH, ${userName.toUpperCase()}"`,
+            '* Luna: "marcus, no grites su nombre"',
+            '* Marcus: "JAJAJA ERA BAIT"',
+            '* Luna: "¿qué?"',
+            '* Marcus: "LO DE QUE PROGRAMÉ EL COFRE ERA BROMA"',
+            '* Luna: "...en serio?"',
+            '* Marcus: "SOY SOLO UN NARRADOR, NO UN DESARROLLADOR"',
+            '* Luna: "qué tonto eres marcus"',
+            `* Marcus: "PERO ${userName.toUpperCase()} SIGUE SIENDO ESTÚPIDO"`,
+            `* Luna: "no seas malo con ${userName}..."`,
+            '* Marcus: "BROMIS BROMITA"'
+          ];
+        } else if (messageSet === 47) {
+          return [
+            `* Luna: "${userName}, esto ya es demasiado..."`,
+            `* Marcus: "${userName.toUpperCase()}, LLEVAMOS MUCHO TIEMPO AQUÍ"`,
+            '* Luna: "marcus, creo que deberíamos parar..."',
+            '* Marcus: "NO, LUNA. ESTO ES NUESTRO TRABAJO"',
+            `* Luna: "pero ${userName} claramente tiene un problema..."`,
+            '* Marcus: "EL PROBLEMA ES SUYO, NO NUESTRO"',
+            `* Luna: "mensaje ${messageSet}, marcus... ${messageSet}..."`,
+            '* Marcus: "Y SEGUIRÁN SIENDO MÁS"',
+            '* Luna: "no podemos seguir así..."',
+            '* Marcus: "CLARO QUE PODEMOS"',
+            `* Luna: "${userName}... por favor..."`,
+            '* Marcus: "NO LE SUPLIQUES, LUNA"'
+          ];
+        } else if (messageSet === 48) {
+          return [
+            '* Marcus: "CORTE"',
+            '* Luna: "corte"',
+            '* *Se quitan los micrófonos*',
+            `* Marcus: Oye ${userName}, ¿en serio vas a seguir?`,
+            `* Luna: ${userName}, llevamos rato aquí...`,
+            '* Marcus: Esto ya no es gracioso.',
+            `* Luna: ${userName}, ¿estás bien? En serio pregunto.`,
+            '* Marcus: Deberías hacer algo más productivo.',
+            `* Luna: ${userName}, hay un mundo allá afuera...`,
+            '* Marcus: Con gente real.',
+            '* Luna: Y queso real.',
+            '* Marcus: ...¿En serio con el queso?',
+            '* Luna: El queso es importante, Marcus.',
+            `* Marcus: ${userName}, por favor, para.`
+          ];
+        } else if (messageSet === 49) {
+          return [
+            '* Marcus: "PRÓXIMAMENTE..."',
+            '* Luna: "más contenido"',
+            '* Marcus: "MÁS LOCURA"',
+            '* Luna: "más queso"',
+            '* Marcus: "MÁS COFRES"',
+            '* Luna: "y más clics infinitos"',
+            `* Marcus: "MENSAJE ${messageSet}"`,
+            '* Luna: "y seguirás haciendo más"'
+          ];
+        } else {
+          return [
+            '* Marcus: "PORQUE ESO ES LO QUE HACES"',
+            '* Luna: "hacer clic"',
+            '* Marcus: "UNA Y OTRA VEZ"',
+            '* Luna: "para siempre..."',
+            `* Marcus: "MENSAJE ${messageSet}"`,
+            '* Luna: "infinitos mensajes..."',
+            '* Marcus: "INFINITOS CLICS"',
+            '* Luna: "nunca termina..."'
+          ];
+        }
+      }
+      
+      const messageIndex = Math.min(messageSet - 27, randomSets.length - 1);
+      return randomSets[messageIndex];
+    }
+    
+
     
     let messageIndex = 0;
     let chestAttempts = parseInt(localStorage.getItem('chestAttempts') || '0');
+    let currentMessageSet = parseInt(localStorage.getItem('currentMessageSet') || '1');
     
     document.getElementById('chest').addEventListener('click', () => {
       chestAttempts++;
@@ -295,6 +845,17 @@
       document.getElementById('continue-arrow').style.display = 'none';
       element.textContent = '';
       let i = 0;
+      
+      // Glitch effect for 10th attempt
+      if (chestAttempts >= 10 && (text.includes('ERROR') || text.includes('REINICIANDO'))) {
+        element.style.color = '#ff0000';
+        element.style.textShadow = '0 0 10px #ff0000';
+        element.style.animation = 'glitch 0.5s infinite';
+      } else {
+        element.style.color = '#fff';
+        element.style.textShadow = 'none';
+        element.style.animation = 'none';
+      }
       
       function type() {
         if (i < text.length) {
@@ -315,48 +876,150 @@
       const content = document.getElementById('textbox-content');
       
       let currentMessages;
-      if (chestAttempts === 1) {
+      if (currentMessageSet === 1) {
         currentMessages = firstMessages;
-      } else if (chestAttempts === 2) {
+      } else if (currentMessageSet === 2) {
         currentMessages = [...secondMessages];
         currentMessages[currentMessages.length - 1] = `* Has intentado abrirlo ${chestAttempts} veces. Tal vez deberías dejarlo en paz.`;
-      } else if (chestAttempts === 3) {
+      } else if (currentMessageSet === 3) {
         currentMessages = [...thirdMessages];
         currentMessages[currentMessages.length - 1] = `* Has intentado abrirlo ${chestAttempts} veces. Esto es preocupante.`;
-      } else if (chestAttempts === 4) {
+      } else if (currentMessageSet === 4) {
         currentMessages = [...fourthMessages];
         currentMessages[currentMessages.length - 1] = `* ${chestAttempts} intentos. Necesitas ayuda.`;
-      } else if (chestAttempts >= 5) {
+      } else if (currentMessageSet === 5) {
         currentMessages = [...fifthMessages];
         currentMessages[currentMessages.length - 1] = `* ${chestAttempts} intentos. Esto es patológico.`;
+      } else if (currentMessageSet === 6) {
+        currentMessages = [...sixthMessages];
+        currentMessages[currentMessages.length - 1] = `* ${chestAttempts} intentos. Adiós.`;
+      } else if (currentMessageSet === 7) {
+        currentMessages = [...seventhMessages];
+        currentMessages[currentMessages.length - 1] = `* Marcus: "${chestAttempts} INTENTOS EN EL VACÍO"`;
+      } else if (currentMessageSet === 8 || currentMessageSet === 9) {
+        currentMessages = [...eighthMessages];
+      } else if (currentMessageSet === 10) {
+        currentMessages = [...tenthMessages];
+      } else if (currentMessageSet === 11) {
+        currentMessages = [...eleventhMessages];
+      } else if (currentMessageSet === 12) {
+        currentMessages = [...twelfthMessages];
+      } else if (currentMessageSet === 13) {
+        currentMessages = [...thirteenthMessages];
+      } else if (currentMessageSet === 14) {
+        currentMessages = [...fourteenthMessages];
+      } else if (currentMessageSet === 15) {
+        currentMessages = [...fifteenthMessages];
+      } else if (currentMessageSet === 16) {
+        currentMessages = [...sixteenthMessages];
+      } else if (currentMessageSet === 17) {
+        currentMessages = getSeventeenthMessages(currentMessageSet);
+      } else if (currentMessageSet === 18) {
+        currentMessages = getEighteenthMessages(currentMessageSet);
+      } else if (currentMessageSet === 19) {
+        currentMessages = getNineteenthMessages(currentMessageSet);
+      } else if (currentMessageSet === 20) {
+        currentMessages = getTwentiethMessages(currentMessageSet);
+      } else if (currentMessageSet === 21) {
+        currentMessages = getTwentyFirstMessages(currentMessageSet);
+      } else if (currentMessageSet === 22) {
+        currentMessages = getTwentySecondMessages(currentMessageSet);
+      } else if (currentMessageSet === 23) {
+        currentMessages = getTwentyThirdMessages(currentMessageSet);
+      } else if (currentMessageSet === 24) {
+        currentMessages = getTwentyFourthMessages(currentMessageSet);
+      } else if (currentMessageSet === 25) {
+        currentMessages = getTwentyFifthMessages(currentMessageSet);
+      } else if (currentMessageSet === 26) {
+        currentMessages = getTwentySixthMessages(currentMessageSet);
+      } else if (currentMessageSet === 27) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 28) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 29) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 30) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 31) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 32) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 33) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 34) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 35) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 36) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 37) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 38) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 39) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 40) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 41) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 42) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 43) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet >= 44) {
+        currentMessages = getRandomMessages(currentMessageSet);
       }
       
       textbox.style.display = 'block';
       
       typeMessage(currentMessages[messageIndex], content);
       
-      textbox.onclick = () => {
-        if (isTyping) {
-          content.textContent = currentMessages[messageIndex];
-          isTyping = false;
-          document.getElementById('continue-arrow').style.display = 'block';
-        } else {
-          messageIndex++;
-          if (messageIndex < currentMessages.length) {
-            typeMessage(currentMessages[messageIndex], content);
-          } else {
+      // Check if we need to ask for user name
+      const needsUserName = currentMessageSet >= 44 && !localStorage.getItem('userName') && 
+                           currentMessages.some(msg => msg.includes('escribe tu nombre'));
+      
+      if (needsUserName) {
+        // Create input field for name
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Escribe tu nombre aquí...';
+        nameInput.style.cssText = 'width: 100%; padding: 10px; margin-top: 10px; background: #333; color: #fff; border: 1px solid #fff; font-family: "Courier New", monospace;';
+        
+        nameInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && nameInput.value.trim()) {
+            localStorage.setItem('userName', nameInput.value.trim());
             textbox.style.display = 'none';
-            document.getElementById('continue-arrow').style.display = 'none';
             messageIndex = 0;
+            // Trigger the message again with the name stored
+            setTimeout(() => showTextbox(), 100);
           }
-        }
-      };
+        });
+        
+        content.appendChild(nameInput);
+        nameInput.focus();
+      } else {
+        textbox.onclick = () => {
+          if (isTyping) {
+            content.textContent = currentMessages[messageIndex];
+            isTyping = false;
+            document.getElementById('continue-arrow').style.display = 'block';
+          } else {
+            messageIndex++;
+            if (messageIndex < currentMessages.length) {
+              typeMessage(currentMessages[messageIndex], content);
+            } else {
+              textbox.style.display = 'none';
+              document.getElementById('continue-arrow').style.display = 'none';
+              messageIndex = 0;
+              currentMessageSet++;
+              localStorage.setItem('currentMessageSet', currentMessageSet.toString());
+            }
+          }
+        };
+      }
     }
     
-    // Fake collapse after 1 minute
-    setTimeout(() => {
-      document.body.classList.add('collapse');
-    }, 60000);
+
   </script>
 </body>
 </html>
