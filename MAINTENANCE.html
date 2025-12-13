@@ -83,6 +83,50 @@
       75% { transform: scale(0.4) rotate(-10deg); filter: brightness(0.2) blur(5px); }
       100% { transform: scale(0) rotate(180deg); filter: brightness(0) blur(10px); opacity: 0; }
     }
+    .help-message {
+      position: absolute;
+      color: #ff0000;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-shadow: 0 0 20px #ff0000;
+      opacity: 0;
+      animation: helpFlash 2s ease-in-out;
+      pointer-events: none;
+    }
+    @keyframes helpFlash {
+      0%, 100% { opacity: 0; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    .undertale-textbox {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 600px;
+      background: #000;
+      border: 3px solid #fff;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      color: #fff;
+      display: none;
+      z-index: 1000;
+    }
+    .continue-arrow {
+      position: absolute;
+      bottom: 10px;
+      right: 15px;
+      color: #ff6b35;
+      font-size: 20px;
+      display: none;
+      animation: arrowBlink 1s infinite;
+    }
+    @keyframes arrowBlink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
   </style>
 </head>
 <body>
@@ -105,6 +149,11 @@
     </div>
   </div>
   <div class="maintenance-text" id="maintenance-text"></div>
+  <img src="mantenimiento/just a chest maybe.png" alt="Chest" id="chest" style="position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); width: 150px; opacity: 0.8; cursor: pointer;">
+  <div class="undertale-textbox" id="textbox">
+    <div id="textbox-content">* Encontraste un cofre misterioso...</div>
+    <div class="continue-arrow" id="continue-arrow">▶</div>
+  </div>
   <script>
     const endTime = new Date('2025-12-13T22:00:00').getTime();
     
@@ -149,6 +198,160 @@
         letter.classList.add('lit');
       }, 3000 + (index * 200));
     });
+    
+    // Help messages
+    const helpMessages = [
+      '¡AYUDA!',
+      'SISTEMA FALLANDO...',
+      'ERROR CRÍTICO',
+      '¡NO PUEDO DETENERLO!',
+      'PERDIENDO CONTROL...',
+      '¡AUXILIO!',
+      'TODO SE ESTÁ ROMPIENDO',
+      'CÓDIGO CORRUPTO',
+      '¡MAYDAY! ¡MAYDAY!',
+      'FALLO DEL SISTEMA'
+    ];
+    
+    function showHelpMessage() {
+      const message = document.createElement('div');
+      message.className = 'help-message';
+      message.textContent = helpMessages[Math.floor(Math.random() * helpMessages.length)];
+      message.style.left = Math.random() * 80 + 10 + '%';
+      message.style.top = Math.random() * 80 + 10 + '%';
+      document.body.appendChild(message);
+      
+      setTimeout(() => {
+        message.remove();
+      }, 2000);
+    }
+    
+    // Start showing messages after 10 seconds
+    setTimeout(() => {
+      setInterval(showHelpMessage, 3000);
+    }, 10000);
+    
+    // Show chest after letters finish
+    setTimeout(() => {
+      document.querySelector('img').style.opacity = '1';
+    }, 6000);
+    
+    // Chest click functionality
+    const firstMessages = [
+      '* Encontraste un cofre misterioso...',
+      '* Parece estar sellado con magia antigua.',
+      '* Intentas abrirlo...',
+      '* No se mueve.',
+      '* Está completamente cerrado.',
+      '* Tal vez necesites algo especial para abrirlo.',
+      '* Por ahora, permanece sellado.'
+    ];
+    
+    const secondMessages = [
+      '* El cofre sigue ahí, inmóvil.',
+      '* Lo intentas de nuevo...',
+      '* Nada ha cambiado.',
+      '* Sigues sin poder abrirlo.',
+      '* Tal vez deberías dejarlo en paz.'
+    ];
+    
+    const thirdMessages = [
+      '* En serio...',
+      '* ¿Otra vez?',
+      '* El cofre te ignora completamente.',
+      '* Parece estar juzgándote.',
+      '* Definitivamente deberías parar.'
+    ];
+    
+    const fourthMessages = [
+      '* ...',
+      '* Esto ya no es normal.',
+      '* El cofre parece asustado de ti.',
+      '* Incluso yo estoy preocupado.',
+      '* Por favor, busca ayuda profesional.'
+    ];
+    
+    const fifthMessages = [
+      '* Ya no sé qué decir.',
+      '* Literalmente no hay nada aquí.',
+      '* Es solo un cofre cerrado.',
+      '* ¿Por qué sigues haciendo esto?',
+      '* Voy a llamar a alguien.'
+    ];
+    
+    let messageIndex = 0;
+    let chestAttempts = parseInt(localStorage.getItem('chestAttempts') || '0');
+    
+    document.getElementById('chest').addEventListener('click', () => {
+      chestAttempts++;
+      localStorage.setItem('chestAttempts', chestAttempts.toString());
+      showTextbox();
+    });
+    
+    let isTyping = false;
+    
+    function typeMessage(text, element, callback) {
+      isTyping = true;
+      document.getElementById('continue-arrow').style.display = 'none';
+      element.textContent = '';
+      let i = 0;
+      
+      function type() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, 50);
+        } else {
+          isTyping = false;
+          document.getElementById('continue-arrow').style.display = 'block';
+          if (callback) callback();
+        }
+      }
+      type();
+    }
+    
+    function showTextbox() {
+      const textbox = document.getElementById('textbox');
+      const content = document.getElementById('textbox-content');
+      
+      let currentMessages;
+      if (chestAttempts === 1) {
+        currentMessages = firstMessages;
+      } else if (chestAttempts === 2) {
+        currentMessages = [...secondMessages];
+        currentMessages[currentMessages.length - 1] = `* Has intentado abrirlo ${chestAttempts} veces. Tal vez deberías dejarlo en paz.`;
+      } else if (chestAttempts === 3) {
+        currentMessages = [...thirdMessages];
+        currentMessages[currentMessages.length - 1] = `* Has intentado abrirlo ${chestAttempts} veces. Esto es preocupante.`;
+      } else if (chestAttempts === 4) {
+        currentMessages = [...fourthMessages];
+        currentMessages[currentMessages.length - 1] = `* ${chestAttempts} intentos. Necesitas ayuda.`;
+      } else if (chestAttempts >= 5) {
+        currentMessages = [...fifthMessages];
+        currentMessages[currentMessages.length - 1] = `* ${chestAttempts} intentos. Esto es patológico.`;
+      }
+      
+      textbox.style.display = 'block';
+      
+      typeMessage(currentMessages[messageIndex], content);
+      
+      textbox.onclick = () => {
+        if (isTyping) {
+          content.textContent = currentMessages[messageIndex];
+          isTyping = false;
+          document.getElementById('continue-arrow').style.display = 'block';
+        } else {
+          messageIndex++;
+          if (messageIndex < currentMessages.length) {
+            typeMessage(currentMessages[messageIndex], content);
+          } else {
+            textbox.style.display = 'none';
+            document.getElementById('continue-arrow').style.display = 'none';
+            messageIndex = 0;
+          }
+        }
+      };
+    }
     
     // Fake collapse after 1 minute
     setTimeout(() => {
