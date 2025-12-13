@@ -160,6 +160,27 @@
       }
     }
     
+    .reset-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      border: 2px solid #ff0000;
+      padding: 10px 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      z-index: 9999;
+      transition: all 0.3s;
+    }
+    
+    .reset-button:hover {
+      background: rgba(255, 0, 0, 1);
+      box-shadow: 0 0 15px #ff0000;
+    }
+    
     @media (max-width: 768px) {
       .maintenance-text { font-size: 2.5rem; letter-spacing: 4px; }
       .countdown { gap: 1rem; }
@@ -169,6 +190,7 @@
       .undertale-textbox { width: 95%; font-size: 16px; padding: 15px; }
       #chest { width: 120px; }
       #gissel-plushie { width: 80px; bottom: 5%; right: 5%; }
+      .reset-button { top: 10px; right: 10px; padding: 8px 12px; font-size: 12px; }
     }
 
   </style>
@@ -200,6 +222,7 @@
     <div id="textbox-content">* Encontraste un cofre misterioso...</div>
     <div class="continue-arrow" id="continue-arrow">▶</div>
   </div>
+  <button class="reset-button" id="reset-button">🔄 RESET</button>
   <audio id="bgMusic" loop>
     <source src="mantenimiento/song1.mp3" type="audio/mpeg">
   </audio>
@@ -959,8 +982,20 @@
     let messageIndex = 0;
     let chestAttempts = parseInt(localStorage.getItem('chestAttempts') || '0');
     let currentMessageSet = parseInt(localStorage.getItem('currentMessageSet') || '1');
+    let textboxActive = false;
+    let lastClickTime = 0;
     
     function handleChestInteraction() {
+      const now = Date.now();
+      
+      // Simple but effective protection
+      if (textboxActive || now - lastClickTime < 1500) {
+        return;
+      }
+      
+      lastClickTime = now;
+      textboxActive = true;
+      
       chestAttempts++;
       localStorage.setItem('chestAttempts', chestAttempts.toString());
       showTextbox();
@@ -970,6 +1005,52 @@
     document.getElementById('chest').addEventListener('touchstart', (e) => {
       e.preventDefault();
       handleChestInteraction();
+    });
+    
+    // Reset button functionality
+    document.getElementById('reset-button').addEventListener('click', () => {
+      if (textboxActive) return;
+      
+      const userName = localStorage.getItem('userName') || 'Usuario';
+      const currentClicks = chestAttempts;
+      const currentMessage = currentMessageSet;
+      
+      const reasons = [
+        'Quiero empezar de nuevo la experiencia',
+        'Me perdí algunos mensajes importantes',
+        'Quiero mostrarle esto a alguien más',
+        'Los narradores me están volviendo loco',
+        'Necesito una segunda oportunidad con el cofre',
+        'Quiero ver si Marcus sigue cuerdo desde el inicio',
+        'Luna me cae mal, prefiero solo a Marcus',
+        'Quiero intentar llegar más lejos esta vez'
+      ];
+      
+      const randomReason = reasons[Math.floor(Math.random() * reasons.length)];
+      
+      const confirmMessage = `¿${userName}, estás seguro de que quieres reiniciar?
+
+Tienes ${currentClicks} clics y estás en el mensaje ${currentMessage}.
+
+Razón sugerida: "${randomReason}"
+
+¿Continuar con el reset?`;
+      
+      if (confirm(confirmMessage)) {
+        localStorage.removeItem('chestAttempts');
+        localStorage.removeItem('currentMessageSet');
+        localStorage.removeItem('userName');
+        
+        chestAttempts = 0;
+        currentMessageSet = 1;
+        messageIndex = 0;
+        textboxActive = false;
+        isTyping = false;
+        
+        document.getElementById('textbox').style.display = 'none';
+        
+        alert('¡Reset completado! El cofre te espera de nuevo...');
+      }
     });
     
     // Plushie functionality
@@ -1098,13 +1179,20 @@
     let isTyping = false;
     
     function typeMessage(text, element, callback) {
+      if (isTyping) return;
+      
       isTyping = true;
-      document.getElementById('continue-arrow').style.display = 'none';
+      const arrow = document.getElementById('continue-arrow');
+      arrow.style.display = 'none';
+      
+      // Simple text cleaning
+      const cleanText = String(text).replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+      
       element.textContent = '';
       let i = 0;
       
-      // Glitch effect for 10th attempt
-      if (chestAttempts >= 10 && (text.includes('ERROR') || text.includes('REINICIANDO'))) {
+      // Glitch effect
+      if (chestAttempts >= 10 && (cleanText.includes('ERROR') || cleanText.includes('REINICIANDO'))) {
         element.style.color = '#ff0000';
         element.style.textShadow = '0 0 10px #ff0000';
         element.style.animation = 'glitch 0.5s infinite';
@@ -1115,13 +1203,13 @@
       }
       
       function type() {
-        if (i < text.length) {
-          element.textContent += text.charAt(i);
+        if (i < cleanText.length && isTyping) {
+          element.textContent += cleanText.charAt(i);
           i++;
           setTimeout(type, 50);
-        } else {
+        } else if (isTyping) {
           isTyping = false;
-          document.getElementById('continue-arrow').style.display = 'block';
+          arrow.style.display = 'block';
           if (callback) callback();
         }
       }
@@ -1131,6 +1219,11 @@
     function showTextbox() {
       const textbox = document.getElementById('textbox');
       const content = document.getElementById('textbox-content');
+      
+      if (textbox.style.display === 'block') {
+        textboxActive = false;
+        return;
+      }
       
       let currentMessages;
       if (currentMessageSet === 1) {
@@ -1229,7 +1322,8 @@
       
       textbox.style.display = 'block';
       
-      typeMessage(currentMessages[messageIndex], content);
+      const message = currentMessages[messageIndex] || '';
+      typeMessage(message, content);
       
       // Check if we need to ask for user name
       const needsUserName = currentMessageSet >= 44 && !localStorage.getItem('userName') && 
@@ -1263,7 +1357,10 @@
             localStorage.setItem('userName', name);
             textbox.style.display = 'none';
             messageIndex = 0;
-            setTimeout(() => showTextbox(), 100);
+            setTimeout(() => {
+              textboxActive = false;
+              showTextbox();
+            }, 500);
           }
         });
         
@@ -1271,11 +1368,8 @@
         nameInput.focus();
       } else {
         function handleTextboxInteraction() {
-          if (isTyping) {
-            content.textContent = currentMessages[messageIndex];
-            isTyping = false;
-            document.getElementById('continue-arrow').style.display = 'block';
-          } else {
+          // Only allow interaction when typing is complete and arrow is visible
+          if (!isTyping && document.getElementById('continue-arrow').style.display === 'block') {
             messageIndex++;
             if (messageIndex < currentMessages.length) {
               typeMessage(currentMessages[messageIndex], content);
@@ -1285,8 +1379,12 @@
               messageIndex = 0;
               currentMessageSet++;
               localStorage.setItem('currentMessageSet', currentMessageSet.toString());
+              setTimeout(() => {
+                textboxActive = false;
+              }, 500);
             }
           }
+          // If typing is in progress, ignore the click completely
         }
         
         textbox.onclick = handleTextboxInteraction;
