@@ -58,6 +58,7 @@ class DiscordFriendsGame {
         this.ping = 0;
         this.lastPingTime = 0;
         this.gamepadController = null;
+        this.skinShop = null;
         
         this.init();
     }
@@ -220,6 +221,20 @@ class DiscordFriendsGame {
             this.updateLobbyInfo();
         });
         
+        // Setup shop button with delay to ensure DOM is ready
+        setTimeout(() => {
+            const shopBtn = document.getElementById('shopBtn');
+            if (shopBtn) {
+                shopBtn.addEventListener('click', () => {
+                    if (this.skinShop) {
+                        this.skinShop.open();
+                    } else {
+                        console.log('Skin shop not initialized');
+                    }
+                });
+            }
+        }, 100);
+        
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
             this.cleanupPlayer();
@@ -236,6 +251,16 @@ class DiscordFriendsGame {
         if (window.GamepadController) {
             this.gamepadController = new GamepadController(this);
         }
+        
+        // Initialize skin shop with delay
+        setTimeout(() => {
+            if (window.SkinShop) {
+                this.skinShop = new SkinShop(this);
+                console.log('🛒 Skin Shop initialized');
+            } else {
+                console.log('SkinShop class not found');
+            }
+        }, 500);
     }
 
     setupSupabaseEvents() {

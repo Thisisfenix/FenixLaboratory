@@ -466,47 +466,51 @@
     ];
     
     function getSeventeenthMessages(messageSet) {
+      const attempts = parseInt(localStorage.getItem('chestAttempts') || '0');
       return [
         '* Marcus: "Mira, voy a ser completamente honesto contigo"',
         '* Marcus: "Este cofre es literalmente solo una imagen PNG de 150px"',
         '* Marcus: "No tiene ningún script especial, no hay easter eggs ocultos"',
         '* Marcus: "Es solo un archivo que dice just a chest maybe.png"',
-        `* Marcus: "Llevas ${chestAttempts} clics y sigues aquí"`,
+        `* Marcus: "Llevas ${attempts} clics y sigues aquí"`,
         '* Marcus: "El desarrollador probablemente está riéndose"',
         '* Marcus: "Pero hey, al menos ahora sabes la verdad"'
       ];
     }
     
     function getEighteenthMessages(messageSet) {
+      const attempts = parseInt(localStorage.getItem('chestAttempts') || '0');
       return [
         '* Marcus: "De repente, el cofre habla..."',
         '* Cofre: "Oye, ¿sabías que mi comida favorita es 67 mango mustard?"',
         '* Marcus: "Espera, ¿qué? ¿67 mango mustard?"',
         '* Cofre: "Sí, es una receta muy específica. 67 mangos con mostaza."',
         '* Marcus: "El cofre tiene gustos muy raros"',
-        `* Cofre: "No me juzgues, tú eres el que lleva ${chestAttempts} clics."`,
+        `* Cofre: "No me juzgues, tú eres el que lleva ${attempts} clics."`,
         '* Marcus: "Touché, cofre. Touché"'
       ];
     }
     
     function getNineteenthMessages(messageSet) {
+      const attempts = parseInt(localStorage.getItem('chestAttempts') || '0');
       return [
         '* Marcus: "El desarrollador aparece de la nada..."',
         '* Desarrollador: "Eh, ni idea ya me cansé por segunda vez again."',
         '* Marcus: "Y desaparece sin más explicaciones"',
         '* Marcus: "Incluso el cofre parece confundido"',
         '* Cofre: "¿Qué acaba de pasar?"',
-        `* Marcus: "${chestAttempts} clics y ya nadie sabe qué hacer contigo"`,
+        `* Marcus: "${attempts} clics y ya nadie sabe qué hacer contigo"`,
         '* Marcus: "Esto es oficialmente ridículo"'
       ];
     }
     
     function getTwentiethMessages(messageSet) {
+      const attempts = parseInt(localStorage.getItem('chestAttempts') || '0');
       return [
         '* Marcus: "..."',
         '* Marcus: "Ya ni siquiera sé qué decir"',
         '* Marcus: "Esto ha ido demasiado lejos"',
-        `* Marcus: "${chestAttempts} clics. ${chestAttempts} clics y sigues"`,
+        `* Marcus: "${attempts} clics. ${attempts} clics y sigues"`,
         '* Marcus: "Creo que necesitas ayuda profesional"',
         '* Marcus: "En serio"',
         '* Marcus: "Busca ayuda"'
@@ -514,12 +518,13 @@
     }
     
     function getTwentyFirstMessages(messageSet) {
+      const attempts = parseInt(localStorage.getItem('chestAttempts') || '0');
       return [
         '* Marcus: "Bien, ya basta"',
         '* Marcus: "Esto es ridículo"',
         '* Marcus: "Literalmente no va a pasar nada"',
         '* Marcus: "Nada"',
-        `* Marcus: "${chestAttempts} clics y seguirás igual"`,
+        `* Marcus: "${attempts} clics y seguirás igual"`,
         '* Marcus: "El cofre nunca se abrirá"',
         '* Marcus: "Nunca"'
       ];
@@ -544,13 +549,14 @@
     }
     
     function getTwentyFourthMessages(messageSet) {
+      const attempts = parseInt(localStorage.getItem('chestAttempts') || '0');
       return [
         '* Marcus: "Dato curioso:"',
         '* Marcus: "Los pulpos tienen tres corazones"',
         '* Marcus: "Las abejas pueden ver colores ultravioleta"',
         '* Marcus: "Un grupo de flamencos se llama flamboyance"',
         '* Marcus: "Los plátanos son técnicamente bayas"',
-        `* Marcus: "Y después de ${chestAttempts} clics hablando de un cofre"`,
+        `* Marcus: "Y después de ${attempts} clics hablando de un cofre"`,
         '* Marcus: "¿Cuál de estos datos te parece más raro?"'
       ];
     }
@@ -587,14 +593,14 @@
           '* Cofre: "Si un cofre se cierra en el bosque y nadie lo escucha..."',
           '* Cofre: "...sigue siendo un cofre cerrado."',
           '* Marcus: "Profundo"',
-          `* Marcus: "${chestAttempts} clics reflexionando sobre esto"`,
+          `* Marcus: "${attempts} clics reflexionando sobre esto"`,
           '* Marcus: "Qué existencial"',
           '* *EL COFRE SUSPIRA*'
         ],
         [ // Mensaje 28
           '* Marcus: "El cofre intenta hacer stand-up comedy"',
           '* Cofre: "Un usuario entra a una página de mantenimiento..."',
-          `* Cofre: "...y hace ${chestAttempts} clics seguidos."`,
+          `* Cofre: "...y hace ${attempts} clics seguidos."`,
           '* Cofre: "El chiste eres tú."',
           '* *RISAS DE FONDO INEXISTENTES*',
           '* Marcus: "El cofre no tiene futuro en la comedia"',
@@ -606,14 +612,14 @@
           '* Cofre: "Por más clics que me des."',
           '* Cofre: "Tu persistencia es admirable,"',
           '* Cofre: "Pero inútil, qué le vamos a hacer."',
-          `* Marcus: "${chestAttempts} clics de inspiración poética"`,
+          `* Marcus: "${attempts} clics de inspiración poética"`,
           '* Marcus: "Shakespeare está llorando"'
         ],
         [ // Mensaje 30
           '* Marcus: "El cofre llama a su mamá"',
           '* Cofre: "Mamá, hay un humano raro aquí."',
           '* Cofre: "No para de hacerme clic."',
-          `* Cofre: "Ya van ${chestAttempts} clics, mamá."`,
+          `* Cofre: "Ya van ${attempts} clics, mamá."`,
           '* Cofre: "No sé qué hacer."',
           '* *SONIDOS DE COFRE LLORANDO*',
           '* Marcus: "Hasta su mamá está preocupada por ti"'
@@ -627,7 +633,7 @@
           '* *BOSTEZO*',
           '* Marcus: "Zzz... zzz... zzz..."',
           '* *RONQUIDOS*',
-          `* Marcus: "(${chestAttempts} clics y hasta el narrador se durmió)"`,
+          `* Marcus: "(${attempts} clics y hasta el narrador se durmió)"`,
           '* Marcus: "Zzz... zzz... zzz..."'
         ];
       } else if (messageSet === 32) {
@@ -636,7 +642,7 @@
           '* *RONQUIDOS MÁS FUERTES*',
           '* Marcus: "Zzz... zzz... zzz..."',
           '* Marcus: "(El narrador sigue dormido)"',
-          `* Marcus: "(${chestAttempts} clics y ni se inmuta)"`,
+          `* Marcus: "(${attempts} clics y ni se inmuta)"`,
           '* Marcus: "Zzz... zzz... zzz..."',
           '* Marcus: "*habla dormido* no más clics... por favor..."'
         ];
@@ -645,7 +651,7 @@
           '* *EL NARRADOR DESPIERTA BRUSCAMENTE*',
           '* Marcus: "¡¿QUÉ?! ¡¿AÚN SIGUES AHÍ?!"',
           '* Marcus: "HAN PASADO HORAS... DÍAS... SEMANAS..."',
-          `* Marcus: "${chestAttempts} CLICS EN MENSAJE ${messageSet}... ${messageSet} MALDITOS MENSAJES..."`,
+          `* Marcus: "${attempts} CLICS EN MENSAJE ${messageSet}... ${messageSet} MALDITOS MENSAJES..."`,
           '* Marcus: "YA NO PUEDO MÁS... JAJAJAJAJA..."',
           '* Marcus: "EL COFRE... EL COFRE ME HABLA..."',
           '* Marcus: "*RISAS MANIACAS* JAJAJAJAJA... NUNCA PARARÁ..."'
@@ -667,7 +673,7 @@
           '* Luna: "el anterior... bueno... ya viste qué pasó"',
           '* Luna: "yo soy diferente, me gusta hablar en minúsculas"',
           '* Luna: "también me gusta el queso"',
-          `* Luna: "${chestAttempts} clics en mensaje ${messageSet}, ¿no te cansas?"`,
+          `* Luna: "${attempts} clics en mensaje ${messageSet}, ¿no te cansas?"`,
           '* Luna: "yo ya me cansé de verte hacer esto"'
         ];
       } else if (messageSet === 36) {
@@ -677,7 +683,7 @@
           '* Luna: "me llamo... eh... no importa"',
           '* Luna: "lo que importa es que sigas haciendo clic"',
           '* Luna: "como una persona normal, obviamente"',
-          `* Luna: "${chestAttempts} clics en mensaje ${messageSet}... qué productivo"`,
+          `* Luna: "${attempts} clics en mensaje ${messageSet}... qué productivo"`,
           '* Luna: "mi mamá estaría orgullosa de mí por narrar esto"'
         ];
       } else if (messageSet === 37) {
@@ -687,7 +693,7 @@
           '* Luna: "una vez vi a un gato que ladraba"',
           '* Luna: "era muy confuso, como tú haciendo clic"',
           '* Luna: "pero al menos el gato paró después de 5 minutos"',
-          `* Luna: "tú llevas ${chestAttempts} clics en ${messageSet} mensajes y sigues"`,
+          `* Luna: "tú llevas ${attempts} clics en ${messageSet} mensajes y sigues"`,
           '* Luna: "el gato era más inteligente que tú"'
         ];
       } else if (messageSet === 38) {
@@ -697,7 +703,7 @@
           '* Luna: "como las lágrimas que caen en la lluvia..."',
           '* Luna: "este cofre es como mi corazón... cerrado y frío..."',
           '* Luna: "la melancolía me consume mientras te veo hacer clic..."',
-          `* Luna: "${chestAttempts} clics en mensaje ${messageSet}... como ${chestAttempts} puñaladas en mi ser..."`,
+          `* Luna: "${attempts} clics en mensaje ${messageSet}... como ${attempts} puñaladas en mi ser..."`,
           '* *Luna se pone más delineador negro*'
         ];
       } else if (messageSet === 39) {
@@ -706,7 +712,7 @@
           '* Marcus: "¡HE VUELTO! ¡ME ESCAPÉ DEL MANICOMIO!"',
           '* Marcus: "NO PUDIERON CONTENER MI OBSESIÓN POR EL COFRE"',
           '* Marcus: "JAJAJAJA... ¡AÚN SIGUES AQUÍ!"',
-          `* Marcus: "${chestAttempts} CLICS EN MENSAJE ${messageSet}... HERMOSO... HERMOSO..."`,
+          `* Marcus: "${attempts} CLICS EN MENSAJE ${messageSet}... HERMOSO... HERMOSO..."`,
           '* Marcus: "AHORA SOMOS DOS LOCOS OBSESIONADOS"',
           '* Marcus: "JAJAJAJA... NUNCA TERMINARÁ... NUNCA..."'
         ];
@@ -739,7 +745,7 @@
           '* Luna: "¿entonces qué hago yo aquí?"',
           '* Marcus: "PROBABLEMENTE ERES UNA NARRADORA TEMPORAL"',
           '* Marcus: "CONTRATADA POR LA EMPRESA MIENTRAS YO ESTABA INTERNADO"',
-          `* Luna: "llevamos ${chestAttempts} clics en ${messageSet} mensajes discutiendo esto..."`,
+          `* Luna: "llevamos ${attempts} clics en ${messageSet} mensajes discutiendo esto..."`,
           '* Luna: "¿podemos compartir la narración?"',
           '* Marcus: "NUNCA. EL COFRE ES MÍO."',
           '* Marcus: "ADEMÁS, NO TIENES EXPERIENCIA EN COFRES MISTERIOSOS"',
@@ -755,7 +761,7 @@
           '* "THIS IS FINE" *cofre en llamas*',
           '* "NOBODY:"',
           '* "LITERALLY NOBODY:"',
-          `* "ESTE USUARIO: *${chestAttempts} clics en mensaje ${messageSet}*"`,
+          `* "ESTE USUARIO: *${attempts} clics en mensaje ${messageSet}*"`,
           '* "STONKS" *flecha hacia arriba*',
           '* "COFFIN DANCE" *cofre bailando*',
           '* "ALWAYS HAS BEEN" *cofre apuntando con pistola*',
@@ -782,7 +788,7 @@
           '* Luna: "marcus, ¿podemos ser amigos?"',
           '* Marcus: "...NO MEZCLO LO PERSONAL CON LO PROFESIONAL"',
           '* Luna: "qué triste..."',
-          `* Marcus: "LLEVAMOS ${chestAttempts} CLICS EN ${messageSet} MENSAJES DISCUTIENDO"`,
+          `* Marcus: "LLEVAMOS ${attempts} CLICS EN ${messageSet} MENSAJES DISCUTIENDO"`,
           '* Luna: "sí, el usuario debe estar confundido..."',
           '* Marcus: "EL USUARIO ES PARTE DEL PROBLEMA"',
           '* Luna: "no seas malo con el usuario, marcus..."'
@@ -806,7 +812,7 @@
           '* Marcus: "PIEDRA"',
           '* Luna: "gané otra vez!"',
           '* Marcus: "...MALDICIÓN"',
-          `* Luna: "después de ${chestAttempts} clics en ${messageSet} mensajes, finalmente gané algo"`,
+          `* Luna: "después de ${attempts} clics en ${messageSet} mensajes, finalmente gané algo"`,
           '* Marcus: "ESTO ES TEMPORAL, LUNA"',
           '* Luna: "sí sí, ahora somos co-narradoras"'
         ];
@@ -1060,18 +1066,29 @@
     });
     
     // Gamepad support
+    let gamepadButtonPressed = { 0: false, 1: false };
     window.addEventListener('gamepadconnected', () => {
       setInterval(() => {
         const gamepads = navigator.getGamepads();
         for (let gamepad of gamepads) {
-          if (gamepad && gamepad.buttons[0].pressed) {
-            handleChestInteraction();
-            break;
-          }
-          if (gamepad && gamepad.buttons[1].pressed) {
-            const activePlushie = mollyPlushie.style.display === 'block' ? mollyPlushie : gisselPlushie;
-            const isMolly = activePlushie === mollyPlushie;
-            handlePlushieClick(activePlushie, isMolly);
+          if (gamepad) {
+            // Button 0 (A/X) for chest
+            if (gamepad.buttons[0].pressed && !gamepadButtonPressed[0]) {
+              gamepadButtonPressed[0] = true;
+              handleChestInteraction();
+            } else if (!gamepad.buttons[0].pressed) {
+              gamepadButtonPressed[0] = false;
+            }
+            
+            // Button 1 (B/Circle) for plushie
+            if (gamepad.buttons[1].pressed && !gamepadButtonPressed[1]) {
+              gamepadButtonPressed[1] = true;
+              const activePlushie = mollyPlushie.style.display === 'block' ? mollyPlushie : gisselPlushie;
+              const isMolly = activePlushie === mollyPlushie;
+              handlePlushieClick(activePlushie, isMolly);
+            } else if (!gamepad.buttons[1].pressed) {
+              gamepadButtonPressed[1] = false;
+            }
             break;
           }
         }
