@@ -1381,23 +1381,27 @@ Razón sugerida: "${randomReason}"
               const textbox = document.getElementById('textbox');
               if (textbox.style.display === 'block') {
                 // If textbox is open, advance through messages
-                if (!isTyping && document.getElementById('continue-arrow').style.display === 'block') {
-                  messageIndex++;
-                  if (messageIndex < currentMessages.length) {
-                    typeMessage(currentMessages[messageIndex], document.getElementById('textbox-content'));
-                  } else {
-                    textbox.style.display = 'none';
-                    document.getElementById('continue-arrow').style.display = 'none';
-                    messageIndex = 0;
-                    currentMessageSet++;
-                    localStorage.setItem('currentMessageSet', currentMessageSet.toString());
-                    setTimeout(() => {
-                      textboxActive = false;
-                    }, 500);
-                  }
+                if (!isTyping && document.getElementById('continue-arrow').style.display === 'block' && currentMessages.length > 0) {
+                  // Use the same function that handles mouse clicks
+                  const handleTextboxInteraction = () => {
+                    messageIndex++;
+                    if (messageIndex < currentMessages.length) {
+                      typeMessage(currentMessages[messageIndex], document.getElementById('textbox-content'));
+                    } else {
+                      textbox.style.display = 'none';
+                      document.getElementById('continue-arrow').style.display = 'none';
+                      messageIndex = 0;
+                      currentMessageSet++;
+                      localStorage.setItem('currentMessageSet', currentMessageSet.toString());
+                      setTimeout(() => {
+                        textboxActive = false;
+                      }, 500);
+                    }
+                  };
+                  handleTextboxInteraction();
                 }
-              } else {
-                // If textbox is closed, open chest
+              } else if (!textboxActive) {
+                // If textbox is closed and not active, open chest
                 handleChestInteraction();
               }
             } else if (!gamepad.buttons[0] || !gamepad.buttons[0].pressed) {
