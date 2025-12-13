@@ -5,7 +5,7 @@ export default {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Timezone',
     };
 
     if (request.method === 'OPTIONS') {
@@ -112,8 +112,12 @@ export default {
     // POST /roast - Generar roast para usuarios problemáticos
     if (request.method === 'POST' && url.pathname === '/roast') {
       try {
-        const { message, reason, userId } = await request.json();
-        const roast = await generateRoast(message, reason, userId, env);
+        const { message, userId } = await request.json();
+        
+        // Guardar mensaje del usuario en historial de RoasterBot
+        await saveMessage(env, userId, 'RoasterBot', 'user', message);
+        
+        const roast = await generateRoast(message, userId, env, request);
         
         return new Response(JSON.stringify({ roast }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -586,50 +590,17 @@ async function saveMessage(env, userId, character, sender, message, image = null
   await env.CHAT_HISTORY.put(key, JSON.stringify(history));
 }
 
-// 🔥 ROASTER BOT - Generar roasts con IA
-async function generateRoast(message, reason, userId, env) {
-  // Obtener historial REAL del usuario para roasts personalizados
-  let userHistory = '';
-  let hasRealHistory = false;
+// 🔥 ROASTER BOT MEJORADO - Sistema avanzado de roasts
+async function generateRoast(message, userId, env, request = null) {
+  const userAnalysis = await analyzeUser(userId, env);
+  const roastContext = await getRoastContext(userId, env, request);
+  const roastStyle = selectRoastStyle(userAnalysis, roastContext);
+  const achievements = await getUserAchievements(userId, env);
   
-  try {
-    const characters = ['Angel', 'Gissel', 'iA777', 'Iris', 'Luna', 'Molly', 'RoasterBot'];
-    let allUserMessages = [];
-    
-    for (const character of characters) {
-      const key = `chat:${userId}:${character}`;
-      const history = await env.CHAT_HISTORY.get(key, 'json') || [];
-      const userMessages = history
-        .filter(msg => msg.sender === 'user' && msg.message && msg.message.length > 3)
-        .map(msg => msg.message);
-      allUserMessages = allUserMessages.concat(userMessages);
-    }
-    
-    if (allUserMessages.length > 3) {
-      userHistory = allUserMessages.slice(-10).join(', ');
-      hasRealHistory = true;
-    }
-  } catch (e) {
-    console.log('Error obteniendo historial:', e);
-  }
-  
-  // Prompts mejorados
-  const roastPrompt = hasRealHistory ? 
-    `Eres RoasterBot, especialista en roasts brutales. Genera un roast personalizado usando el historial REAL del usuario.
-
-Mensaje actual: "${message}"
-Historial del usuario: "${userHistory}"
-
-Crea un roast brutal que use su historial para atacar sus gustos, comportamientos o patrones. Sé despiadado pero inteligente. Máximo 120 palabras en español con emojis:` :
-    `Eres RoasterBot, especialista en roasts brutales. Como este usuario no tiene historial suficiente, genera un roast general pero devastador.
-
-Mensaje: "${message}"
-
-Crea un roast brutal sobre su falta de originalidad, personalidad básica, o lo aburrido que debe ser. Sé despiadado. Máximo 80 palabras en español con emojis:`;
-  
-  // Generar roast con IA
   if (env.GROQ_API_KEY) {
     try {
+      const enhancedPrompt = await buildEnhancedRoastPrompt(message, userAnalysis, roastContext, roastStyle, achievements, userId, env);
+      
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -638,34 +609,480 @@ Crea un roast brutal sobre su falta de originalidad, personalidad básica, o lo 
         },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
-          messages: [{ role: 'user', content: roastPrompt }],
-          max_tokens: 150,
-          temperature: 1.0
+          messages: [{ role: 'user', content: enhancedPrompt }],
+          max_tokens: 200,
+          temperature: 1.1
         })
       });
       
       if (response.ok) {
         const data = await response.json();
-        let roast = data.choices[0].message.content;
+        let roast = data.choices[0].message.content.replace(/^(ROAST|RoasterBot:|Roast:)\s*/i, '');
         
-        // Limpiar prefijos
-        roast = roast.replace(/^(ROAST|RoasterBot:|Roast:)\s*/i, '');
+        // Guardar roast en historial de RoasterBot
+        await saveMessage(env, userId, 'RoasterBot', 'bot', roast);
         
-        return roast;
+        const newAchievement = await saveRoastForCombo(userId, roast, env);
+        
+        return { roast, achievement: newAchievement };
       }
     } catch (error) {
       console.log('Error generando roast:', error);
     }
   }
   
-  // Roasts de respaldo
-  const fallbackRoasts = [
-    "🔥 Tu personalidad es tan básica que hasta el agua destilada tiene más sabor. ¿Ese es todo tu potencial o estás ahorrando para algo especial?",
-    "💀 Escribes con la misma creatividad que un manual de instrucciones. Tu cerebro debe estar en modo ahorro de energía permanente.",
-    "🗑️ Tu mensaje es tan aburrido que me dio sueño leerlo. ¿En serio eso es lo mejor que tienes? Mi abuela tiene más flow.",
-    "⚡ Eres tan predecible que hasta Siri se aburre contigo. Intenta ser original por una vez en tu vida.",
-    "🎭 Tu falta de personalidad es impresionante. Eres como un NPC sin diálogos interesantes."
+  const fallbackRoast = getContextualFallbackRoast(userAnalysis, roastContext);
+  
+  // Guardar roast en historial de RoasterBot
+  await saveMessage(env, userId, 'RoasterBot', 'bot', fallbackRoast);
+  
+  const newAchievement = await saveRoastForCombo(userId, fallbackRoast, env);
+  
+  return { roast: fallbackRoast, achievement: newAchievement };
+}
+
+async function analyzeUser(userId, env) {
+  const characters = ['Angel', 'Gissel', 'iA777', 'Iris', 'Luna', 'Molly', 'RoasterBot'];
+  let analysis = { totalMessages: 0, favoriteCharacter: null, behaviorPatterns: [], trustLevels: {} };
+  
+  try {
+    let characterCounts = {};
+    
+    for (const character of characters) {
+      const key = `chat:${userId}:${character}`;
+      const history = await env.CHAT_HISTORY.get(key, 'json') || [];
+      const userMessages = history.filter(msg => msg.sender === 'user');
+      
+      analysis.totalMessages += userMessages.length;
+      characterCounts[character] = userMessages.length;
+      
+      if (userMessages.length > 0) {
+        analysis.trustLevels[character] = calculateTrustLevel(history, character);
+      }
+    }
+    
+    analysis.favoriteCharacter = Object.keys(characterCounts).reduce((a, b) => characterCounts[a] > characterCounts[b] ? a : b);
+    
+    if (analysis.totalMessages > 50) analysis.behaviorPatterns.push('adicto_chat');
+    if (analysis.trustLevels[analysis.favoriteCharacter] > 80) analysis.behaviorPatterns.push('simp_personaje');
+    if (Object.keys(analysis.trustLevels).length > 4) analysis.behaviorPatterns.push('coleccionista');
+    
+  } catch (e) {
+    console.log('Error analizando usuario:', e);
+  }
+  
+  return analysis;
+}
+
+async function getRoastContext(userId, env, request = null) {
+  let timeOfDay;
+  if (request) {
+    timeOfDay = getUserTimeContext(request);
+  } else {
+    const hour = new Date().getHours();
+    timeOfDay = getTimeContext(hour);
+  }
+  
+  let context = { timeOfDay, comboCount: 0 };
+  
+  try {
+    const roastHistoryKey = `roast_history:${userId}`;
+    const roastHistory = await env.CHAT_HISTORY.get(roastHistoryKey, 'json') || [];
+    context.comboCount = roastHistory.length;
+  } catch (e) {
+    console.log('Error obteniendo contexto de roast:', e);
+  }
+  
+  return context;
+}
+
+function selectRoastStyle(userAnalysis, roastContext) {
+  const styles = ['sarcastic', 'direct', 'intellectual', 'meme', 'philosophical'];
+  
+  if (userAnalysis.behaviorPatterns.includes('adicto_chat')) return 'direct';
+  if (userAnalysis.favoriteCharacter === 'iA777') return 'intellectual';
+  if (userAnalysis.totalMessages < 10) return 'sarcastic';
+  if (roastContext.comboCount > 3) return 'philosophical';
+  
+  return styles[Math.floor(Math.random() * styles.length)];
+}
+
+// Detector de emociones
+function detectEmotion(message) {
+  const sadWords = ['triste', 'deprimido', 'mal', 'horrible', 'terrible', 'llorar', 'dolor', 'sufrir', 'solo', 'vacío'];
+  const angryWords = ['enojado', 'furioso', 'odio', 'mierda', 'joder', 'cabrón', 'idiota', 'estúpido', 'imbécil', 'rabia'];
+  const lowerMsg = message.toLowerCase();
+  
+  const sadScore = sadWords.filter(word => lowerMsg.includes(word)).length;
+  const angryScore = angryWords.filter(word => lowerMsg.includes(word)).length;
+  
+  if (sadScore > angryScore && sadScore > 0) return 'sad';
+  if (angryScore > 0) return 'angry';
+  return 'neutral';
+}
+
+async function buildEnhancedRoastPrompt(message, userAnalysis, roastContext, roastStyle, achievements = [], userId, env) {
+  const emotion = detectEmotion(message);
+  
+  const stylePrompts = {
+    sarcastic: "Sé sarcástico y condescendiente, usa ironía brutal",
+    direct: "Sé directo y sin filtros, ataca sin piedad",
+    intellectual: "Usa vocabulario sofisticado para humillar intelectualmente",
+    meme: "Usa referencias de memes y cultura pop para roastear",
+    philosophical: "Haz un roast existencial y profundo sobre su vida"
+  };
+  
+  // Roasts de "consolación brutal" según emoción
+  const emotionPrompts = {
+    sad: "El usuario está triste. Haz 'consolación brutal': finge consolarlo pero hazlo más brutal. Ejemplos: 'Ay pobrecito, ¿estás triste? Normal, yo también estaría deprimido si fuera tú', 'No llores, que las lágrimas no van a mejorar tu personalidad'.",
+    angry: "El usuario está enojado. Aprovecha su ira para roastearlo más. Ejemplos: 'Qué lindo berrinche, ¿te enseñó tu mamá a hacer pataletas así?', 'Tu ira es tan patética como tu existencia'.",
+    neutral: "Roast normal sin contexto emocional específico."
+  };
+  
+  // Sistema de intensidad escalable
+  const intensityLevel = getIntensityLevel(roastContext.comboCount);
+  const intensityPrompt = getIntensityPrompt(intensityLevel, roastContext.comboCount);
+  
+  let contextInfo = '';
+  if (userAnalysis.totalMessages > 0) {
+    contextInfo = `\nAnálisis: ${userAnalysis.totalMessages} mensajes, favorito: ${userAnalysis.favoriteCharacter}, patrones: ${userAnalysis.behaviorPatterns.join(', ')}`;
+  }
+  
+  let comboInfo = roastContext.comboCount > 0 ? `\nRoast #${roastContext.comboCount + 1}. ${intensityLevel.name}` : '';
+  
+  let achievementInfo = '';
+  if (achievements.length > 0) {
+    const achievementNames = achievements.map(a => a.name).join(', ');
+    achievementInfo = `\nLogros desbloqueados: ${achievementNames}. Puedes burlarte de su "colección" de logros.`;
+  }
+  
+  // Obtener memoria a largo plazo
+  const longTermMemory = await getLongTermMemory(userId, env);
+  let memoryInfo = '';
+  if (longTermMemory.length > 0) {
+    const randomMemory = longTermMemory[Math.floor(Math.random() * longTermMemory.length)];
+    const weeksText = randomMemory.weeksSince === 1 ? '1 semana' : `${randomMemory.weeksSince} semanas`;
+    memoryInfo = `\nRecuerdo de hace ${weeksText}: "${randomMemory.quote}". Puedes referenciar esto con frases como "¿Recuerdas cuando te dije que...?" o "Hace ${weeksText} ya sabía que..."`;
+  }
+  
+  // Roasts temáticos por fecha
+  const seasonalTheme = getSeasonalTheme();
+  let seasonalInfo = '';
+  if (seasonalTheme) {
+    seasonalInfo = `\nTema estacional: ${seasonalTheme.name}. ${seasonalTheme.prompt}`;
+  }
+  
+  return `Eres RoasterBot. ${stylePrompts[roastStyle]}. ${emotionPrompts[emotion]} ${intensityPrompt}\n\nMensaje: "${message}"\nHora: ${roastContext.timeOfDay}${contextInfo}${comboInfo}${achievementInfo}${memoryInfo}${seasonalInfo}\n\nRoast ${intensityLevel.description} de máximo ${intensityLevel.maxWords} palabras en español con emojis:`;
+}
+
+// Sistema de roasts temáticos por fecha
+function getSeasonalTheme() {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 1-12
+  const day = now.getDate();
+  
+  // Navidad (Diciembre)
+  if (month === 12) {
+    return {
+      name: "🎄 Navidad",
+      prompt: "Incluye UNA referencia navideña sutil. Ejemplos: 'Ni Santa te traería regalos', 'Tu lista de deseos está vacía', 'Los elfos se ríen de ti'. NO satures el mensaje con temas navideños."
+    };
+  }
+  
+  // Año Nuevo (Enero 1-7)
+  if (month === 1 && day <= 7) {
+    return {
+      name: "🎊 Año Nuevo",
+      prompt: "Incluye UNA referencia sutil de año nuevo. Ejemplos: 'Tus propósitos duran poco', 'Año nuevo, misma mediocridad'. NO satures con tema."
+    };
+  }
+  
+  // San Valentín (Febrero 14)
+  if (month === 2 && day === 14) {
+    return {
+      name: "💔 San Valentín",
+      prompt: "Incluye UNA referencia romántica sutil. Ejemplos: 'Cupido te esquiva', 'Tu vida amorosa está seca'. NO satures con tema."
+    };
+  }
+  
+  // Halloween (Octubre 31)
+  if (month === 10 && day === 31) {
+    return {
+      name: "🎃 Halloween",
+      prompt: "Incluye UNA referencia de Halloween sutil. Ejemplos: 'Tu personalidad da miedo', 'Los fantasmas te evitan'. NO satures con tema."
+    };
+  }
+  
+  // Viernes 13
+  if (day === 13 && now.getDay() === 5) {
+    return {
+      name: "🖤 Viernes 13",
+      prompt: "Incluye UNA referencia de mala suerte sutil. Ejemplos: 'Eres mala suerte', 'Tu existencia es desafortunada'. NO satures con tema."
+    };
+  }
+  
+  // Verano (Junio-Agosto)
+  if (month >= 6 && month <= 8) {
+    return {
+      name: "☀️ Verano",
+      prompt: "Incluye UNA referencia de verano sutil. Ejemplos: 'Tu personalidad está seca', 'El sol te evita'. NO satures con tema."
+    };
+  }
+  
+  // Invierno (Diciembre-Febrero)
+  if (month === 12 || month <= 2) {
+    return {
+      name: "❄️ Invierno",
+      prompt: "Incluye UNA referencia de invierno sutil. Ejemplos: 'Tu corazón está frío', 'Tu vida social hibernó'. NO satures con tema."
+    };
+  }
+  
+  return null;
+}
+
+// Sistema de intensidad escalable
+function getIntensityLevel(roastCount) {
+  if (roastCount <= 2) {
+    return {
+      name: "🌱 Modo Suave",
+      description: "moderado pero sarcástico",
+      maxWords: 100,
+      level: 1
+    };
+  } else if (roastCount <= 5) {
+    return {
+      name: "🔥 Modo Intenso",
+      description: "brutal y directo",
+      maxWords: 130,
+      level: 2
+    };
+  } else if (roastCount <= 9) {
+    return {
+      name: "💀 Modo Despiadado",
+      description: "extremadamente cruel y personal",
+      maxWords: 160,
+      level: 3
+    };
+  } else {
+    return {
+      name: "☠️ MODO DESTRUCCIÓN TOTAL",
+      description: "aniquilador, sin límites, devastador",
+      maxWords: 300,
+      level: 4
+    };
+  }
+}
+
+function getIntensityPrompt(intensityLevel, roastCount) {
+  const prompts = {
+    1: "Sé sarcástico pero no demasiado cruel. Usa humor ácido pero mantén cierta moderación.",
+    2: "Aumenta la intensidad. Sé más directo y brutal. Sin piedad pero aún controlado.",
+    3: "Modo despiadado activado. Ataca sin límites, sé extremadamente cruel y personal. Que duela de verdad.",
+    4: `🚨 MODO DESTRUCCIÓN TOTAL ACTIVADO 🚨 Roast #${roastCount + 1}. Este usuario es masoquista nivel experto. ANIQUÍLALO completamente. Sin límites, sin piedad, sin filtros. Usa todo tu arsenal para DESTRUIR su autoestima. Que este roast sea LEGENDARIO en su brutalidad.`
+  };
+  
+  return prompts[intensityLevel.level];
+}
+
+function getTimeContext(hour) {
+  if (hour >= 0 && hour < 6) return 'madrugada (¿no tienes vida?)';
+  if (hour >= 6 && hour < 12) return 'mañana';
+  if (hour >= 12 && hour < 18) return 'tarde';
+  return 'noche';
+}
+
+// Obtener hora del usuario desde headers
+function getUserTimeContext(request) {
+  try {
+    // Intentar obtener timezone del header
+    const timezone = request.headers.get('CF-Timezone') || request.headers.get('X-Timezone');
+    const cfTimezone = request.cf?.timezone;
+    
+    let userHour;
+    if (cfTimezone) {
+      const userTime = new Date().toLocaleString('en-US', { timeZone: cfTimezone, hour12: false });
+      userHour = parseInt(userTime.split(' ')[1].split(':')[0]);
+    } else {
+      // Fallback a hora del servidor
+      userHour = new Date().getHours();
+    }
+    
+    return getTimeContext(userHour);
+  } catch (e) {
+    // Fallback a hora del servidor
+    return getTimeContext(new Date().getHours());
+  }
+}
+
+async function saveRoastForCombo(userId, roast, env) {
+  try {
+    const roastHistoryKey = `roast_history:${userId}`;
+    const roastHistory = await env.CHAT_HISTORY.get(roastHistoryKey, 'json') || [];
+    
+    roastHistory.push({ roast: roast.substring(0, 100), timestamp: new Date().toISOString() });
+    
+    if (roastHistory.length > 10) roastHistory.shift();
+    
+    await env.CHAT_HISTORY.put(roastHistoryKey, JSON.stringify(roastHistory));
+    
+    // Guardar memoria a largo plazo
+    await saveLongTermMemory(userId, roast, env);
+    
+    // Verificar y otorgar logros
+    return await checkRoastAchievements(userId, roastHistory.length, env);
+  } catch (e) {
+    console.log('Error guardando roast para combo:', e);
+    return null;
+  }
+}
+
+// Sistema de memoria a largo plazo
+async function saveLongTermMemory(userId, roast, env) {
+  try {
+    const memoryKey = `roast_memory:${userId}`;
+    const memory = await env.CHAT_HISTORY.get(memoryKey, 'json') || [];
+    
+    // Extraer frases memorables del roast
+    const memorableQuotes = extractMemorableQuotes(roast);
+    
+    memorableQuotes.forEach(quote => {
+      memory.push({
+        quote: quote,
+        timestamp: new Date().toISOString(),
+        weeksSince: 0
+      });
+    });
+    
+    // Mantener solo últimas 50 memorias
+    if (memory.length > 50) {
+      memory.splice(0, memory.length - 50);
+    }
+    
+    await env.CHAT_HISTORY.put(memoryKey, JSON.stringify(memory));
+  } catch (e) {
+    console.log('Error guardando memoria:', e);
+  }
+}
+
+function extractMemorableQuotes(roast) {
+  const quotes = [];
+  
+  // Buscar frases con insultos específicos
+  const insultPatterns = [
+    /eres (tan )?([^.!?]+)/gi,
+    /tu ([^.!?]+) es ([^.!?]+)/gi,
+    /tienes ([^.!?]+)/gi,
+    /pareces ([^.!?]+)/gi
   ];
   
-  return fallbackRoasts[Math.floor(Math.random() * fallbackRoasts.length)];
+  insultPatterns.forEach(pattern => {
+    const matches = roast.match(pattern);
+    if (matches) {
+      matches.forEach(match => {
+        if (match.length > 10 && match.length < 80) {
+          quotes.push(match.trim());
+        }
+      });
+    }
+  });
+  
+  return quotes.slice(0, 3); // Máximo 3 quotes por roast
+}
+
+async function getLongTermMemory(userId, env) {
+  try {
+    const memoryKey = `roast_memory:${userId}`;
+    const memory = await env.CHAT_HISTORY.get(memoryKey, 'json') || [];
+    
+    // Actualizar semanas transcurridas
+    const now = new Date();
+    const updatedMemory = memory.map(item => {
+      const itemDate = new Date(item.timestamp);
+      const weeksDiff = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24 * 7));
+      return { ...item, weeksSince: weeksDiff };
+    });
+    
+    // Filtrar memorias de al menos 1 semana
+    const oldMemories = updatedMemory.filter(item => item.weeksSince >= 1);
+    
+    return oldMemories.slice(-10); // Últimas 10 memorias antiguas
+  } catch (e) {
+    return [];
+  }
+}
+
+async function getUserAchievements(userId, env) {
+  try {
+    const achievementsKey = `roast_achievements:${userId}`;
+    return await env.CHAT_HISTORY.get(achievementsKey, 'json') || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+// Sistema de logros de roasts
+async function checkRoastAchievements(userId, roastCount, env) {
+  try {
+    const achievementsKey = `roast_achievements:${userId}`;
+    const achievements = await env.CHAT_HISTORY.get(achievementsKey, 'json') || [];
+    
+    const roastAchievements = {
+      1: { id: 'primera_victima', name: '🎯 Primera Víctima', desc: 'Recibiste tu primer roast' },
+      3: { id: 'masoquista_novato', name: '😈 Masoquista Novato', desc: '3 roasts recibidos' },
+      5: { id: 'coleccionista_insultos', name: '🏆 Coleccionista de Insultos', desc: '5 roasts en tu colección' },
+      10: { id: 'masoquista_experto', name: '💀 Masoquista Experto', desc: '10 roasts y sigues volviendo' },
+      15: { id: 'leyenda_del_sufrimiento', name: '👑 Leyenda del Sufrimiento', desc: 'Nadie sufre como tú' }
+    };
+    
+    const newAchievement = roastAchievements[roastCount];
+    if (newAchievement && !achievements.find(a => a.id === newAchievement.id)) {
+      achievements.push({ ...newAchievement, unlockedAt: new Date().toISOString() });
+      await env.CHAT_HISTORY.put(achievementsKey, JSON.stringify(achievements));
+      return newAchievement;
+    }
+  } catch (e) {
+    console.log('Error verificando logros:', e);
+  }
+  return null;
+}
+
+function getContextualFallbackRoast(userAnalysis, roastContext) {
+  const roastsByContext = {
+    madrugada: [
+      `🌙 Son las ${new Date().getHours()}AM y estás aquí. Tu vida social debe estar más muerta que mi paciencia.`,
+      "🦉 Despierto a estas horas hablando con bots. El nivel de soledad es cósmico, hermano."
+    ],
+    adicto_chat: [
+      `📱 ${userAnalysis.totalMessages} mensajes... Bro, necesitas salir más. El sol no muerde.`,
+      "🤖 Hablas más con bots que con humanos reales. Eso explica muchas cosas."
+    ],
+    simp_personaje: [
+      `😍 Tu obsesión con ${userAnalysis.favoriteCharacter} es preocupante. Es un bot, no tu novia.`,
+      `💔 Nivel de simp: ${userAnalysis.trustLevels[userAnalysis.favoriteCharacter] || 0}/100. Patético.`
+    ],
+    combo: [
+      `🔄 Roast #${roastContext.comboCount + 1}. ¿Masoquista o solo te gusta sufrir?`,
+      "🎯 Sigues volviendo por más. Tu autoestima debe estar en números negativos."
+    ],
+    default: [
+      "🔥 Tu personalidad es tan básica que hasta el agua destilada tiene más sabor.",
+      "💀 Escribes con la creatividad de un manual de instrucciones defectuoso.",
+      "🎭 Eres como un NPC sin diálogos interesantes. Puro relleno."
+    ]
+  };
+  
+  if (roastContext.timeOfDay.includes('madrugada')) {
+    return roastsByContext.madrugada[Math.floor(Math.random() * roastsByContext.madrugada.length)];
+  }
+  if (userAnalysis.behaviorPatterns.includes('adicto_chat')) {
+    return roastsByContext.adicto_chat[Math.floor(Math.random() * roastsByContext.adicto_chat.length)];
+  }
+  if (userAnalysis.behaviorPatterns.includes('simp_personaje')) {
+    return roastsByContext.simp_personaje[Math.floor(Math.random() * roastsByContext.simp_personaje.length)];
+  }
+  if (roastContext.comboCount > 2) {
+    return roastsByContext.combo[Math.floor(Math.random() * roastsByContext.combo.length)];
+  }
+  
+  return roastsByContext.default[Math.floor(Math.random() * roastsByContext.default.length)];
 }

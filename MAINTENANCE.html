@@ -7,115 +7,104 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      color: #f0f0f0;
+      font-family: 'Courier New', monospace;
+      background: #000000;
+      color: #00ff00;
+      min-height: 100vh;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      max-width: 600px;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 3rem;
-      border-radius: 20px;
-      border: 2px solid rgba(255, 107, 53, 0.3);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    }
-    .icon {
-      font-size: 5rem;
-      margin-bottom: 1rem;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.1); opacity: 0.8; }
-    }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      color: #ff6b35;
-      text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
-    }
-    p {
-      font-size: 1.2rem;
-      line-height: 1.8;
-      margin-bottom: 1.5rem;
-      color: #b0b0b0;
-    }
-    .thanks {
-      font-size: 1.5rem;
-      color: #00ff88;
-      margin-top: 2rem;
-      font-weight: bold;
-      text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
-    }
-    .signature {
-      margin-top: 2rem;
-      font-style: italic;
-      color: #8696a0;
     }
     .countdown {
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin: 2rem 0;
+      gap: 2rem;
+      animation: slideDown 2s ease-out 1s forwards;
     }
     .time-unit {
-      background: rgba(255, 107, 53, 0.1);
-      border: 1px solid #ff6b35;
-      border-radius: 8px;
-      padding: 1rem;
-      min-width: 60px;
+      background: rgba(0, 255, 0, 0.1);
+      border: 2px solid #00ff00;
+      border-radius: 12px;
+      padding: 1.5rem;
+      min-width: 80px;
+      text-align: center;
+      box-shadow: 0 0 20px #00ff00;
     }
     .time-unit span {
       display: block;
-      font-size: 1.5rem;
+      font-size: 2.5rem;
       font-weight: bold;
-      color: #ff6b35;
+      color: #00ff00;
+      text-shadow: 0 0 15px #00ff00;
     }
     .time-unit label {
-      font-size: 0.8rem;
-      color: #b0b0b0;
+      font-size: 1rem;
+      color: #00ff00;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .maintenance-text {
+      font-size: 4rem;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 8px;
+    }
+    .letter {
+      display: inline-block;
+      opacity: 0;
+      color: #333;
+      text-shadow: none;
+    }
+    .letter.lit {
+      opacity: 1;
+      color: #00ff00;
+      text-shadow: 0 0 30px #00ff00, 0 0 40px #00ff00, 0 0 50px #00ff00;
+      animation: letterFlicker 0.3s ease-in;
+    }
+    @keyframes slideDown {
+      0% { top: -200px; opacity: 0; }
+      100% { top: 20%; opacity: 1; }
+    }
+    @keyframes letterFlicker {
+      0%, 50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .collapse {
+      animation: pageCollapse 5s ease-in forwards;
+    }
+    @keyframes pageCollapse {
+      0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+      25% { transform: scale(0.9) rotate(-2deg); filter: brightness(0.8); }
+      50% { transform: scale(0.7) rotate(5deg); filter: brightness(0.5) blur(2px); }
+      75% { transform: scale(0.4) rotate(-10deg); filter: brightness(0.2) blur(5px); }
+      100% { transform: scale(0) rotate(180deg); filter: brightness(0) blur(10px); opacity: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="icon">🔧</div>
-    <h1>MANTENIMIENTO</h1>
-    <p>
-      Mantenimiento programado:<br>
-      <strong>12 de diciembre - 13 de diciembre 10:00 PM</strong>
-    </p>
-    <div class="countdown">
-      <div class="time-unit">
-        <span id="days">0</span>
-        <label>Días</label>
-      </div>
-      <div class="time-unit">
-        <span id="hours">0</span>
-        <label>Horas</label>
-      </div>
-      <div class="time-unit">
-        <span id="minutes">0</span>
-        <label>Minutos</label>
-      </div>
-      <div class="time-unit">
-        <span id="seconds">0</span>
-        <label>Segundos</label>
-      </div>
+  <div class="countdown">
+    <div class="time-unit">
+      <span id="days">0</span>
+      <label>Días</label>
     </div>
-    <div class="thanks">
-      ¡Volveremos el 13 a las 10 PM! ⏰
+    <div class="time-unit">
+      <span id="hours">0</span>
+      <label>Horas</label>
     </div>
-    <div class="signature">
-      - ThisIsFenix
+    <div class="time-unit">
+      <span id="minutes">0</span>
+      <label>Minutos</label>
+    </div>
+    <div class="time-unit">
+      <span id="seconds">0</span>
+      <label>Segundos</label>
     </div>
   </div>
+  <div class="maintenance-text" id="maintenance-text"></div>
   <script>
     const endTime = new Date('2025-12-13T22:00:00').getTime();
     
@@ -134,16 +123,37 @@
         document.getElementById('minutes').textContent = minutes;
         document.getElementById('seconds').textContent = seconds;
       } else {
-        document.getElementById('days').textContent = '0';
-        document.getElementById('hours').textContent = '0';
-        document.getElementById('minutes').textContent = '0';
-        document.getElementById('seconds').textContent = '0';
         window.location.href = 'index.html';
       }
     }
     
     setInterval(updateCountdown, 1000);
     updateCountdown();
+    
+    // Light up letters one by one
+    const text = 'MANTENIMIENTO';
+    const container = document.getElementById('maintenance-text');
+    
+    // Create letter spans
+    text.split('').forEach(char => {
+      const span = document.createElement('span');
+      span.className = 'letter';
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      container.appendChild(span);
+    });
+    
+    // Light up letters with delay
+    const letters = document.querySelectorAll('.letter');
+    letters.forEach((letter, index) => {
+      setTimeout(() => {
+        letter.classList.add('lit');
+      }, 3000 + (index * 200));
+    });
+    
+    // Fake collapse after 1 minute
+    setTimeout(() => {
+      document.body.classList.add('collapse');
+    }, 60000);
   </script>
 </body>
 </html>

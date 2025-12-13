@@ -110,6 +110,97 @@
       overflow: hidden;
     }
 
+    .achievements-sidebar {
+      width: 280px;
+      background: #1a2329;
+      border-right: 1px solid #2a3942;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .achievements-sidebar.hidden {
+      width: 0;
+      border: none;
+    }
+
+    .achievements-header {
+      background: #202c33;
+      padding: 15px;
+      color: #e9edef;
+      font-weight: 500;
+      border-bottom: 1px solid #2a3942;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .achievements-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .achievement-card {
+      background: #1f2c34;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-left: 4px solid #ffd700;
+      transition: all 0.2s;
+    }
+
+    .achievement-card.locked {
+      opacity: 0.5;
+      border-left-color: #8696a0;
+    }
+
+    .achievement-card:hover {
+      background: #2a3942;
+    }
+
+    .achievement-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    .achievement-emoji {
+      font-size: 1.2rem;
+    }
+
+    .achievement-name {
+      color: #ffd700;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .achievement-desc {
+      color: #8696a0;
+      font-size: 0.8rem;
+      margin-bottom: 5px;
+    }
+
+    .achievement-progress {
+      color: #00a884;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .toggle-achievements {
+      background: none;
+      border: none;
+      color: #8696a0;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 5px;
+    }
+
+    .toggle-achievements:hover {
+      color: #e9edef;
+    }
+
     .mini-sidebar {
       width: 60px;
       background: #202c33;
@@ -173,6 +264,123 @@
       padding: 2px 4px;
       border-radius: 3px;
       font-weight: bold;
+    }
+
+    .achievement-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #ffd700, #ffb347);
+      color: #000;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+      z-index: 1000;
+      animation: achievementSlide 0.5s ease-out;
+      max-width: 300px;
+      border: 2px solid #ffd700;
+    }
+
+    .achievement-notification.hide {
+      animation: achievementSlideOut 0.5s ease-in forwards;
+    }
+
+    .achievement-title {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+
+    .achievement-desc {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    @keyframes achievementSlide {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes achievementSlideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
+    .achievements-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .achievements-content {
+      background: #202c33;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: #e9edef;
+    }
+
+    .achievements-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #2a3942;
+      padding-bottom: 10px;
+    }
+
+    .achievement-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      margin: 5px 0;
+      background: #1f2c34;
+      border-radius: 8px;
+      border-left: 4px solid #ffd700;
+    }
+
+    .achievement-item.locked {
+      opacity: 0.5;
+      border-left-color: #8696a0;
+    }
+
+    .achievement-icon {
+      font-size: 1.5rem;
+      margin-right: 15px;
+    }
+
+    .achievement-info h4 {
+      margin: 0 0 5px 0;
+      color: #ffd700;
+    }
+
+    .achievement-info p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #8696a0;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #8696a0;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .close-btn:hover {
+      color: #e9edef;
     }
 
     .sidebar {
@@ -884,6 +1092,10 @@
         height: 100dvh;
       }
 
+      .achievements-sidebar {
+        display: none;
+      }
+
       .mobile-menu-btn {
         display: flex;
         align-items: center;
@@ -971,6 +1183,18 @@
   <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
   <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
   <div class="app-container">
+    <div class="achievements-sidebar hidden" id="achievementsSidebar">
+      <div class="achievements-header">
+        <span>🏆 Logros</span>
+        <button class="toggle-achievements" onclick="toggleAchievementsSidebar()" title="Ocultar panel">✕</button>
+      </div>
+      <div class="achievements-list" id="achievementsSidebarList">
+        <div style="text-align: center; color: #8696a0; padding: 20px;">
+          <div style="font-size: 2rem; margin-bottom: 10px;">🏆</div>
+          <div>Cargando logros...</div>
+        </div>
+      </div>
+    </div>
     <div class="mini-sidebar" id="miniSidebar">
       <div class="mini-sidebar-btn" title="Estados">
         🟢
@@ -991,6 +1215,9 @@
       </a>
       <div class="mini-sidebar-btn" title="Configuración">
         ⚙️
+      </div>
+      <div class="mini-sidebar-btn" onclick="toggleAchievementsSidebar()" title="Panel de logros">
+        🏆
       </div>
       <input type="file" id="profilePicInput" accept="image/*" style="display: none;" />
       <label for="profilePicInput" title="Cambiar foto de perfil">
@@ -1278,6 +1505,17 @@
     </div>
   </div>
 
+  <!-- Modal para Logros -->
+  <div class="achievements-modal" id="achievementsModal">
+    <div class="achievements-content">
+      <div class="achievements-header">
+        <h2>🏆 Logros de Roasts</h2>
+        <button class="close-btn" onclick="closeAchievements()">&times;</button>
+      </div>
+      <div id="achievementsList"></div>
+    </div>
+  </div>
+
   <!-- Modal para Info Técnica -->
   <div class="modal" id="techInfoModal">
     <div class="modal-content">
@@ -1379,15 +1617,22 @@
         
         const response = await fetch(`${WORKER_URL}/roast`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone
+          },
           body: JSON.stringify({ 
             message: `usuario entrando al chat.${userHistory}`,
-            reason: 'entrada al roaster',
             userId: userId
           })
         });
         const data = await response.json();
-        return `⚠️ ADVERTENCIA: Este bot genera roasts brutales y ofensivos. No me hago responsable del daño emocional causado. Usar bajo tu propio riesgo.\n\n${data.roast}\n\n🔥 Si quieres que te rostee o me quieres ganar, adelante. Dame más mensajes para roastear. ¿A quién vamos a trollear?`;
+        
+        // Extraer el roast correctamente
+        const roastData = data.roast || data;
+        const roastText = roastData.roast || roastData || 'Prepárate para ser roasteado.';
+        
+        return `⚠️ ADVERTENCIA: Este bot genera roasts brutales y ofensivos. No me hago responsable del daño emocional causado. Usar bajo tu propio riesgo.\n\n${roastText}\n\n🔥 Si quieres que te rostee o me quieres ganar, adelante. Dame más mensajes para roastear. ¿A quién vamos a trollear?`;
       }
     };
 
@@ -1799,17 +2044,35 @@
           
           const response = await fetch(`${WORKER_URL}/roast`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone
+            },
             body: JSON.stringify({ 
               message: `${message}.${userHistory}`,
-              reason: 'Solicitud de roast',
               userId: userId
             })
           });
           
           const data = await response.json();
           typingDiv.remove();
-          addMessage(data.roast, 'bot');
+          
+          console.log('Respuesta del RoasterBot:', data);
+          
+          // Acceder al roast anidado
+          const roastData = data.roast || data;
+          const roastText = roastData.roast || roastData || 'Error en la respuesta';
+          const achievement = roastData.achievement || data.achievement;
+          
+          // Mostrar solo el roast puro
+          addMessage(roastText, 'bot');
+          
+          // Mostrar logro como notificación si se desbloqueó
+          if (achievement) {
+            setTimeout(() => {
+              showAchievementNotification(achievement);
+            }, 1000);
+          }
         } else {
           // Personajes normales
           const chars = JSON.parse(localStorage.getItem('customCharacters') || '[]');
@@ -2524,6 +2787,147 @@
 
     function closeTechInfo() {
       document.getElementById('techInfoModal').classList.remove('active');
+    }
+
+    // Sistema de logros
+    async function showAchievements() {
+      document.getElementById('achievementsModal').style.display = 'flex';
+      await loadAchievements();
+    }
+
+    function closeAchievements() {
+      document.getElementById('achievementsModal').style.display = 'none';
+    }
+
+    function toggleAchievementsSidebar() {
+      const sidebar = document.getElementById('achievementsSidebar');
+      sidebar.classList.toggle('hidden');
+      
+      if (!sidebar.classList.contains('hidden')) {
+        loadAchievementsSidebar();
+      }
+    }
+
+    async function loadAchievementsSidebar() {
+      const list = document.getElementById('achievementsSidebarList');
+      
+      try {
+        const response = await fetch(`${WORKER_URL}/history?userId=${userId}&character=RoasterBot`);
+        const data = await response.json();
+        
+        const roastCount = data.history ? 
+          data.history.filter(msg => 
+            msg.sender === 'bot' && 
+            !msg.message.includes('ADVERTENCIA: Este bot genera roasts brutales')
+          ).length : 0;
+        
+        const allAchievements = [
+          { id: 'primera_victima', name: 'Primera Víctima', emoji: '🎯', desc: 'Recibiste tu primer roast', required: 1 },
+          { id: 'masoquista_novato', name: 'Masoquista Novato', emoji: '😈', desc: '3 roasts recibidos', required: 3 },
+          { id: 'coleccionista_insultos', name: 'Coleccionista', emoji: '🏆', desc: '5 roasts en tu colección', required: 5 },
+          { id: 'masoquista_experto', name: 'Masoquista Experto', emoji: '💀', desc: '10 roasts y sigues volviendo', required: 10 },
+          { id: 'leyenda_del_sufrimiento', name: 'Leyenda del Sufrimiento', emoji: '👑', desc: 'Nadie sufre como tú', required: 15 }
+        ];
+        
+        list.innerHTML = '';
+        
+        allAchievements.forEach(achievement => {
+          const unlocked = roastCount >= achievement.required;
+          const card = document.createElement('div');
+          card.className = `achievement-card ${unlocked ? '' : 'locked'}`;
+          card.innerHTML = `
+            <div class="achievement-header">
+              <span class="achievement-emoji">${achievement.emoji}</span>
+              <span class="achievement-name">${achievement.name}</span>
+            </div>
+            <div class="achievement-desc">${achievement.desc}</div>
+            <div class="achievement-progress">${unlocked ? '✓ Desbloqueado' : `${roastCount}/${achievement.required}`}</div>
+          `;
+          list.appendChild(card);
+        });
+        
+      } catch (error) {
+        list.innerHTML = '<div style="text-align: center; color: #f15c6d; padding: 20px;">Error cargando logros</div>';
+      }
+    }
+
+    async function loadAchievements() {
+      try {
+        const response = await fetch(`${WORKER_URL}/history?userId=${userId}&character=RoasterBot`);
+        const data = await response.json();
+        
+        // Contar solo mensajes del bot (roasts recibidos), excluyendo el mensaje de bienvenida
+        const roastCount = data.history ? 
+          data.history.filter(msg => 
+            msg.sender === 'bot' && 
+            !msg.message.includes('ADVERTENCIA: Este bot genera roasts brutales')
+          ).length : 0;
+        
+        console.log('Roasts recibidos:', roastCount);
+        
+        const allAchievements = [
+          { id: 'primera_victima', name: '🎯 Primera Víctima', desc: 'Recibiste tu primer roast', required: 1 },
+          { id: 'masoquista_novato', name: '😈 Masoquista Novato', desc: '3 roasts recibidos', required: 3 },
+          { id: 'coleccionista_insultos', name: '🏆 Coleccionista de Insultos', desc: '5 roasts en tu colección', required: 5 },
+          { id: 'masoquista_experto', name: '💀 Masoquista Experto', desc: '10 roasts y sigues volviendo', required: 10 },
+          { id: 'leyenda_del_sufrimiento', name: '👑 Leyenda del Sufrimiento', desc: 'Nadie sufre como tú', required: 15 }
+        ];
+        
+        const achievementsList = document.getElementById('achievementsList');
+        achievementsList.innerHTML = '';
+        
+        allAchievements.forEach(achievement => {
+          const unlocked = roastCount >= achievement.required;
+          const item = document.createElement('div');
+          item.className = `achievement-item ${unlocked ? '' : 'locked'}`;
+          item.innerHTML = `
+            <div class="achievement-icon">${achievement.name.split(' ')[0]}</div>
+            <div class="achievement-info">
+              <h4>${achievement.name}</h4>
+              <p>${achievement.desc} ${unlocked ? '✓ Desbloqueado' : `(${roastCount}/${achievement.required})`}</p>
+            </div>
+          `;
+          achievementsList.appendChild(item);
+        });
+        
+      } catch (error) {
+        console.error('Error cargando logros:', error);
+        document.getElementById('achievementsList').innerHTML = '<p style="text-align: center; color: #8696a0;">Error cargando logros</p>';
+      }
+    }
+
+    function showAchievementNotification(achievement) {
+      console.log('Mostrando logro:', achievement);
+      
+      const notification = document.createElement('div');
+      notification.className = 'achievement-notification';
+      notification.innerHTML = `
+        <div class="achievement-title">🏆 ¡LOGRO DESBLOQUEADO!</div>
+        <div class="achievement-desc">${achievement.name}: ${achievement.desc}</div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Actualizar panel lateral si está visible
+      const sidebar = document.getElementById('achievementsSidebar');
+      if (!sidebar.classList.contains('hidden')) {
+        setTimeout(() => loadAchievementsSidebar(), 1000);
+      }
+      
+      // Reproducir sonido si está habilitado
+      const sound = localStorage.getItem('sound') || 'on';
+      if (sound === 'on') {
+        try {
+          const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+          audio.volume = 0.3;
+          audio.play().catch(() => {});
+        } catch (e) {}
+      }
+      
+      setTimeout(() => {
+        notification.classList.add('hide');
+        setTimeout(() => notification.remove(), 500);
+      }, 5000);
     }
 
     // Capturar errores en móviles

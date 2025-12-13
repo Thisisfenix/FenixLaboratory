@@ -2004,3 +2004,32 @@
       .time-unit span { font-size: 1.5rem; }
       .time-unit label { font-size: 0.8rem; }
     }
+
+    /* Falling Animation */
+    .falling-animation * {
+      animation: fallDown 3s ease-in forwards;
+    }
+    
+    @keyframes fallDown {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    /* Fake Collapse Animation */
+    .fake-collapse {
+      animation: fakeCollapse 5s ease-in forwards;
+    }
+    
+    @keyframes fakeCollapse {
+      0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+      25% { transform: scale(0.9) rotate(-2deg); filter: brightness(0.8); }
+      50% { transform: scale(0.7) rotate(5deg); filter: brightness(0.5) blur(2px); }
+      75% { transform: scale(0.4) rotate(-10deg); filter: brightness(0.2) blur(5px); }
+      100% { transform: scale(0) rotate(180deg); filter: brightness(0) blur(10px); opacity: 0; }
+    }

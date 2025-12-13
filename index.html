@@ -33,7 +33,14 @@
         document.getElementById('hours').textContent = '0';
         document.getElementById('minutes').textContent = '0';
         document.getElementById('seconds').textContent = '0';
-        window.location.href='MAINTENANCE.html';
+        
+        // Activar animación de caída
+        document.body.classList.add('falling-animation');
+        
+        // Redirigir después de la animación
+        setTimeout(() => {
+          window.location.href='MAINTENANCE.html';
+        }, 3000);
       }
     }
 
@@ -41,6 +48,11 @@
     setInterval(updateCountdown, 1000);
     // Ejecutar inmediatamente
     updateCountdown();
+    
+    // Fake collapse after 1 minute
+    setTimeout(() => {
+      document.body.classList.add('fake-collapse');
+    }, 60000);
   </script>
   <title>🔬 FenixLaboratory v2.2.2 - Experimentos y Proyectos</title>
   <meta name="description" content="Portfolio interactivo con juegos multijugador, guestbook artístico y sistema de logros. Deadly Pursuer, Project Ankaro y más." />
