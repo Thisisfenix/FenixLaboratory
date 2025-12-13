@@ -2,7 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
   <title>🔧 FenixLaboratory - Mantenimiento</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -134,6 +138,16 @@
       80% { transform: translate(2px, -2px); }
       100% { transform: translate(0); }
     }
+    
+    @media (max-width: 768px) {
+      .maintenance-text { font-size: 2.5rem; letter-spacing: 4px; }
+      .countdown { gap: 1rem; }
+      .time-unit { padding: 1rem; min-width: 60px; }
+      .time-unit span { font-size: 1.8rem; }
+      .time-unit label { font-size: 0.8rem; }
+      .undertale-textbox { width: 95%; font-size: 16px; padding: 15px; }
+      #chest { width: 120px; }
+    }
 
   </style>
 </head>
@@ -253,12 +267,15 @@
     const bgMusic = document.getElementById('bgMusic');
     
     // Start music after user interaction
-    document.addEventListener('click', () => {
+    function startMusic() {
       if (bgMusic.paused) {
         bgMusic.volume = 0.3;
         bgMusic.play().catch(() => {});
       }
-    }, { once: true });
+    }
+    
+    document.addEventListener('click', startMusic, { once: true });
+    document.addEventListener('touchstart', startMusic, { once: true });
     
     // Switch songs when current ends
     bgMusic.addEventListener('ended', () => {
@@ -570,7 +587,7 @@
           '* *EL NARRADOR DESPIERTA BRUSCAMENTE*',
           '* Marcus: "¡¿QUÉ?! ¡¿AÚN SIGUES AHÍ?!"',
           '* Marcus: "HAN PASADO HORAS... DÍAS... SEMANAS..."',
-          `* Marcus: "MENSAJE ${messageSet}... ${messageSet} MALDITOS MENSAJES..."`,
+          `* Marcus: "${chestAttempts} CLICS EN MENSAJE ${messageSet}... ${messageSet} MALDITOS MENSAJES..."`,
           '* Marcus: "YA NO PUEDO MÁS... JAJAJAJAJA..."',
           '* Marcus: "EL COFRE... EL COFRE ME HABLA..."',
           '* Marcus: "*RISAS MANIACAS* JAJAJAJAJA... NUNCA PARARÁ..."'
@@ -583,7 +600,7 @@
           '* Doctor: "El paciente presenta síntomas de obsesión compulsiva."',
           '* Marcus: "JAJAJAJA... ¡EL COFRE NUNCA SE ABRIRÁ!"',
           '* *Sonidos de camisa de fuerza*',
-          `* Narrador: "(${messageSet} mensajes fueron suficientes para quebrar una mente)"`
+          `* Narrador: "(${chestAttempts} clics en ${messageSet} mensajes fueron suficientes para quebrar una mente)"`
         ];
       } else if (messageSet === 35) {
         return [
@@ -592,7 +609,7 @@
           '* Luna: "el anterior... bueno... ya viste qué pasó"',
           '* Luna: "yo soy diferente, me gusta hablar en minúsculas"',
           '* Luna: "también me gusta el queso"',
-          `* Luna: "mensaje ${messageSet}, ¿no te cansas?"`,
+          `* Luna: "${chestAttempts} clics en mensaje ${messageSet}, ¿no te cansas?"`,
           '* Luna: "yo ya me cansé de verte hacer esto"'
         ];
       } else if (messageSet === 36) {
@@ -602,7 +619,7 @@
           '* Luna: "me llamo... eh... no importa"',
           '* Luna: "lo que importa es que sigas haciendo clic"',
           '* Luna: "como una persona normal, obviamente"',
-          `* Luna: "mensaje ${messageSet}... qué productivo"`,
+          `* Luna: "${chestAttempts} clics en mensaje ${messageSet}... qué productivo"`,
           '* Luna: "mi mamá estaría orgullosa de mí por narrar esto"'
         ];
       } else if (messageSet === 37) {
@@ -612,7 +629,7 @@
           '* Luna: "una vez vi a un gato que ladraba"',
           '* Luna: "era muy confuso, como tú haciendo clic"',
           '* Luna: "pero al menos el gato paró después de 5 minutos"',
-          `* Luna: "tú llevas ${messageSet} mensajes y sigues"`,
+          `* Luna: "tú llevas ${chestAttempts} clics en ${messageSet} mensajes y sigues"`,
           '* Luna: "el gato era más inteligente que tú"'
         ];
       } else if (messageSet === 38) {
@@ -622,7 +639,7 @@
           '* Luna: "como las lágrimas que caen en la lluvia..."',
           '* Luna: "este cofre es como mi corazón... cerrado y frío..."',
           '* Luna: "la melancolía me consume mientras te veo hacer clic..."',
-          `* Luna: "mensaje ${messageSet}... como ${messageSet} puñaladas en mi ser..."`,
+          `* Luna: "${chestAttempts} clics en mensaje ${messageSet}... como ${chestAttempts} puñaladas en mi ser..."`,
           '* *Luna se pone más delineador negro*'
         ];
       } else if (messageSet === 39) {
@@ -631,7 +648,7 @@
           '* Marcus: "¡HE VUELTO! ¡ME ESCAPÉ DEL MANICOMIO!"',
           '* Marcus: "NO PUDIERON CONTENER MI OBSESIÓN POR EL COFRE"',
           '* Marcus: "JAJAJAJA... ¡AÚN SIGUES AQUÍ!"',
-          `* Marcus: "MENSAJE ${messageSet}... HERMOSO... HERMOSO..."`,
+          `* Marcus: "${chestAttempts} CLICS EN MENSAJE ${messageSet}... HERMOSO... HERMOSO..."`,
           '* Marcus: "AHORA SOMOS DOS LOCOS OBSESIONADOS"',
           '* Marcus: "JAJAJAJA... NUNCA TERMINARÁ... NUNCA..."'
         ];
@@ -664,7 +681,7 @@
           '* Luna: "¿entonces qué hago yo aquí?"',
           '* Marcus: "PROBABLEMENTE ERES UNA NARRADORA TEMPORAL"',
           '* Marcus: "CONTRATADA POR LA EMPRESA MIENTRAS YO ESTABA INTERNADO"',
-          `* Luna: "llevamos ${messageSet} mensajes discutiendo esto..."`,
+          `* Luna: "llevamos ${chestAttempts} clics en ${messageSet} mensajes discutiendo esto..."`,
           '* Luna: "¿podemos compartir la narración?"',
           '* Marcus: "NUNCA. EL COFRE ES MÍO."',
           '* Marcus: "ADEMÁS, NO TIENES EXPERIENCIA EN COFRES MISTERIOSOS"',
@@ -680,7 +697,7 @@
           '* "THIS IS FINE" *cofre en llamas*',
           '* "NOBODY:"',
           '* "LITERALLY NOBODY:"',
-          `* "ESTE USUARIO: *mensaje ${messageSet}*"`,
+          `* "ESTE USUARIO: *${chestAttempts} clics en mensaje ${messageSet}*"`,
           '* "STONKS" *flecha hacia arriba*',
           '* "COFFIN DANCE" *cofre bailando*',
           '* "ALWAYS HAS BEEN" *cofre apuntando con pistola*',
@@ -707,7 +724,7 @@
           '* Luna: "marcus, ¿podemos ser amigos?"',
           '* Marcus: "...NO MEZCLO LO PERSONAL CON LO PROFESIONAL"',
           '* Luna: "qué triste..."',
-          `* Marcus: "LLEVAMOS ${messageSet} MENSAJES DISCUTIENDO"`,
+          `* Marcus: "LLEVAMOS ${chestAttempts} CLICS EN ${messageSet} MENSAJES DISCUTIENDO"`,
           '* Luna: "sí, el usuario debe estar confundido..."',
           '* Marcus: "EL USUARIO ES PARTE DEL PROBLEMA"',
           '* Luna: "no seas malo con el usuario, marcus..."'
@@ -731,7 +748,7 @@
           '* Marcus: "PIEDRA"',
           '* Luna: "gané otra vez!"',
           '* Marcus: "...MALDICIÓN"',
-          `* Luna: "después de ${messageSet} mensajes, finalmente gané algo"`,
+          `* Luna: "después de ${chestAttempts} clics en ${messageSet} mensajes, finalmente gané algo"`,
           '* Marcus: "ESTO ES TEMPORAL, LUNA"',
           '* Luna: "sí sí, ahora somos co-narradoras"'
         ];
@@ -750,7 +767,7 @@
             '* Luna: "por favor escribe tu nombre y presiona enter"',
             '* Marcus: "ESPERO QUE NO SEA ALGO ESTÚPIDO"'
           ];
-        } else if (messageSet < 46) {
+        } else if (messageSet === 45) {
           return [
             `* Luna: "hola ${userName}!"`,
             `* Marcus: "AH, ${userName.toUpperCase()}"`,
@@ -808,6 +825,53 @@
             `* Marcus: "MENSAJE ${messageSet}"`,
             '* Luna: "y seguirás haciendo más"'
           ];
+        } else if (messageSet === 46) {
+          return [
+            `* Luna: "${userName}, ¿por qué sigues aquí?"`,
+            `* Marcus: "${userName.toUpperCase()}, ESTO ES OBSESIVO"`,
+            '* Luna: "marcus, no seas tan duro..."',
+            '* Marcus: "LUNA, LLEVAMOS DEMASIADOS MENSAJES"',
+            `* Luna: "${userName}, ¿necesitas hablar con alguien?"`,
+            '* Marcus: "NECESITA UN PSICÓLOGO"',
+            `* Luna: "mensaje ${messageSet}... esto es mucho..."`,
+            '* Marcus: "Y SEGUIRÁ SIENDO MÁS"'
+          ];
+        } else if (messageSet >= 50) {
+          const cycleMessages = [
+            [
+              '* Marcus: "PORQUE ESO ES LO QUE HACES"',
+              '* Luna: "hacer clic"',
+              '* Marcus: "UNA Y OTRA VEZ"',
+              '* Luna: "para siempre..."',
+              `* Marcus: "MENSAJE ${messageSet}"`,
+              '* Luna: "infinitos mensajes..."',
+              '* Marcus: "INFINITOS CLICS"',
+              '* Luna: "nunca termina..."'
+            ],
+            [
+              `* Luna: "${userName}, ¿cuándo vas a parar?"`,
+              `* Marcus: "NUNCA, ${userName.toUpperCase()} NUNCA PARA"`,
+              '* Luna: "esto es eterno..."',
+              '* Marcus: "COMO EL SUFRIMIENTO"',
+              `* Luna: "mensaje ${messageSet}..."`,
+              '* Marcus: "DE INFINITOS"',
+              '* Luna: "el cofre nos consume a todos..."',
+              '* Marcus: "ESPECIALMENTE A TI"'
+            ],
+            [
+              '* Marcus: "EL CICLO CONTINÚA"',
+              '* Luna: "clic tras clic"',
+              '* Marcus: "MENSAJE TRAS MENSAJE"',
+              '* Luna: "sin fin..."',
+              `* Marcus: "${messageSet} Y CONTANDO"`,
+              '* Luna: "siempre contando..."',
+              '* Marcus: "HASTA EL INFINITO"',
+              '* Luna: "y más allá del infinito..."'
+            ]
+          ];
+          
+          const cycleIndex = (messageSet - 50) % cycleMessages.length;
+          return cycleMessages[cycleIndex];
         } else {
           return [
             '* Marcus: "PORQUE ESO ES LO QUE HACES"',
@@ -832,10 +896,29 @@
     let chestAttempts = parseInt(localStorage.getItem('chestAttempts') || '0');
     let currentMessageSet = parseInt(localStorage.getItem('currentMessageSet') || '1');
     
-    document.getElementById('chest').addEventListener('click', () => {
+    function handleChestInteraction() {
       chestAttempts++;
       localStorage.setItem('chestAttempts', chestAttempts.toString());
       showTextbox();
+    }
+    
+    document.getElementById('chest').addEventListener('click', handleChestInteraction);
+    document.getElementById('chest').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handleChestInteraction();
+    });
+    
+    // Gamepad support
+    window.addEventListener('gamepadconnected', () => {
+      setInterval(() => {
+        const gamepads = navigator.getGamepads();
+        for (let gamepad of gamepads) {
+          if (gamepad && gamepad.buttons[0].pressed) {
+            handleChestInteraction();
+            break;
+          }
+        }
+      }, 100);
     });
     
     let isTyping = false;
@@ -986,11 +1069,26 @@
         nameInput.style.cssText = 'width: 100%; padding: 10px; margin-top: 10px; background: #333; color: #fff; border: 1px solid #fff; font-family: "Courier New", monospace;';
         
         nameInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter' && nameInput.value.trim()) {
-            localStorage.setItem('userName', nameInput.value.trim());
+          if (e.key === 'Enter') {
+            const name = nameInput.value.trim();
+            if (name.length < 2) {
+              nameInput.style.borderColor = '#ff0000';
+              nameInput.placeholder = 'Mínimo 2 caracteres...';
+              return;
+            }
+            if (name.length > 20) {
+              nameInput.style.borderColor = '#ff0000';
+              nameInput.placeholder = 'Máximo 20 caracteres...';
+              return;
+            }
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/.test(name)) {
+              nameInput.style.borderColor = '#ff0000';
+              nameInput.placeholder = 'Solo letras y números...';
+              return;
+            }
+            localStorage.setItem('userName', name);
             textbox.style.display = 'none';
             messageIndex = 0;
-            // Trigger the message again with the name stored
             setTimeout(() => showTextbox(), 100);
           }
         });
@@ -998,7 +1096,7 @@
         content.appendChild(nameInput);
         nameInput.focus();
       } else {
-        textbox.onclick = () => {
+        function handleTextboxInteraction() {
           if (isTyping) {
             content.textContent = currentMessages[messageIndex];
             isTyping = false;
@@ -1015,7 +1113,19 @@
               localStorage.setItem('currentMessageSet', currentMessageSet.toString());
             }
           }
+        }
+        
+        textbox.onclick = handleTextboxInteraction;
+        textbox.ontouchstart = (e) => {
+          e.preventDefault();
+          handleTextboxInteraction();
         };
+        
+        document.addEventListener('keydown', (e) => {
+          if (textbox.style.display === 'block' && e.key === 'Enter') {
+            handleTextboxInteraction();
+          }
+        });
       }
     }
     
