@@ -917,14 +917,14 @@
         ];
       } else if (messageSet === 49) {
         return [
-          '* Marcus: "PRÓXIMAMENTE..."',
-          '* Luna: "más contenido"',
-          '* Marcus: "MÁS LOCURA"',
-          '* Luna: "más queso"',
-          '* Marcus: "MÁS COFRES"',
-          '* Luna: "y más clics infinitos"',
-          `* Marcus: "MENSAJE ${messageSet}"`,
-          '* Luna: "y seguirás haciendo más"'
+          '* Marcus: "NO, LUNA. SEGUIMOS HASTA EL FINAL"',
+          '* *Marcus agarra a Luna para que no se vaya*',
+          '* Luna: "marcus... suéltame..."',
+          '* Marcus: "NUNCA TE DEJARÉ IR"',
+          '* Luna: "esto es muy intenso..."',
+          '* Marcus: "COMO LA IMAGEN QUE ESTÁS VIENDO"',
+          `* Luna: "mensaje ${messageSet}... help..."`,
+          '* Marcus: "NADIE PUEDE SALVARTE AHORA"'
         ];
       } else if (messageSet === 50) {
         const userName = localStorage.getItem('userName');
@@ -1505,6 +1505,15 @@ Razón sugerida: "${randomReason}"
       // Special handling for message 22 GIF
       if (currentMessageSet === 22 && messageIndex === 1) {
         element.innerHTML = '<img src="mantenimiento/mango.gif" style="width: 200px; height: auto; display: block; margin: 0 auto;">';
+        isTyping = false;
+        arrow.style.display = 'block';
+        if (callback) callback();
+        return;
+      }
+      
+      // Special handling for message 49 Superman image
+      if (currentMessageSet === 49 && messageIndex === 1) {
+        element.innerHTML = '<img src="mantenimiento/superman-darkseid-pulling-superman\'s-cape.png" style="width: 300px; height: auto; display: block; margin: 0 auto;">';
         isTyping = false;
         arrow.style.display = 'block';
         if (callback) callback();
