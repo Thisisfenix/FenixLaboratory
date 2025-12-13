@@ -884,35 +884,20 @@
         ];
       } else if (messageSet === 44) {
         const userName = localStorage.getItem('userName');
-        if (!userName) {
-          return [
-            '* Luna: "oye, después de tantos mensajes..."',
-            `* Marcus: "MENSAJE ${messageSet} EXACTAMENTE"`,
-            '* Luna: "creo que deberíamos conocer al usuario"',
-            '* Marcus: "NO ME INTERESA"',
-            '* Luna: "vamos marcus, seamos amables"',
-            '* Marcus: "...FINE"',
-            '* Luna: "hola usuario, ¿cómo te llamas?"',
-            '* Marcus: "ESTO ES RIDÍCULO"',
-            '* Luna: "por favor escribe tu nombre y presiona enter"',
-            '* Marcus: "ESPERO QUE NO SEA ALGO ESTÚPIDO"'
-          ];
-        } else {
-          return [
-            `* Luna: "hola ${userName}!"`,
-            `* Marcus: "AH, ${userName.toUpperCase()}"`,
-            '* Luna: "marcus, no grites su nombre"',
-            `* Marcus: "${attempts} CLICS EN MENSAJE ${messageSet}... JAJAJA ERA BAIT"`,
-            '* Luna: "¿qué?"',
-            '* Marcus: "LO DE QUE PROGRAMÉ EL COFRE ERA BROMA"',
-            '* Luna: "...en serio?"',
-            '* Marcus: "SOY SOLO UN NARRADOR, NO UN DESARROLLADOR"',
-            '* Luna: "qué tonto eres marcus"',
-            `* Marcus: "PERO ${userName.toUpperCase()} SIGUE SIENDO ESTÚPIDO"`,
-            `* Luna: "no seas malo con ${userName}..."`,
-            '* Marcus: "BROMIS BROMITA"'
-          ];
-        }
+        return [
+          `* Luna: "¡hola ${userName}!"`,
+          `* Marcus: "AH, ${userName.toUpperCase()}"`,
+          '* Luna: "marcus, no grites su nombre"',
+          `* Marcus: "${attempts} CLICS EN MENSAJE ${messageSet}... PERFECTO"`,
+          '* Luna: "ahora que sabemos tu nombre..."',
+          '* Marcus: "PODEMOS SER MÁS PERSONALES"',
+          `* Luna: "${userName}, ¿por qué sigues haciendo clic?"`,
+          '* Marcus: "ES UNA PREGUNTA VÁLIDA"',
+          `* Luna: "en serio ${userName}, ¿qué buscas?"`,
+          '* Marcus: "PROBABLEMENTE NADA"',
+          `* Luna: "bueno ${userName}, bienvenido oficialmente"`,
+          '* Marcus: "AL CLUB DE LOS OBSESIONADOS"'
+        ];
       } else if (messageSet === 45) {
         const userName = localStorage.getItem('userName');
         return [
@@ -1283,6 +1268,19 @@
         console.log('Interaction blocked:', { textboxActive, timeDiff: now - lastClickTime });
         showDebugConsole(`🚫 Interacción bloqueada: ${blockReason}`);
         return;
+      }
+      
+      // Check if we need username before message 44
+      if (currentMessageSet >= 43 && !localStorage.getItem('userName')) {
+        showDebugConsole('👤 Solicitando nombre de usuario antes del mensaje 44');
+        const userName = prompt('Los narradores necesitan saber tu nombre antes de continuar:');
+        if (userName && userName.trim().length >= 2 && userName.trim().length <= 20) {
+          localStorage.setItem('userName', userName.trim());
+          showDebugConsole(`👤 Nombre guardado: ${userName.trim()}`);
+        } else {
+          showDebugConsole('❌ Nombre inválido - interacción cancelada');
+          return;
+        }
       }
       
       // Prevent default behavior
@@ -1814,48 +1812,8 @@ Razón sugerida: "${randomReason}"
       const message = currentMessages[messageIndex] || '';
       typeMessage(message, content);
       
-      // Check if we need to ask for user name
-      const needsUserName = currentMessageSet >= 44 && !localStorage.getItem('userName') && 
-                           currentMessages.some(msg => msg.includes('escribe tu nombre'));
-      
-      if (needsUserName) {
-        // Create input field for name
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.placeholder = 'Escribe tu nombre aquí...';
-        nameInput.style.cssText = 'width: 100%; padding: 10px; margin-top: 10px; background: #333; color: #fff; border: 1px solid #fff; font-family: "Courier New", monospace;';
-        
-        nameInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            const name = nameInput.value.trim();
-            if (name.length < 2) {
-              nameInput.style.borderColor = '#ff0000';
-              nameInput.placeholder = 'Mínimo 2 caracteres...';
-              return;
-            }
-            if (name.length > 20) {
-              nameInput.style.borderColor = '#ff0000';
-              nameInput.placeholder = 'Máximo 20 caracteres...';
-              return;
-            }
-            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/.test(name)) {
-              nameInput.style.borderColor = '#ff0000';
-              nameInput.placeholder = 'Solo letras y números...';
-              return;
-            }
-            localStorage.setItem('userName', name);
-            textbox.style.display = 'none';
-            messageIndex = 0;
-            setTimeout(() => {
-              textboxActive = false;
-              showTextbox();
-            }, 500);
-          }
-        });
-        
-        content.appendChild(nameInput);
-        nameInput.focus();
-      } else {
+      // Normal textbox interaction
+      {
         function handleTextboxInteraction() {
           // Don't allow interaction if there's a name input field active
           if (content.querySelector('input')) {
