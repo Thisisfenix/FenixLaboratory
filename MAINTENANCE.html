@@ -181,42 +181,6 @@
       box-shadow: 0 0 15px #ff0000;
     }
     
-    .debug-console {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      max-width: 500px;
-      background: rgba(0, 0, 0, 0.95);
-      border: 2px solid #00ff00;
-      padding: 20px;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      color: #00ff00;
-      display: none;
-      z-index: 10000;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-    
-    .debug-console h3 {
-      color: #00ff00;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-    
-    .debug-console .close-btn {
-      position: absolute;
-      top: 5px;
-      right: 10px;
-      background: none;
-      border: none;
-      color: #ff0000;
-      font-size: 18px;
-      cursor: pointer;
-    }
-    
     @media (max-width: 768px) {
       .maintenance-text { font-size: 2.5rem; letter-spacing: 4px; }
       .countdown { gap: 1rem; }
@@ -259,12 +223,6 @@
     <div class="continue-arrow" id="continue-arrow">▶</div>
   </div>
   <button class="reset-button" id="reset-button">🔄 RESET</button>
-  <button class="reset-button" id="debug-button" style="top: 60px; background: rgba(0, 255, 0, 0.8); border-color: #00ff00;">🔍 DEBUG</button>
-  <div class="debug-console" id="debug-console">
-    <button class="close-btn" id="close-debug">✕</button>
-    <h3>🔍 CONSOLA DE DEBUG</h3>
-    <div id="debug-content"></div>
-  </div>
   <audio id="bgMusic" loop>
     <source src="mantenimiento/song1.mp3" type="audio/mpeg">
   </audio>
@@ -597,7 +555,8 @@
     
     function getTwentySecondMessages(messageSet) {
       return [
-        '<img src="mantenimiento/mango.gif" style="width: 200px; height: auto; display: block; margin: 0 auto;">'
+        '* Marcus: "Momento especial..."',
+        '* Marcus: "El cofre te muestra algo..."'
       ];
     }
     
@@ -1229,56 +1188,22 @@
     let lastClickTime = 0;
     let currentMessages = [];
     
-    // Debug console functions
-    function showDebugConsole(message) {
-      const debugConsole = document.getElementById('debug-console');
-      const debugContent = document.getElementById('debug-content');
-      
-      const timestamp = new Date().toLocaleTimeString();
-      const logEntry = document.createElement('div');
-      logEntry.innerHTML = `[${timestamp}] ${message}`;
-      logEntry.style.marginBottom = '5px';
-      logEntry.style.borderBottom = '1px solid #333';
-      logEntry.style.paddingBottom = '3px';
-      
-      debugContent.appendChild(logEntry);
-      debugConsole.style.display = 'block';
-      
-      // Auto scroll to bottom
-      debugContent.scrollTop = debugContent.scrollHeight;
-    }
-    
-    function closeDebugConsole() {
-      document.getElementById('debug-console').style.display = 'none';
-    }
-    
-    // Close debug console event
-    document.getElementById('close-debug').addEventListener('click', closeDebugConsole);
+
     
     function handleChestInteraction(event) {
-      // Debug logging for Edge
-      console.log('Chest interaction triggered:', event ? event.type : 'unknown');
-      showDebugConsole(`📱 Interacción detectada: ${event ? event.type : 'unknown'}`);
-      
       const now = Date.now();
       
       // Simple but effective protection
       if (textboxActive || now - lastClickTime < 1500) {
-        const blockReason = textboxActive ? 'Textbox activo' : `Muy rápido (${now - lastClickTime}ms)`;
-        console.log('Interaction blocked:', { textboxActive, timeDiff: now - lastClickTime });
-        showDebugConsole(`🚫 Interacción bloqueada: ${blockReason}`);
         return;
       }
       
       // Check if we need username before message 44
       if (currentMessageSet >= 43 && !localStorage.getItem('userName')) {
-        showDebugConsole('👤 Solicitando nombre de usuario antes del mensaje 44');
         const userName = prompt('Los narradores necesitan saber tu nombre antes de continuar:');
         if (userName && userName.trim().length >= 2 && userName.trim().length <= 20) {
           localStorage.setItem('userName', userName.trim());
-          showDebugConsole(`👤 Nombre guardado: ${userName.trim()}`);
         } else {
-          showDebugConsole('❌ Nombre inválido - interacción cancelada');
           return;
         }
       }
@@ -1295,25 +1220,12 @@
       chestAttempts++;
       localStorage.setItem('chestAttempts', chestAttempts.toString());
       
-      console.log('Chest clicked:', chestAttempts, 'times');
-      showDebugConsole(`✅ Cofre clickeado ${chestAttempts} veces (Evento: ${event ? event.type : 'unknown'})`);
       showTextbox();
     }
     
     const chestElement = document.getElementById('chest');
     
-    // Debug: Verify chest element exists
-    if (chestElement) {
-      console.log('Chest element found and loaded successfully');
-      console.log('Chest element properties:', {
-        id: chestElement.id,
-        src: chestElement.src,
-        style: chestElement.style.cssText
-      });
-      showDebugConsole('✅ Elemento cofre cargado correctamente');
-    } else {
-      console.error('Chest element not found!');
-      showDebugConsole('❌ ERROR: Elemento cofre no encontrado!');
+    if (!chestElement) {
       throw new Error('Chest element not found');
     }
     
@@ -1334,15 +1246,11 @@
     
     // Fallback for Edge - force interaction on any mouse event
     chestElement.addEventListener('mouseup', (e) => {
-      console.log('Mouseup fallback triggered');
-      showDebugConsole('🔄 Fallback mouseup activado');
       handleChestInteraction(e);
     });
     
     // Additional Edge debugging
     chestElement.addEventListener('mouseover', () => {
-      console.log('Mouse over chest - element is responsive');
-      showDebugConsole('👁️ Mouse sobre cofre - elemento responsivo');
       chestElement.style.cursor = 'pointer';
     });
     
@@ -1398,11 +1306,7 @@ Razón sugerida: "${randomReason}"
       }
     });
     
-    // Debug button functionality
-    document.getElementById('debug-button').addEventListener('click', () => {
-      showDebugConsole('🔍 Probando interacción manual del cofre...');
-      handleChestInteraction({ type: 'debug-manual' });
-    });
+
     
     // Plushie functionality
     let plushieClicks = 0;
@@ -1497,138 +1401,97 @@ Razón sugerida: "${randomReason}"
       handlePlushieClick(mollyPlushie, true);
     });
     
-    // Gamepad support with debug
-    let gamepadState = {
+    // Improved Gamepad Support
+    let gamepad = {
       connected: false,
-      buttons: { 0: false, 1: false, 2: false, 3: false },
+      buttons: {},
       polling: false
     };
     
-    function initGamepad() {
-      showDebugConsole('🎮 Inicializando gamepad...');
-      const gamepads = navigator.getGamepads();
-      for (let gamepad of gamepads) {
-        if (gamepad && gamepad.connected) {
-          gamepadState.connected = true;
-          showDebugConsole(`🎮 Gamepad encontrado: ${gamepad.id}`);
-          break;
-        }
-      }
-      if (!gamepadState.polling) {
-        gamepadState.polling = true;
-        pollGamepad();
-      }
-    }
-    
-    function pollGamepad() {
-      if (!gamepadState.polling) return;
+    function updateGamepad() {
+      if (!gamepad.polling) return;
       
-      const gamepads = navigator.getGamepads();
-      let activeGamepad = null;
+      const controllers = navigator.getGamepads();
+      let activeController = null;
       
-      for (let gamepad of gamepads) {
-        if (gamepad && gamepad.connected) {
-          activeGamepad = gamepad;
-          if (!gamepadState.connected) {
-            gamepadState.connected = true;
-            showDebugConsole(`🎮 Gamepad conectado: ${gamepad.id}`);
-          }
+      for (let controller of controllers) {
+        if (controller && controller.connected) {
+          activeController = controller;
           break;
         }
       }
       
-      if (!activeGamepad) {
-        if (gamepadState.connected) {
-          gamepadState.connected = false;
-          showDebugConsole('🎮 Gamepad desconectado');
-        }
-        requestAnimationFrame(pollGamepad);
+      if (!activeController) {
+        gamepad.connected = false;
+        requestAnimationFrame(updateGamepad);
         return;
       }
       
-      // Button A/X (0) - Chest/Textbox
-      if (activeGamepad.buttons[0] && activeGamepad.buttons[0].pressed && !gamepadState.buttons[0]) {
-        gamepadState.buttons[0] = true;
-        showDebugConsole('🎮 Botón A/X presionado');
+      if (!gamepad.connected) {
+        gamepad.connected = true;
+      }
+      
+      // A Button (0) - Chest/Textbox interaction
+      if (activeController.buttons[0] && activeController.buttons[0].pressed && !gamepad.buttons[0]) {
+        gamepad.buttons[0] = true;
         
         const textbox = document.getElementById('textbox');
         if (textbox.style.display === 'block') {
-          handleGamepadTextbox();
+          // Advance textbox
+          const content = document.getElementById('textbox-content');
+          if (!content.querySelector('input') && !isTyping && document.getElementById('continue-arrow').style.display === 'block') {
+            messageIndex++;
+            if (messageIndex < currentMessages.length) {
+              typeMessage(currentMessages[messageIndex], content);
+            } else {
+              textbox.style.display = 'none';
+              document.getElementById('continue-arrow').style.display = 'none';
+              messageIndex = 0;
+              currentMessageSet++;
+              localStorage.setItem('currentMessageSet', currentMessageSet.toString());
+              setTimeout(() => { textboxActive = false; }, 500);
+            }
+          }
         } else if (!textboxActive) {
-          handleChestInteraction({ type: 'gamepad-A' });
+          // Interact with chest
+          handleChestInteraction({ type: 'gamepad' });
         }
-      } else if (!activeGamepad.buttons[0] || !activeGamepad.buttons[0].pressed) {
-        gamepadState.buttons[0] = false;
+      } else if (!activeController.buttons[0] || !activeController.buttons[0].pressed) {
+        gamepad.buttons[0] = false;
       }
       
-      // Button B/Circle (1) - Plushie
-      if (activeGamepad.buttons[1] && activeGamepad.buttons[1].pressed && !gamepadState.buttons[1]) {
-        gamepadState.buttons[1] = true;
-        showDebugConsole('🎮 Botón B/Circle - Plushie');
+      // B Button (1) - Plushie interaction
+      if (activeController.buttons[1] && activeController.buttons[1].pressed && !gamepad.buttons[1]) {
+        gamepad.buttons[1] = true;
         const activePlushie = mollyPlushie.style.display === 'block' ? mollyPlushie : gisselPlushie;
         handlePlushieClick(activePlushie, activePlushie === mollyPlushie);
-      } else if (!activeGamepad.buttons[1] || !activeGamepad.buttons[1].pressed) {
-        gamepadState.buttons[1] = false;
+      } else if (!activeController.buttons[1] || !activeController.buttons[1].pressed) {
+        gamepad.buttons[1] = false;
       }
       
-      // Button X/Square (2) - Debug Console
-      if (activeGamepad.buttons[2] && activeGamepad.buttons[2].pressed && !gamepadState.buttons[2]) {
-        gamepadState.buttons[2] = true;
-        showDebugConsole('🎮 Botón X/Square - Debug Console');
-        const debugConsole = document.getElementById('debug-console');
-        if (debugConsole.style.display === 'block') {
-          closeDebugConsole();
-        } else {
-          showDebugConsole('🎮 Abriendo debug console');
-        }
-      } else if (!activeGamepad.buttons[2] || !activeGamepad.buttons[2].pressed) {
-        gamepadState.buttons[2] = false;
-      }
-      
-      requestAnimationFrame(pollGamepad);
+      requestAnimationFrame(updateGamepad);
     }
     
-    function handleGamepadTextbox() {
-      const content = document.getElementById('textbox-content');
-      if (content.querySelector('input')) {
-        showDebugConsole('🎮 Input activo - gamepad bloqueado');
-        return;
-      }
-      
-      if (!isTyping && document.getElementById('continue-arrow').style.display === 'block') {
-        showDebugConsole('🎮 Avanzando textbox via gamepad');
-        messageIndex++;
-        if (messageIndex < currentMessages.length) {
-          typeMessage(currentMessages[messageIndex], content);
-        } else {
-          document.getElementById('textbox').style.display = 'none';
-          document.getElementById('continue-arrow').style.display = 'none';
-          messageIndex = 0;
-          currentMessageSet++;
-          localStorage.setItem('currentMessageSet', currentMessageSet.toString());
-          setTimeout(() => { textboxActive = false; }, 500);
-        }
-      }
-    }
-    
-    // Gamepad events
-    window.addEventListener('gamepadconnected', (e) => {
-      showDebugConsole(`🎮 Gamepad conectado: ${e.gamepad.id}`);
-      gamepadState.connected = true;
-      if (!gamepadState.polling) {
-        gamepadState.polling = true;
-        pollGamepad();
+    // Gamepad connection events
+    window.addEventListener('gamepadconnected', () => {
+      if (!gamepad.polling) {
+        gamepad.polling = true;
+        updateGamepad();
       }
     });
     
-    window.addEventListener('gamepaddisconnected', (e) => {
-      showDebugConsole(`🎮 Gamepad desconectado: ${e.gamepad.id}`);
-      gamepadState.connected = false;
+    window.addEventListener('gamepaddisconnected', () => {
+      gamepad.connected = false;
     });
     
-    // Init gamepad
-    setTimeout(initGamepad, 1000);
-    document.addEventListener('click', initGamepad, { once: true });
+    // Start gamepad polling if already connected
+    setTimeout(() => {
+      const controllers = navigator.getGamepads();
+      if (controllers && controllers.some(c => c && c.connected)) {
+        gamepad.polling = true;
+        updateGamepad();
+      }
+    }, 1000);
     
     let isTyping = false;
     
@@ -1638,6 +1501,15 @@ Razón sugerida: "${randomReason}"
       isTyping = true;
       const arrow = document.getElementById('continue-arrow');
       arrow.style.display = 'none';
+      
+      // Special handling for message 22 GIF
+      if (currentMessageSet === 22 && messageIndex === 1) {
+        element.innerHTML = '<img src="mantenimiento/mango.gif" style="width: 200px; height: auto; display: block; margin: 0 auto;">';
+        isTyping = false;
+        arrow.style.display = 'block';
+        if (callback) callback();
+        return;
+      }
       
       // Simple text cleaning
       const cleanText = String(text).replace(/&quot;/g, '"').replace(/&amp;/g, '&');
