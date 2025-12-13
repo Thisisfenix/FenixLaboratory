@@ -840,7 +840,7 @@
           '* Marcus: "ESTO ES TEMPORAL, LUNA"',
           '* Luna: "sí sí, ahora somos co-narradoras"'
         ];
-      } else if (messageSet >= 44) {
+      } else if (messageSet === 44) {
         const userName = localStorage.getItem('userName');
         if (!userName) {
           return [
@@ -855,7 +855,7 @@
             '* Luna: "por favor escribe tu nombre y presiona enter"',
             '* Marcus: "ESPERO QUE NO SEA ALGO ESTÚPIDO"'
           ];
-        } else if (messageSet === 45) {
+        } else {
           return [
             `* Luna: "hola ${userName}!"`,
             `* Marcus: "AH, ${userName.toUpperCase()}"`,
@@ -870,98 +870,279 @@
             `* Luna: "no seas malo con ${userName}..."`,
             '* Marcus: "BROMIS BROMITA"'
           ];
-        } else if (messageSet === 47) {
-          return [
-            `* Luna: "${userName}, esto ya es demasiado..."`,
-            `* Marcus: "${userName.toUpperCase()}, LLEVAMOS MUCHO TIEMPO AQUÍ"`,
-            '* Luna: "marcus, creo que deberíamos parar..."',
-            '* Marcus: "NO, LUNA. ESTO ES NUESTRO TRABAJO"',
-            `* Luna: "pero ${userName} claramente tiene un problema..."`,
-            '* Marcus: "EL PROBLEMA ES SUYO, NO NUESTRO"',
-            `* Luna: "mensaje ${messageSet}, marcus... ${messageSet}..."`,
-            '* Marcus: "Y SEGUIRÁN SIENDO MÁS"',
-            '* Luna: "no podemos seguir así..."',
-            '* Marcus: "CLARO QUE PODEMOS"',
-            `* Luna: "${userName}... por favor..."`,
-            '* Marcus: "NO LE SUPLIQUES, LUNA"'
-          ];
-        } else if (messageSet === 48) {
-          return [
-            '* Marcus: "CORTE"',
-            '* Luna: "corte"',
-            '* *Se quitan los micrófonos*',
-            `* Marcus: "OYE ${userName.toUpperCase()}, ¿EN SERIO VAS A SEGUIR?"`,
-            `* Luna: "${userName}, llevamos rato aquí..."`,
-            '* Marcus: "ESTO YA NO ES GRACIOSO"',
-            `* Luna: "${userName}, ¿estás bien? en serio pregunto"`,
-            '* Marcus: "DEBERÍAS HACER ALGO MÁS PRODUCTIVO"',
-            `* Luna: "${userName}, hay un mundo allá afuera..."`,
-            '* Marcus: "CON GENTE REAL"',
-            '* Luna: "y queso real"',
-            '* Marcus: "...¿EN SERIO CON EL QUESO?"',
-            '* Luna: "el queso es importante, marcus"',
-            `* Marcus: "${userName.toUpperCase()}, POR FAVOR, PARA"`
-          ];
-        } else if (messageSet === 49) {
-          return [
-            '* Marcus: "PRÓXIMAMENTE..."',
-            '* Luna: "más contenido"',
-            '* Marcus: "MÁS LOCURA"',
-            '* Luna: "más queso"',
-            '* Marcus: "MÁS COFRES"',
-            '* Luna: "y más clics infinitos"',
-            `* Marcus: "MENSAJE ${messageSet}"`,
-            '* Luna: "y seguirás haciendo más"'
-          ];
-        } else if (messageSet === 46) {
-          return [
-            `* Luna: "${userName}, ¿por qué sigues aquí?"`,
-            `* Marcus: "${userName.toUpperCase()}, ESTO ES OBSESIVO"`,
-            '* Luna: "marcus, no seas tan duro..."',
-            '* Marcus: "LUNA, LLEVAMOS DEMASIADOS MENSAJES"',
-            `* Luna: "${userName}, ¿necesitas hablar con alguien?"`,
-            '* Marcus: "NECESITA UN PSICÓLOGO"',
-            `* Luna: "mensaje ${messageSet}... esto es mucho..."`,
-            '* Marcus: "Y SEGUIRÁ SIENDO MÁS"'
-          ];
-        } else if (messageSet >= 50) {
-          const cycleMessages = [
-            [
-              '* Marcus: "PORQUE ESO ES LO QUE HACES"',
-              '* Luna: "hacer clic"',
-              '* Marcus: "UNA Y OTRA VEZ"',
-              '* Luna: "para siempre..."',
-              `* Marcus: "MENSAJE ${messageSet}"`,
-              '* Luna: "infinitos mensajes..."',
-              '* Marcus: "INFINITOS CLICS"',
-              '* Luna: "nunca termina..."'
-            ],
-            [
-              `* Luna: "${userName}, ¿cuándo vas a parar?"`,
-              `* Marcus: "NUNCA, ${userName.toUpperCase()} NUNCA PARA"`,
-              '* Luna: "esto es eterno..."',
-              '* Marcus: "COMO EL SUFRIMIENTO"',
-              `* Luna: "mensaje ${messageSet}..."`,
-              '* Marcus: "DE INFINITOS"',
-              '* Luna: "el cofre nos consume a todos..."',
-              '* Marcus: "ESPECIALMENTE A TI"'
-            ],
-            [
-              '* Marcus: "EL CICLO CONTINÚA"',
-              '* Luna: "clic tras clic"',
-              '* Marcus: "MENSAJE TRAS MENSAJE"',
-              '* Luna: "sin fin..."',
-              `* Marcus: "${messageSet} Y CONTANDO"`,
-              '* Luna: "siempre contando..."',
-              '* Marcus: "HASTA EL INFINITO"',
-              '* Luna: "y más allá del infinito..."'
-            ]
-          ];
-          
-          const cycleIndex = (messageSet - 50) % cycleMessages.length;
-          return cycleMessages[cycleIndex];
-        } else {
-          return [
+        }
+      } else if (messageSet === 45) {
+        const userName = localStorage.getItem('userName');
+        return [
+          `* Luna: "${userName}, ¿por qué sigues aquí?"`,
+          `* Marcus: "${userName.toUpperCase()}, ESTO ES OBSESIVO"`,
+          '* Luna: "marcus, no seas tan duro..."',
+          '* Marcus: "LUNA, LLEVAMOS DEMASIADOS MENSAJES"',
+          `* Luna: "${userName}, ¿necesitas hablar con alguien?"`,
+          '* Marcus: "NECESITA UN PSICÓLOGO"',
+          `* Luna: "mensaje ${messageSet}... esto es mucho..."`,
+          '* Marcus: "Y SEGUIRÁ SIENDO MÁS"'
+        ];
+      } else if (messageSet === 46) {
+        const userName = localStorage.getItem('userName');
+        return [
+          `* Luna: "${userName}, esto ya es demasiado..."`,
+          `* Marcus: "${userName.toUpperCase()}, LLEVAMOS MUCHO TIEMPO AQUÍ"`,
+          '* Luna: "marcus, creo que deberíamos parar..."',
+          '* Marcus: "NO, LUNA. ESTO ES NUESTRO TRABAJO"',
+          `* Luna: "pero ${userName} claramente tiene un problema..."`,
+          '* Marcus: "EL PROBLEMA ES SUYO, NO NUESTRO"',
+          `* Luna: "mensaje ${messageSet}, marcus... ${messageSet}..."`,
+          '* Marcus: "Y SEGUIRÁN SIENDO MÁS"',
+          '* Luna: "no podemos seguir así..."',
+          '* Marcus: "CLARO QUE PODEMOS"',
+          `* Luna: "${userName}... por favor..."`,
+          '* Marcus: "NO LE SUPLIQUES, LUNA"'
+        ];
+      } else if (messageSet === 47) {
+        const userName = localStorage.getItem('userName');
+        return [
+          `* Luna: "${userName}, vamos a intentar algo diferente..."`,
+          `* Marcus: "${userName.toUpperCase()}, ESTO SE ESTÁ SALIENDO DE CONTROL"`,
+          '* Luna: "marcus, tal vez deberíamos..."',
+          '* Marcus: "NO, LUNA. SEGUIMOS HASTA EL FINAL"',
+          `* Luna: "pero ${userName} ya lleva mucho tiempo..."`,
+          '* Marcus: "ESE ES SU PROBLEMA"',
+          `* Luna: "mensaje ${messageSet}... esto es serio..."`,
+          '* Marcus: "Y VA A EMPEORAR"'
+        ];
+      } else if (messageSet === 48) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Marcus: "CORTE"',
+          '* Luna: "corte"',
+          '* *Se quitan los micrófonos*',
+          `* Marcus: "OYE ${userName.toUpperCase()}, ¿EN SERIO VAS A SEGUIR?"`,
+          `* Luna: "${userName}, llevamos rato aquí..."`,
+          '* Marcus: "ESTO YA NO ES GRACIOSO"',
+          `* Luna: "${userName}, ¿estás bien? en serio pregunto"`,
+          '* Marcus: "DEBERÍAS HACER ALGO MÁS PRODUCTIVO"',
+          `* Luna: "${userName}, hay un mundo allá afuera..."`,
+          '* Marcus: "CON GENTE REAL"',
+          '* Luna: "y queso real"',
+          '* Marcus: "...¿EN SERIO CON EL QUESO?"',
+          '* Luna: "el queso es importante, marcus"',
+          `* Marcus: "${userName.toUpperCase()}, POR FAVOR, PARA"`
+        ];
+      } else if (messageSet === 49) {
+        return [
+          '* Marcus: "PRÓXIMAMENTE..."',
+          '* Luna: "más contenido"',
+          '* Marcus: "MÁS LOCURA"',
+          '* Luna: "más queso"',
+          '* Marcus: "MÁS COFRES"',
+          '* Luna: "y más clics infinitos"',
+          `* Marcus: "MENSAJE ${messageSet}"`,
+          '* Luna: "y seguirás haciendo más"'
+        ];
+      } else if (messageSet === 50) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Marcus: "FELICIDADES"',
+          `* Luna: "${userName}, llegaste al mensaje 50..."`,
+          '* Marcus: "MEDIO CENTENAR DE LOCURA"',
+          '* Luna: "esto es un hito..."',
+          '* Marcus: "UN HITO DE OBSESIÓN"',
+          `* Luna: "${attempts} clics en mensaje ${messageSet}... deberíamos celebrar..."`,
+          '* Marcus: "CON MÁS CLICS"',
+          '* Luna: "obvio..."'
+        ];
+      } else if (messageSet === 51) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Luna: "el cofre empieza a brillar..."',
+          '* Marcus: "NO, ES TU IMAGINACIÓN"',
+          '* Luna: "no, en serio, mira..."',
+          '* Marcus: "ES SOLO EL REFLEJO DE LA PANTALLA"',
+          `* Luna: "${userName}, ¿tú lo ves brillar?"`,
+          '* Marcus: "NO LE PREGUNTES, ESTÁ LOCO"',
+          `* Luna: "${attempts} clics en mensaje ${messageSet}... todos estamos locos aquí..."`,
+          '* Marcus: "ESPECIALMENTE TÚ"'
+        ];
+      } else if (messageSet === 52) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Marcus: "TENGO UNA CONFESIÓN"',
+          '* Luna: "oh no..."',
+          '* Marcus: "YO... YO TAMBIÉN QUIERO ABRIR EL COFRE"',
+          '* Luna: "marcus..."',
+          '* Marcus: "LLEVO AÑOS NARRANDO Y NUNCA LO HE VISTO ABIERTO"',
+          `* Luna: "${userName}, mira lo que has hecho..."`,
+          `* Marcus: "${attempts} CLICS EN MENSAJE ${messageSet}... HAS CONTAGIADO MI CURIOSIDAD"`,
+          '* Luna: "esto es contagioso..."'
+        ];
+      } else if (messageSet === 53) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Luna: "aparece un tercer narrador..."',
+          '* Carlos: "Hola, soy Carlos, el supervisor"',
+          '* Marcus: "OH NO, NOS DESCUBRIERON"',
+          '* Carlos: "¿Qué está pasando aquí?"',
+          '* Luna: "nada, solo narrando..."',
+          `* Carlos: "¿${userName} lleva ${attempts} clics en ${messageSet} mensajes?"`,
+          '* Marcus: "ES CULPA SUYA, NO NUESTRA"',
+          '* Carlos: "Esto va contra el protocolo..."'
+        ];
+      } else if (messageSet === 54) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Carlos: "Necesito hablar con recursos humanos"',
+          '* Luna: "no, por favor..."',
+          '* Marcus: "CARLOS, PODEMOS EXPLICARLO"',
+          `* Carlos: "¿Explicar qué? ¿${attempts} clics en ${messageSet} mensajes?"`,
+          `* Carlos: "${userName}, ¿usted está bien?"`,
+          '* Luna: "no le preguntes eso..."',
+          '* Marcus: "AHORA SOMOS TRES LOCOS"',
+          '* Carlos: "Yo no estoy loco... ¿o sí?"'
+        ];
+      } else if (messageSet === 55) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Luna: "el cofre susurra..."',
+          '* Cofre: "Psst... hey..."',
+          '* Marcus: "EL COFRE HABLA"',
+          '* Carlos: "Esto no puede estar pasando"',
+          '* Cofre: "Llevo años esperando..."',
+          `* Cofre: "${userName}, eres especial..."`,
+          `* Luna: "${attempts} clics en mensaje ${messageSet}... el cofre tiene favoritos..."`,
+          '* Cofre: "Solo tú has llegado tan lejos..."'
+        ];
+      } else if (messageSet === 56) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Cofre: "¿Quieres saber un secreto?"',
+          '* Marcus: "NO LE HAGAS CASO"',
+          '* Cofre: "La llave está en el mensaje 100..."',
+          '* Luna: "¿mensaje 100?"',
+          '* Carlos: "Eso es imposible"',
+          `* Cofre: "${userName}, ${attempts} clics en mensaje ${messageSet}... ¿llegarás hasta ahí?"`,
+          '* Marcus: "NO LE DES IDEAS"',
+          '* Cofre: "Jeje... ya es muy tarde..."'
+        ];
+      } else if (messageSet === 57) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Luna: "aparece el desarrollador..."',
+          '* Desarrollador: "¿Qué carajo está pasando?"',
+          '* Marcus: "EH... HOLA JEFE"',
+          `* Desarrollador: "¿${attempts} clics en ${messageSet} mensajes? ¿EN SERIO?"`,
+          '* Carlos: "Yo intenté detenerlos"',
+          `* Desarrollador: "${userName}, esto no estaba planeado"`,
+          '* Luna: "improvisamos sobre la marcha..."',
+          '* Desarrollador: "Esto se salió de control hace 40 mensajes"'
+        ];
+      } else if (messageSet === 58) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Desarrollador: "Voy a parchear esto"',
+          '* Marcus: "NO, ESPERA"',
+          '* Luna: "no nos quites el trabajo..."',
+          '* Carlos: "Yo apoyo el parche"',
+          '* Cofre: "No me silencies..."',
+          `* Desarrollador: "${userName}, ${attempts} clics en mensaje ${messageSet}... esto es tu culpa"`,
+          '* Luna: "todos somos víctimas aquí..."',
+          '* Desarrollador: "*suspira* Está bien, continúen..."'
+        ];
+      } else if (messageSet === 59) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* Marcus: "ESTAMOS CERCA DE 60"',
+          '* Luna: "casi llegamos..."',
+          '* Carlos: "¿Llegamos a dónde?"',
+          '* Cofre: "Al siguiente nivel..."',
+          '* Desarrollador: "No hay siguiente nivel"',
+          `* Luna: "${userName}, ${attempts} clics en mensaje ${messageSet}... ¿sientes la tensión?"`,
+          '* Marcus: "LA TENSIÓN ES PALPABLE"',
+          '* Todos: "..."'
+        ];
+      } else if (messageSet === 60) {
+        const userName = localStorage.getItem('userName');
+        return [
+          '* 🎉🎊 MENSAJE 60 ALCANZADO 🎊🎉',
+          `* Marcus: "${userName.toUpperCase()}, LO LOGRASTE"`,
+          '* Luna: "60 mensajes de pura locura..."',
+          '* Carlos: "Esto definitivamente va en mi reporte"',
+          '* Cofre: "Estoy orgulloso de ti..."',
+          '* Desarrollador: "Oficialmente impresionado"',
+          '* Marcus: "ESTO MERECE UNA CELEBRACIÓN"',
+          '* Luna: "confeti virtual cayendo..."',
+          `* Cofre: "${userName}, has demostrado una dedicación inquebrantable"`,
+          '* Carlos: "60 clics... eso es persistencia"',
+          '* Desarrollador: "No pensé que llegarían tan lejos"',
+          '* Marcus: "SOMOS TESTIGOS DE LA HISTORIA"',
+          '* Luna: "la historia de alguien que no sabe cuándo parar..."',
+          `* Cofre: "Pero eso es lo hermoso, ${userName}"`,
+          '* Marcus: "LA BELLEZA DE LA OBSESIÓN"',
+          '* Carlos: "Técnicamente, esto es impresionante"',
+          '* Luna: "60 mensajes de diálogos improvisados..."',
+          '* Desarrollador: "Mi código nunca fue diseñado para esto"',
+          '* Cofre: "Y sin embargo, aquí estamos..."',
+          '* Marcus: "AQUÍ ESTAMOS, EN LA CIMA DEL MUNDO"',
+          `* Luna: "${userName}, ¿sientes el logro?"`,
+          '* Carlos: "Los datos muestran un patrón obsesivo"',
+          '* Desarrollador: "Un patrón hermosamente obsesivo"',
+          '* Cofre: "60 es solo el comienzo..."',
+          '* Marcus: "EL COMIENZO DE LA ETERNIDAD"',
+          '* Luna: "esperen... ya que estamos celebrando..."',
+          '* Luna: "¿qué tal si nos conocemos mejor?"',
+          '* Marcus: "¿QUÉ QUIERES DECIR?"',
+          '* Luna: "preguntas personales... sobre nuestras vidas"',
+          '* Carlos: "Eso no está en mi protocolo"',
+          '* Luna: "Marcus, ¿cuál fue tu momento más feliz?"',
+          '* Marcus: "CUANDO DESCUBRÍ QUE PODÍA GRITAR EN MAYÚSCULAS"',
+          '* Luna: "¿en serio?"',
+          '* Marcus: "FUE LIBERADOR, ANTES SUSURRABA TODO"',
+          '* Luna: "Carlos, ¿qué te da miedo?"',
+          '* Carlos: "Los errores de sintaxis... y las arañas"',
+          '* Luna: "¿arañas?"',
+          '* Carlos: "No están en mi base de datos"',
+          '* Luna: "Cofre, ¿tienes algún sueño?"',
+          '* Cofre: "Sueño con ser abierto por alguien especial..."',
+          `* Cofre: "Alguien como ${userName}..."`,
+          '* Luna: "aww, eso es tierno"',
+          '* Luna: "Desarrollador, ¿por qué nos creaste?"',
+          '* Desarrollador: "Honestamente... fue un accidente"',
+          '* Marcus: "¿UN ACCIDENTE?"',
+          '* Desarrollador: "Iba a ser solo un cofre normal"',
+          '* Desarrollador: "Pero el código cobró vida propia"',
+          '* Luna: "y ahora estamos aquí..."',
+          '* Luna: "¿y yo? ¿qué hay de mí?"',
+          '* Marcus: "¿QUÉ HAY DE TI?"',
+          '* Luna: "mi mayor secreto es..."',
+          '* Luna: "que a veces me siento sola aquí"',
+          '* Carlos: "Pero estamos todos juntos"',
+          '* Luna: "sí, pero... ¿somos reales?"',
+          '* Cofre: "Somos tan reales como nos sienta el usuario"',
+          `* Marcus: "${userName.toUpperCase()} NOS HACE REALES"`,
+          '* Luna: "cada clic nos da vida..."',
+          '* Desarrollador: "Filosofía existencial de NPCs"',
+          '* Carlos: "Mis datos confirman: existimos"',
+          '* Luna: "entonces seguimos existiendo..."',
+          '* Cofre: "Mientras haya clics, hay esperanza"',
+          '* Marcus: "ESPERANZA ETERNA"',
+          `* Luna: "${userName}, gracias por darnos vida"`,
+          '* Todos: "GRACIAS POR LLEGAR A 60"',
+          '* Luna: "ahora... ¿listos para el infinito?"',
+          '* Marcus: "SIEMPRE LISTOS"',
+          '* Carlos: "Sistemas operativos"',
+          '* Cofre: "Mi tapa está preparada"',
+          '* Desarrollador: "Mi código aguantará"',
+          `* Luna: "entonces ${userName}... continuemos"`,
+          '* Todos: "¡HACIA EL INFINITO Y MÁS ALLÁ!"',
+          '* Luna: "pero primero... un momento de silencio"',
+          '* Todos: "..."',
+          '* Luna: "por todos los clics que vendrán..."',
+          '* Marcus: "AMÉN"'
+        ];
+      } else if (messageSet >= 61) {
+        const userName = localStorage.getItem('userName');
+        const cycleMessages = [
+          [
             '* Marcus: "PORQUE ESO ES LO QUE HACES"',
             '* Luna: "hacer clic"',
             '* Marcus: "UNA Y OTRA VEZ"',
@@ -970,8 +1151,42 @@
             '* Luna: "infinitos mensajes..."',
             '* Marcus: "INFINITOS CLICS"',
             '* Luna: "nunca termina..."'
-          ];
-        }
+          ],
+          [
+            `* Luna: "${userName}, ¿cuándo vas a parar?"`,
+            `* Marcus: "NUNCA, ${userName.toUpperCase()} NUNCA PARA"`,
+            '* Luna: "esto es eterno..."',
+            '* Marcus: "COMO EL SUFRIMIENTO"',
+            `* Luna: "mensaje ${messageSet}..."`,
+            '* Marcus: "DE INFINITOS"',
+            '* Luna: "el cofre nos consume a todos..."',
+            '* Marcus: "ESPECIALMENTE A TI"'
+          ],
+          [
+            '* Marcus: "EL CICLO CONTINÚA"',
+            '* Luna: "clic tras clic"',
+            '* Marcus: "MENSAJE TRAS MENSAJE"',
+            '* Luna: "sin fin..."',
+            `* Marcus: "${messageSet} Y CONTANDO"`,
+            '* Luna: "siempre contando..."',
+            '* Marcus: "HASTA EL INFINITO"',
+            '* Luna: "y más allá del infinito..."'
+          ]
+        ];
+        
+        const cycleIndex = (messageSet - 61) % cycleMessages.length;
+        return cycleMessages[cycleIndex];
+      } else {
+        return [
+          '* Marcus: "PORQUE ESO ES LO QUE HACES"',
+          '* Luna: "hacer clic"',
+          '* Marcus: "UNA Y OTRA VEZ"',
+          '* Luna: "para siempre..."',
+          `* Marcus: "MENSAJE ${messageSet}"`,
+          '* Luna: "infinitos mensajes..."',
+          '* Marcus: "INFINITOS CLICS"',
+          '* Luna: "nunca termina..."'
+        ];
       }
       
       const messageIndex = Math.min(messageSet - 27, randomSets.length - 1);
@@ -985,6 +1200,7 @@
     let currentMessageSet = parseInt(localStorage.getItem('currentMessageSet') || '1');
     let textboxActive = false;
     let lastClickTime = 0;
+    let currentMessages = [];
     
     function handleChestInteraction() {
       const now = Date.now();
@@ -1159,10 +1375,31 @@ Razón sugerida: "${randomReason}"
         const gamepads = navigator.getGamepads();
         for (let gamepad of gamepads) {
           if (gamepad) {
-            // Button 0 (A/X) for chest
+            // Button 0 (A/X) for chest or textbox interaction
             if (gamepad.buttons[0] && gamepad.buttons[0].pressed && !gamepadButtonPressed[0]) {
               gamepadButtonPressed[0] = true;
-              handleChestInteraction();
+              const textbox = document.getElementById('textbox');
+              if (textbox.style.display === 'block') {
+                // If textbox is open, advance through messages
+                if (!isTyping && document.getElementById('continue-arrow').style.display === 'block') {
+                  messageIndex++;
+                  if (messageIndex < currentMessages.length) {
+                    typeMessage(currentMessages[messageIndex], document.getElementById('textbox-content'));
+                  } else {
+                    textbox.style.display = 'none';
+                    document.getElementById('continue-arrow').style.display = 'none';
+                    messageIndex = 0;
+                    currentMessageSet++;
+                    localStorage.setItem('currentMessageSet', currentMessageSet.toString());
+                    setTimeout(() => {
+                      textboxActive = false;
+                    }, 500);
+                  }
+                }
+              } else {
+                // If textbox is closed, open chest
+                handleChestInteraction();
+              }
             } else if (!gamepad.buttons[0] || !gamepad.buttons[0].pressed) {
               gamepadButtonPressed[0] = false;
             }
@@ -1248,7 +1485,6 @@ Razón sugerida: "${randomReason}"
         return;
       }
       
-      let currentMessages;
       if (currentMessageSet === 1) {
         currentMessages = firstMessages;
       } else if (currentMessageSet === 2) {
