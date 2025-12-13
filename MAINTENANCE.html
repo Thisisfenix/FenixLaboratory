@@ -610,6 +610,7 @@
     }
     
     function getRandomMessages(messageSet) {
+      const attempts = parseInt(localStorage.getItem('chestAttempts') || '0');
       const randomSets = [
         [ // Mensaje 27
           '* Marcus: "El cofre empieza a filosofar"',
@@ -687,7 +688,7 @@
           '* Doctor: "El paciente presenta síntomas de obsesión compulsiva."',
           '* Marcus: "JAJAJAJA... ¡EL COFRE NUNCA SE ABRIRÁ!"',
           '* *Sonidos de camisa de fuerza*',
-          `* Narrador: "(${chestAttempts} clics en ${messageSet} mensajes fueron suficientes para quebrar una mente)"`
+          `* Narrador: "(${attempts} clics en ${messageSet} mensajes fueron suficientes para quebrar una mente)"`
         ];
       } else if (messageSet === 35) {
         return [
@@ -1148,33 +1149,55 @@ Razón sugerida: "${randomReason}"
     
     // Gamepad support
     let gamepadButtonPressed = { 0: false, 1: false };
-    window.addEventListener('gamepadconnected', () => {
-      setInterval(() => {
+    let gamepadPolling = false;
+    
+    function startGamepadPolling() {
+      if (gamepadPolling) return;
+      gamepadPolling = true;
+      
+      function pollGamepad() {
         const gamepads = navigator.getGamepads();
         for (let gamepad of gamepads) {
           if (gamepad) {
             // Button 0 (A/X) for chest
-            if (gamepad.buttons[0].pressed && !gamepadButtonPressed[0]) {
+            if (gamepad.buttons[0] && gamepad.buttons[0].pressed && !gamepadButtonPressed[0]) {
               gamepadButtonPressed[0] = true;
               handleChestInteraction();
-            } else if (!gamepad.buttons[0].pressed) {
+            } else if (!gamepad.buttons[0] || !gamepad.buttons[0].pressed) {
               gamepadButtonPressed[0] = false;
             }
             
             // Button 1 (B/Circle) for plushie
-            if (gamepad.buttons[1].pressed && !gamepadButtonPressed[1]) {
+            if (gamepad.buttons[1] && gamepad.buttons[1].pressed && !gamepadButtonPressed[1]) {
               gamepadButtonPressed[1] = true;
               const activePlushie = mollyPlushie.style.display === 'block' ? mollyPlushie : gisselPlushie;
               const isMolly = activePlushie === mollyPlushie;
               handlePlushieClick(activePlushie, isMolly);
-            } else if (!gamepad.buttons[1].pressed) {
+            } else if (!gamepad.buttons[1] || !gamepad.buttons[1].pressed) {
               gamepadButtonPressed[1] = false;
             }
             break;
           }
         }
-      }, 100);
-    });
+        if (gamepadPolling) requestAnimationFrame(pollGamepad);
+      }
+      pollGamepad();
+    }
+    
+    // Start polling on gamepad connect
+    window.addEventListener('gamepadconnected', startGamepadPolling);
+    
+    // Also start polling on first user interaction (fallback)
+    document.addEventListener('click', startGamepadPolling, { once: true });
+    document.addEventListener('touchstart', startGamepadPolling, { once: true });
+    
+    // Manual gamepad detection fallback
+    setTimeout(() => {
+      const gamepads = navigator.getGamepads();
+      if (gamepads && gamepads.some(g => g)) {
+        startGamepadPolling();
+      }
+    }, 1000);
     
     let isTyping = false;
     
