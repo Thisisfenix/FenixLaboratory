@@ -223,6 +223,7 @@
     <div class="continue-arrow" id="continue-arrow">▶</div>
   </div>
   <button class="reset-button" id="reset-button">🔄 RESET</button>
+  <button class="reset-button" id="debug-button" style="top: 60px; background: rgba(0, 255, 0, 0.8); border-color: #00ff00;">🔍 DEBUG</button>
   <audio id="bgMusic" loop>
     <source src="mantenimiento/song1.mp3" type="audio/mpeg">
   </audio>
@@ -860,7 +861,7 @@
             `* Luna: "hola ${userName}!"`,
             `* Marcus: "AH, ${userName.toUpperCase()}"`,
             '* Luna: "marcus, no grites su nombre"',
-            '* Marcus: "JAJAJA ERA BAIT"',
+            `* Marcus: "${attempts} CLICS EN MENSAJE ${messageSet}... JAJAJA ERA BAIT"`,
             '* Luna: "¿qué?"',
             '* Marcus: "LO DE QUE PROGRAMÉ EL COFRE ERA BROMA"',
             '* Luna: "...en serio?"',
@@ -1202,12 +1203,24 @@
     let lastClickTime = 0;
     let currentMessages = [];
     
-    function handleChestInteraction() {
+    function handleChestInteraction(event) {
+      // Debug logging for Edge
+      console.log('Chest interaction triggered:', event ? event.type : 'unknown');
+      
       const now = Date.now();
       
       // Simple but effective protection
       if (textboxActive || now - lastClickTime < 1500) {
+        const blockReason = textboxActive ? 'Textbox activo' : `Muy rápido (${now - lastClickTime}ms)`;
+        console.log('Interaction blocked:', { textboxActive, timeDiff: now - lastClickTime });
+        alert(`🚫 Interacción bloqueada: ${blockReason}`);
         return;
+      }
+      
+      // Prevent default behavior
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
       }
       
       lastClickTime = now;
@@ -1215,14 +1228,63 @@
       
       chestAttempts++;
       localStorage.setItem('chestAttempts', chestAttempts.toString());
+      
+      console.log('Chest clicked:', chestAttempts, 'times');
+      alert(`✅ Cofre clickeado ${chestAttempts} veces (Evento: ${event ? event.type : 'unknown'})`);
       showTextbox();
     }
     
-    document.getElementById('chest').addEventListener('click', handleChestInteraction);
-    document.getElementById('chest').addEventListener('touchstart', (e) => {
+    const chestElement = document.getElementById('chest');
+    
+    // Debug: Verify chest element exists
+    if (chestElement) {
+      console.log('Chest element found and loaded successfully');
+      console.log('Chest element properties:', {
+        id: chestElement.id,
+        src: chestElement.src,
+        style: chestElement.style.cssText
+      });
+      alert('✅ Elemento cofre cargado correctamente');
+    } else {
+      console.error('Chest element not found!');
+      alert('❌ ERROR: Elemento cofre no encontrado!');
+      return;
+    }
+    
+    // Multiple event listeners for better compatibility
+    chestElement.addEventListener('click', handleChestInteraction);
+    chestElement.addEventListener('mousedown', handleChestInteraction);
+    chestElement.addEventListener('touchstart', (e) => {
       e.preventDefault();
       handleChestInteraction();
     });
+    chestElement.addEventListener('touchend', (e) => {
+      e.preventDefault();
+    });
+    
+    // Edge-specific compatibility
+    chestElement.addEventListener('pointerdown', handleChestInteraction);
+    chestElement.addEventListener('MSPointerDown', handleChestInteraction);
+    
+    // Fallback for Edge - force interaction on any mouse event
+    chestElement.addEventListener('mouseup', (e) => {
+      console.log('Mouseup fallback triggered');
+      alert('🔄 Fallback mouseup activado');
+      handleChestInteraction(e);
+    });
+    
+    // Additional Edge debugging
+    chestElement.addEventListener('mouseover', () => {
+      console.log('Mouse over chest - element is responsive');
+      alert('👁️ Mouse sobre cofre - elemento responsivo');
+      chestElement.style.cursor = 'pointer';
+    });
+    
+    // Force cursor style
+    chestElement.style.cursor = 'pointer';
+    chestElement.style.userSelect = 'none';
+    chestElement.style.webkitUserSelect = 'none';
+    chestElement.style.msUserSelect = 'none';
     
     // Reset button functionality
     document.getElementById('reset-button').addEventListener('click', () => {
@@ -1268,6 +1330,12 @@ Razón sugerida: "${randomReason}"
         
         alert('¡Reset completado! El cofre te espera de nuevo...');
       }
+    });
+    
+    // Debug button functionality
+    document.getElementById('debug-button').addEventListener('click', () => {
+      alert('🔍 Probando interacción manual del cofre...');
+      handleChestInteraction({ type: 'debug-manual' });
     });
     
     // Plushie functionality
@@ -1382,6 +1450,12 @@ Razón sugerida: "${randomReason}"
               if (textbox.style.display === 'block') {
                 // If textbox is open, advance through messages
                 if (!isTyping && document.getElementById('continue-arrow').style.display === 'block' && currentMessages.length > 0) {
+                  // Don't allow gamepad interaction if there's a name input field active
+                  const content = document.getElementById('textbox-content');
+                  if (content.querySelector('input')) {
+                    return;
+                  }
+                  
                   // Use the same function that handles mouse clicks
                   const handleTextboxInteraction = () => {
                     messageIndex++;
@@ -1579,7 +1653,41 @@ Razón sugerida: "${randomReason}"
         currentMessages = getRandomMessages(currentMessageSet);
       } else if (currentMessageSet === 43) {
         currentMessages = getRandomMessages(currentMessageSet);
-      } else if (currentMessageSet >= 44) {
+      } else if (currentMessageSet === 44) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 45) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 46) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 47) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 48) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 49) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 50) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 51) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 52) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 53) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 54) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 55) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 56) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 57) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 58) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 59) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet === 60) {
+        currentMessages = getRandomMessages(currentMessageSet);
+      } else if (currentMessageSet >= 61) {
         currentMessages = getRandomMessages(currentMessageSet);
       }
       
@@ -1631,6 +1739,11 @@ Razón sugerida: "${randomReason}"
         nameInput.focus();
       } else {
         function handleTextboxInteraction() {
+          // Don't allow interaction if there's a name input field active
+          if (content.querySelector('input')) {
+            return;
+          }
+          
           // Only allow interaction when typing is complete and arrow is visible
           if (!isTyping && document.getElementById('continue-arrow').style.display === 'block') {
             messageIndex++;
