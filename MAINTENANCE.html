@@ -139,6 +139,27 @@
       100% { transform: translate(0); }
     }
     
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #ff6b35;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 999;
+    }
+    
+    @keyframes explode {
+      0% {
+        transform: scale(1) translate(0, 0);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0) translate(var(--dx), var(--dy));
+        opacity: 0;
+      }
+    }
+    
     @media (max-width: 768px) {
       .maintenance-text { font-size: 2.5rem; letter-spacing: 4px; }
       .countdown { gap: 1rem; }
@@ -147,6 +168,7 @@
       .time-unit label { font-size: 0.8rem; }
       .undertale-textbox { width: 95%; font-size: 16px; padding: 15px; }
       #chest { width: 120px; }
+      #gissel-plushie { width: 80px; bottom: 5%; right: 5%; }
     }
 
   </style>
@@ -172,12 +194,23 @@
   </div>
   <div class="maintenance-text" id="maintenance-text"></div>
   <img src="mantenimiento/just a chest maybe.png" alt="Chest" id="chest" style="position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); width: 150px; opacity: 0.8; cursor: pointer;">
+  <img src="placeholder/gisselplushie.png" alt="Gissel Plushie" id="gissel-plushie" style="position: absolute; bottom: 10%; right: 10%; width: 100px; opacity: 0.9; cursor: pointer; transition: all 0.3s;">
+  <img src="placeholder/perromeditando.png" alt="Molly Plushie" id="molly-plushie" style="position: absolute; bottom: 10%; right: 10%; width: 100px; opacity: 0.9; cursor: pointer; transition: all 0.3s; display: none;">
   <div class="undertale-textbox" id="textbox">
     <div id="textbox-content">* Encontraste un cofre misterioso...</div>
     <div class="continue-arrow" id="continue-arrow">▶</div>
   </div>
   <audio id="bgMusic" loop>
     <source src="mantenimiento/song1.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="gisselSound" preload="auto">
+    <source src="mantenimiento/plushiesound.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="explosionSound" preload="auto">
+    <source src="mantenimiento/explosion.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="mollySound" preload="auto">
+    <source src="placeholder/ahhh.m4a" type="audio/mp4">
   </audio>
   <script>
     const endTime = new Date('2025-12-13T22:00:00').getTime();
@@ -197,7 +230,24 @@
         document.getElementById('minutes').textContent = minutes;
         document.getElementById('seconds').textContent = seconds;
       } else {
-        window.location.href = 'index.html';
+        // Hide all HUD elements
+        document.querySelector('.countdown').style.display = 'none';
+        document.querySelector('#maintenance-text').style.display = 'none';
+        document.querySelector('#chest').style.display = 'none';
+        document.querySelector('#gissel-plushie').style.display = 'none';
+        document.querySelector('#molly-plushie').style.display = 'none';
+        document.querySelector('#textbox').style.display = 'none';
+        
+        // Show completion message
+        const completionMsg = document.createElement('div');
+        completionMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #00ff00; font-size: 3rem; font-family: "Courier New", monospace; text-align: center; z-index: 9999; text-shadow: 0 0 20px #00ff00;';
+        completionMsg.innerHTML = 'MANTENIMIENTO FINALIZADO<br><span style="font-size: 1.5rem; opacity: 0.8;">Gracias por ver</span>';
+        document.body.appendChild(completionMsg);
+        
+        // Redirect after 3 seconds
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 3000);
       }
     }
     
@@ -256,9 +306,17 @@
       setInterval(showHelpMessage, 3000);
     }, 10000);
     
-    // Show chest after letters finish
+    // Show chest and plushie after letters finish
     setTimeout(() => {
-      document.querySelector('img').style.opacity = '1';
+      document.querySelector('#chest').style.opacity = '1';
+      
+      // 0.1% chance for Molly, 99.9% for Gissel
+      if (Math.random() < 0.001) {
+        document.querySelector('#molly-plushie').style.display = 'block';
+        document.querySelector('#molly-plushie').style.opacity = '1';
+      } else {
+        document.querySelector('#gissel-plushie').style.opacity = '1';
+      }
     }, 6000);
     
     // Background music
@@ -908,6 +966,99 @@
       handleChestInteraction();
     });
     
+    // Plushie functionality
+    let plushieClicks = 0;
+    let plushieClickTimer = null;
+    const gisselPlushie = document.getElementById('gissel-plushie');
+    const mollyPlushie = document.getElementById('molly-plushie');
+    const gisselSound = document.getElementById('gisselSound');
+    const explosionSound = document.getElementById('explosionSound');
+    const mollySound = document.getElementById('mollySound');
+    
+    function handlePlushieClick(plushie, isMolly = false) {
+      plushieClicks++;
+      
+      // Reset timer
+      clearTimeout(plushieClickTimer);
+      plushieClickTimer = setTimeout(() => {
+        plushieClicks = 0;
+      }, 2000);
+      
+      if (plushieClicks >= 10) {
+        // Particle explosion!
+        const rect = plushie.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Create particles
+        for (let i = 0; i < 20; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          particle.style.left = centerX + 'px';
+          particle.style.top = centerY + 'px';
+          particle.style.background = ['#ff6b35', '#ff0000', '#ffff00', '#ff8c00'][Math.floor(Math.random() * 4)];
+          
+          const angle = (i / 20) * Math.PI * 2 + Math.random() * 0.5;
+          const distance = 80 + Math.random() * 120;
+          const dx = Math.cos(angle) * distance;
+          const dy = Math.sin(angle) * distance;
+          
+          particle.style.setProperty('--dx', dx + 'px');
+          particle.style.setProperty('--dy', dy + 'px');
+          particle.style.animation = 'explode 1s ease-out forwards';
+          
+          document.body.appendChild(particle);
+          setTimeout(() => particle.remove(), 1000);
+        }
+        
+        plushie.style.transform = 'scale(2) rotate(360deg)';
+        plushie.style.filter = 'brightness(2) saturate(2)';
+        
+        if (isMolly) {
+          mollySound.currentTime = 0;
+          mollySound.play().catch(() => {});
+        } else {
+          explosionSound.currentTime = 0;
+          explosionSound.play().catch(() => {});
+        }
+        
+        setTimeout(() => {
+          plushie.style.display = 'none';
+          setTimeout(() => {
+            plushie.style.display = 'block';
+            plushie.style.transform = 'scale(1) rotate(0deg)';
+            plushie.style.filter = 'none';
+            plushieClicks = 0;
+          }, 3000);
+        }, 500);
+      } else {
+        // Normal sound
+        if (isMolly) {
+          mollySound.currentTime = 0;
+          mollySound.play().catch(() => {});
+        } else {
+          gisselSound.currentTime = 0;
+          gisselSound.play().catch(() => {});
+        }
+        plushie.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+          plushie.style.transform = 'scale(1)';
+        }, 150);
+      }
+    }
+    
+    gisselPlushie.addEventListener('click', () => handlePlushieClick(gisselPlushie, false));
+    gisselPlushie.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handlePlushieClick(gisselPlushie, false);
+    });
+    
+    mollyPlushie.addEventListener('click', () => handlePlushieClick(mollyPlushie, true));
+    mollyPlushie.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handlePlushieClick(mollyPlushie, true);
+    });
+    
     // Gamepad support
     window.addEventListener('gamepadconnected', () => {
       setInterval(() => {
@@ -915,6 +1066,12 @@
         for (let gamepad of gamepads) {
           if (gamepad && gamepad.buttons[0].pressed) {
             handleChestInteraction();
+            break;
+          }
+          if (gamepad && gamepad.buttons[1].pressed) {
+            const activePlushie = mollyPlushie.style.display === 'block' ? mollyPlushie : gisselPlushie;
+            const isMolly = activePlushie === mollyPlushie;
+            handlePlushieClick(activePlushie, isMolly);
             break;
           }
         }
