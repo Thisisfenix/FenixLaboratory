@@ -1248,7 +1248,7 @@
     } else {
       console.error('Chest element not found!');
       alert('❌ ERROR: Elemento cofre no encontrado!');
-      return;
+      throw new Error('Chest element not found');
     }
     
     // Multiple event listeners for better compatibility
