@@ -3,57 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script>
-    // Mantenimiento programado: 12 dic 23:59 - 13 dic 22:00
-    const startMaintenance = new Date('2025-12-12T23:59:59').getTime();
-    const endMaintenance = new Date('2025-12-13T22:00:00').getTime();
-    const now = new Date().getTime();
-    if (now > startMaintenance && now < endMaintenance) {
-      window.location.href='MAINTENANCE.html';
-    }
 
-    // Countdown Timer
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const timeLeft = startMaintenance - now;
-
-      if (timeLeft > 0) {
-        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-        document.getElementById('days').textContent = days;
-        document.getElementById('hours').textContent = hours;
-        document.getElementById('minutes').textContent = minutes;
-        document.getElementById('seconds').textContent = seconds;
-      } else {
-        // Tiempo agotado
-        document.getElementById('days').textContent = '0';
-        document.getElementById('hours').textContent = '0';
-        document.getElementById('minutes').textContent = '0';
-        document.getElementById('seconds').textContent = '0';
-        
-        // Activar animación de caída
-        document.body.classList.add('falling-animation');
-        
-        // Redirigir después de la animación
-        setTimeout(() => {
-          window.location.href='MAINTENANCE.html';
-        }, 3000);
-      }
-    }
-
-    // Actualizar cada segundo
-    setInterval(updateCountdown, 1000);
-    // Ejecutar inmediatamente
-    updateCountdown();
-    
-    // Fake collapse after 1 minute
-    setTimeout(() => {
-      document.body.classList.add('fake-collapse');
-    }, 60000);
-  </script>
   <title>🔬 FenixLaboratory v2.2.2 - Experimentos y Proyectos</title>
   <meta name="description" content="Portfolio interactivo con juegos multijugador, guestbook artístico y sistema de logros. Deadly Pursuer, Project Ankaro y más." />
   <link rel="icon" type="image/png" href="public/assets/icons/ankush.png">
@@ -151,30 +101,7 @@
       <div class="particles" id="particles"></div>
     </section>
 
-    <!-- Countdown Timer -->
-    <section class="countdown-section">
-      <div class="container text-center">
-        <h3>⏰ Tiempo restante</h3>
-        <div id="countdown" class="countdown-display">
-          <div class="time-unit">
-            <span id="days">0</span>
-            <label>Días</label>
-          </div>
-          <div class="time-unit">
-            <span id="hours">0</span>
-            <label>Horas</label>
-          </div>
-          <div class="time-unit">
-            <span id="minutes">0</span>
-            <label>Minutos</label>
-          </div>
-          <div class="time-unit">
-            <span id="seconds">0</span>
-            <label>Segundos</label>
-          </div>
-        </div>
-      </div>
-    </section>
+
 
   <!-- Proyectos -->
   <section id="proyectos" class="container">
