@@ -3,15 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
-    <script>
-      // Mantenimiento programado: 12 dic 23:59 - 13 dic 22:00
-      const startMaintenance = new Date('2025-12-12T23:59:59').getTime();
-      const endMaintenance = new Date('2025-12-13T22:00:00').getTime();
-      const now = new Date().getTime();
-      if (now > startMaintenance && now < endMaintenance) {
-        window.location.href='../MAINTENANCE.html';
-      }
-    </script>
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,6 +10,12 @@
     <title>Discord Friends - Deadly Pursuit</title>
     <link rel="icon" type="image/x-icon" href="assets/deadlypursuir.ico">
     <style>
+        @font-face {
+            font-family: 'MilkyNice';
+            src: url('placeholder/MilkyNice.ttf') format('truetype');
+            font-display: swap;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -846,6 +843,8 @@
                     <button id="suggestCharBtn" class="btn" style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white;" onclick="window.location.href='suggest-character.html'">🎨 Sugerir Personaje</button>
                     <button id="updatesBtn" class="btn" style="background: linear-gradient(45deg, #4ecdc4, #44A08D); color: white;" onclick="window.deadlyPursuerUpdates?.showModal()">📋 Update Log</button>
                     <button id="classifiedBtn" class="btn" style="background: linear-gradient(45deg, #8b0000, #4a0000); color: white;" onclick="enterStrangeOnce()">📜 Archivos Clasificados</button>
+                    <button id="wikiBtn" class="btn" style="background: linear-gradient(45deg, #8e44ad, #9b59b6); color: white;" onclick="window.location.href='../deadlypusuirwiki/index.html'">📚 Wiki Personajes</button>
+                    <button id="robloxBtn" class="btn" style="background: linear-gradient(45deg, #00a2ff, #0078d4); color: white;" onclick="window.open('https://www.roblox.com/es/games/86490677615660/Deadly-pursuir', '_blank')">🎮 Jugar en Roblox</button>
                     <button id="chatbotBtn" class="btn" style="background: linear-gradient(45deg, #00a884, #128c7e); color: white;" onclick="window.location.href='../chatbot/chatbot.html'">💬 Chatbot IA</button>
                     <button id="backToLabBtn" class="btn" style="background: linear-gradient(45deg, #ff6b35, #f7931e); color: white;" onclick="window.location.href='../../index.html'">🔬 Laboratorio</button>
                     <button id="shopBtn" class="btn" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #000;">🛒 Tienda</button>
