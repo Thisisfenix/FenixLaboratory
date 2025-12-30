@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="screen-orientation" content="landscape">
-    <title>Discord Friends - Deadly Pursuit</title>
+    <title>Deadly Pursuer - Migrado a Roblox</title>
     <link rel="icon" type="image/x-icon" href="assets/deadlypursuir.ico">
     <style>
         @font-face {
@@ -697,14 +697,52 @@
     </div>
     <!-- Loading Screen -->
     <div id="loadingScreen" class="screen">
-        <div id="loadingText">Cargando Discord Friends...</div>
+        <div id="loadingText">Cargando Deadly Pursuer...</div>
     </div>
 
     <!-- Lobby Screen -->
     <div id="lobby" class="screen active">
+        <!-- Modal de Migración -->
+        <div id="migrationModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+            <div style="background: linear-gradient(145deg, #1a1a1a, #000); border: 3px solid #FFD700; border-radius: 20px; padding: 2rem; max-width: 600px; margin: 1rem; text-align: center; box-shadow: 0 0 50px rgba(255,215,0,0.5);">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🎮</div>
+                <h2 style="color: #FFD700; font-size: 2.5rem; margin-bottom: 1rem; text-shadow: 0 0 20px rgba(255,215,0,0.5);">¡Deadly Pursuer se mudó a Roblox!</h2>
+                
+                <div style="background: rgba(255,0,0,0.1); border: 2px solid #ff4444; border-radius: 15px; padding: 1.5rem; margin: 1.5rem 0; text-align: left;">
+                    <h3 style="color: #ff4444; margin-bottom: 1rem;">⚠️ Servidor Multijugador Desactivado</h3>
+                    <p style="color: rgba(255,255,255,0.9); line-height: 1.6; margin-bottom: 1rem;">El servidor multijugador de la versión web ha sido desactivado debido a:</p>
+                    <ul style="color: rgba(255,255,255,0.8); line-height: 1.8; margin-left: 1.5rem;">
+                        <li>🔄 Inestabilidad del servidor gratuito (se apagaba cada cierto tiempo)</li>
+                        <li>💰 Costos de mantenimiento elevados</li>
+                        <li>🎮 Mejor experiencia disponible en Roblox</li>
+                        <li>👥 Mayor comunidad de jugadores en Roblox</li>
+                    </ul>
+                </div>
+                
+                <div style="background: rgba(0,255,0,0.1); border: 2px solid #4ecdc4; border-radius: 15px; padding: 1.5rem; margin: 1.5rem 0; text-align: left;">
+                    <h3 style="color: #4ecdc4; margin-bottom: 1rem;">✨ ¿Por qué Roblox es mejor?</h3>
+                    <ul style="color: rgba(255,255,255,0.8); line-height: 1.8; margin-left: 1.5rem;">
+                        <li>🚀 Servidores estables 24/7</li>
+                        <li>🎨 Más personajes y mapas</li>
+                        <li>🏆 Sistema de logros y progresión</li>
+                        <li>👥 Matchmaking automático</li>
+                        <li>🔧 Actualizaciones constantes</li>
+                        <li>📱 Compatible con móvil, PC y consolas</li>
+                    </ul>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                    <button onclick="window.open('https://www.roblox.com/es/games/86490677615660/Deadly-pursuir', '_blank')" style="background: linear-gradient(45deg, #00a2ff, #0078d4); color: white; border: none; padding: 1rem 2rem; border-radius: 50px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(0,162,255,0.4);">🎮 Jugar en Roblox</button>
+                    <button onclick="document.getElementById('migrationModal').style.display='none'" style="background: linear-gradient(45deg, #666, #333); color: white; border: none; padding: 1rem 2rem; border-radius: 50px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">👁️ Ver Personajes</button>
+                </div>
+                
+                <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-top: 1.5rem; font-style: italic;">Esta página web ahora sirve como galería de personajes y modo sandbox de prueba</p>
+            </div>
+        </div>
+
         <div class="header">
-            <h1>Discord Friends</h1>
-            <p class="subtitle">5 Personajes Únicos - Sistema de Rage Mode - Multijugador Online</p>
+            <h1>Deadly Pursuer</h1>
+            <p class="subtitle">🎮 Ahora disponible en Roblox - Galería de Personajes + Sandbox</p>
         </div>
 
         <div class="game-section">
@@ -837,21 +875,19 @@
             <div class="player-form">
                 <input type="text" id="playerName" placeholder="Ingresa tu nombre de jugador" maxlength="20">
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <button id="joinBtn" class="btn btn-primary">Unirse como Jugador</button>
-                    <button id="spectateBtn" class="btn" style="background: linear-gradient(45deg, #666, #333); color: white;">👁️ Espectar Partida</button>
-                    <button id="sandboxBtn" class="btn" style="background: linear-gradient(45deg, #ff9500, #ff6b00); color: white;">🔧 Modo Sandbox</button>
-                    <button id="suggestCharBtn" class="btn" style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white;" onclick="window.location.href='suggest-character.html'">🎨 Sugerir Personaje</button>
-                    <button id="updatesBtn" class="btn" style="background: linear-gradient(45deg, #4ecdc4, #44A08D); color: white;" onclick="window.deadlyPursuerUpdates?.showModal()">📋 Update Log</button>
-                    <button id="classifiedBtn" class="btn" style="background: linear-gradient(45deg, #8b0000, #4a0000); color: white;" onclick="enterStrangeOnce()">📜 Archivos Clasificados</button>
-                    <button id="wikiBtn" class="btn" style="background: linear-gradient(45deg, #8e44ad, #9b59b6); color: white;" onclick="window.location.href='../deadlypusuirwiki/index.html'">📚 Wiki Personajes</button>
-                    <button id="robloxBtn" class="btn" style="background: linear-gradient(45deg, #00a2ff, #0078d4); color: white;" onclick="window.open('https://www.roblox.com/es/games/86490677615660/Deadly-pursuir', '_blank')">🎮 Jugar en Roblox</button>
-                    <button id="chatbotBtn" class="btn" style="background: linear-gradient(45deg, #00a884, #128c7e); color: white;" onclick="window.location.href='../chatbot/chatbot.html'">💬 Chatbot IA</button>
-                    <button id="backToLabBtn" class="btn" style="background: linear-gradient(45deg, #ff6b35, #f7931e); color: white;" onclick="window.location.href='../../index.html'">🔬 Laboratorio</button>
-                    <button id="shopBtn" class="btn" style="background: linear-gradient(45deg, #FFD700, #FFA500); color: #000;">🛒 Tienda</button>
+                    <button onclick="window.open('https://www.roblox.com/es/games/86490677615660/Deadly-pursuir', '_blank')" class="btn" style="background: linear-gradient(45deg, #00a2ff, #0078d4); color: white; font-size: 1.3rem; padding: 1.2rem 2.5rem; box-shadow: 0 0 30px rgba(0,162,255,0.6);">🎮 JUGAR EN ROBLOX</button>
+                    <button id="sandboxBtn" class="btn" style="background: linear-gradient(45deg, #ff9500, #ff6b00); color: white;">🔧 Modo Sandbox (Demo)</button>
+                    <button onclick="window.location.href='../deadlypusuirwiki/index.html'" class="btn" style="background: linear-gradient(45deg, #8e44ad, #9b59b6); color: white;">📚 Wiki Personajes</button>
+                    <button onclick="window.location.href='suggest-character.html'" class="btn" style="background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white;">🎨 Sugerir Personaje</button>
+                    <button onclick="window.deadlyPursuerUpdates?.showModal()" class="btn" style="background: linear-gradient(45deg, #4ecdc4, #44A08D); color: white;">📋 Update Log</button>
+                    <button onclick="enterStrangeOnce()" class="btn" style="background: linear-gradient(45deg, #8b0000, #4a0000); color: white;">📜 Archivos Clasificados</button>
+                    <button onclick="window.location.href='../chatbot/chatbot.html'" class="btn" style="background: linear-gradient(45deg, #00a884, #128c7e); color: white;">💬 Chatbot IA</button>
+                    <button onclick="window.location.href='../../index.html'" class="btn" style="background: linear-gradient(45deg, #ff6b35, #f7931e); color: white;">🔬 Laboratorio</button>
                 </div>
-                <div style="text-align: center; margin-top: 1rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
-                    📝 Selecciona un lobby arriba, elige tu personaje y únete a la acción<br>
-                    👁️ Modo espectador: Observa partidas en curso sin participar
+                <div style="text-align: center; margin-top: 1.5rem; padding: 1rem; background: rgba(0,162,255,0.1); border: 2px solid rgba(0,162,255,0.3); border-radius: 15px;">
+                    <p style="color: #00a2ff; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">🎮 ¡La experiencia completa está en Roblox!</p>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 0.5rem;">Servidores estables • Más contenido • Mejor rendimiento • Comunidad activa</p>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">🔧 El modo sandbox sigue disponible aquí como demo de los personajes</p>
                 </div>
             </div>
         </div>
@@ -967,19 +1003,14 @@
 
     </div>
 
-    <!-- Supabase CDN -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
     <!-- Configuration -->
     <script src="js/config.js"></script>
     
-    <!-- Game Scripts -->
-    <script src="js/supabase-game.js?v=2.1.0"></script>
+    <!-- Game Scripts (Solo Sandbox) -->
     <script src="js/discord-friends-maps.js"></script>
     <script src="js/discord-friends-gamemodes.js"></script>
     <script src="js/discord-friends-interactions.js"></script>
     <script src="js/discord-friends-gamepad.js"></script>
-    <script src="js/discord-friends-game.js"></script>
     <script src="js/deadly-pursuer-updates.js"></script>
     <script src="js/boss-fight-system.js?v=3.0.0&t=20241210"></script>
     <script src="js/boss-fight-enhancements.js?v=3.0.0&t=20241210"></script>
@@ -987,6 +1018,32 @@
     <script src="js/infinite-mode.js?v=3.0.0&t=20241210"></script>
     <script src="js/christmas-theme.js?v=3.0.0&t=20241210"></script>
     <script src="js/skin-shop.js?v=0.2.0"></script>
+    
+    <!-- Sandbox Game Script (Sin Supabase) -->
+    <script>
+        // Crear mock de SupabaseGame para sandbox
+        class MockSupabaseGame {
+            constructor() {
+                this.isConnected = false;
+            }
+            
+            async connect() {
+                return false;
+            }
+            
+            async createLobby() {
+                return null;
+            }
+            
+            async joinLobby() {
+                return null;
+            }
+        }
+        
+        // Asignar mock global
+        window.SupabaseGame = MockSupabaseGame;
+    </script>
+    <script src="js/discord-friends-game.js"></script>
     
     <!-- Mobile Refresh Control -->
     <script>

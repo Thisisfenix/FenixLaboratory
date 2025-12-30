@@ -102,6 +102,9 @@ class SupabaseGame {
                 .on('broadcast', { event: 'grabbed-player-move' }, (payload) => {
                     this.handleGrabbedPlayerMove(payload.payload);
                 })
+                .on('broadcast', { event: 'skin-sync' }, (payload) => {
+                    this.handleSkinSync(payload.payload);
+                })
                 .subscribe((status) => {
                     console.log('Supabase subscription status:', status);
                     if (status === 'SUBSCRIBED') {
@@ -253,6 +256,21 @@ class SupabaseGame {
                 ...timerData
             }
         });
+    }
+    
+    sendSkinSync(equippedSkins) {
+        this.channel.send({
+            type: 'broadcast',
+            event: 'skin-sync',
+            payload: {
+                playerId: this.myPlayerId,
+                equippedSkins: equippedSkins
+            }
+        });
+    }
+    
+    handleSkinSync(data) {
+        // This will be overridden by the main game
     }
     
     sendLobbySync(syncData) {

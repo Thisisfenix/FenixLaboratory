@@ -148,6 +148,7 @@ class ChristmasTheme {
     this.currentSongIndex = Math.floor(Math.random() * this.songs.length);
     this.christmasAudio = new Audio(this.songs[this.currentSongIndex]);
     this.christmasAudio.volume = 0.3;
+    this.christmasAudio.loop = true;
     
     const playMusic = () => {
       this.christmasAudio.play().catch(() => {});
@@ -166,16 +167,42 @@ class ChristmasTheme {
             this.christmasAudio.pause();
             this.christmasAudio.currentTime = 0;
           }
+          this.hideChristmasEffects();
         } else if (lobby.classList.contains('active')) {
           if (this.christmasAudio && this.christmasAudio.paused) {
             this.christmasAudio.play().catch(() => {});
           }
+          this.showChristmasEffects();
         }
       });
       
       observer.observe(gameScreen, { attributes: true, attributeFilter: ['class'] });
       observer.observe(lobby, { attributes: true, attributeFilter: ['class'] });
     }
+    
+    // Detectar tienda
+    const shopObserver = new MutationObserver(() => {
+      const shop = document.getElementById('skinShop');
+      if (shop && shop.style.display === 'flex') {
+        if (this.christmasAudio) {
+          this.christmasAudio.pause();
+        }
+      } else if (shop && shop.style.display === 'none') {
+        if (this.christmasAudio && this.christmasAudio.paused) {
+          this.christmasAudio.play().catch(() => {});
+        }
+      }
+    });
+    
+    const checkShop = () => {
+      const shop = document.getElementById('skinShop');
+      if (shop) {
+        shopObserver.observe(shop, { attributes: true, attributeFilter: ['style'] });
+      } else {
+        setTimeout(checkShop, 1000);
+      }
+    };
+    checkShop();
   }
 
   modifyUI() {
@@ -215,6 +242,8 @@ class ChristmasTheme {
       avatar.appendChild(hat);
     });
   }
+
+
 
   showPlaylist() {
     const panel = document.createElement('div');
@@ -284,6 +313,20 @@ class ChristmasTheme {
     document.body.appendChild(panel);
   }
 
+  hideChristmasEffects() {
+    document.querySelectorAll('.christmas-snow').forEach(el => el.style.display = 'none');
+    if (this.musicControl) this.musicControl.style.display = 'none';
+    if (this.gif) this.gif.style.display = 'none';
+    document.querySelectorAll('.christmas-decoration').forEach(el => el.style.display = 'none');
+  }
+  
+  showChristmasEffects() {
+    document.querySelectorAll('.christmas-snow').forEach(el => el.style.display = 'block');
+    if (this.musicControl) this.musicControl.style.display = 'block';
+    if (this.gif) this.gif.style.display = 'block';
+    document.querySelectorAll('.christmas-decoration').forEach(el => el.style.display = 'block');
+  }
+  
   addDecorations() {
     const decorations = ['🎄', '🎁', '⛄', '🔔', '🕯️', '🎀'];
     const lobby = document.getElementById('lobby');
