@@ -2,12 +2,12 @@
 const SUPABASE_URL = 'https://obvuetxkfodulfdbjhri.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4OTksImV4cCI6MjA3NzYyMTg5OX0.DANmzSkPqCjOuIylHLXCYw8B0VU7b14THBf8V4Kdz_M';
 
-let supabase;
+let supabaseClient;
 
 // Initialize supabase when the library is loaded
 function initSupabase() {
     if (typeof window !== 'undefined' && window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('Supabase initialized successfully');
         return true;
     } else {
@@ -20,7 +20,7 @@ function initSupabase() {
 initSupabase();
 
 // If not available, try again after a delay
-if (!supabase) {
+if (!supabaseClient) {
     setTimeout(() => {
         if (!initSupabase()) {
             console.error('Failed to initialize Supabase after retry');
@@ -37,7 +37,7 @@ class SupabaseNetwork {
     }
 
     async createRoom(playerName) {
-        if (!supabase) {
+        if (!supabaseClient) {
             console.error('Supabase not initialized');
             return null;
         }
@@ -46,7 +46,7 @@ class SupabaseNetwork {
         this.localPlayerId = Date.now().toString();
         this.isHost = true;
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('rooms')
             .insert({
                 code: this.roomCode,
@@ -72,7 +72,7 @@ class SupabaseNetwork {
     }
 
     async joinRoom(roomCode, playerName) {
-        if (!supabase) {
+        if (!supabaseClient) {
             console.error('Supabase not initialized');
             return null;
         }
@@ -81,7 +81,7 @@ class SupabaseNetwork {
         this.localPlayerId = Date.now().toString();
         this.isHost = false;
 
-        const { data: room, error } = await supabase
+        const { data: room, error } = await supabaseClient
             .from('rooms')
             .select('*')
             .eq('code', roomCode)
@@ -104,7 +104,7 @@ class SupabaseNetwork {
             position: { x: 3, y: 1, z: 0 }
         }];
 
-        const { data, error: updateError } = await supabase
+        const { data, error: updateError } = await supabaseClient
             .from('rooms')
             .update({ players: updatedPlayers })
             .eq('code', roomCode)
@@ -121,7 +121,7 @@ class SupabaseNetwork {
     }
 
     setupRealtimeChannel() {
-        if (!supabase) {
+        if (!supabaseClient) {
             console.error('Supabase not initialized for realtime channel');
             return;
         }
@@ -130,7 +130,7 @@ class SupabaseNetwork {
             this.channel.unsubscribe();
         }
         
-        this.channel = supabase.channel(`room:${this.roomCode}`, {
+        this.channel = supabaseClient.channel(`room:${this.roomCode}`, {
             config: {
                 presence: { key: this.localPlayerId },
                 broadcast: { self: false }
@@ -250,7 +250,7 @@ class SupabaseNetwork {
         }
 
         if (this.roomCode && this.localPlayerId) {
-            const { data: room } = await supabase
+            const { data: room } = await supabaseClient
                 .from('rooms')
                 .select('*')
                 .eq('code', this.roomCode)
@@ -260,9 +260,9 @@ class SupabaseNetwork {
                 const updatedPlayers = room.players.filter(p => p.id !== this.localPlayerId);
                 
                 if (updatedPlayers.length === 0) {
-                    await supabase.from('rooms').delete().eq('code', this.roomCode);
+                    await supabaseClient.from('rooms').delete().eq('code', this.roomCode);
                 } else {
-                    await supabase.from('rooms').update({ players: updatedPlayers }).eq('code', this.roomCode);
+                    await supabaseClient.from('rooms').update({ players: updatedPlayers }).eq('code', this.roomCode);
                 }
             }
         }
