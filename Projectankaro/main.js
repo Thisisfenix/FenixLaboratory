@@ -100,16 +100,15 @@ createRoomBtn.addEventListener('click', async () => {
         return;
     }
     
-    // Check if supabase is available
-    if (!supabaseClient) {
-        updateStatus('❌ Error: Supabase no disponible', '#ff0000');
-        return;
+    // Check if firebase is available
+    if (!database) {
+        updateStatus('⚠️ Modo offline - Sin conexión a servidor', '#ff6600');
     }
     
     updateStatus('🔄 Creando sala...', '#ffd700');
     
-    // Crear sala en Supabase
-    const room = await supabaseNetwork.createRoom(name);
+    // Crear sala en Firebase
+    const room = await firebaseNetwork.createRoom(name);
     
     if (!room) {
         updateStatus('❌ Error al crear sala', '#ff0000');
@@ -133,18 +132,23 @@ createRoomBtn.addEventListener('click', async () => {
     joinBtn.disabled = true;
     
     updatePlayerCount(room.players.length);
-    updateStatus(`✔️ Sala creada: ${room.code} - Esperando jugadores...`, '#00ff00');
     
-    // Inicializar voz
-    await voiceChat.init(supabaseNetwork.localPlayerId);
-    const micEnabled = await voiceChat.enableMicrophone();
-    
-    if (micEnabled) {
-        micBtn.style.display = 'flex';
+    if (firebaseNetwork.offlineMode) {
+        updateStatus(`✔️ Sala offline: ${room.code} - Solo tú`, '#ff6600');
+        startBtn.disabled = false; // Enable start in offline mode
+    } else {
+        updateStatus(`✔️ Sala creada: ${room.code} - Esperando jugadores...`, '#00ff00');
     }
     
-    // Escuchar cambios en la sala
-    listenToRoomChanges(room.code);
+    // Inicializar voz solo si no está en modo offline
+    if (!firebaseNetwork.offlineMode) {
+        await voiceChat.init(firebaseNetwork.localPlayerId);
+        const micEnabled = await voiceChat.enableMicrophone();
+        
+        if (micEnabled) {
+            micBtn.style.display = 'flex';
+        }
+    }
 });
 
 // Join button
@@ -162,16 +166,16 @@ joinBtn.addEventListener('click', async () => {
         return;
     }
     
-    // Check if supabase is available
-    if (!supabaseClient) {
-        updateStatus('❌ Error: Supabase no disponible', '#ff0000');
+    // Check if firebase is available
+    if (!database) {
+        updateStatus('❌ Error: Firebase no disponible', '#ff0000');
         return;
     }
     
     updateStatus('🔄 Uniéndose...', '#ffd700');
     
     // Unirse a sala existente
-    const room = await supabaseNetwork.joinRoom(code, name);
+    const room = await firebaseNetwork.joinRoom(code, name);
     
     if (!room) {
         updateStatus('❌ Sala no encontrada o llena', '#ff0000');
@@ -198,15 +202,12 @@ joinBtn.addEventListener('click', async () => {
     updateStatus(`✔️ Unido a sala: ${room.code}`, '#00ff00');
     
     // Inicializar voz
-    await voiceChat.init(supabaseNetwork.localPlayerId);
+    await voiceChat.init(firebaseNetwork.localPlayerId);
     const micEnabled = await voiceChat.enableMicrophone();
     
     if (micEnabled) {
         micBtn.style.display = 'flex';
     }
-    
-    // Escuchar cambios en la sala
-    listenToRoomChanges(room.code);
 });
 
 // Mic button - Toggle mute
@@ -245,7 +246,7 @@ document.addEventListener('keyup', (e) => {
 
 // Start button (solo host)
 startBtn.addEventListener('click', () => {
-    if (!supabaseNetwork.isHost) {
+    if (!firebaseNetwork.isHost) {
         updateStatus('⚠️ Solo el host puede iniciar', '#ff6600');
         return;
     }
@@ -253,7 +254,7 @@ startBtn.addEventListener('click', () => {
     updateStatus('🎮 Iniciando juego...', '#00ff00');
     
     // Broadcast a todos los jugadores
-    supabaseNetwork.broadcastGameStart();
+    firebaseNetwork.broadcastGameStart();
     
     setTimeout(() => {
         startGame();
@@ -264,13 +265,20 @@ startBtn.addEventListener('click', () => {
 function updatePlayerCount(count) {
     currentPlayersEl.textContent = count;
     
+    // En modo offline, permitir iniciar con 1 jugador
+    if (firebaseNetwork.offlineMode) {
+        startBtn.disabled = false;
+        updateStatus(`✔️ Modo offline - Listo para jugar`, '#ff6600');
+        return;
+    }
+    
     // Habilitar botón solo si hay al menos 2 jugadores y eres el host
-    if (count >= 2 && supabaseNetwork.isHost) {
+    if (count >= 2 && firebaseNetwork.isHost) {
         startBtn.disabled = false;
         updateStatus(`✔️ ${count}/8 jugadores - Listos para comenzar!`, '#00ff00');
-    } else if (count >= 2 && !supabaseNetwork.isHost) {
+    } else if (count >= 2 && !firebaseNetwork.isHost) {
         updateStatus(`✔️ ${count}/8 jugadores - Esperando al host...`, '#ffd700');
-    } else if (count < 2 && supabaseNetwork.isHost) {
+    } else if (count < 2 && firebaseNetwork.isHost) {
         startBtn.disabled = true;
         updateStatus(`⏳ ${count}/8 jugadores - Mínimo 2 para iniciar`, '#ffd700');
     }
@@ -291,37 +299,8 @@ function updateStatus(message, color, duration = 3000) {
 
 // Escuchar cambios en la sala
 function listenToRoomChanges(roomCode) {
-    if (!supabaseClient) {
-        console.error('Supabase not available for room changes');
-        return;
-    }
-    
-    supabaseClient
-        .channel(`room_changes:${roomCode}`)
-        .on('postgres_changes', 
-            { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `code=eq.${roomCode}` },
-            (payload) => {
-                const room = payload.new;
-                updatePlayerCount(room.players.length);
-                
-                // Spawn nuevos jugadores
-                room.players.forEach((playerData, index) => {
-                    if (!playerManager.getPlayer(playerData.id)) {
-                        playerData.color = lobby.playerColors[index];
-                        lobby.spawnPlayer(playerData, index);
-                        updateStatus(`👥 ${playerData.name} se unió!`, '#00ff00');
-                        
-                        // Conectar voz con el nuevo jugador
-                        if (voiceChat.isEnabled && playerData.id !== supabaseNetwork.localPlayerId) {
-                            setTimeout(() => {
-                                voiceChat.callPeer(playerData.id);
-                            }, 1000);
-                        }
-                    }
-                });
-            }
-        )
-        .subscribe();
+    // Firebase handles this automatically through realtime listeners
+    console.log('Room changes handled by Firebase realtime listeners');
 }
 
 // Start game
@@ -440,7 +419,7 @@ function animate(time) {
         
         // Reducir frecuencia de broadcast
         if (playerManager.localPlayer && playerManager.localPlayer.position && frameCount % 10 === 0) {
-            supabaseNetwork.broadcastPosition(playerManager.localPlayer.position);
+            firebaseNetwork.broadcastPosition(playerManager.localPlayer.position);
         }
     } else if (gameState === 'game') {
         gameplay.update(delta);
@@ -506,7 +485,7 @@ function animate(time) {
         
         // Network updates menos frecuentes
         if (playerManager.localPlayer && playerManager.localPlayer.position && frameCount % 5 === 0) {
-            supabaseNetwork.broadcastPosition(playerManager.localPlayer.position);
+            firebaseNetwork.broadcastPosition(playerManager.localPlayer.position);
         }
     }
     

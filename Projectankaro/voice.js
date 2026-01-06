@@ -78,7 +78,7 @@ class VoiceChat {
                 
                 if (volume > 0.1 && typeof gameplay !== 'undefined' && playerManager.localPlayer) {
                     const range = 15 * volume;
-                    supabaseNetwork.broadcastMicNoise(playerManager.localPlayer.position, range);
+                    firebaseNetwork.broadcastMicNoise(playerManager.localPlayer.position, range);
                 }
                 
                 requestAnimationFrame(checkVolume);

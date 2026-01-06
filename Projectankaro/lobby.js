@@ -57,7 +57,11 @@ class Lobby {
         });
         
         document.addEventListener('click', () => {
-            if (this.canMove) document.body.requestPointerLock();
+            if (this.canMove && !document.pointerLockElement) {
+                document.body.requestPointerLock().catch(() => {
+                    // Silently ignore pointer lock errors
+                });
+            }
         });
     }
     

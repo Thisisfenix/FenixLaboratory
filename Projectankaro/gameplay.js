@@ -95,7 +95,9 @@ class Gameplay {
         
         document.addEventListener('click', () => {
             if (this.localPlayer && !document.pointerLockElement) {
-                document.body.requestPointerLock().catch(() => {});
+                document.body.requestPointerLock().catch(() => {
+                    // Silently ignore pointer lock errors
+                });
             }
         });
         
