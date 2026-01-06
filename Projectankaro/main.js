@@ -100,6 +100,12 @@ createRoomBtn.addEventListener('click', async () => {
         return;
     }
     
+    // Check if supabase is available
+    if (!supabase) {
+        updateStatus('❌ Error: Supabase no disponible', '#ff0000');
+        return;
+    }
+    
     updateStatus('🔄 Creando sala...', '#ffd700');
     
     // Crear sala en Supabase
@@ -153,6 +159,12 @@ joinBtn.addEventListener('click', async () => {
     
     if (!code) {
         updateStatus('⚠️ Ingresa el código de sala', '#ffd700');
+        return;
+    }
+    
+    // Check if supabase is available
+    if (!supabase) {
+        updateStatus('❌ Error: Supabase no disponible', '#ff0000');
         return;
     }
     
@@ -279,6 +291,11 @@ function updateStatus(message, color, duration = 3000) {
 
 // Escuchar cambios en la sala
 function listenToRoomChanges(roomCode) {
+    if (!supabase) {
+        console.error('Supabase not available for room changes');
+        return;
+    }
+    
     supabase
         .channel(`room_changes:${roomCode}`)
         .on('postgres_changes', 

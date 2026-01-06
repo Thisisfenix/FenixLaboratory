@@ -2,7 +2,31 @@
 const SUPABASE_URL = 'https://obvuetxkfodulfdbjhri.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9idnVldHhrZm9kdWxmZGJqaHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDU4OTksImV4cCI6MjA3NzYyMTg5OX0.DANmzSkPqCjOuIylHLXCYw8B0VU7b14THBf8V4Kdz_M';
 
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+let supabase;
+
+// Initialize supabase when the library is loaded
+function initSupabase() {
+    if (typeof window !== 'undefined' && window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('Supabase initialized successfully');
+        return true;
+    } else {
+        console.warn('Supabase library not loaded yet');
+        return false;
+    }
+}
+
+// Try to initialize immediately
+initSupabase();
+
+// If not available, try again after a delay
+if (!supabase) {
+    setTimeout(() => {
+        if (!initSupabase()) {
+            console.error('Failed to initialize Supabase after retry');
+        }
+    }, 1000);
+}
 
 // Realtime para sincronización de jugadores
 class SupabaseNetwork {
@@ -13,6 +37,11 @@ class SupabaseNetwork {
     }
 
     async createRoom(playerName) {
+        if (!supabase) {
+            console.error('Supabase not initialized');
+            return null;
+        }
+        
         this.roomCode = this.generateRoomCode();
         this.localPlayerId = Date.now().toString();
         this.isHost = true;
@@ -43,6 +72,11 @@ class SupabaseNetwork {
     }
 
     async joinRoom(roomCode, playerName) {
+        if (!supabase) {
+            console.error('Supabase not initialized');
+            return null;
+        }
+        
         this.roomCode = roomCode;
         this.localPlayerId = Date.now().toString();
         this.isHost = false;
@@ -87,6 +121,11 @@ class SupabaseNetwork {
     }
 
     setupRealtimeChannel() {
+        if (!supabase) {
+            console.error('Supabase not initialized for realtime channel');
+            return;
+        }
+        
         if (this.channel) {
             this.channel.unsubscribe();
         }
