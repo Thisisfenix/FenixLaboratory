@@ -74,10 +74,23 @@ class AchievementSystem {
         15: { type: 'multiplier', value: 1.5, desc: '50% más puntos por logros' },
         20: { type: 'unlock', value: 'beta-features', desc: 'Acceso a funciones beta' }
       },
-      specialEvents: {
-        'double-points': { active: false, endTime: null, multiplier: 2 },
-        'theme-festival': { active: false, endTime: null, discount: 50 },
-        'streak-boost': { active: false, endTime: null, bonus: 10 }
+      seasonalEvents: {
+        'halloween': { active: false, startDate: '10-01', endDate: '11-01', rewards: { theme: 'halloween', points: 100 } },
+        'christmas': { active: false, startDate: '12-01', endDate: '12-31', rewards: { theme: 'christmas', points: 150 } },
+        'valentine': { active: false, startDate: '02-10', endDate: '02-20', rewards: { theme: 'valentine', points: 75 } },
+        'easter': { active: false, startDate: '03-15', endDate: '04-15', rewards: { theme: 'easter', points: 80 } },
+        'summer': { active: false, startDate: '06-01', endDate: '08-31', rewards: { theme: 'summer', points: 120 } },
+        'new-year': { active: false, startDate: '12-31', endDate: '01-07', rewards: { points: 200, multiplier: 2 } }
+      },
+      hiddenProgress: {
+        konamiSequence: [],
+        devToolsOpened: false,
+        matrixTime: 0,
+        clickCount: 0,
+        scrollCount: 0,
+        easterEggsFound: new Set(),
+        themeSpeedrunStart: null,
+        themeSpeedrunCount: 0
       },
       achievements: {}
     };
@@ -85,6 +98,7 @@ class AchievementSystem {
 
   getAchievements() {
     return {
+      // Logros básicos
       'first-visit': { name: 'Primera Visita', desc: 'Bienvenido al laboratorio', points: 10, icon: '🎉' },
       'theme-explorer': { name: 'Explorador de Temas', desc: 'Cambia de tema por primera vez', points: 15, icon: '🎨' },
       'project-hunter': { name: 'Cazador de Proyectos', desc: 'Ve 5 proyectos diferentes', points: 25, icon: '🔍' },
@@ -126,26 +140,78 @@ class AchievementSystem {
       'theme-hoarder': { name: 'Acaparador de Temas', desc: 'Desbloquea 15 temas', points: 150, icon: '🎨' },
       'point-millionaire': { name: 'Millonario de Puntos', desc: 'Acumula 10,000 puntos', points: 500, icon: '💰' },
       'loyal-visitor': { name: 'Visitante Leal', desc: 'Visita 50 días diferentes', points: 200, icon: '🏅' },
-      'perfectionist': { name: 'Perfeccionista', desc: 'Completa todos los logros', points: 1000, icon: '💯' }
+      'perfectionist': { name: 'Perfeccionista', desc: 'Completa todos los logros', points: 1000, icon: '💯' },
+      
+      // 🔒 LOGROS OCULTOS (Hidden Achievements)
+      'konami-master': { name: '🕹️ Maestro Konami', desc: 'Ingresa el código Konami', points: 100, icon: '🕹️', hidden: true, hint: 'Arriba, Arriba, Abajo, Abajo...' },
+      'secret-dev': { name: '👨‍💻 Desarrollador Secreto', desc: 'Abre las herramientas de desarrollador', points: 50, icon: '🔧', hidden: true, hint: 'F12 es tu amigo' },
+      'matrix-neo': { name: '🔴 Neo Despertó', desc: 'Usa el tema Matrix por 10 minutos', points: 150, icon: '💊', hidden: true, hint: 'Sigue al conejo blanco...' },
+      'time-traveler': { name: '⏰ Viajero del Tiempo', desc: 'Visita en tu cumpleaños', points: 200, icon: '🎂', hidden: true, hint: 'Un día especial del año' },
+      'ghost-hunter': { name: '👻 Cazafantasmas', desc: 'Encuentra el easter egg fantasma', points: 300, icon: '👻', hidden: true, hint: 'Boo! Está escondido en algún lugar' },
+      'rainbow-seeker': { name: '🌈 Buscador del Arcoíris', desc: 'Usa todos los temas de colores en una sesión', points: 250, icon: '🌈', hidden: true, hint: 'Todos los colores del arcoíris' },
+      'midnight-coder': { name: '🌙 Programador Nocturno', desc: 'Programa a las 3:33 AM', points: 333, icon: '🦇', hidden: true, hint: 'La hora del diablo para programadores' },
+      'click-master': { name: '🖱️ Maestro del Click', desc: 'Haz 1000 clicks', points: 100, icon: '🖱️', hidden: true, hint: 'Click, click, click...' },
+      'scroll-infinity': { name: '♾️ Scroll Infinito', desc: 'Haz scroll 500 veces', points: 75, icon: '♾️', hidden: true, hint: 'Rueda que rueda' },
+      'theme-speedrun': { name: '🏃 Speedrun Temas', desc: 'Cambia 10 temas en 30 segundos', points: 200, icon: '🏃', hidden: true, hint: 'Velocidad de la luz' },
+      'easter-egg-hunter': { name: '🥚 Cazador de Huevos', desc: 'Encuentra 5 easter eggs', points: 500, icon: '🥚', hidden: true, hint: 'Están por todas partes' },
+      'binary-master': { name: '🔢 Maestro Binario', desc: 'Escribe en binario en el guestbook', points: 150, icon: '🔢', hidden: true, hint: '01001000 01101111 01101100 01100001' }
     };
   }
 
   getDailyChallenges() {
-    return {
-      'visit-morning': { desc: 'Visita antes de las 10AM', reward: 20, check: () => new Date().getHours() < 10 },
-      'use-search': { desc: 'Busca 3 proyectos', reward: 15, target: 3, current: 0 },
-      'change-theme': { desc: 'Cambia de tema 5 veces', reward: 25, target: 5, current: 0 },
-      'scroll-bottom': { desc: 'Llega al final de la página', reward: 10, check: () => this.gameData.hasScrolledToBottom },
-      'spend-time': { desc: 'Pasa 10 minutos en el sitio', reward: 30, target: 600, current: 0 }
-    };
+    const challenges = [
+      { id: 'visit-morning', desc: 'Visita antes de las 10AM', reward: 20, check: () => new Date().getHours() < 10 },
+      { id: 'use-search', desc: 'Busca 3 proyectos', reward: 15, target: 3, current: 0 },
+      { id: 'change-theme', desc: 'Cambia de tema 5 veces', reward: 25, target: 5, current: 0 },
+      { id: 'scroll-bottom', desc: 'Llega al final de la página', reward: 10, check: () => this.gameData.hasScrolledToBottom },
+      { id: 'spend-time', desc: 'Pasa 10 minutos en el sitio', reward: 30, target: 600, current: 0 },
+      { id: 'social-visit', desc: 'Visita 2 redes sociales', reward: 25, target: 2, current: 0 },
+      { id: 'fast-clicks', desc: 'Haz 50 clicks rápidos', reward: 20, target: 50, current: 0 },
+      { id: 'theme-marathon', desc: 'Usa un tema por 30 minutos', reward: 35, target: 1800, current: 0 },
+      { id: 'project-deep-dive', desc: 'Ve 10 proyectos', reward: 40, target: 10, current: 0 },
+      { id: 'guestbook-visit', desc: 'Visita el guestbook', reward: 15, check: () => window.location.href.includes('guestbook') },
+      { id: 'weekend-special', desc: 'Visita en fin de semana', reward: 30, check: () => [0,6].includes(new Date().getDay()) },
+      { id: 'night-session', desc: 'Sesión nocturna (9PM-6AM)', reward: 25, check: () => { const h = new Date().getHours(); return h >= 21 || h <= 6; } }
+    ];
+    
+    // Seleccionar 3-5 desafíos aleatorios para hoy
+    const today = new Date().toDateString();
+    const seed = this.hashCode(today);
+    const shuffled = this.shuffleArray([...challenges], seed);
+    const dailyCount = 3 + (seed % 3); // 3-5 desafíos
+    
+    const result = {};
+    shuffled.slice(0, dailyCount).forEach(challenge => {
+      result[challenge.id] = challenge;
+    });
+    
+    return result;
   }
 
   getWeeklyChallenges() {
-    return {
-      'theme-explorer': { desc: 'Usa 10 temas diferentes esta semana', reward: 100, target: 10, current: 0 },
-      'project-master': { desc: 'Ve 15 proyectos esta semana', reward: 150, target: 15, current: 0 },
-      'search-expert': { desc: 'Realiza 20 búsquedas esta semana', reward: 80, target: 20, current: 0 }
-    };
+    const challenges = [
+      { id: 'theme-explorer', desc: 'Usa 10 temas diferentes', reward: 100, target: 10, current: 0 },
+      { id: 'project-master', desc: 'Ve 15 proyectos', reward: 150, target: 15, current: 0 },
+      { id: 'search-expert', desc: 'Realiza 20 búsquedas', reward: 80, target: 20, current: 0 },
+      { id: 'daily-streak', desc: 'Visita 5 días esta semana', reward: 200, target: 5, current: 0 },
+      { id: 'social-butterfly', desc: 'Visita todas las redes sociales', reward: 120, target: 5, current: 0 },
+      { id: 'guestbook-artist', desc: 'Crea 3 dibujos en el guestbook', reward: 180, target: 3, current: 0 },
+      { id: 'theme-purchaser', desc: 'Compra 2 temas premium', reward: 250, target: 2, current: 0 },
+      { id: 'time-master', desc: 'Pasa 2 horas total en el sitio', reward: 300, target: 7200, current: 0 }
+    ];
+    
+    // Seleccionar 2-3 desafíos semanales
+    const thisWeek = this.getWeekString(new Date());
+    const seed = this.hashCode(thisWeek);
+    const shuffled = this.shuffleArray([...challenges], seed);
+    const weeklyCount = 2 + (seed % 2); // 2-3 desafíos
+    
+    const result = {};
+    shuffled.slice(0, weeklyCount).forEach(challenge => {
+      result[challenge.id] = challenge;
+    });
+    
+    return result;
   }
 
   getPremiumThemes() {
@@ -174,12 +240,16 @@ class AchievementSystem {
     };
   }
 
-  // Cargar datos guardados
+  // Cargar datos guardados con migración
   load() {
     const saved = localStorage.getItem(this.storageKey);
     if (saved) {
       const parsed = JSON.parse(saved);
       this.gameData = { ...this.gameData, ...parsed };
+      
+      // Migrar datos antiguos
+      this.migrateData();
+      
       // Convertir arrays a Sets
       this.gameData.themesUsed = new Set(parsed.themesUsed || []);
       this.gameData.projectsViewed = new Set(parsed.projectsViewed || []);
@@ -190,11 +260,29 @@ class AchievementSystem {
       this.gameData.demosTested = new Set(parsed.demosTested || []);
       this.gameData.codeViewed = new Set(parsed.codeViewed || []);
       this.gameData.effectsPurchased = new Set(parsed.effectsPurchased || []);
+      
+      if (parsed.hiddenProgress && parsed.hiddenProgress.easterEggsFound) {
+        this.gameData.hiddenProgress.easterEggsFound = new Set(parsed.hiddenProgress.easterEggsFound);
+      }
     }
     this.checkAchievement('first-visit');
   }
 
-  // Guardar datos
+  // Migrar datos de versiones anteriores
+  migrateData() {
+    // Migrar specialEvents a seasonalEvents si existe
+    if (this.gameData.specialEvents && !this.gameData.seasonalEvents) {
+      // Mantener eventos especiales pero agregar estacionales
+      this.gameData.seasonalEvents = this.getDefaultGameData().seasonalEvents;
+    }
+    
+    // Inicializar hiddenProgress si no existe
+    if (!this.gameData.hiddenProgress) {
+      this.gameData.hiddenProgress = this.getDefaultGameData().hiddenProgress;
+    }
+  }
+
+  // Guardar datos con Sets convertidos
   save() {
     const toSave = {
       ...this.gameData,
@@ -206,7 +294,11 @@ class AchievementSystem {
       browsersUsed: Array.from(this.gameData.browsersUsed),
       demosTested: Array.from(this.gameData.demosTested),
       codeViewed: Array.from(this.gameData.codeViewed),
-      effectsPurchased: Array.from(this.gameData.effectsPurchased)
+      effectsPurchased: Array.from(this.gameData.effectsPurchased),
+      hiddenProgress: {
+        ...this.gameData.hiddenProgress,
+        easterEggsFound: Array.from(this.gameData.hiddenProgress.easterEggsFound || [])
+      }
     };
     localStorage.setItem(this.storageKey, JSON.stringify(toSave));
   }
@@ -216,7 +308,7 @@ class AchievementSystem {
     let finalPoints = points;
     
     // Multiplicadores de eventos
-    if (this.gameData.specialEvents['double-points'].active) {
+    if (this.gameData.specialEvents && this.gameData.specialEvents['double-points'] && this.gameData.specialEvents['double-points'].active) {
       finalPoints *= this.gameData.specialEvents['double-points'].multiplier;
     }
     
@@ -460,6 +552,15 @@ class AchievementSystem {
 
   // Activar evento especial
   activateSpecialEvent(eventId, duration = 3600000) {
+    // Initialize specialEvents if it doesn't exist
+    if (!this.gameData.specialEvents) {
+      this.gameData.specialEvents = {
+        'double-points': { active: false, endTime: null, multiplier: 2 },
+        'theme-festival': { active: false, endTime: null, discount: 50 },
+        'streak-boost': { active: false, endTime: null, bonus: 10 }
+      };
+    }
+    
     const event = this.gameData.specialEvents[eventId];
     if (!event) return;
     
@@ -489,6 +590,203 @@ class AchievementSystem {
     this.save();
   }
 
+  // Utilidades para desafíos aleatorios
+  hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  shuffleArray(array, seed) {
+    const rng = this.seededRandom(seed);
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  seededRandom(seed) {
+    return function() {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+  }
+
+  // Sistema de eventos estacionales
+  checkSeasonalEvents() {
+    const now = new Date();
+    const currentDate = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    
+    Object.entries(this.gameData.seasonalEvents).forEach(([eventId, event]) => {
+      const isInSeason = this.isDateInRange(currentDate, event.startDate, event.endDate);
+      
+      if (isInSeason && !event.active) {
+        this.activateSeasonalEvent(eventId);
+      } else if (!isInSeason && event.active) {
+        this.deactivateSeasonalEvent(eventId);
+      }
+    });
+  }
+
+  isDateInRange(current, start, end) {
+    // Handle year-crossing events (like New Year)
+    if (start > end) {
+      return current >= start || current <= end;
+    }
+    return current >= start && current <= end;
+  }
+
+  activateSeasonalEvent(eventId) {
+    const event = this.gameData.seasonalEvents[eventId];
+    event.active = true;
+    
+    // Auto-unlock seasonal theme
+    if (event.rewards.theme) {
+      this.gameData.unlockedThemes.add(event.rewards.theme);
+    }
+    
+    // Give seasonal points
+    if (event.rewards.points) {
+      this.addPoints(event.rewards.points);
+    }
+    
+    const eventNames = {
+      'halloween': '🎃 Halloween',
+      'christmas': '🎄 Navidad',
+      'valentine': '💕 San Valentín',
+      'easter': '🐰 Pascua',
+      'summer': '☀️ Verano',
+      'new-year': '🎆 Año Nuevo'
+    };
+    
+    this.showNotification({
+      name: `🎉 Evento ${eventNames[eventId]} activado!`,
+      points: event.rewards.points || 0,
+      icon: '🎉'
+    });
+    
+    this.save();
+  }
+
+  deactivateSeasonalEvent(eventId) {
+    this.gameData.seasonalEvents[eventId].active = false;
+    this.save();
+  }
+
+  // Sistema de logros ocultos
+  checkHiddenAchievements() {
+    // Konami Code
+    if (this.gameData.hiddenProgress.konamiSequence.join(',') === '38,38,40,40,37,39,37,39,66,65') {
+      this.checkAchievement('konami-master');
+    }
+    
+    // Dev Tools
+    if (this.gameData.hiddenProgress.devToolsOpened) {
+      this.checkAchievement('secret-dev');
+    }
+    
+    // Matrix theme time
+    if (this.gameData.hiddenProgress.matrixTime >= 600000) { // 10 minutes
+      this.checkAchievement('matrix-neo');
+    }
+    
+    // Click master
+    if (this.gameData.hiddenProgress.clickCount >= 1000) {
+      this.checkAchievement('click-master');
+    }
+    
+    // Scroll infinity
+    if (this.gameData.hiddenProgress.scrollCount >= 500) {
+      this.checkAchievement('scroll-infinity');
+    }
+    
+    // Easter eggs
+    if (this.gameData.hiddenProgress.easterEggsFound.size >= 5) {
+      this.checkAchievement('easter-egg-hunter');
+    }
+    
+    // Theme speedrun
+    if (this.gameData.hiddenProgress.themeSpeedrunCount >= 10) {
+      const timeDiff = Date.now() - this.gameData.hiddenProgress.themeSpeedrunStart;
+      if (timeDiff <= 30000) { // 30 seconds
+        this.checkAchievement('theme-speedrun');
+      }
+    }
+  }
+
+  // Detectar código Konami
+  addKonamiKey(keyCode) {
+    this.gameData.hiddenProgress.konamiSequence.push(keyCode);
+    if (this.gameData.hiddenProgress.konamiSequence.length > 10) {
+      this.gameData.hiddenProgress.konamiSequence.shift();
+    }
+    this.checkHiddenAchievements();
+    this.save();
+  }
+
+  // Detectar herramientas de desarrollador
+  detectDevTools() {
+    this.gameData.hiddenProgress.devToolsOpened = true;
+    this.checkHiddenAchievements();
+    this.save();
+  }
+
+  // Rastrear tiempo en tema Matrix
+  trackMatrixTime(duration) {
+    this.gameData.hiddenProgress.matrixTime += duration;
+    this.checkHiddenAchievements();
+    this.save();
+  }
+
+  // Incrementar contador de clicks
+  incrementClicks() {
+    this.gameData.hiddenProgress.clickCount++;
+    this.checkHiddenAchievements();
+  }
+
+  // Incrementar contador de scroll
+  incrementScroll() {
+    this.gameData.hiddenProgress.scrollCount++;
+    this.checkHiddenAchievements();
+  }
+
+  // Encontrar easter egg
+  findEasterEgg(eggId) {
+    this.gameData.hiddenProgress.easterEggsFound.add(eggId);
+    this.checkHiddenAchievements();
+    this.save();
+  }
+
+  // Iniciar speedrun de temas
+  startThemeSpeedrun() {
+    this.gameData.hiddenProgress.themeSpeedrunStart = Date.now();
+    this.gameData.hiddenProgress.themeSpeedrunCount = 0;
+  }
+
+  // Incrementar contador de speedrun
+  incrementThemeSpeedrun() {
+    if (this.gameData.hiddenProgress.themeSpeedrunStart) {
+      this.gameData.hiddenProgress.themeSpeedrunCount++;
+      this.checkHiddenAchievements();
+    }
+  }
+
+  // Obtener pistas de logros ocultos
+  getHiddenAchievementHints() {
+    const hints = [];
+    Object.entries(this.achievements).forEach(([id, achievement]) => {
+      if (achievement.hidden && !this.gameData.achievements[id] && achievement.hint) {
+        hints.push({ id, hint: achievement.hint, icon: achievement.icon });
+      }
+    });
+    return hints;
+  }
+
   // Obtener título según nivel
   getTitle() {
     if (this.gameData.level >= 20) return '👑 Leyenda';
@@ -496,6 +794,154 @@ class AchievementSystem {
     if (this.gameData.level >= 10) return '⭐ Veterano';
     if (this.gameData.level >= 5) return '🌟 Explorador';
     return '🔰 Novato';
+  }
+
+  // Inicializar sistema completo
+  init() {
+    this.load();
+    this.checkDailyVisit();
+    this.checkSeasonalEvents();
+    this.setupEventListeners();
+    
+    // Check special time-based achievements
+    this.checkTimeBasedAchievements();
+    
+    // Start session tracking
+    this.sessionStart = Date.now();
+    this.sessionAchievements = 0;
+  }
+
+  // Configurar event listeners para logros ocultos
+  setupEventListeners() {
+    // Konami code detection
+    document.addEventListener('keydown', (e) => {
+      this.addKonamiKey(e.keyCode);
+    });
+
+    // Dev tools detection
+    let devtools = { open: false, orientation: null };
+    const threshold = 160;
+    setInterval(() => {
+      if (window.outerHeight - window.innerHeight > threshold || 
+          window.outerWidth - window.innerWidth > threshold) {
+        if (!devtools.open) {
+          devtools.open = true;
+          this.detectDevTools();
+        }
+      } else {
+        devtools.open = false;
+      }
+    }, 500);
+
+    // Click tracking
+    document.addEventListener('click', () => {
+      this.incrementClicks();
+    });
+
+    // Scroll tracking
+    document.addEventListener('scroll', () => {
+      this.incrementScroll();
+    });
+
+    // Birthday detection (if user sets birthday)
+    if (this.gameData.birthday) {
+      const today = new Date();
+      const birthday = new Date(this.gameData.birthday);
+      if (today.getMonth() === birthday.getMonth() && 
+          today.getDate() === birthday.getDate()) {
+        this.checkAchievement('time-traveler');
+      }
+    }
+  }
+
+  // Verificar logros basados en tiempo
+  checkTimeBasedAchievements() {
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    
+    // Midnight visitor (exactly 12:00 AM)
+    if (hour === 0 && minute === 0) {
+      this.checkAchievement('midnight-visitor');
+    }
+    
+    // Midnight coder (3:33 AM)
+    if (hour === 3 && minute === 33) {
+      this.checkAchievement('midnight-coder');
+    }
+    
+    // Early bird
+    if (hour < 7) {
+      this.checkAchievement('early-bird');
+    }
+    
+    // Night owl
+    if (hour >= 0 && hour < 6) {
+      this.checkAchievement('night-owl');
+    }
+  }
+
+  // Verificar combo de logros en sesión
+  checkComboAchievements() {
+    this.sessionAchievements++;
+    if (this.sessionAchievements >= 5) {
+      this.checkAchievement('combo-master');
+    }
+  }
+
+  // Override del método checkAchievement para combos
+  checkAchievement(id) {
+    const wasUnlocked = this.baseCheckAchievement(id);
+    if (wasUnlocked) {
+      this.checkComboAchievements();
+    }
+    return wasUnlocked;
+  }
+
+  // Método base para verificar logros
+  baseCheckAchievement(id) {
+    if (!this.gameData.achievements[id] && this.achievements[id]) {
+      this.gameData.achievements[id] = {
+        unlocked: true,
+        date: new Date().toISOString(),
+        timestamp: Date.now()
+      };
+      this.addPoints(this.achievements[id].points);
+      this.showNotification(this.achievements[id]);
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  // Obtener estadísticas del sistema
+  getStats() {
+    const totalAchievements = Object.keys(this.achievements).length;
+    const unlockedAchievements = Object.keys(this.gameData.achievements).length;
+    const hiddenUnlocked = Object.entries(this.achievements)
+      .filter(([id, ach]) => ach.hidden && this.gameData.achievements[id]).length;
+    const totalHidden = Object.values(this.achievements)
+      .filter(ach => ach.hidden).length;
+    
+    return {
+      level: this.gameData.level,
+      points: this.gameData.points,
+      streak: this.gameData.streak,
+      achievements: {
+        total: totalAchievements,
+        unlocked: unlockedAchievements,
+        percentage: Math.round((unlockedAchievements / totalAchievements) * 100)
+      },
+      hidden: {
+        total: totalHidden,
+        unlocked: hiddenUnlocked,
+        percentage: totalHidden > 0 ? Math.round((hiddenUnlocked / totalHidden) * 100) : 0
+      },
+      challenges: {
+        daily: this.gameData.completedChallenges,
+        weekly: this.gameData.completedWeeklyChallenges
+      }
+    };
   }
 }
 

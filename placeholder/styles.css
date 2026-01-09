@@ -784,7 +784,57 @@
     @keyframes summerSun { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.05) rotate(180deg); } }
     @keyframes autumnLeaves { 0% { background-position: 0 0; } 100% { background-position: 62px 62px; } }
 
-    /* Complete Missing Theme Aesthetics */
+    /* Cyberpunk 2077 Theme */
+    body.cyberpunk2077-theme { --bg-dark: #0a0a0a; --bg-light: #1a1a1a; --text-primary: #00ffff; --text-secondary: #ff0080; --primary: #ffff00; --secondary: #ff0080; }
+    body.cyberpunk2077-theme .navbar { background: linear-gradient(90deg, #0a0a0a, #1a1a1a); border-bottom: 2px solid #ffff00; box-shadow: 0 0 20px rgba(255, 255, 0, 0.5); }
+    body.cyberpunk2077-theme .card { background: linear-gradient(135deg, rgba(10, 10, 10, 0.9), rgba(26, 26, 26, 0.8)); border: 2px solid #00ffff; box-shadow: 0 0 30px rgba(0, 255, 255, 0.3); }
+    body.cyberpunk2077-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, rgba(255, 255, 0, 0.1) 0px, transparent 2px, transparent 100px, rgba(255, 0, 128, 0.08) 102px); z-index: -2; animation: cyberpunk2077Glitch 3s linear infinite; }
+    .preview-cyberpunk2077 { background: linear-gradient(45deg, #0a0a0a 25%, #ffff00 25%, #ffff00 50%, #00ffff 50%, #00ffff 75%, #ff0080 75%); animation: glitch 2s infinite; }
+
+    /* Retro Synthwave Theme */
+    body.retro-synthwave-theme { --bg-dark: #1a0033; --bg-light: #330066; --text-primary: #ff00ff; --text-secondary: #00ffff; --primary: #ff0080; --secondary: #8000ff; }
+    body.retro-synthwave-theme .navbar { background: linear-gradient(90deg, #1a0033, #330066); border-bottom: 2px solid #ff0080; box-shadow: 0 0 25px rgba(255, 0, 128, 0.6); }
+    body.retro-synthwave-theme .card { background: linear-gradient(135deg, rgba(26, 0, 51, 0.9), rgba(51, 0, 102, 0.8)); border: 2px solid #ff00ff; box-shadow: 0 0 25px rgba(255, 0, 255, 0.4); }
+    body.retro-synthwave-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 0, 128, 0.2) 0px, transparent 2px, transparent 50px, rgba(128, 0, 255, 0.15) 52px); z-index: -2; animation: synthwaveGrid 8s linear infinite; }
+    .preview-retro-synthwave { background: linear-gradient(45deg, #1a0033 25%, #ff0080 25%, #ff0080 50%, #ff00ff 50%, #ff00ff 75%, #8000ff 75%); }
+
+    /* Glassmorphism Modern Theme */
+    body.glassmorphism-theme { --bg-dark: rgba(255, 255, 255, 0.1); --bg-light: rgba(255, 255, 255, 0.2); --text-primary: #ffffff; --text-secondary: rgba(255, 255, 255, 0.8); --primary: #00d4ff; --secondary: #ff0080; }
+    body.glassmorphism-theme .navbar { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
+    body.glassmorphism-theme .card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+    body.glassmorphism-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, rgba(0, 212, 255, 0.1), rgba(255, 0, 128, 0.1)); z-index: -2; }
+    .preview-glassmorphism { background: linear-gradient(45deg, rgba(255, 255, 255, 0.3), rgba(0, 212, 255, 0.2)); backdrop-filter: blur(10px); }
+
+    /* Terminal Hacker Theme */
+    body.terminal-hacker-theme { --bg-dark: #000000; --bg-light: #001100; --text-primary: #00ff00; --text-secondary: #00cc00; --primary: #00ff00; --secondary: #008800; }
+    body.terminal-hacker-theme .navbar { background: #000000; border-bottom: 1px solid #00ff00; font-family: 'Courier New', monospace; }
+    body.terminal-hacker-theme .card { background: #001100; border: 1px solid #00ff00; font-family: 'Courier New', monospace; }
+    body.terminal-hacker-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.1) 0px, transparent 1px, transparent 20px, rgba(0, 255, 0, 0.05) 21px); z-index: -2; animation: terminalScan 2s linear infinite; }
+    .preview-terminal-hacker { background: linear-gradient(45deg, #000000 50%, #00ff00 50%); font-family: 'Courier New', monospace; }
+
+    /* Pastel Kawaii Theme */
+    body.pastel-kawaii-theme { --bg-dark: #fef7ff; --bg-light: #fdf4ff; --text-primary: #7c3aed; --text-secondary: #a855f7; --primary: #ec4899; --secondary: #f472b6; }
+    body.pastel-kawaii-theme .navbar { background: linear-gradient(90deg, #fef7ff, #fdf4ff); border-bottom: 2px solid #ec4899; }
+    body.pastel-kawaii-theme .nav-link { color: #7c3aed !important; }
+    body.pastel-kawaii-theme .card { background: linear-gradient(135deg, rgba(254, 247, 255, 0.9), rgba(253, 244, 255, 0.8)); border: 2px solid #f472b6; box-shadow: 0 8px 25px rgba(236, 72, 153, 0.2); }
+    body.pastel-kawaii-theme::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 30% 40%, rgba(236, 72, 153, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(244, 114, 182, 0.08) 0%, transparent 50%); z-index: -2; }
+    .preview-pastel-kawaii { background: linear-gradient(45deg, #fef7ff 25%, #ec4899 25%, #ec4899 50%, #f472b6 50%, #f472b6 75%, #a855f7 75%); }
+
+    /* Animations for new themes */
+    @keyframes cyberpunk2077Glitch {
+      0%, 100% { filter: hue-rotate(0deg) contrast(1); }
+      25% { filter: hue-rotate(90deg) contrast(1.2); }
+      50% { filter: hue-rotate(180deg) contrast(0.8); }
+      75% { filter: hue-rotate(270deg) contrast(1.1); }
+    }
+    @keyframes synthwaveGrid {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 52px; }
+    }
+    @keyframes terminalScan {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 21px; }
+    }
     
     /* Light Theme - Fix navbar text */
     body.light-theme .navbar { background: linear-gradient(90deg, #f8fafc, #ffffff); border-bottom: 2px solid #3182ce; box-shadow: 0 4px 15px rgba(49, 130, 206, 0.2); }

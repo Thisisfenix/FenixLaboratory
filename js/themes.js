@@ -10,6 +10,51 @@ function setTheme(theme) {
     body.classList.add(theme + '-theme');
   }
   
+  // Achievement system integration
+  if (window.achievementSystem) {
+    // Track theme usage
+    achievementSystem.gameData.themesUsed.add(theme);
+    achievementSystem.gameData.themeChangeCount++;
+    
+    // Check theme-related achievements
+    if (achievementSystem.gameData.themesUsed.size === 1) {
+      achievementSystem.checkAchievement('theme-explorer');
+    }
+    if (achievementSystem.gameData.themesUsed.size >= 5) {
+      achievementSystem.checkAchievement('theme-collector');
+    }
+    if (theme === 'funkyatlas' || theme === 'funkyatlas-christmas') {
+      achievementSystem.checkAchievement('funky-fan');
+    }
+    if (achievementSystem.gameData.themeChangeCount >= 20) {
+      achievementSystem.checkAchievement('theme-addict');
+    }
+    if (achievementSystem.gameData.unlockedThemes.size >= 15) {
+      achievementSystem.checkAchievement('theme-hoarder');
+    }
+    
+    // Hidden achievements
+    if (theme === 'matrix') {
+      achievementSystem.gameData.hiddenProgress.matrixStartTime = Date.now();
+    } else if (achievementSystem.gameData.hiddenProgress.matrixStartTime) {
+      const matrixTime = Date.now() - achievementSystem.gameData.hiddenProgress.matrixStartTime;
+      achievementSystem.trackMatrixTime(matrixTime);
+      delete achievementSystem.gameData.hiddenProgress.matrixStartTime;
+    }
+    
+    // Theme speedrun tracking
+    if (!achievementSystem.gameData.hiddenProgress.themeSpeedrunStart) {
+      achievementSystem.startThemeSpeedrun();
+    }
+    achievementSystem.incrementThemeSpeedrun();
+    
+    // Update challenges
+    achievementSystem.updateChallenge('change-theme');
+    achievementSystem.updateWeeklyChallenge('theme-explorer');
+    
+    achievementSystem.save();
+  }
+  
   if (theme === 'custom') {
     applyCustomTheme();
   }
@@ -114,11 +159,24 @@ function loadTheme() {
   const lastThemeChange = localStorage.getItem('last-theme-change');
   const today = new Date().toDateString();
   
-  if (seasonalTheme && lastThemeChange !== today && gameData.autoSeasonalThemes) {
-    setTheme(seasonalTheme);
-    showSeasonalNotification(seasonalTheme);
+  // Achievement system integration
+  if (window.achievementSystem) {
+    const autoSeasonalThemes = achievementSystem.gameData.autoSeasonalThemes;
+    
+    if (seasonalTheme && lastThemeChange !== today && autoSeasonalThemes) {
+      setTheme(seasonalTheme);
+      showSeasonalNotification(seasonalTheme);
+      localStorage.setItem('last-theme-change', today);
+    } else {
+      setTheme(savedTheme);
+    }
   } else {
-    setTheme(savedTheme);
+    if (seasonalTheme && lastThemeChange !== today && gameData?.autoSeasonalThemes) {
+      setTheme(seasonalTheme);
+      showSeasonalNotification(seasonalTheme);
+    } else {
+      setTheme(savedTheme);
+    }
   }
 }
 
@@ -207,12 +265,15 @@ function updateSeasonalIndicator() {
 }
 
 function buyTheme(theme, cost) {
-  const result = achievementSystem.buyTheme(theme, cost);
-  if (result) {
-    updatePointsDisplay();
-    updatePremiumThemes();
+  if (window.achievementSystem) {
+    const result = achievementSystem.buyTheme(theme, cost);
+    if (result) {
+      updatePointsDisplay();
+      updatePremiumThemes();
+    }
+    return result;
   }
-  return result;
+  return false;
 }
 
 function applyEditorTheme(preview = false) {

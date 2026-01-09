@@ -1,47 +1,74 @@
 {
   "proyecto": "FenixLaboratory",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "lastUpdate": "2025-12-04",
   "autor": "ThisIsFenix",
   "repositorio": "https://github.com/thisisfenix/FenixLaboratory",
   "sitio_web": "https://thisisfenix.github.io/FenixLaboratory/",
   
   "info_version_actual": {
-    "numero": "2.2.2",
+    "numero": "2.3.0",
     "fecha": "2025-12-04",
-    "tipo": "bugfix",
+    "tipo": "major",
     "estado": "estable",
     "cambios_principales": [
-      "Peluches ahora hablan cuando les pasas el mouse",
-      "Runners se mueven solos y se cansan después de correr",
-      "Sonido de grito cuando agarras un peluche",
-      "13 logros nuevos agregados al sistema",
-      "Fecha de desbloqueo en cada logro"
+      "5 nuevos temas premium: Cyberpunk 2077, Retro Synthwave, Glassmorphism, Terminal Hacker, Pastel Kawaii",
+      "Sistema de logros 2.0 con logros ocultos y pistas",
+      "Desafíos diarios y semanales expandidos",
+      "Eventos estacionales automáticos (Halloween, Navidad, etc.)",
+      "Sistema de intercambio de logros entre usuarios"
     ]
   },
   
   "updates": [
     {
-      "version": "2.2.2",
+      "version": "2.3.0",
       "date": "2025-12-04",
-      "title": "🔧 Mejoras y Nuevos Logros",
-      "type": "bugfix",
+      "title": "🎨 Nuevos Temas Premium + Sistema de Logros 2.0",
+      "type": "major",
       "features": [
-        "💬 Los peluches ahora hablan cuando les pasas el mouse",
-        "🏃 Runners se mueven solos cada 3-5 segundos",
-        "😴 Runners se cansan después de 5 intentos de escape",
-        "🔊 Sonido de grito cuando agarras un peluche (solo Molly)",
-        "🏆 13 logros nuevos: Fan de Gissel, Cazador de Molly, Artista del Guestbook, y más",
-        "📅 Fecha de desbloqueo guardada en cada logro",
-        "🎯 Logro especial por encontrar los 40 peluches (500 pts)",
-        "💰 Millonario de Puntos: acumula 10,000 puntos",
-        "🌙 Visitante de Medianoche: visita exactamente a las 12:00 AM"
+        "🌈 5 nuevos temas premium con efectos únicos:",
+        "🤖 Cyberpunk 2077: Efectos glitch y colores neón futuristas",
+        "🌸 Retro Synthwave: Gradientes púrpura-rosa con grid animado",
+        "💎 Glassmorphism: Efectos de cristal con blur y transparencias",
+        "💻 Terminal Hacker: Fuente monospace con efectos de terminal",
+        "🌺 Pastel Kawaii: Colores suaves y estética kawaii",
+        "🏆 Sistema de Logros 2.0 completamente renovado:",
+        "🕵️ Logros ocultos con pistas misteriosas",
+        "📅 Desafíos diarios: 10 nuevos desafíos con recompensas",
+        "📊 Desafíos semanales: 10 desafíos de larga duración",
+        "🎃 Eventos estacionales automáticos (Halloween, Navidad, Pascua, Verano)",
+        "🔄 Sistema de intercambio de badges entre usuarios",
+        "🎯 Logros con código Konami y easter eggs",
+        "🌙 Logro especial por visitar exactamente a medianoche",
+        "⚡ Combo Master: 5 logros en una sesión",
+        "🧸 Plushie Collector: Encuentra los 40 peluches (500 pts)"
+      ],
+      "new_themes": [
+        "🤖 Cyberpunk 2077: Amarillo neón, cyan y magenta con efectos glitch",
+        "🌸 Retro Synthwave: Púrpura profundo con rosa neón y grid retro",
+        "💎 Glassmorphism: Cristal moderno con blur y transparencias",
+        "💻 Terminal Hacker: Verde Matrix con fuente Courier New",
+        "🌺 Pastel Kawaii: Rosa suave, púrpura y colores kawaii"
+      ],
+      "achievement_system_20": [
+        "🕵️ Logros ocultos: Konami code, medianoche, easter eggs",
+        "📅 10 desafíos diarios: Visita matutina, búsquedas, cambios de tema",
+        "📊 10 desafíos semanales: Rachas, exploración social, arte",
+        "🎃 Eventos estacionales: Halloween (octubre), Navidad (diciembre)",
+        "💝 San Valentín (febrero), 🐰 Pascua (marzo-abril)",
+        "☀️ Verano (junio-agosto) con recompensas especiales",
+        "🔄 Sistema de badges con niveles y progreso visual",
+        "🎯 Logros de combo por conseguir múltiples logros seguidos",
+        "🏅 8 categorías de badges: Exploración, Colección, Social, etc.",
+        "⭐ Sistema de niveles con beneficios por nivel alcanzado"
       ],
       "fixes": [
-        "✅ Diálogos ahora funcionan correctamente en todos los peluches",
-        "✅ Runners ya no se quedan atascados",
-        "✅ Sistema de stamina funciona perfectamente",
-        "✅ Sonidos solo se reproducen al atrapar, no al hover"
+        "✅ Animaciones optimizadas para los nuevos temas",
+        "✅ Sistema de logros más robusto y escalable",
+        "✅ Mejor detección de eventos estacionales",
+        "✅ Interfaz de desafíos más intuitiva",
+        "✅ Persistencia mejorada de progreso de logros"
       ]
     },
     {
