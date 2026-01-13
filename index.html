@@ -1397,6 +1397,17 @@ async function showCredits() {
 
     function loadGameData() {
       achievementSystem.load();
+      
+      // Fix: Migración de datos para usuarios existentes
+      if (!gameData.specialEvents || typeof gameData.specialEvents !== 'object') {
+        gameData.specialEvents = {
+          'double-points': { active: false, endTime: null, multiplier: 2 },
+          'theme-festival': { active: false, endTime: null, discount: 50 },
+          'streak-boost': { active: false, endTime: null, bonus: 10 }
+        };
+        saveGameData();
+      }
+      
       updatePointsDisplay();
       updateCursorShop();
     }
@@ -2254,27 +2265,47 @@ async function showCredits() {
     }
     
     function activateSpecialEvent(eventId, duration = 3600000) {
+      // Fix: Inicializar specialEvents si no existe
+      if (!gameData.specialEvents || typeof gameData.specialEvents !== 'object') {
+        gameData.specialEvents = {
+          'double-points': { active: false, endTime: null, multiplier: 2 },
+          'theme-festival': { active: false, endTime: null, discount: 50 },
+          'streak-boost': { active: false, endTime: null, bonus: 10 }
+        };
+      }
+      
       achievementSystem.activateSpecialEvent(eventId, duration);
     }
     
     function updateSpecialEventsDisplay() {
       const container = document.getElementById('special-events');
       if (!container) return;
-      const activeEvents = Object.entries(gameData.specialEvents).filter(([id, event]) => event.active);
+      
+      // Fix: Verificar que specialEvents existe y no es null/undefined
+      if (!gameData.specialEvents || typeof gameData.specialEvents !== 'object') {
+        gameData.specialEvents = {
+          'double-points': { active: false, endTime: null, multiplier: 2 },
+          'theme-festival': { active: false, endTime: null, discount: 50 },
+          'streak-boost': { active: false, endTime: null, bonus: 10 }
+        };
+        saveGameData();
+      }
+      
+      const activeEvents = Object.entries(gameData.specialEvents).filter(([id, event]) => event && event.active);
       if (activeEvents.length === 0) {
         container.innerHTML = '';
         return;
       }
       let html = '<h5 style="color: var(--primary); margin-bottom: 1rem;">🎪 Eventos Especiales Activos</h5>';
       activeEvents.forEach(([id, event]) => {
-        const timeLeft = Math.max(0, event.endTime - Date.now());
+        const timeLeft = Math.max(0, (event.endTime || 0) - Date.now());
         const minutes = Math.floor(timeLeft / 60000);
         const eventInfo = {
-          'double-points': { name: 'Doble Puntos', icon: '🔥', desc: `${event.multiplier}x puntos` },
-          'theme-festival': { name: 'Festival de Temas', icon: '🎆', desc: `${event.discount}% descuento` },
-          'streak-boost': { name: 'Boost de Racha', icon: '⚡', desc: `+${event.bonus} puntos extra` }
+          'double-points': { name: 'Doble Puntos', icon: '🔥', desc: `${event.multiplier || 2}x puntos` },
+          'theme-festival': { name: 'Festival de Temas', icon: '🎆', desc: `${event.discount || 50}% descuento` },
+          'streak-boost': { name: 'Boost de Racha', icon: '⚡', desc: `+${event.bonus || 10} puntos extra` }
         };
-        const info = eventInfo[id];
+        const info = eventInfo[id] || { name: 'Evento', icon: '🎪', desc: 'Evento especial' };
         html += `
           <div class="event-item" style="margin-bottom: 0.5rem; padding: 0.75rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 8px; color: white;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
